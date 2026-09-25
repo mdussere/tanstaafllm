@@ -1,0 +1,3 @@
+interface:
+  display_name: "Commit Prep"
+  short_description: "Prepare explicit review-first Git commits"
