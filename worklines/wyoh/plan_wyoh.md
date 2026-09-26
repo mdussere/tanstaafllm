@@ -84,12 +84,12 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - [x] 1.8 Acceptance: replacement contract records Sway v0, capability boundary, deferred hardware criteria, and retained role of HIOM in `docs/0101_06_sway-v0-contract.md`.
 
 ### Step 2 — Validate the pre-hardware Sway-IPC proof
-**Status**: ⏳ Pending
+**Status**: ✅ Done — passing live proof recorded 2026-09-26
 
-- [ ] 2.1 Pin the Sway version and record the exact IPC messages/events needed for outputs, tree, workspaces, focus, layout, and lifecycle state.
-- [ ] 2.2 Create the smallest fixture that reads Sway state, invokes an allowlisted focus/layout operation with an expected revision policy, and observes the resulting event.
-- [ ] 2.3 Define a thin consumer-specific capability mediator only for actions whose direct Sway IPC authority is excessive; reject stale, unavailable, ambiguous, or unauthorised requests with no side effect.
-- [ ] 2.4 Acceptance: a fixture obtains state, makes one allowlisted operation, waits on an observed predicate/event without sleeping, and proves a rejected request changes nothing.
+- [x] 2.1 Pinned Sway 1.10.1 and recorded exact queries/events in `docs/0201_01_sway-ipc-proof.md`.
+- [x] 2.2 Created the smallest fixture: snapshot, allowlisted workspace focus, and observed target focus event.
+- [x] 2.3 Defined a thin test-only consumer capability mediator: exact revision, granted scope, safe selector, and no arbitrary command.
+- [x] 2.4 Acceptance: live fixture obtains state, completes its allowlisted operation on an observed predicate, and deterministic checks prove rejected requests make no call.
 
 ### Step 3 — Validate on `luna-pi`
 **Status**: ⏳ Pending
@@ -122,7 +122,7 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - ✅ Full discussion reviewed for Wyoh’s mandate and constraints.
 - ✅ Upstream survey and requirements/solution proposal recorded.
 - ✅ Step 1 — Sway-v0 contract and product path ratified.
-- ⏳ Step 2 — Validate the pre-hardware Sway-IPC proof.
+- ✅ Step 2 — Pre-hardware Sway-IPC proof passed.
 - ⏳ Step 3 — Validate on `luna-pi`.
 - ⏳ Step 4 — Characterise Luna and choose the production base.
 - ⏳ Step 5 — Productise the selected agent-native workspace path.
@@ -147,6 +147,7 @@ date
 | 2026-09-25T15:26:26+02:00 | Follow-up discussion reopens Step 1: proposed v0 is unmodified Sway plus existing IPC, with an adapter/capability mediator only on demonstrated need. HIOM remains historical/reference material; no runtime work is authorised. |
 | 2026-09-25T16:40:42+02:00 | Recorded Sway's documented ROCKNIX/EmulationStation use as a positive but conditional Wyoh-v0 selection signal. Luna's precise preinstalled distribution and compositor remain Step 4 inventory facts. |
 | 2026-09-26T13:22:23+02:00 | Step 1 completed after explicit green light: ratified unmodified, version-pinned Sway plus existing IPC as Wyoh v0; direct IPC is fixture-only and a consumer capability mediator is deferred until evidence requires one. |
+| 2026-09-26T13:34:13+02:00 | Step 2 completed: the version-pinned Sway IPC fixture passed a headless live proof on luna-pi. It records queries, workspace focus event, capability rejection, process metrics, and recovery; no Luna claim is made. |
 
 ---
 
@@ -179,3 +180,5 @@ See [the planning-only boundary](docs/0101_04_mycroft-context-boundary.md).
 - `worklines/wyoh/docs/0101_04_mycroft-context-boundary.md` — bounded, revisioned future context snapshot.
 - `worklines/wyoh/docs/0101_05_professor-note-on-mycroft-composition.md` — Professor coordination note on bounded Mycroft context.
 - `worklines/wyoh/docs/0101_06_sway-v0-contract.md` — active Step 1 Sway v0, authority, component, and deferred-hardware contract.
+- `worklines/wyoh/docs/0201_01_sway-ipc-proof.md` — Step 2 pinned IPC protocol, fixture, passing evidence, and limits.
+- `test/wyoh/` — deterministic capability tests, live headless Sway proof, and Gherkin contract.
