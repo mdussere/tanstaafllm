@@ -44,6 +44,27 @@ def parse_args() -> argparse.Namespace:
 
 
 def current_window(page: Page) -> list[dict[str, str]]:
+    # ChatGPT collapses long messages behind a visible "Show more" control.
+    # Expand the controls in every virtualized window before reading innerText;
+    # otherwise the export is not a faithful source record.
+    for _ in range(8):
+        buttons = page.get_by_role("button", name="Show more", exact=True)
+        count = buttons.count()
+        if not count:
+            break
+        clicked = False
+        for index in range(count):
+            try:
+                buttons.nth(index).click(timeout=1_000)
+                clicked = True
+            except Exception:
+                # A virtualized node may disappear after an earlier click.
+                # The next sampled window retries any remaining control.
+                continue
+        if not clicked:
+            break
+        time.sleep(0.1)
+
     raw = page.locator("[data-message-author-role]").evaluate_all(
         """nodes => nodes.map(node => ({
             role: node.dataset.messageAuthorRole,

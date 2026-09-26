@@ -61,20 +61,20 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 ## Plan steps (no execution until green light)
 
 ### Step 1 — Reconcile the decision baseline
-**Status**: ⏳ Pending
+**Status**: 🧪 Ready for review
 
-- [ ] 1.1 Read the complete initial transcript and produce a decision ledger: confirmed decisions, strong preferences, hypotheses, and discarded ideas.
-- [ ] 1.2 Correct or supersede the current translated analysis where the incomplete extract omitted material decisions.
-- [ ] 1.3 Identify conflicts needing your arbitration, including project naming, primary v0 purpose, device roles, and component names.
+- [x] 1.1 Read the complete initial transcript and produce a decision ledger: confirmed decisions, strong preferences, hypotheses, and discarded ideas.
+- [x] 1.2 Correct or supersede the current translated analysis where the incomplete extract omitted material decisions.
+- [x] 1.3 Identify conflicts needing your arbitration, including project naming, primary v0 purpose, device roles, and component names.
 - [ ] 1.4 Acceptance: you approve a concise decision ledger and an explicit open-questions list.
 
 ### Step 2 — Define the v0 charter and system boundaries
-**Status**: ⏳ Pending
+**Status**: 🧪 Ready for review
 
-- [ ] 2.1 Choose one primary v0 outcome: local intelligence experiment, portable development companion, frugal system assistant, voice interaction, or another explicitly defined use case.
-- [ ] 2.2 Define what runs on the desktop, `luna-pi`, Luna, and remote services; identify mandatory offline and latency expectations.
-- [ ] 2.3 State success measures: usability, memory ceiling, responsiveness, battery/thermal constraints, reproducibility, and learning goals.
-- [ ] 2.4 Acceptance: a one-page charter excludes more scope than it admits and makes v0 testable.
+- [x] 2.1 Propose one primary v0 outcome: Mycroft v0, offline French recorded-audio transcription to text.
+- [x] 2.2 Define what runs on the desktop, `luna-pi`, Luna, and remote services; identify mandatory offline and latency expectations.
+- [x] 2.3 State success measures: usability, memory ceiling, responsiveness, battery/thermal constraints, reproducibility, and learning goals.
+- [ ] 2.4 Acceptance: you approve a one-page charter that excludes more scope than it admits and makes v0 testable.
 
 ### Step 3 — Design the workline map
 **Status**: ⏳ Pending
@@ -104,8 +104,8 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 
 - ✅ Professor workline established as the project’s coordination and isolation boundary; English translation of the existing partial analysis retained as planning documentation.
 - Mycroft — explicitly authorised pre-hardware ASR v0 workline; see worklines/mycroft/plan_mycroft.md.
-- ⏳ Step 1 — Reconcile the complete decision baseline.
-- ⏳ Step 2 — Define the v0 charter and system boundaries.
+- 🧪 Step 1 — Decision ledger ready for review.
+- 🧪 Step 2 — V0 charter ready for review.
 - ⏳ Step 3 — Design the workline map.
 - ⏳ Step 4 — Open approved foundation workline(s).
 - ⏳ Step 5 — Maintain programme integration.
@@ -124,6 +124,7 @@ date
 |---|---|
 | 2026-09-25 | Created draft coordinating-workline plan; no implementation or specialised workline was initiated. |
 | 2026-09-25T01:24:13+02:00 | Renamed the coordinating workline from `general` to `professor` (Professor de la Paz); updated its role to maintain cross-workline coordination and isolation. No implementation started. |
+| 2026-09-25T02:22:12+02:00 | Green-lit Sections 1 and 2 produced a complete-source decision ledger and a review-ready v0 charter. No subsystem implementation, hardware operation, model download, or benchmark was run. |
 
 ---
 
@@ -131,5 +132,24 @@ date
 
 - `worklines/professor/docs/0001_01_initial_discussion.md` — complete initial discussion transcript (155 messages; source evidence).
 - `worklines/professor/docs/0000_01_initial_discussion_analysis_fr.md` — archived French version of the earlier partial synthesis.
-- `worklines/professor/docs/0001_01_initial_discussion_analysis.md` — English translation of that synthesis, with its scope limitation stated.
+- `worklines/professor/docs/0001_01_initial_discussion_analysis.md` — English translation of the earlier partial synthesis, with its scope limitation stated.
+- `worklines/professor/docs/0101_01_decision-ledger.md` — authoritative reconciliation of the complete discussion with active repository decisions.
+- `worklines/professor/docs/0201_01_v0-charter.md` — review-ready boundary, success measures, and exclusions for the immediate v0.
 - `worklines/mycroft/plan_mycroft.md` — explicitly authorised Mycroft pre-hardware ASR v0 plan.
+
+## Shared-discussion integration — 2026-09-25
+
+The shared discussion expands Mycroft to an input-and-composition capability while retaining its measured ASR slice as a context-free baseline. Professor records the cross-workline split: Mycroft owns composition, Wyoh owns scoped observable context, and neither receives execution authority through context alone. Mycroft candidate, harness, and selection criteria are reopened; no implementation is implied.
+
+See [the cleaned decision record](docs/0102_03_shared-chatgpt-options-decision.md).
+
+### Amendment log
+
+| Timestamp (`date`) | Update |
+|---|---|
+| 2026-09-25T23:10:00+02:00 | Captured and cleaned the shared discussion with the repository scraper; recorded its cross-workline consequences. |
+
+## Additional workline artifacts
+
+- `worklines/professor/docs/0102_02_shared-chatgpt-options-source.md` — canonical raw export.
+- `worklines/professor/docs/0102_03_shared-chatgpt-options-decision.md` — cleaned decisions and owner consequences.
