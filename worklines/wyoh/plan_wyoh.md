@@ -92,12 +92,12 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - [x] 2.4 Acceptance: live fixture obtains state, completes its allowlisted operation on an observed predicate, and deterministic checks prove rejected requests make no call.
 
 ### Step 3 — Validate on `luna-pi`
-**Status**: ⏳ Pending
+**Status**: ✅ Done — Pi-specific evidence recorded 2026-09-26
 
-- [ ] 3.1 Record board/RAM/OS/kernel/graphics/input facts before interpreting results.
-- [ ] 3.2 Run the approved Sway-IPC proof if the required session stack is available; measure readiness, steady memory, idle CPU, IPC/event latency, and recovery.
-- [ ] 3.3 Document gaps without extrapolating Pi results to Luna.
-- [ ] 3.4 Acceptance: a versioned result separates portable interface evidence from Pi-only Sway/graphics evidence.
+- [x] 3.1 Recorded board, RAM, OS, kernel, DRM nodes, and input-node facts in `docs/0301_01_luna-pi-sway-result.md`.
+- [x] 3.2 Ran the approved headless Sway-IPC proof and recorded readiness, sampled RSS/CPU, event latency, and recovery.
+- [x] 3.3 Documented Pi-only limits without extrapolation to Luna.
+- [x] 3.4 Acceptance: versioned record separates portable IPC evidence from Pi-only Sway/graphics-process evidence.
 
 ### Step 4 — Characterise Luna and choose the production base
 **Status**: ⏳ Pending
@@ -123,7 +123,7 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - ✅ Upstream survey and requirements/solution proposal recorded.
 - ✅ Step 1 — Sway-v0 contract and product path ratified.
 - ✅ Step 2 — Pre-hardware Sway-IPC proof passed.
-- ⏳ Step 3 — Validate on `luna-pi`.
+- ✅ Step 3 — Pi-specific Sway validation recorded.
 - ⏳ Step 4 — Characterise Luna and choose the production base.
 - ⏳ Step 5 — Productise the selected agent-native workspace path.
 
@@ -148,6 +148,7 @@ date
 | 2026-09-25T16:40:42+02:00 | Recorded Sway's documented ROCKNIX/EmulationStation use as a positive but conditional Wyoh-v0 selection signal. Luna's precise preinstalled distribution and compositor remain Step 4 inventory facts. |
 | 2026-09-26T13:22:23+02:00 | Step 1 completed after explicit green light: ratified unmodified, version-pinned Sway plus existing IPC as Wyoh v0; direct IPC is fixture-only and a consumer capability mediator is deferred until evidence requires one. |
 | 2026-09-26T13:34:13+02:00 | Step 2 completed: the version-pinned Sway IPC fixture passed a headless live proof on luna-pi. It records queries, workspace focus event, capability rejection, process metrics, and recovery; no Luna claim is made. |
+| 2026-09-26T13:38:00+02:00 | Step 3 completed: recorded Pi facts and the isolated headless Sway proof results separately from Luna claims. |
 
 ---
 
@@ -182,3 +183,4 @@ See [the planning-only boundary](docs/0101_04_mycroft-context-boundary.md).
 - `worklines/wyoh/docs/0101_06_sway-v0-contract.md` — active Step 1 Sway v0, authority, component, and deferred-hardware contract.
 - `worklines/wyoh/docs/0201_01_sway-ipc-proof.md` — Step 2 pinned IPC protocol, fixture, passing evidence, and limits.
 - `test/wyoh/` — deterministic capability tests, live headless Sway proof, and Gherkin contract.
+- `worklines/wyoh/docs/0301_01_luna-pi-sway-result.md` — Pi-only board facts, Sway result, metrics, and limits.
