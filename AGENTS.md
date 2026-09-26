@@ -10,7 +10,7 @@ Use English by default unless the user switches language. Keep the literary voca
 
 - **Adam** is the human-facing identity the user addresses. It is not a separate brain or privileged agent.
 - **Mike** is the local reasoning and routing layer behind Adam.
-- **Mycroft** is voice input / ASR. Its current v0 is offline, context-free audio-to-text.
+- **Mycroft** is Luna’s interactive input and composition capability. Its measured ASR baseline is offline, context-free audio-to-text; bounded contextualisation and the composition interface are separate, explicitly planned stages.
 - **Wyoh** is the observable desktop/window-management layer: state, context, and available actions.
 - **Mannie** is the development capability; it is one use of the system, not the universal brain.
 - **Luna** is the intended handheld environment; `luna-pi` is the Raspberry Pi reference/prototyping target.
@@ -39,8 +39,19 @@ The current active worklines are:
 | Workline | Read first | Boundary |
 | --- | --- | --- |
 | `professor` | `worklines/professor/plan_professor.md` | Project framing, decision ledger, and coordination/isolation of specialist worklines; it does not implement their subsystems. |
-| `mycroft` | `worklines/mycroft/plan_mycroft.md` | Pre-hardware ASR v0 only; no TTS, context biasing, command routing, or target-device audio work. |
+| `mycroft` | `worklines/mycroft/plan_mycroft.md` | Input/composition architecture and its pre-hardware ASR baseline; no ungreen-lit context feed, command routing, target-device audio work, or implementation. |
 | `wyoh` | `worklines/wyoh/plan_wyoh.md` | Desktop/WM observability and interface design; no premature compositor fork or target-hardware implementation. |
+
+## Tests and experiments
+
+Read [docs/02_testing.md](docs/02_testing.md) before creating or running a test or experiment.
+
+- **pytest is mandatory by default.** Store every repeatable test and experiment in `test/<workline>/`; do not make `tmp/`, Bash snippets, one-off CLIs, or local notebooks the authoritative harness.
+- Prefer Python and SDK/protocol interfaces. Use a CLI/subprocess only when the executable boundary itself is under test, and preserve its complete output.
+- Keep the default suite deterministic. Mark device, network, model-asset, audio, graphical, or other external-state checks with `@pytest.mark.live` or `@pytest.mark.integration`, and run them explicitly.
+- Use a neighbouring Gherkin `.feature` file as the readable behavioural contract for graphical, interactive, multi-step, non-deterministic, or otherwise complex tests. Pytest remains the execution mechanism.
+- Persist logs and artifacts under `results/<workline>/<topic>/<timestamp>/`; screenshots are mandatory evidence for rendered UI tests and must be inspected before claiming success.
+- Load the **`testing-web-frontends`** skill before creating or running browser, graphical, desktop, VNC, or other rendered-interface tests.
 
 ## Documentation and source of truth
 
