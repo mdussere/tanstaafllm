@@ -1,0 +1,3 @@
+# Private recordings are local evaluation inputs, never repository artifacts.
+*.m4a
+*.wav

@@ -1,0 +1,85 @@
+# Mycroft evaluation harness
+
+`benchmark_asr.py` is a disposable desktop measurement tool, not the Mycroft v0 product CLI. It invokes an already-installed native decoder once per WAV file and writes one JSON object per line. It makes no network calls and downloads no asset.
+
+```text
+python3 worklines/mycroft/scripts/benchmark_asr.py \
+  --manifest /outside-repo/fixtures.json \
+  --candidate /outside-repo/candidate.json \
+  --results /outside-repo/results.jsonl
+```
+
+Manifest shape:
+
+```json
+{"fixtures": [{"id": "clip-01", "audio": "/outside-repo/clip-01.wav", "reference": "BONJOUR"}]}
+```
+
+Candidate shape:
+
+```json
+{
+  "id": "native-example",
+  "version": "pinned-version",
+  "command": ["/outside-repo/decoder", "{audio}"],
+  "transcript_regex": "(?m)^TRANSCRIPT: (?P<text>.+)$"
+}
+```
+
+The fixture must be a mono, signed 16-bit PCM WAV. The transcript parser is intentionally explicit: backend output is not treated as a transcript merely because it happened to be printed. Fields include raw stdout/stderr, exit status, elapsed seconds, sampled peak RSS, audio duration, RTF, raw transcript, and normalised WER.
+
+Peak RSS is sampled from Linux `/proc`; short-lived child allocation between samples can be missed, and a desktop value cannot prove a 1-GiB target fit. Results must record the host and separate installed runtime/model sizes separately.
+
+## Mycroft v0 text console
+
+`mycroft_console.py` is the foreground composition application, not the batch
+benchmark. It uses one fixed local profile: Sherpa-ONNX `v1.13.8`, the French
+streaming Zipformer `2023-04-14`, int8 encoder/decoder/joiner, CPU provider,
+one inference thread, and greedy decoding. There is no model argument, model
+download, command execution path, network client, or persistent service.
+
+The installed runtime and model directory live outside Git. Point
+`MYCROFT_ASSET_ROOT` at their common parent:
+
+```text
+MYCROFT_ASSET_ROOT=/path/to/assets \
+  python3 worklines/mycroft/scripts/mycroft_console.py \
+  --input /path/to/input.wav
+```
+
+Replay accepts only RIFF/WAVE, signed 16-bit mono PCM. This is deliberately the
+same narrow format as the existing v0 evaluation contract: convert M4A, MP3,
+or stereo files explicitly before invoking Mycroft. Replay is paced in 200 ms
+chunks through the same recogniser callback path as live capture; EOF has the
+same finalisation semantics as `F6`.
+
+For live capture, pass a Linux capture-node path such as
+`/dev/snd/pcmC0D0c`. The source adapter validates that exact character device
+and maps it internally to ALSA's `plughw:0,0` form, because `arecord` consumes
+ALSA device names rather than `/dev` paths. `arecord` (ALSA utilities) is a
+host/runtime prerequisite; its availability and real microphone operation are
+not yet evidence of Luna compatibility. The process reads raw PCM only and
+never writes an audio file.
+
+The interactive terminal bindings are `F5` start, `F6` stop, `Enter` accept,
+`Esc` discard, and `q` quit while not recording. Accepted text is emitted once
+to stdout as UTF-8; it is never executed or sent anywhere. After a user edit,
+later hypotheses remain visible but cannot overwrite the draft.
+
+### Tests and experiments
+
+All Mycroft console tests and experiments are pytest modules under
+`test/mycroft/`. They use public upstream WAVs or generated in-memory PCM only;
+no private recording is read or copied.
+
+```text
+python3 -m pytest test/mycroft -v
+MYCROFT_ASSET_ROOT=/path/to/assets \
+  python3 -m pytest test/mycroft -m integration -v -s \
+  --timeout=90 --timeout-method=thread
+```
+
+The second command verifies the pinned C adapter and the complete public-WAV
+replay composition flow. It requires the externally installed Sherpa assets.
+A real-terminal live-microphone smoke test remains manual and pending; do not
+mistake a skipped test for device validation.

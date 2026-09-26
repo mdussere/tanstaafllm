@@ -1,0 +1,17 @@
+{
+  "id": "sherpa-onnx-fr-zipformer-int8",
+  "version": "sherpa-onnx-v1.13.8; model 2023-04-14",
+  "transcript_stream": "stderr",
+  "command": [
+    "${MYCROFT_ASSET_ROOT}/assets/sherpa-onnx-v1.13.8-linux-x64-shared-no-tts/bin/sherpa-onnx",
+    "--tokens=${MYCROFT_ASSET_ROOT}/assets/sherpa-onnx-streaming-zipformer-fr-2023-04-14/tokens.txt",
+    "--encoder=${MYCROFT_ASSET_ROOT}/assets/sherpa-onnx-streaming-zipformer-fr-2023-04-14/encoder-epoch-29-avg-9-with-averaged-model.int8.onnx",
+    "--decoder=${MYCROFT_ASSET_ROOT}/assets/sherpa-onnx-streaming-zipformer-fr-2023-04-14/decoder-epoch-29-avg-9-with-averaged-model.int8.onnx",
+    "--joiner=${MYCROFT_ASSET_ROOT}/assets/sherpa-onnx-streaming-zipformer-fr-2023-04-14/joiner-epoch-29-avg-9-with-averaged-model.int8.onnx",
+    "--provider=cpu",
+    "--num-threads=2",
+    "--model-type=zipformer",
+    "{audio}"
+  ],
+  "transcript_regex": "(?m)^\\{ \"text\": \"(?P<text>.*?)\""
+}

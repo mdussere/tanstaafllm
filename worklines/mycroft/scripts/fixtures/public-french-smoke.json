@@ -1,0 +1,19 @@
+{
+  "fixtures": [
+    {
+      "id": "common-voice-fr-19364697",
+      "audio": "${MYCROFT_ASSET_ROOT}/assets/sherpa-onnx-streaming-zipformer-fr-2023-04-14/test_wavs/common_voice_fr_19364697.wav",
+      "reference": "CE SITE CONTIENT QUATRE TOMBEAUX DE LA DYNASTIE ACHÉMÉNIDE ET SEPT DES SASSANIDES"
+    },
+    {
+      "id": "common-voice-fr-19738183",
+      "audio": "${MYCROFT_ASSET_ROOT}/assets/sherpa-onnx-streaming-zipformer-fr-2023-04-14/test_wavs/common_voice_fr_19738183.wav",
+      "reference": "CE DERNIER A ÉVOLUÉ TOUT AU LONG DE L'HISTOIRE ROMAINE"
+    },
+    {
+      "id": "common-voice-fr-27024649",
+      "audio": "${MYCROFT_ASSET_ROOT}/assets/sherpa-onnx-streaming-zipformer-fr-2023-04-14/test_wavs/common_voice_fr_27024649.wav",
+      "reference": "SON ACTIONNAIRE MAJORITAIRE EST LE CONSEIL TERRITORIAL DE SAINT PIERRE ET MIQUELON"
+    }
+  ]
+}

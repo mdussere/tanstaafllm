@@ -1,0 +1,19 @@
+{
+  "id": "whisper-cpp-tiny-q5_1",
+  "version": "whisper.cpp v1.9.4; ggml-tiny-q5_1.bin",
+  "command": [
+    "${MYCROFT_ASSET_ROOT}/whisper-build/bin/whisper-cli",
+    "-m",
+    "${MYCROFT_ASSET_ROOT}/assets/whisper-models/ggml-tiny-q5_1.bin",
+    "-f",
+    "{audio}",
+    "-l",
+    "fr",
+    "-t",
+    "2",
+    "-nt",
+    "-np",
+    "-ng"
+  ],
+  "transcript_regex": "(?m)^ (?P<text>.+)$"
+}
