@@ -1,3 +1,7 @@
+> **Current status (2026-09-25):** This DWOM model is again the active conceptual basis for the agent-native workspace. Sway IPC supplies its initial observable desktop tree, events, and window-management operations; a Wyoh adapter is deferred until it earns its existence.
+>
+> Controller input is no longer the exclusive v0 vocabulary. The human normally instructs Mike through Mycroft; buttons are attention/recovery controls, while target-scoped keyboard or pointer injection remains a permitted fallback for Mike.
+
 # Wyoh as Playwright for the desktop
 
 ## Question answered

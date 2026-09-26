@@ -1,3 +1,7 @@
+> **Current status (2026-09-25):** The revisioned-state, typed-result, event, wait, locator, and capability principles remain active. The v0 solution is no longer Qtile/X11 or a controller-only HIOM: it is unmodified Sway IPC behind a consumer-specific capability boundary. Semantic actions are preferred; keyboard/pointer injection is an explicit focused-target fallback, never ambient authority.
+>
+> Mike’s target remains simple offline system interaction. Code generation, build/test diagnosis, and frontier development remain Mannie’s scope. Mycroft v0 remains context-free.
+
 # Wyoh requirements proposal and solution paths
 
 > **Superseded as the product requirements document:** read `0000_05_controller-first-handheld-model.md` first. This document retains useful transport, revision, capability, error, and wait ideas, but its desktop/window assumptions are not the Wyoh product model.

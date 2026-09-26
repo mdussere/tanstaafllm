@@ -1,3 +1,7 @@
+> **Current status (2026-09-25):** The mandate now frames Wyoh as Luna’s agent-native graphical-session interface. The candidate v0 engine is unmodified Sway plus its IPC; a Wyoh adapter follows only when Sway cannot express a required safe semantic or operation. Mike remains limited to simple offline system actions, while Mannie retains development work; live Mycroft context remains a separate Mycroft-workline decision.
+>
+> This initial mandate remains source evidence. Its Qtile-first and controller-only assumptions are superseded by [the Sway follow-up record](0101_03_followup_discussion.md).
+
 # Wyoh mandate — what the initial discussion establishes
 
 ## Question answered

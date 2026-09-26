@@ -22,3 +22,7 @@
 - Renamed the coordinating workline from `general` to `professor` (Professor de la Paz), preserving its plan and artifacts under `worklines/professor/`. Updated repository guidance, principles, plans, README, and references so Professor is responsible for cross-workline coordination and isolation. No implementation or tests were run.
 - Superseded the conventional-WM candidate ranking and desktop requirements as product-selection documents. They remain implementation references only; stock-front-end bridge, then native full-screen shell, then custom compositor is the approved draft decision order pending device inventory.
 - No hardware, runtime, firmware, or source-code changes were made.
+
+## 2026-09-26
+
+- **Wyoh Step 1 completed** after explicit green light: ratified unmodified, version-pinned Sway plus its existing IPC as the v0 substrate. Direct IPC is restricted to trusted proof tooling; any consumer capability mediator is deferred until evidence shows Sway IPC has excessive authority or lacks a required Luna semantic. The contract preserves bounded, non-authoritative future Mycroft context and defers graphics, input, resource, and Luna-stack claims to Steps 2–4. No Sway runtime or hardware change was made in this step.

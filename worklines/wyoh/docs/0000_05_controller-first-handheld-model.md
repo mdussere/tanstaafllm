@@ -1,3 +1,7 @@
+> **Superseded as Wyoh’s v0 product contract (2026-09-25):** The stock handheld remains an important controller-first, mono-application reference, but it is not the intended agent-native workspace. The new v0 candidate is unmodified Sway plus its IPC; Wyoh becomes an adapter only when a Luna semantic or safe capability boundary cannot be represented there.
+>
+> HIOM remains relevant for stock-front-end observation and controller-oriented recovery/confirmation surfaces. It no longer forbids Mike’s focused, policy-scoped text or pointer fallback. See [the Sway follow-up record](0101_03_followup_discussion.md).
+
 # Wyoh — controller-first handheld interaction model
 
 ## Question answered
