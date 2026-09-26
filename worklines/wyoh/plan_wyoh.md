@@ -100,12 +100,14 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - [x] 3.4 Acceptance: versioned record separates portable IPC evidence from Pi-only Sway/graphics-process evidence.
 
 ### Step 4 — Characterise Luna and choose the production base
-**Status**: ✅ Done — deferred pending physical Luna inventory
+**Status**: 🧪 In progress — physical Luna is reachable; read-only stock-image inventory authorised 2026-09-27
 
-- [ ] 4.1 Inventory OS, RAM, display mode/rotation, DRM/KMS, Mesa/Panfrost/Vulkan, inputs, and build options.
+- [x] 4.1 Recorded OS, RAM, framebuffer/DRM-visible nodes, input-node visibility, build identity, MMC/eMMC visibility, and Bluetooth exposure in `docs/0405_01_luna-stock-image-inventory.md` and `docs/0401_02_luna-storage-and-bluetooth.md`.
 - [ ] 4.2 Before any flashing or replacement, identify the stock frontend/version, boot path, process/display stack, controller mapping, overlays, launch/return flow, SSH status, and recovery route.
 - [ ] 4.3 Run the Sway-IPC fixture where safely possible; compare unmodified Sway, a thin Wyoh adapter, and any necessary custom/fork path on memory, action completeness, recovery, ordering, input, and latency.
 - [x] 4.4 Acceptance: selected **defer** because physical Luna is unavailable; `docs/0404_01_luna-production-base-deferred.md` records the evidence boundary and required re-entry checks.
+- [x] 4.5 Completed the read-only stock-image inventory and retained live pytest evidence; no Luna state was changed.
+- [ ] 4.6 Acceptance: an evidence record distinguishes the preserved EmuELEC baseline from the future experimental card, then selects or defers the production base without modifying the stock card.
 
 ### Step 5 — Productise only the selected agent-native workspace path
 **Status**: ⏳ Pending
@@ -124,7 +126,7 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - ✅ Step 1 — Sway-v0 contract and product path ratified.
 - ✅ Step 2 — Pre-hardware Sway-IPC proof passed.
 - ✅ Step 3 — Pi-specific Sway validation recorded.
-- ✅ Step 4 — Production-base decision deferred pending physical Luna inventory.
+- 🧪 Step 4 — Physical Luna stock-image inventory in progress; production base remains unselected.
 - ⏳ Step 5 — Productise the selected agent-native workspace path.
 
 ---
@@ -150,6 +152,7 @@ date
 | 2026-09-26T13:34:13+02:00 | Step 2 completed: the version-pinned Sway IPC fixture passed a headless live proof on luna-pi. It records queries, workspace focus event, capability rejection, process metrics, and recovery; no Luna claim is made. |
 | 2026-09-26T13:38:00+02:00 | Step 3 completed: recorded Pi facts and the isolated headless Sway proof results separately from Luna claims. |
 | 2026-09-26T13:40:00+02:00 | Step 4 completed with the plan's defer outcome: physical Luna is unavailable, so no target inventory or production-base selection is claimed. |
+| 2026-09-27 | Read-only stock-image follow-up: the microSD is `mmcblk1`; the eMMC controller times out and produces no eMMC block device; Bluetooth has no usable HCI adapter. |
 
 ---
 
@@ -186,3 +189,5 @@ See [the planning-only boundary](docs/0101_04_mycroft-context-boundary.md).
 - `test/wyoh/` — deterministic capability tests, live headless Sway proof, and Gherkin contract.
 - `worklines/wyoh/docs/0301_01_luna-pi-sway-result.md` — Pi-only board facts, Sway result, metrics, and limits.
 - `worklines/wyoh/docs/0404_01_luna-production-base-deferred.md` — honest Step 4 defer decision and re-entry conditions.
+- `worklines/wyoh/docs/0405_01_luna-stock-image-inventory.md` — physical Luna's preserved EmuELEC baseline and explicit evidence gaps.
+- `worklines/wyoh/docs/0401_02_luna-storage-and-bluetooth.md` — read-only eMMC-controller and Bluetooth-adapter observation on the preserved image.
