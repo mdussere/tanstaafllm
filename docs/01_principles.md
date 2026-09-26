@@ -31,7 +31,7 @@ The current repository slug is historical and may not match the intended project
 | **luna-pi** | Raspberry Pi reference/prototyping target | mostly internal | A development and comparison target, not a replacement for Luna. |
 | **Adam Selene** / **Adam** | the system’s human-facing identity | yes | The person-like interface the user addresses. It is not another intelligence or privileged agent. |
 | **Mike** | local brain | internal | Interprets requests, holds or consults state, routes work, and decides which capability to invoke. |
-| **Mycroft** | voice-input layer | internal | Converts audio into text; later it may support contextual biasing and vocabulary adaptation. |
+| **Mycroft** | input and composition capability | internal | Turns voice into an editable, reviewable proposal. Its ASR baseline is context-free; bounded contextual vocabulary is a separately measured later capability. |
 | **Wyoh** | interface, state, context, and possible actions | internal, rendered to the user | Makes the environment legible and actionable for Mike and Adam. |
 | **Mannie** | development capability | internal | One use of Luna: code, build, test, and development tasks using Codex or another frontier model within normal developer permissions. |
 | **Professor de la Paz** / **Professor** | coordinating workline | internal | Maintains project direction and the coordination and isolation of specialised worklines; it is not another system runtime or local model. |
@@ -86,7 +86,7 @@ The diagram is a responsibility map, not a claim that all components must be pro
 
 ### Mycroft → Mike
 
-Mycroft provides text produced from audio, together with only the metadata necessary to assess the result. Its first version is deliberately context-free speech-to-text. Context biasing from file names, project vocabulary, or CLI terms is a later capability; it is not silently assumed in the baseline.
+Mycroft turns audio into an editable, reviewable composition proposal. Its measured first slice is deliberately context-free speech-to-text. A later bounded context input may use mode-appropriate vocabulary, but it must remain optional, source/revision-labelled, costed, and incapable of granting execution authority. Acceptance remains distinct from an action request.
 
 ### Mike ↔ Wyoh
 
@@ -153,7 +153,7 @@ The point is not to hide standard operations behind lore. “Pressure high” ca
 
 ## Current delivery boundaries
 
-- **Mycroft v0** is authorised as an offline, context-free French ASR baseline: recorded audio in, text out. It does not include text-to-speech, command execution, Mike integration, or Luna-specific audio work.
+- **Mycroft’s measured baseline** is authorised as offline, context-free French ASR: recorded audio in, text out. Its wider input/composition architecture remains planned; it includes neither ungreen-lit context feeds, command execution, Mike integration, nor Luna-specific audio work.
 - **Wyoh** is deferred until the handheld is available. No VM or emulator will be created merely to start window-manager work.
 - **Mannie** comes later. It is a development use of Luna, not the prerequisite for Luna’s basic interaction model.
 - **Adam** is an interaction and presentation contract now; it need not begin as a separate runtime or a full conversational system.

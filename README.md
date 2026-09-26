@@ -43,7 +43,7 @@ We will generate their portraits later. For now, meet the figures of the revolut
 | **Professor de la Paz** | Keeps the cause coherent: coordinates the worklines, maintains their isolation, and refuses to let a good idea quietly conquer the whole system. |
 | **Adam Selene** | The face and voice the user meets. Adam explains what happened without pretending to be magic. |
 | **Mike** | The local brain: reads the situation, chooses the least sufficient capability, and routes a request without becoming an emperor. |
-| **Mycroft** | The ear. It turns voice into text, beginning small, local, and suspicious of expensive context. |
+| **Mycroft** | The voice composition surface: local ASR first, then explicit editing and acceptance before anything acts. |
 | **Wyoh** | The part that makes the machine legible: state, context, and the actions actually available now. |
 | **Mannie** | The builder. Development work, Codex, tests, patches, and the ordinary permissions of a developer—no more and no less. |
 | **Luna** | The territory: fragile, constrained, battery-powered, and worth defending from bloat. |
