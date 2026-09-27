@@ -76,3 +76,5 @@
 - Added the Wyoh stock-image storage/Bluetooth observation. The 48.8 GiB microSD is the only enumerated block device; the device tree’s eMMC host times out and creates no eMMC block device. Bluetooth protocol support and a Bluetooth device-tree node exist, but there is no usable HCI adapter and rfkill initialisation fails. This is read-only evidence only; no Luna state changed.
 
 - Re-ran Wyoh’s pytest-owned, read-only Luna stock-inventory check. The configured SSH route failed with `No route to host` before a remote shell or target action occurred; the complete failed result and runner log are retained outside Git. The prior EmuELEC baseline remains the recorded evidence, while Step 4 and production-base selection remain deferred pending restored target access plus visible/input evidence.
+
+- Prepared a pending Wyoh development-only MCP-over-SSH validation step. It specifies a version-pinned Python stdio server launched through the existing `luna-pi` SSH identity, with a redacted snapshot and one fixed workspace-focus proof action; no package, server, SSH, Pi, Luna, or runtime state was changed.
