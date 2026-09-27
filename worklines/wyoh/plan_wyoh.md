@@ -100,7 +100,7 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - [x] 3.4 Acceptance: versioned record separates portable IPC evidence from Pi-only Sway/graphics-process evidence.
 
 ### Step 4 — Characterise Luna and choose the production base
-**Status**: 🧪 In progress — physical Luna is reachable; read-only stock-image inventory authorised 2026-09-27
+**Status**: 🧪 In progress — stock baseline captured; Luna was unreachable on the 2026-09-27 recheck
 
 - [x] 4.1 Recorded OS, RAM, framebuffer/DRM-visible nodes, input-node visibility, build identity, MMC/eMMC visibility, and Bluetooth exposure in `docs/0405_01_luna-stock-image-inventory.md` and `docs/0401_02_luna-storage-and-bluetooth.md`.
 - [ ] 4.2 Before any flashing or replacement, identify the stock frontend/version, boot path, process/display stack, controller mapping, overlays, launch/return flow, SSH status, and recovery route.
@@ -153,7 +153,7 @@ date
 | 2026-09-26T13:38:00+02:00 | Step 3 completed: recorded Pi facts and the isolated headless Sway proof results separately from Luna claims. |
 | 2026-09-26T13:40:00+02:00 | Step 4 completed with the plan's defer outcome: physical Luna is unavailable, so no target inventory or production-base selection is claimed. |
 | 2026-09-27 | Read-only stock-image follow-up: the microSD is `mmcblk1`; the eMMC controller times out and produces no eMMC block device; Bluetooth has no usable HCI adapter. |
-
+| 2026-09-27T01:59:56+02:00 | Re-ran the pytest-owned, read-only stock inventory. SSH failed before any remote command with `No route to host`; the complete runner log and failed result are retained outside Git. Step 4 remains in progress and the production-base outcome remains defer. |
 ---
 
 ## Workline artifacts
@@ -189,5 +189,6 @@ See [the planning-only boundary](docs/0101_04_mycroft-context-boundary.md).
 - `test/wyoh/` — deterministic capability tests, live headless Sway proof, and Gherkin contract.
 - `worklines/wyoh/docs/0301_01_luna-pi-sway-result.md` — Pi-only board facts, Sway result, metrics, and limits.
 - `worklines/wyoh/docs/0404_01_luna-production-base-deferred.md` — honest Step 4 defer decision and re-entry conditions.
+- `worklines/wyoh/docs/0405_02_luna-reachability-recheck.md` — failed read-only recheck and the resulting honest Step 4 boundary.
 - `worklines/wyoh/docs/0405_01_luna-stock-image-inventory.md` — physical Luna's preserved EmuELEC baseline and explicit evidence gaps.
 - `worklines/wyoh/docs/0401_02_luna-storage-and-bluetooth.md` — read-only eMMC-controller and Bluetooth-adapter observation on the preserved image.
