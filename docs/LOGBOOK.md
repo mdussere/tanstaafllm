@@ -77,4 +77,8 @@
 
 - Re-ran Wyoh’s pytest-owned, read-only Luna stock-inventory check. The configured SSH route failed with `No route to host` before a remote shell or target action occurred; the complete failed result and runner log are retained outside Git. The prior EmuELEC baseline remains the recorded evidence, while Step 4 and production-base selection remain deferred pending restored target access plus visible/input evidence.
 
-- Prepared a pending Wyoh development-only MCP-over-SSH validation step. It specifies a version-pinned Python stdio server launched through the existing `luna-pi` SSH identity, with a redacted snapshot and one fixed workspace-focus proof action; no package, server, SSH, Pi, Luna, or runtime state was changed.
+- Prepared a pending Wyoh development-only MCP-over-SSH validation step. It maps every documented Sway IPC request and event only to an owned disposable headless child in explicit full-development mode; no package, server, SSH, Pi, Luna, or runtime state was changed.
+
+## 2026-09-28
+
+- **Wyoh Step 3.5 completed** after explicit green light. A Python MCP 2.2.0 client used SSH-carried stdio to discover and exercise the complete documented Sway 1.10.1 IPC mapping on a disposable owned `luna-pi` headless child. Deterministic and live pytest evidence records all request/event mappings, observed workspace/tick/shutdown events, headless-fixture limits, ambient-socket rejection, and cleanup. No listener, persistent service, live desktop attachment, rendered UI, or Luna compatibility claim was made.

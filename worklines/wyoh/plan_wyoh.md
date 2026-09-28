@@ -52,8 +52,8 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - Wyoh supplies consumer-scoped views: Mike may receive policy-allowed simple actions; Mycroft v0 remains context-free. Any later live Mycroft context needs a separately authorised Mycroft-workline change.
 - Wyoh validates interactions and reports structured state, success, failure, and events. It is not a shell proxy.
 - The canonical state is a monotonic Wyoh revision plus events. App-published semantics have their own revision and freshness; Wyoh never treats an asynchronous client snapshot as globally atomic.
+- The development-only MCP validation is a Python stdio server launched through `ssh -T luna-pi`, not a port-forward or resident service. Its completed full-IPC-development proof maps every documented Sway IPC request and event only to an owned, disposable headless child; it is neither a consumer nor a product capability.
 - The proposed product order is: unmodified Sway IPC → thin Wyoh adapter/capability mediator → Sway IPC extension or fork only if evidence requires it. The stock frontend remains a reference/recovery baseline, not the intended agent-native workspace.
-- The prepared development-only MCP follow-on is a Python stdio server launched through `ssh -T luna-pi`, not a port-forward or resident service. It will expose a redacted Sway snapshot and one fixed proof action only; it remains pending an explicit green light.
 
 ## Risks / constraints
 
@@ -101,14 +101,15 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - [x] 3.4 Acceptance: versioned record separates portable IPC evidence from Pi-only Sway/graphics-process evidence.
 
 ### Step 3.5 — Validate a development-only Wyoh MCP bridge over SSH
-**Status**: ⏳ Pending — prepared 2026-09-27; no implementation authorised
+**Status**: ✅ Done — validated 2026-09-28; development-only evidence, not Luna or product evidence
 
-- [ ] 3.5.1 Pin the Python MCP SDK and protocol version, document the local/remote Python environments, and implement only a stdio entry point launched as `ssh -T luna-pi -- …`; do not open a port or install a resident service.
-- [ ] 3.5.2 Start the same disposable headless Sway session as the existing proof and expose exactly `wyoh_snapshot`, `wyoh_focus_proof_workspace`, and `wyoh_server_status`; redact raw tree/window/application data and reject all other authority.
-- [ ] 3.5.3 Add deterministic pytest and Gherkin contracts for discovery, schemas, revision/freshness, allowed focus, stale/unauthorised/malformed rejection, client disconnect, and cleanup.
-- [ ] 3.5.4 Add an explicit `@pytest.mark.live` SSH-carried-stdio MCP client test. Persist complete client/server stderr and JSON evidence under `results/wyoh/mcp-over-ssh/<timestamp>/`; do not call it a rendered UI test or Luna evidence.
-- [ ] 3.5.5 Use the MCP client from this development environment to list and call the server's advertised tools across SSH. Treat dynamic registration as a current-chat tool as a separately scoped host-configuration decision.
-- [ ] 3.5.6 Acceptance: the SSH stream carries a real MCP lifecycle; only the three declared tools are discoverable; the fixed action is event-verified; rejections make no Sway call; and closing the stream leaves no server, Sway child, port, or service behind.
+- [x] 3.5.1 Pinned MCP SDK 2.2.0 / protocol 2026-07-28, Sway 1.10.1, and its 1.10 IPC manual; recorded local and remote Python environments and used only SSH-carried stdio.
+- [x] 3.5.2 In explicit `--full-ipc-development` mode, owned a disposable headless session and mapped all 15 documented requests plus all 10 subscription event names while preserving decoded raw replies.
+- [x] 3.5.3 Rejected ambient `SWAYSOCK`/`I3SOCK` before child/socket creation; `RUN_COMMAND` reached only the owned child. Raw results remain ignored development evidence.
+- [x] 3.5.4 Added deterministic mapping/discovery/isolation/cleanup tests, a Gherkin contract, and a full event matrix in `docs/0305_01_mcp-over-ssh-validation-result.md`.
+- [x] 3.5.5 Ran the explicit `@pytest.mark.live` SSH stdio client test and retained complete stderr/JSON evidence under ignored `results/wyoh/mcp-over-ssh/20260928T063829Z/`.
+- [x] 3.5.6 Used an official Python MCP client here to discover and exercise all advertised request, subscription, event-read, event-close, and lifecycle tools across SSH; host-tool registration remains deferred.
+- [x] 3.5.7 Acceptance: real MCP lifecycle passed; all requests/events are mapped and the seven headless-untriggerable event producers are explicitly recorded; no live socket attachment, listener, port, or service was used, and orderly child shutdown was observed.
 
 ### Step 4 — Characterise Luna and choose the production base
 **Status**: 🧪 In progress — stock baseline captured; Luna was unreachable on the 2026-09-27 recheck
@@ -127,7 +128,6 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - [ ] 5.2 Implement only the approved Sway configuration, capability mediator, and/or Wyoh adapter; retain controller/recovery mapping and deterministic startup.
 - [ ] 5.3 Add contract tests and target smoke tests for state, events, focus/layout operation, capability rejection, focused input fallback, wait, process exit, malformed/stale request, and restart.
 - [ ] 5.4 Acceptance: Luna boots a recoverable agent-native Wyoh workspace and passes its selected Sway/adapter contract suite inside its measured budget.
-- ⏳ Step 3.5 — Validate a development-only Wyoh MCP bridge over SSH.
 
 ---
 
@@ -138,6 +138,7 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - ✅ Step 1 — Sway-v0 contract and product path ratified.
 - ✅ Step 2 — Pre-hardware Sway-IPC proof passed.
 - ✅ Step 3 — Pi-specific Sway validation recorded.
+- ✅ Step 3.5 — Development-only full Sway-IPC MCP bridge validated over SSH.
 - 🧪 Step 4 — Physical Luna stock-image inventory in progress; production base remains unselected.
 - ⏳ Step 5 — Productise the selected agent-native workspace path.
 
@@ -155,7 +156,6 @@ date
 |---|---|
 | 2026-09-25 | Workline opened by explicit user direction. Full discussion reviewed; web-backed survey and requirements proposal recorded. No code, runtime, target, or hardware changes were made. |
 | 2026-09-25 | Reframed the draft as a Playwright-like desktop automation model: revisioned snapshots, locators, native/emulated interactors, events, and predicate-based waits. No implementation started. |
-| 2026-09-27T20:29:12+02:00 | Prepared a pending development-only MCP-over-SSH follow-on: a redacted, three-tool Python stdio bridge to the disposable `luna-pi` Sway proof. No dependency, server, SSH configuration, Pi state, or runtime implementation was changed. |
 | 2026-09-25 | Replaced the conventional-WM assumption with the controller-first HIOM after target-profile research. The likely stock EmuELEC/EmulationStation shell is now the first path to inventory and bridge; no runtime change was made. |
 | 2026-09-25T02:24:10+02:00 | Step 1 green-lit and completed: HIOM v0 contract, finite action vocabulary, synchronisation semantics, consumer scopes, and stock-first product path were ratified. Step 2 remains pending. |
 | 2026-09-25T11:22:52+02:00 | Re-scraped the complete shared conversation (155 messages) and added a cleaned, decision-focused Wyoh record. It confirms that Wyoh is controller-first HIOM automation rather than a conventional desktop WM; Step 2 remains pending. |
@@ -167,6 +167,8 @@ date
 | 2026-09-26T13:40:00+02:00 | Step 4 completed with the plan's defer outcome: physical Luna is unavailable, so no target inventory or production-base selection is claimed. |
 | 2026-09-27 | Read-only stock-image follow-up: the microSD is `mmcblk1`; the eMMC controller times out and produces no eMMC block device; Bluetooth has no usable HCI adapter. |
 | 2026-09-27T01:59:56+02:00 | Re-ran the pytest-owned, read-only stock inventory. SSH failed before any remote command with `No route to host`; the complete runner log and failed result are retained outside Git. Step 4 remains in progress and the production-base outcome remains defer. |
+| 2026-09-27T20:29:12+02:00 | Prepared a pending development-only MCP-over-SSH follow-on. It is now a full Sway-IPC mapping, including all documented requests and subscription events, only for an owned disposable headless child in explicit development mode; no dependency, server, SSH configuration, Pi state, or runtime implementation was changed. |
+| 2026-09-28T08:38:59+02:00 | Step 3.5 completed after explicit green light: a Python MCP 2.2.0 client used SSH-carried stdio to exercise the complete documented Sway 1.10.1 IPC mapping on an owned headless `luna-pi` child. Deterministic checks and the passing live test record all request/event mappings, observed workspace/tick/shutdown events, headless-fixture event limits, ambient-socket rejection, and cleanup. No listener, persistent service, live desktop attachment, rendered UI, or Luna compatibility claim was made. |
 ---
 
 ## Workline artifacts
@@ -189,7 +191,6 @@ See [the planning-only boundary](docs/0101_04_mycroft-context-boundary.md).
 
 ### Amendment log
 
-- `worklines/wyoh/docs/0000_08_mcp-over-ssh-validation-proposal.md` — prepared boundary, transport, tool surface, tests, and acceptance for the development-only MCP bridge.
 | Timestamp (`date`) | Update |
 |---|---|
 | 2026-09-25T23:10:00+02:00 | Added the planning-only Wyoh-to-Mycroft context boundary from the shared discussion. |
@@ -202,6 +203,9 @@ See [the planning-only boundary](docs/0101_04_mycroft-context-boundary.md).
 - `worklines/wyoh/docs/0201_01_sway-ipc-proof.md` — Step 2 pinned IPC protocol, fixture, passing evidence, and limits.
 - `test/wyoh/` — deterministic capability tests, live headless Sway proof, and Gherkin contract.
 - `worklines/wyoh/docs/0301_01_luna-pi-sway-result.md` — Pi-only board facts, Sway result, metrics, and limits.
+- `worklines/wyoh/docs/0000_08_mcp-over-ssh-validation-proposal.md` — prepared full Sway-IPC manifest, isolation boundary, tests, and acceptance for the development-only MCP bridge.
+- `worklines/wyoh/docs/0305_01_mcp-over-ssh-validation-result.md` — Step 3.5 implementation, live evidence, complete request/event matrix, and limits.
+- `worklines/wyoh/scripts/wyoh_mcp_server.py` — development-only full-IPC MCP stdio bridge; not a product server.
 - `worklines/wyoh/docs/0404_01_luna-production-base-deferred.md` — honest Step 4 defer decision and re-entry conditions.
 - `worklines/wyoh/docs/0405_02_luna-reachability-recheck.md` — failed read-only recheck and the resulting honest Step 4 boundary.
 - `worklines/wyoh/docs/0405_01_luna-stock-image-inventory.md` — physical Luna's preserved EmuELEC baseline and explicit evidence gaps.

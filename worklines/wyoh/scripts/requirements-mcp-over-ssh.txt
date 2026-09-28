@@ -1,0 +1,2 @@
+# Development-only Wyoh MCP-over-SSH validation. Pin exact SDK behaviour.
+mcp==2.2.0
