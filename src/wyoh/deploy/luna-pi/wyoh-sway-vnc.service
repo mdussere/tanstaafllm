@@ -1,0 +1,19 @@
+[Unit]
+Description=Wyoh-owned headless Sway and loopback-only WayVNC session
+
+[Service]
+Type=simple
+UnsetEnvironment=DISPLAY SWAYSOCK I3SOCK
+Environment=XDG_RUNTIME_DIR=%t
+Environment=WAYLAND_DISPLAY=wyoh-sway-vnc-0
+Environment=WLR_BACKENDS=headless
+Environment=WLR_HEADLESS_OUTPUTS=1
+Environment=WLR_RENDERER=pixman
+Environment=GDK_BACKEND=wayland
+Environment=LD_LIBRARY_PATH=/home/michael/.local/opt/wyoh-sway-1.10.1-test-20260926/usr/lib/aarch64-linux-gnu
+ExecStart=/home/michael/.local/share/tanstfaafllm/wyoh/deploy/luna-pi/run-sway-vnc.sh
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

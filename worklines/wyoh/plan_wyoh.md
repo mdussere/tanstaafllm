@@ -23,7 +23,7 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 
 - Plan: `worklines/wyoh/plan_wyoh.md`
 - Produced docs: `worklines/wyoh/docs/`
-- Scripts: `worklines/wyoh/scripts/` only after an explicit green light
+- Source: `src/wyoh/`; produced workline evidence remains under `worklines/wyoh/docs/`
 
 ## Goals ✅
 
@@ -111,7 +111,18 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - [x] 3.5.6 Used an official Python MCP client here to discover and exercise all advertised request, subscription, event-read, event-close, and lifecycle tools across SSH; host-tool registration remains deferred.
 - [x] 3.5.7 Acceptance: real MCP lifecycle passed; all requests/events are mapped and the seven headless-untriggerable event producers are explicitly recorded; no live socket attachment, listener, port, or service was used, and orderly child shutdown was observed.
 
+### Step 3.6 — Share one owned Sway session with MCP and WayVNC
+**Status**: ✅ Done — validated on `luna-pi` 2026-09-30; development-only evidence, not Luna/product evidence
+
+- [x] 3.6.1 Moved all executable Wyoh source and its pinned development requirements to `src/wyoh/`; updated references while preserving tests under `test/wyoh/`.
+- [x] 3.6.2 Added and exercised a reproducible, non-destructive `Makefile` deployment and preview path using `rsync` into a user-owned Pi directory. Deployment does not start, stop, enable, or disable a service.
+- [x] 3.6.3 Added and exercised the named loopback shared-session service. Its MCP reads only the fixed owner-written descriptor and continues to reject ambient and caller-supplied sockets.
+- [x] 3.6.4 Added and exercised server-side screenshot-to-file. It chooses an ignored result location and returns metadata/path only, never image bytes over MCP.
+- [x] 3.6.5 Added deterministic and `@pytest.mark.live` Gherkin-described checks. Preview is transport-only; MCP and WayVNC identify the same session; an MCP-launched client changes an independently captured VNC frame; screenshots remain out of agent context.
+- [x] 3.6.6 Acceptance: the session is loopback plus SSH only; the retained Labwc VNC unit is a documented recovery path; and MCP attachment is restricted to the fixed owned descriptor.
+
 ### Step 4 — Characterise Luna and choose the production base
+
 **Status**: 🧪 In progress — stock baseline captured; Luna was unreachable on the 2026-09-27 recheck
 
 - [x] 4.1 Recorded OS, RAM, framebuffer/DRM-visible nodes, input-node visibility, build identity, MMC/eMMC visibility, and Bluetooth exposure in `docs/0405_01_luna-stock-image-inventory.md` and `docs/0401_02_luna-storage-and-bluetooth.md`.
@@ -139,12 +150,14 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - ✅ Step 2 — Pre-hardware Sway-IPC proof passed.
 - ✅ Step 3 — Pi-specific Sway validation recorded.
 - ✅ Step 3.5 — Development-only full Sway-IPC MCP bridge validated over SSH.
+- ✅ Step 3.6 — Shared owned Sway, MCP, and WayVNC session validated.
 - 🧪 Step 4 — Physical Luna stock-image inventory in progress; production base remains unselected.
 - ⏳ Step 5 — Productise the selected agent-native workspace path.
 
 ---
 
 ## Time tracking (use `date`) ⏱️
+- ✅ Step 3.6 — Shared owned Sway, MCP, and WayVNC session.
 
 ```bash
 date
@@ -169,8 +182,9 @@ date
 | 2026-09-27T01:59:56+02:00 | Re-ran the pytest-owned, read-only stock inventory. SSH failed before any remote command with `No route to host`; the complete runner log and failed result are retained outside Git. Step 4 remains in progress and the production-base outcome remains defer. |
 | 2026-09-27T20:29:12+02:00 | Prepared a pending development-only MCP-over-SSH follow-on. It is now a full Sway-IPC mapping, including all documented requests and subscription events, only for an owned disposable headless child in explicit development mode; no dependency, server, SSH configuration, Pi state, or runtime implementation was changed. |
 | 2026-09-28T08:38:59+02:00 | Step 3.5 completed after explicit green light: a Python MCP 2.2.0 client used SSH-carried stdio to exercise the complete documented Sway 1.10.1 IPC mapping on an owned headless `luna-pi` child. Deterministic checks and the passing live test record all request/event mappings, observed workspace/tick/shutdown events, headless-fixture event limits, ambient-socket rejection, and cleanup. No listener, persistent service, live desktop attachment, rendered UI, or Luna compatibility claim was made. |
----
+| 2026-09-30 | Step 3.6 completed after explicit green light: a user-owned loopback Sway + WayVNC service was deployed through a previewable Make path; descriptor-bound MCP control, screenshot metadata, and an independent VNC frame change for an MCP-launched terminal passed. The retained Labwc unit remains the recovery path. |
 
+---
 ## Workline artifacts
 
 - `worklines/wyoh/docs/0000_01_wyoh-mandate.md` — source-discussion decisions and unresolved facts.
@@ -205,8 +219,10 @@ See [the planning-only boundary](docs/0101_04_mycroft-context-boundary.md).
 - `worklines/wyoh/docs/0301_01_luna-pi-sway-result.md` — Pi-only board facts, Sway result, metrics, and limits.
 - `worklines/wyoh/docs/0000_08_mcp-over-ssh-validation-proposal.md` — prepared full Sway-IPC manifest, isolation boundary, tests, and acceptance for the development-only MCP bridge.
 - `worklines/wyoh/docs/0305_01_mcp-over-ssh-validation-result.md` — Step 3.5 implementation, live evidence, complete request/event matrix, and limits.
-- `worklines/wyoh/scripts/wyoh_mcp_server.py` — development-only full-IPC MCP stdio bridge; not a product server.
+- `src/wyoh/wyoh_mcp_server.py` — development-only full-IPC MCP stdio bridge; not a product server.
 - `worklines/wyoh/docs/0404_01_luna-production-base-deferred.md` — honest Step 4 defer decision and re-entry conditions.
+- `worklines/wyoh/docs/0306_01_shared-sway-wayvnc-design.md` — ownership, deploy, attachment, VNC, screenshot, and recovery design for Step 3.6.
 - `worklines/wyoh/docs/0405_02_luna-reachability-recheck.md` — failed read-only recheck and the resulting honest Step 4 boundary.
+- `worklines/wyoh/docs/0306_03_shared-sway-wayvnc-result.md` — completed Step 3.6 deployment and same-session MCP/VNC evidence.
 - `worklines/wyoh/docs/0405_01_luna-stock-image-inventory.md` — physical Luna's preserved EmuELEC baseline and explicit evidence gaps.
 - `worklines/wyoh/docs/0401_02_luna-storage-and-bluetooth.md` — read-only eMMC-controller and Bluetooth-adapter observation on the preserved image.

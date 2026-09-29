@@ -1,0 +1,23 @@
+WYOH_HOST ?= luna-pi
+WYOH_REMOTE_ROOT ?= /home/michael/.local/share/tanstfaafllm/wyoh
+WYOH_UNIT ?= /home/michael/.config/systemd/user/wyoh-sway-vnc.service
+
+.PHONY: wyoh-deploy-preview wyoh-deploy wyoh-activate wyoh-rollback wyoh-status
+
+wyoh-deploy-preview:
+	rsync --archive --checksum --dry-run --mkpath --exclude '__pycache__/' src/wyoh/ $(WYOH_HOST):$(WYOH_REMOTE_ROOT)/
+	rsync --archive --checksum --dry-run --mkpath src/wyoh/deploy/luna-pi/wyoh-sway-vnc.service $(WYOH_HOST):$(WYOH_UNIT)
+
+wyoh-deploy:
+	rsync --archive --checksum --mkpath --exclude '__pycache__/' src/wyoh/ $(WYOH_HOST):$(WYOH_REMOTE_ROOT)/
+	rsync --archive --checksum --mkpath src/wyoh/deploy/luna-pi/wyoh-sway-vnc.service $(WYOH_HOST):$(WYOH_UNIT)
+	ssh $(WYOH_HOST) 'systemctl --user daemon-reload'
+
+wyoh-activate: wyoh-deploy
+	ssh $(WYOH_HOST) 'systemctl --user stop luna-vnc.service && systemctl --user disable luna-vnc.service && systemctl --user enable --now wyoh-sway-vnc.service'
+
+wyoh-rollback:
+	ssh $(WYOH_HOST) 'systemctl --user stop wyoh-sway-vnc.service && systemctl --user disable wyoh-sway-vnc.service && systemctl --user enable --now luna-vnc.service'
+
+wyoh-status:
+	ssh $(WYOH_HOST) 'systemctl --user --no-pager status wyoh-sway-vnc.service luna-vnc.service'

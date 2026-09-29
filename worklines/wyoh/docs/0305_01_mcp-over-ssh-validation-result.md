@@ -27,7 +27,7 @@ The full ignored evidence is `results/wyoh/mcp-over-ssh/20260928T063829Z/`; the 
 | Sway IPC reference | [Sway 1.10 IPC manual](https://github.com/swaywm/sway/blob/1.10/sway/sway-ipc.7.scd) |
 | Transport | `MCP client → stdin/stdout → ssh -T luna-pi → stdin/stdout → MCP server` |
 
-`worklines/wyoh/scripts/wyoh_mcp_server.py` starts only with `--full-ipc-development`. It removes inherited socket variables for the child, refuses `SWAYSOCK` or `I3SOCK` in its own environment, starts its own Pixman/headless Sway child, discovers only that child’s Unix socket, and stops it in `finally`. The bridge does not accept a socket pathname as input.
+At validation time, the bridge was at `worklines/wyoh/scripts/wyoh_mcp_server.py`; it now lives at `src/wyoh/wyoh_mcp_server.py`. The validated ephemeral mode starts only with `--full-ipc-development`, removes inherited socket variables for its child, refuses `SWAYSOCK` or `I3SOCK`, discovers only its child socket, and stops it in `finally`.
 
 The remote MCP dependency is a deliberately isolated development venv because the Pi’s system Python is externally managed. No system package, SSH configuration, listener, or service was installed.
 

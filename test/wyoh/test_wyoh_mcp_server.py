@@ -9,7 +9,8 @@ from typing import Any
 import pytest
 
 
-SCRIPTS = Path(__file__).parents[2] / "worklines" / "wyoh" / "scripts"
+SCRIPTS = Path(__file__).parents[2] / "src" / "wyoh"
+MAKEFILE = Path(__file__).parents[2] / "Makefile"
 sys.path.insert(0, str(SCRIPTS))
 import wyoh_mcp_server as server  # noqa: E402
 
@@ -133,6 +134,7 @@ def test_tool_discovery_exposes_every_request_and_subscription_operation() -> No
         "sway_next_event",
         "sway_unsubscribe",
         "wyoh_server_status",
+        "wyoh_capture_screenshot",
         "wyoh_stop_owned_child_for_test",
     }
 
@@ -142,7 +144,27 @@ def test_main_refuses_an_ambient_sway_socket_before_starting_a_child(monkeypatch
     monkeypatch.setattr(
         server,
         "_arguments",
-        lambda: SimpleNamespace(full_ipc_development=True, sway_binary="unused", library_path="unused"),
+        lambda: SimpleNamespace(
+            full_ipc_development=True,
+            shared_vnc_session=False,
+            sway_binary="unused",
+            library_path="unused",
+        ),
     )
     with pytest.raises(SystemExit, match="ambient Sway socket"):
         server.main()
+
+
+def test_shared_session_requires_the_fixed_owner_written_descriptor(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+    session = server.SharedVncSwaySession(tmp_path / "missing.json")
+    with pytest.raises(server.SwayIPCError, match="not ready"):
+        session.start()
+
+
+def test_deployment_preview_is_transport_only_and_cannot_manage_a_service() -> None:
+    makefile = MAKEFILE.read_text(encoding="utf-8")
+    target = makefile.split("wyoh-deploy-preview:\n", 1)[1].split("\nwyoh-deploy:\n", 1)[0]
+    assert target.count("rsync ") == 2
+    assert target.count("--dry-run") == 2
+    assert "systemctl" not in target

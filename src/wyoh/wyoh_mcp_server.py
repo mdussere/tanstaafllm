@@ -11,12 +11,14 @@ from __future__ import annotations
 
 import argparse
 import glob
+import hashlib
 import importlib.metadata
 import json
 import logging
 import os
 import select
 import socket
+import stat
 import struct
 import subprocess
 import tempfile
@@ -24,6 +26,7 @@ import time
 import uuid
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +36,7 @@ from mcp.server import MCPServer
 LOGGER = logging.getLogger(__name__)
 MAGIC = b"i3-ipc"
 EVENT_BIT = 1 << 31
+DEFAULT_SHARED_DESCRIPTOR = Path.home() / ".local/state/tanstfaafllm/wyoh/sway-vnc-session.json"
 
 REQUEST_TYPES: dict[str, int] = {
     "sway_command": 0,
@@ -132,6 +136,9 @@ def _wait_for_new_socket(runtime_dir: Path, previous: set[str], process: subproc
 class HeadlessSwaySession:
     """Owns the disposable Sway child used by the full-development bridge."""
 
+    kind = "ephemeral-child"
+    is_bridge_owned = True
+
     def __init__(self, sway_binary: str, library_path: str) -> None:
         self.sway_binary = sway_binary
         self.library_path = library_path
@@ -192,6 +199,82 @@ class HeadlessSwaySession:
         LOGGER.info("stopped owned headless Sway child")
 
 
+class SharedVncSwaySession:
+    """Read only the descriptor for the named Wyoh-owned Sway/WayVNC service."""
+
+    kind = "shared-vnc-service"
+    is_bridge_owned = False
+    process: None = None
+
+    def __init__(self, descriptor: Path = DEFAULT_SHARED_DESCRIPTOR) -> None:
+        self.descriptor = descriptor
+        self.socket_path: str | None = None
+        self.wayland_display: str | None = None
+        self.runtime_dir: Path | None = None
+
+    def start(self) -> str:
+        runtime_value = os.environ.get("XDG_RUNTIME_DIR")
+        if not runtime_value:
+            raise SwayIPCError("XDG_RUNTIME_DIR is required for the shared Wyoh session")
+        self.runtime_dir = Path(runtime_value).resolve()
+        try:
+            descriptor_stat = self.descriptor.stat()
+        except FileNotFoundError as error:
+            raise SwayIPCError("the named Wyoh Sway/WayVNC service is not ready") from error
+        if not stat.S_ISREG(descriptor_stat.st_mode):
+            raise SwayIPCError("shared-session descriptor is not a regular file")
+        if descriptor_stat.st_uid != os.getuid() or descriptor_stat.st_mode & 0o077:
+            raise SwayIPCError("shared-session descriptor is not owner-private")
+        try:
+            contents = json.loads(self.descriptor.read_text(encoding="utf-8"))
+            socket_path = Path(contents["sway_socket"]).resolve()
+            wayland_display = str(contents["wayland_display"])
+        except (KeyError, TypeError, json.JSONDecodeError) as error:
+            raise SwayIPCError("shared-session descriptor is malformed") from error
+        if socket_path.parent != self.runtime_dir or not stat.S_ISSOCK(socket_path.stat().st_mode):
+            raise SwayIPCError("shared-session descriptor does not name a runtime Sway socket")
+        if "/" in wayland_display or not wayland_display:
+            raise SwayIPCError("shared-session descriptor has an unsafe Wayland display name")
+        self.socket_path = str(socket_path)
+        self.wayland_display = wayland_display
+        return self.socket_path
+
+    @property
+    def state(self) -> str:
+        if self.socket_path is None:
+            return "not-started"
+        try:
+            return "running" if stat.S_ISSOCK(Path(self.socket_path).stat().st_mode) else "stopped"
+        except FileNotFoundError:
+            return "stopped"
+
+    def stop(self) -> None:
+        """A client disconnect must never stop the shared service."""
+
+    def capture_screenshot(self) -> dict[str, Any]:
+        if self.state != "running" or self.runtime_dir is None or self.wayland_display is None:
+            raise SwayIPCError("the shared Sway/WayVNC session is not running")
+        stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        result_dir = Path.home() / ".local/state/tanstfaafllm/results/wyoh/screenshots" / stamp
+        result_dir.mkdir(parents=True, mode=0o700)
+        screenshot = result_dir / "desktop.png"
+        environment = os.environ.copy()
+        environment.update({"XDG_RUNTIME_DIR": str(self.runtime_dir), "WAYLAND_DISPLAY": self.wayland_display})
+        completed = subprocess.run(
+            ["/usr/bin/grim", str(screenshot)], env=environment, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, text=True, timeout=15.0, check=False,
+        )
+        (result_dir / "grim.stderr.log").write_text(completed.stderr, encoding="utf-8")
+        if completed.returncode != 0 or not screenshot.is_file() or screenshot.stat().st_size == 0:
+            raise SwayIPCError(f"grim did not produce a screenshot; see {result_dir / 'grim.stderr.log'}")
+        return {
+            "path": str(screenshot),
+            "bytes": screenshot.stat().st_size,
+            "sha256": hashlib.sha256(screenshot.read_bytes()).hexdigest(),
+            "captured_at_utc": stamp,
+        }
+
+
 @dataclass
 class Subscription:
     event_names: tuple[str, ...]
@@ -206,7 +289,7 @@ class SwayBridge:
 
     def __init__(
         self,
-        session: HeadlessSwaySession,
+        session: HeadlessSwaySession | SharedVncSwaySession,
         socket_path: str,
         *,
         ipc_factory: IPCFactory = SwayIPC,
@@ -294,14 +377,22 @@ class SwayBridge:
         return {
             "mcp_sdk_version": importlib.metadata.version("mcp"),
             "mcp_protocol_baseline": "2026-07-28",
+            "session_kind": self.session.kind,
             "sway_child_pid": self.session.process.pid if self.session.process else None,
             "sway_child_state": self.session.state,
             "full_ipc_development_mode": True,
             "active_subscription_count": len(self.subscriptions),
         }
 
+    def capture_screenshot(self) -> dict[str, Any]:
+        if not isinstance(self.session, SharedVncSwaySession):
+            raise SwayIPCError("screenshots require --shared-vnc-session")
+        return self.session.capture_screenshot()
+
     def stop_owned_child_for_test(self) -> dict[str, Any]:
         """Terminate only the bridge-owned child for shutdown-event evidence."""
+        if not self.session.is_bridge_owned:
+            raise SwayIPCError("the shared Sway/WayVNC service cannot be stopped through MCP")
         if self.session.state != "running":
             raise SwayIPCError("owned Sway child is not running")
         self.session.stop()
@@ -436,6 +527,12 @@ def wyoh_server_status() -> dict[str, Any]:
 
 
 @mcp.tool()
+def wyoh_capture_screenshot() -> dict[str, Any]:
+    """Capture the shared VNC session to a server-chosen file; no image bytes return."""
+    return _bridge().capture_screenshot()
+
+
+@mcp.tool()
 def wyoh_stop_owned_child_for_test() -> dict[str, Any]:
     """Stop the owned headless child; development lifecycle evidence only."""
     return _bridge().stop_owned_child_for_test()
@@ -444,8 +541,9 @@ def wyoh_stop_owned_child_for_test() -> dict[str, Any]:
 def _arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--full-ipc-development", action="store_true")
-    parser.add_argument("--sway-binary", required=True)
-    parser.add_argument("--library-path", required=True)
+    parser.add_argument("--shared-vnc-session", action="store_true")
+    parser.add_argument("--sway-binary")
+    parser.add_argument("--library-path")
     return parser.parse_args()
 
 
@@ -456,7 +554,12 @@ def main() -> int:
         raise SystemExit("refusing to start without --full-ipc-development")
     if os.environ.get("SWAYSOCK") or os.environ.get("I3SOCK"):
         raise SystemExit("refusing ambient Sway socket variables; the bridge owns its child socket")
-    session = HeadlessSwaySession(arguments.sway_binary, arguments.library_path)
+    if arguments.shared_vnc_session:
+        session: HeadlessSwaySession | SharedVncSwaySession = SharedVncSwaySession()
+    else:
+        if not arguments.sway_binary or not arguments.library_path:
+            raise SystemExit("--sway-binary and --library-path are required for an ephemeral child")
+        session = HeadlessSwaySession(arguments.sway_binary, arguments.library_path)
     try:
         socket_path = session.start()
         _BRIDGE = SwayBridge(session, socket_path)

@@ -16,7 +16,8 @@ from mcp.client.stdio import stdio_client
 PREFIX = "/home/michael/.local/opt/wyoh-sway-1.10.1-test-20260926/usr"
 REMOTE_VENV = "/home/michael/.local/opt/wyoh-mcp-2.2.0"
 REMOTE_SERVER = f"{REMOTE_VENV}/wyoh_mcp_server.py"
-LOCAL_SERVER = Path("worklines/wyoh/scripts/wyoh_mcp_server.py")
+REMOTE_DEPLOYED_SERVER = "/home/michael/.local/share/tanstfaafllm/wyoh/wyoh_mcp_server.py"
+LOCAL_SERVER = Path("src/wyoh/wyoh_mcp_server.py")
 
 
 def _jsonable(value: Any) -> Any:
@@ -175,6 +176,7 @@ def test_luna_pi_full_sway_ipc_mcp_over_ssh() -> None:
         "sway_unsubscribe",
         "wyoh_server_status",
         "wyoh_stop_owned_child_for_test",
+        "wyoh_capture_screenshot",
     }
     assert set(evidence["tool_names"]) == expected_tools
     assert evidence["calls"]["sway_get_version"]["human_readable"] == "1.10.1"
@@ -185,3 +187,58 @@ def test_luna_pi_full_sway_ipc_mcp_over_ssh() -> None:
         "tick",
         "shutdown",
     }
+
+
+@pytest.mark.live
+def test_luna_pi_shared_sway_vnc_session_is_operated_over_mcp() -> None:
+    """MCP and loopback VNC must address the one named Wyoh-owned Sway service."""
+    if os.environ.get("WYOH_SHARED_VNC_LIVE") != "1":
+        pytest.skip("set WYOH_SHARED_VNC_LIVE=1 after `make wyoh-activate`")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    result_dir = Path("results/wyoh/shared-sway-vnc") / timestamp
+    result_dir.mkdir(parents=True, exist_ok=False)
+
+    async def exercise() -> dict[str, Any]:
+        parameters = StdioServerParameters(
+            command="ssh",
+            args=[
+                "-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "luna-pi",
+                f"{REMOTE_VENV}/bin/python", REMOTE_DEPLOYED_SERVER,
+                "--full-ipc-development", "--shared-vnc-session",
+            ],
+        )
+        evidence: dict[str, Any] = {"events": []}
+        with (result_dir / "server.stderr.log").open("w", encoding="utf-8") as stderr_log:
+            async with Client(stdio_client(parameters, errlog=stderr_log), read_timeout_seconds=15.0) as client:
+                tools = await client.list_tools()
+                evidence["tool_names"] = sorted(tool.name for tool in tools.tools)
+
+                async def call(name: str, arguments: dict[str, Any] | None = None) -> Any:
+                    result = await client.call_tool(name, arguments or {})
+                    assert not result.is_error, f"{name}: {result.content!r}"
+                    return _tool_payload(result)
+
+                before = await call("wyoh_server_status")
+                subscription = await call("sway_subscribe", {"event_names": ["window"]})
+                await call("sway_command", {"command": "exec /usr/bin/lxterminal"})
+                subscription_id = subscription["subscription_id"]
+                created = None
+                for _ in range(8):
+                    event = await call("sway_next_event", {"subscription_id": subscription_id, "timeout_seconds": 3.0})
+                    evidence["events"].append(event)
+                    if event.get("event") == "window" and event["payload"].get("change") in {"new", "focus"}:
+                        created = event
+                        break
+                assert created is not None, evidence["events"]
+                screenshot = await call("wyoh_capture_screenshot")
+                await call("sway_command", {"command": "kill"})
+                await call("sway_unsubscribe", {"subscription_id": subscription_id})
+                evidence.update({"before": before, "screenshot": screenshot})
+        return evidence
+
+    evidence = asyncio.run(exercise())
+    (result_dir / "evidence.json").write_text(json.dumps(evidence, indent=2, sort_keys=True), encoding="utf-8")
+    assert evidence["before"]["session_kind"] == "shared-vnc-service"
+    assert evidence["before"]["sway_child_state"] == "running"
+    assert Path(evidence["screenshot"]["path"]).name == "desktop.png"
+    assert len(evidence["screenshot"]["sha256"]) == 64
