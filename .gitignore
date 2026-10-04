@@ -221,3 +221,4 @@ __marimo__/
 
 # Persisted live-test evidence
 results/
+/data
