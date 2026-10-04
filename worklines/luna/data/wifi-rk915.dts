@@ -1,0 +1,88 @@
+// Luna Step 5.8 — R36 Ultra RK915 SDIO Wi-Fi overlay for ArchR's
+// rk3326-gameconsole-eeclone base DTB (confirmed live: model "R36S Clone",
+// uboot.hwid_adc=b,512).
+//
+// ArchR describes mmc@ff380000 ("sdio") as a second SD slot whose card detect
+// is GPIO0_A2. On this board GPIO0_A2 is the RK915 chip enable (factory DTB:
+// wireless-wlan WIFI,poweren_gpio = <&gpio0 2 GPIO_ACTIVE_HIGH>), which the
+// mainline kernel never drives because it has no wlan-platdata driver.
+//
+// v1 (tested 2026-10-03): pwrseq + non-removable. The chip enumerated
+//   (mmc2:0001, 0296:5348) and rk915 loaded, but the firmware never reported
+//   ready ("download firmware failed").
+// v2: add supports-rk912, the property ArchR's kernel patch
+//   024-mainline-linux-hacks-for-rk915.patch keys its RK915 quirks on
+//   (continuous SDIO clock, CMD52 waits for DAT busy, short CIS FUNCE), plus
+//   the driver's host-wake child node. Pattern: AveyondFly/rk915
+//   docs/mainline-linux-dts-example.dtsi (ArchR's pinned driver source).
+//   v2 on Luna (2026-10-04): firmware now uploads and starts, but every
+//   interface-up fails with "No reset complete" / "umac init failed": the
+//   driver receives chip events only through the host-wake GPIO, and GPIO0_A5
+//   never fired.
+// v3: host wake on GPIO0_A1, as in Luna's factory wireless-wlan node
+//   (WIFI,host_wake_irq = <&gpio0 1 GPIO_ACTIVE_HIGH>).
+//
+// Compile: dtc -@ -I dts -O dtb -o wifi-rk915.dtbo wifi-rk915.dts
+/dts-v1/;
+/plugin/;
+
+/ {
+	fragment@0 {
+		target-path = "/";
+		__overlay__ {
+			sdio_pwrseq: sdio-pwrseq {
+				compatible = "mmc-pwrseq-simple";
+				pinctrl-names = "default";
+				pinctrl-0 = <&wifi_enable_h>;
+				/* active low: reset released = GPIO0_A2 driven high = chip enabled */
+				reset-gpios = <&gpio0 2 1>;
+				post-power-on-delay-ms = <200>;
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <&pinctrl>;
+		__overlay__ {
+			sdio-pwrseq {
+				wifi_enable_h: wifi-enable-h {
+					/* bank 0, pin 2 (A2), RK_FUNC_GPIO */
+					rockchip,pins = <0 2 0 &pcfg_pull_none>;
+				};
+
+				wifi_host_wake_l: wifi-host-wake-l {
+					/* bank 0, pin 1 (A1), RK_FUNC_GPIO */
+					rockchip,pins = <0 1 0 &pcfg_pull_down>;
+				};
+			};
+		};
+	};
+
+	fragment@2 {
+		target = <&sdio>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			non-removable;
+			no-sd;
+			no-mmc;
+			supports-rk912;
+			cap-sdio-irq;
+			keep-power-in-suspend;
+			mmc-pwrseq = <&sdio_pwrseq>;
+			/* factory value; ArchR's 100 MHz is an SD-card setting */
+			max-frequency = <50000000>;
+
+			wifi@1 {
+				compatible = "rockchip,rk915";
+				reg = <1>;
+				interrupt-parent = <&gpio0>;
+				/* GPIO0_A1; the driver requests a rising edge itself */
+				interrupts = <1 4>;
+				interrupt-names = "host-wake";
+				pinctrl-names = "default";
+				pinctrl-0 = <&wifi_host_wake_l>;
+			};
+		};
+	};
+};
