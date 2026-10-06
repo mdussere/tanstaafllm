@@ -1,0 +1,29 @@
+# Wyoh gamepad daemon on Luna (Step 5). Intent: worklines/wyoh/docs/0500_01.
+# Every mapping default lives in wyoh_gamepad.Config; this file holds what is
+# specific to the device. Unknown keys are refused at start.
+
+# The real gamepad and the development "person" (MCP virtual gamepad).
+devices = ["r36s_Gamepad", "wyoh-virtual-gamepad"]
+grab = true
+
+# Start opens the application menu (Alt+d's menu in sway.conf).
+menu_command = "fuzzel --config /storage/.local/share/tanstfaafllm/wyoh/deploy/luna/fuzzel.ini"
+
+# The input zone: a one-line fuzzel prompt (no list); Return prints the text.
+zone_command = [
+    "fuzzel", "--config", "/storage/.local/share/tanstfaafllm/wyoh/deploy/luna/fuzzel.ini",
+    "--dmenu", "--prompt-only", "Input: ", "--placeholder", "L2 send, L1 cancel",
+    "--width", "26",
+]
+
+# Paced delivery into the window that had focus (bemenu-style clients drop
+# keys typed faster than they load the keymap).
+deliver_command = ["wtype", "-s", "100", "-d", "10", "--"]
+
+[pointer]
+dead_zone = 0.12
+max_speed = 900.0
+gamma = 2.0
+# The DSI panel refreshes at about 54.5 Hz; faster pointer updates are wasted.
+tick_hz = 60.0
+axis_max = 1800.0

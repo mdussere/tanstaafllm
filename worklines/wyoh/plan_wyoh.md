@@ -177,7 +177,7 @@ Target: the disposable ArchR card (ArchR 20260709, kernel 6.12.94, root SSH `lun
 - [ ] 4.8.5 The user confirms the menu and windows on the physical panel now that Sway renders through Mali.
 
 ### Step 5 — Device interactors: drive Luna with its own controls
-**Status**: 📋 Intent written 2026-10-07 (promoted from sub-step 4.9 to its own step at the user's request) — awaiting the user's review of its open points and **🟩 go Step 5**; development-only
+**Status**: 🧪 Built and proven in simulation 2026-10-07 — the button-only scenario passes through MCP after a cold boot into the session ([result](docs/0506_01_buttons-only-result.md)); awaiting the user's physical check (5.7). Green-lit 2026-10-07 ("work in full autonomy; use Gherkin tests and MCP to simulate the human operations"). **Acceptance set by the user: Luna can be operated with only the buttons and the input zone, and boots into the session.** Development-only
 
 **Contract change:** the ratified Step 1 boundary treated buttons as attention/recovery controls only. By user direction, the device's controls become the primary interaction on Luna, and keyboard text later moves to voice through an input zone.
 
@@ -201,14 +201,15 @@ Hardware facts (read-only, `r36s_Gamepad`, `/dev/input/event7`): 17 buttons (`BT
 Intent (behaviour, states, failure modes, budget, tests): [`docs/0500_01_gamepad-input-intent.md`](docs/0500_01_gamepad-input-intent.md). Sub-steps run in this order; each ends with its tests passing and, where it has a visible effect, inspected screenshots.
 
 - [x] 5.0 Intent written before any code (2026-10-07); four open points listed in it for the user.
-- [ ] 5.1 **Calibration (user-assisted, read-only).** A pytest probe asks the user to press each control and records evdev codes and stick polarity. Updates the intent's mapping if a label differs. Nothing is grabbed or installed.
-- [ ] 5.2 **Core state machine, offline.** Mapping, zone states, recovery timer and pointer curve as pure code with deterministic tests (every mapping row in both modes, zone validate/discard/empty/target-gone/re-entrance, recovery timing, invalid config). No device access.
-- [ ] 5.3 **Device adapters.** Gamepad discovery, read and grab; persistent uinput keyboard and mouse; select() loop with zero CPU at rest. Live check against a virtual gamepad on Luna: keys and pointer reach Sway; stopping the daemon releases the grab.
-- [ ] 5.4 **Input zone.** fuzzel one-line zone, Sway target capture and refocus, paced `wtype` delivery; status file. Live check with marker-file side effects for deliver-once and discard.
-- [ ] 5.5 **Service and deployment.** `wyoh-gamepad.service` (PartOf the Sway unit), `gamepad.toml`, Make targets; measure RSS and CPU at rest and with the stick deflected.
-- [ ] 5.6 **Virtual-gamepad scenario.** Gherkin + pytest end to end on Luna's panel with inspected MCP screenshots, as in the intent's testing policy.
-- [ ] 5.7 **User check** on the physical controls, panel in view; record the result in `docs/0507_01_gamepad-input-result.md`.
-- [ ] 5.8 Acceptance as in the intent: every control works through the real gamepad; the zone delivers once and discards cleanly; recovery works; stopping the daemon returns the gamepad to ArchR; tests pass; budget holds.
+- [x] 5.1 **Calibration from the device tree (read-only, 2026-10-07).** `/proc/device-tree/joypad/sw*` labels every button: A = `BTN_EAST`, B = `BTN_SOUTH`, X = `BTN_NORTH`, Y = `BTN_WEST`, FN = `BTN_MODE`, L1/L2/R1/R2 = `BTN_TL/TL2/TR/TR2`. The intent was corrected (it had assumed A = `BTN_SOUTH`). Stick polarity and the physical labels are confirmed in 5.7.
+- [x] 5.2 **Core state machine, offline.** Mapping, zone states, recovery timer and pointer curve as pure code with deterministic tests (every mapping row in both modes, zone validate/discard/empty/target-gone/re-entrance, recovery timing, invalid config). No device access.
+- [x] 5.3 **Device adapters.** Gamepad discovery, read and grab; persistent uinput keyboard and mouse; select() loop with zero CPU at rest. Live check against a virtual gamepad on Luna: keys and pointer reach Sway; stopping the daemon releases the grab.
+- [x] 5.4 **Input zone.** fuzzel one-line zone, Sway target capture and refocus, paced `wtype` delivery; status file. Live check with marker-file side effects for deliver-once and discard.
+- [x] 5.5 **Service and deployment.** `wyoh-gamepad.service` (PartOf the Sway unit), `gamepad.toml`, Make targets; measure RSS and CPU at rest and with the stick deflected.
+- [x] 5.6 **Button-only scenario through MCP.** Development MCP tools create a virtual gamepad and keyboard (the person); the daemon serves it alongside the real gamepad. Gherkin + pytest end to end on Luna's panel with inspected MCP screenshots, as in the intent's testing policy.
+- [ ] 5.7 **User check** on the physical controls, panel in view; record the result in `docs/0507_01_gamepad-input-result.md`. *Pending: the only open item.*
+- [x] 5.8 **Boot into the session (user requirement, 2026-10-07: "we must stop landing on terminal on boot").** Enable `wyoh-sway.service` and `wyoh-gamepad.service` in the boot target the card uses today (`textmode.target`, set by the Luna workline in `extlinux.conf`), through `[Install]` sections and links under `/storage/.config/system.d`, without touching the boot partition. The Mali driver step runs before Sway; the tty1 shell stays underneath as a fallback. Verified by a real reboot: the panel shows the session with no SSH action. Removing the links restores the text-console boot.
+- [ ] 5.9 Acceptance as in the intent, plus booting straight into the session: every control works through the real gamepad; the zone delivers once and discards cleanly; recovery works; stopping the daemon returns the gamepad to ArchR; tests pass; budget holds.
 
 ### Step 6 — Productise only the selected agent-native workspace path
 **Status**: ⏳ Pending
@@ -231,7 +232,7 @@ Intent (behaviour, states, failure modes, budget, tests): [`docs/0500_01_gamepad
 - ⚠️ Step 3.6 — Shared owned Sway, MCP, and WayVNC session; rendered-client proof invalid (corrected 2026-10-04).
 - ✅ Step 3.7 — Minimal workable Sway environment operated through MCP, with inspected screenshots.
 - 🧪 Step 4 — Physical Luna stock-image inventory in progress; production base remains unselected.
-- 📋 Step 5 — Device interactors (gamepad daemon, input zone); intent written, awaiting green light.
+- 🧪 Step 5 — Device interactors: built, proven in simulation, boots into the session; awaiting the user's physical check.
 - ⏳ Step 6 — Productise the selected agent-native workspace path.
 
 ---
@@ -272,6 +273,7 @@ date
 | 2026-10-07 | User decision: Luna's session stays root (single-user device, no keyboard, no password login). Recorded in key decisions and in the Luna note. |
 | 2026-10-07 | Proposed Step 4.9 (gamepad daemon, mapping table, input zone owned by Wyoh for now) from the user's decisions and a read-only gamepad inventory; awaiting green light. |
 | 2026-10-07 | Promoted the device-controls work from sub-step 4.9 to its own **Step 5 — Device interactors** (user request); the former Step 5 (productise) is now Step 6. Intent renamed `0500_01`. |
+| 2026-10-07 | Step 5 built autonomously: gamepad daemon (49 core tests), MCP-simulated person, button-only scenario passed with 20 inspected screenshots, budget met after optimisation (17.5 MB, 0 ticks at rest, 3.8% with the stick), boot straight into the session with Mali (PATH bug fixed). User check 5.7 pending. |
 
 ---
 
@@ -326,6 +328,7 @@ Luna evidence (Step 4):
 - `worklines/wyoh/docs/0401_02_luna-storage-and-bluetooth.md` — read-only eMMC-controller and Bluetooth-adapter observation on the stock image.
 - `worklines/wyoh/docs/0404_01_luna-production-base-deferred.md` — historical Step 4 defer decision and re-entry conditions.
 - `worklines/wyoh/docs/0405_01_luna-stock-image-inventory.md` — physical Luna's EmuELEC baseline and explicit evidence gaps.
+- `worklines/wyoh/docs/0506_01_buttons-only-result.md` — Step 5 result: daemon, mapping, button-only scenario (20 inspected steps), boot into the session, cost, findings.
 - `worklines/wyoh/docs/0500_01_gamepad-input-intent.md` — Step 5 intent: gamepad mapping, pointer, input zone, recovery, failure modes, budget, tests.
 - `worklines/wyoh/docs/0408_01_luna-fuzzel-menu.md` — Step 4.8 fuzzel menu, interactions, evidence, GPU-driver correction.
 - `worklines/wyoh/docs/0407_01_luna-real-display-session.md` — Step 4.7: the Step 3.7 session on Luna's panel with ArchR's Sway 1.11, MCP scenario, cost, and findings.

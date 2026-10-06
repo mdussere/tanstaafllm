@@ -26,8 +26,9 @@ wyoh-status:
 WYOH_LUNA_HOST ?= luna
 WYOH_LUNA_ROOT ?= /storage/.local/share/tanstfaafllm/wyoh
 WYOH_LUNA_UNIT ?= /storage/.config/system.d/wyoh-sway.service
+WYOH_LUNA_GAMEPAD_UNIT ?= /storage/.config/system.d/wyoh-gamepad.service
 
-.PHONY: wyoh-luna-deploy-preview wyoh-luna-deploy wyoh-luna-start wyoh-luna-stop wyoh-luna-status
+.PHONY: wyoh-luna-deploy-preview wyoh-luna-deploy wyoh-luna-start wyoh-luna-stop wyoh-luna-status wyoh-luna-enable wyoh-luna-disable
 
 wyoh-luna-deploy-preview:
 	rsync --archive --no-owner --no-group --checksum --dry-run --itemize-changes --mkpath --exclude '__pycache__/' src/wyoh/ $(WYOH_LUNA_HOST):$(WYOH_LUNA_ROOT)/
@@ -36,13 +37,22 @@ wyoh-luna-deploy-preview:
 wyoh-luna-deploy:
 	rsync --archive --no-owner --no-group --checksum --mkpath --exclude '__pycache__/' src/wyoh/ $(WYOH_LUNA_HOST):$(WYOH_LUNA_ROOT)/
 	rsync --archive --no-owner --no-group --checksum --mkpath src/wyoh/deploy/luna/wyoh-sway.service $(WYOH_LUNA_HOST):$(WYOH_LUNA_UNIT)
+	rsync --archive --no-owner --no-group --checksum --mkpath src/wyoh/deploy/luna/wyoh-gamepad.service $(WYOH_LUNA_HOST):$(WYOH_LUNA_GAMEPAD_UNIT)
 	ssh $(WYOH_LUNA_HOST) 'systemctl daemon-reload'
 
 wyoh-luna-start: wyoh-luna-deploy
-	ssh $(WYOH_LUNA_HOST) 'systemctl start wyoh-sway.service'
+	ssh $(WYOH_LUNA_HOST) 'systemctl start wyoh-sway.service wyoh-gamepad.service'
 
 wyoh-luna-stop:
-	ssh $(WYOH_LUNA_HOST) 'systemctl stop wyoh-sway.service'
+	ssh $(WYOH_LUNA_HOST) 'systemctl stop wyoh-gamepad.service wyoh-sway.service'
 
 wyoh-luna-status:
-	ssh $(WYOH_LUNA_HOST) 'systemctl --no-pager status wyoh-sway.service sway.service essway.service seatd.service'
+	ssh $(WYOH_LUNA_HOST) 'systemctl --no-pager status wyoh-sway.service wyoh-gamepad.service sway.service essway.service seatd.service'
+
+# Boot into the Wyoh session (Step 5.8): links under /storage/.config/system.d,
+# the same mechanism the Luna workline uses for /home. The boot partition is not touched.
+wyoh-luna-enable: wyoh-luna-deploy
+	ssh $(WYOH_LUNA_HOST) 'cd /storage/.config/system.d && mkdir -p textmode.target.wants wyoh-sway.service.wants && ln -sfn ../wyoh-sway.service textmode.target.wants/wyoh-sway.service && ln -sfn ../wyoh-gamepad.service wyoh-sway.service.wants/wyoh-gamepad.service && systemctl daemon-reload'
+
+wyoh-luna-disable:
+	ssh $(WYOH_LUNA_HOST) 'cd /storage/.config/system.d && rm -f textmode.target.wants/wyoh-sway.service wyoh-sway.service.wants/wyoh-gamepad.service && rmdir --ignore-fail-on-non-empty textmode.target.wants wyoh-sway.service.wants && systemctl daemon-reload'

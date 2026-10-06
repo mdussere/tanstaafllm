@@ -2,7 +2,9 @@
 
 **Question answered:** What exactly is built so that Luna's session is used through the device's own controls, before any code is written?<br>
 **Step:** Wyoh 5 — Device interactors<br>
-**Status:** intent for review, 2026-10-07. No implementation until **🟩 go Step 5**.<br>
+**Status:** green-lit 2026-10-07 (user: "commit the workline before starting, then work in full autonomy; use Gherkin tests and MCP to simulate the human operations"). Revised the same day: device-tree codes, button-only operation, defaults for the open points.<br>
+**Acceptance set by the user:** at the end of this step, Luna can be operated with **only the buttons and the input zone**.<br>
+**Also required by the user:** Luna boots straight into the Wyoh session, not the text console. Wyoh enables its two units in the current boot target (`textmode.target`) and leaves the boot partition alone.<br>
 **Decisions it rests on (user, 2026-10-07):** a small Wyoh daemon rather than `gptokeyb`; the input zone is Wyoh's for now; Y = Backspace; R1/R2 = quick linear navigation, approximated by Tab / Shift+Tab; the session stays root.
 
 ## Purpose
@@ -17,7 +19,7 @@ Not in scope: major modes on Select/Start/FN; the right stick; voice or AI input
 
 ## Device facts (read-only inventory, 2026-10-07)
 
-`r36s_Gamepad` (`/dev/input/event7`, `archr-singleadc-joypad`): 17 buttons (`BTN_DPAD_UP/DOWN/LEFT/RIGHT`, `BTN_SOUTH/EAST/NORTH/WEST`, `BTN_TL/TR/TL2/TR2`, `BTN_SELECT/START/MODE`, `BTN_THUMBL/THUMBR`) and 4 axes (`ABS_X/Y`, `ABS_RX/RY`, range −1800…1800, fuzz and flat 32). The labels on the device (which code is X and which is Y, whether FN is `BTN_MODE`, stick polarity) are **assumed until the calibration sub-step confirms them**.
+`r36s_Gamepad` (`/dev/input/event7`, `archr-singleadc-joypad`): 17 buttons (`BTN_DPAD_UP/DOWN/LEFT/RIGHT`, `BTN_SOUTH/EAST/NORTH/WEST`, `BTN_TL/TR/TL2/TR2`, `BTN_SELECT/START/MODE`, `BTN_THUMBL/THUMBR`) and 4 axes (`ABS_X/Y`, `ABS_RX/RY`, range −1800…1800, fuzz and flat 32). The device tree (`/proc/device-tree/joypad/sw*`, read-only, 2026-10-07) labels every button: A = `BTN_EAST`, B = `BTN_SOUTH`, X = `BTN_NORTH`, Y = `BTN_WEST`, L1 = `BTN_TL` (`TOP-LEFT`), R1 = `BTN_TR`, L2 = `BTN_TL2`, R2 = `BTN_TR2`, Select = `BTN_SELECT`, Start = `BTN_START`, FN = `BTN_MODE` (`BTN_FN` label), L3/R3 = `BTN_THUMBL/THUMBR`, D-pad = `BTN_DPAD_*`. Stick polarity (the node has `invert-absx`/`invert-absy`) is confirmed in the user check.
 
 ArchR's `input_sense` reads the same device for hotkeys (L1/Select/Start combinations, FN+D-pad brightness, FN+B LED).
 
@@ -25,21 +27,29 @@ ArchR's `input_sense` reads the same device for hotkeys (L1/Select/Start combina
 
 ### Mapping
 
-| Control | Assumed code | Normal mode | Zone open |
+| Control | Code | Normal mode | Zone open |
 | --- | --- | --- | --- |
 | D-pad ↑ ↓ ← → | `BTN_DPAD_*` | arrow keys | arrow keys (move in the text) |
 | Left stick | `ABS_X/Y` | pointer motion | pointer motion |
 | L3 (left stick click) | `BTN_THUMBL` | left button | left button |
-| A | `BTN_SOUTH` | Return | **validate** (same as L2) |
-| B | `BTN_EAST` | Escape | **close and discard** (same as L1) |
-| Y | `BTN_NORTH` | Backspace | Backspace |
-| X | `BTN_WEST` | Delete | Delete |
+| A | `BTN_EAST` | Return | **validate** (same as L2) |
+| B | `BTN_SOUTH` | Escape | **close and discard** (same as L1) |
+| Y | `BTN_WEST` | Backspace | Backspace |
+| X | `BTN_NORTH` | Delete | Delete |
 | L1 | `BTN_TL` | open the zone | close the zone, discarding its text |
 | L2 | `BTN_TL2` | (nothing; the zone is closed) | validate |
 | R1 | `BTN_TR` | Tab | Tab (no effect in a one-line zone) |
 | R2 | `BTN_TR2` | Shift+Tab | Shift+Tab |
-| Right stick, R3, Select, Start, FN | — | nothing (ignored, counted in the status) | nothing |
+| Start | `BTN_START` | open the application menu (Escape if it is already open) | nothing |
+| Select | `BTN_SELECT` | focus the next window (cycles) | nothing |
+| FN + D-pad | `BTN_MODE` + `BTN_DPAD_*` | move focus to the window in that direction | nothing |
+| FN + A | `BTN_MODE` + `BTN_EAST` | toggle fullscreen of the focused window | nothing |
+| FN + B | `BTN_MODE` + `BTN_SOUTH` | close the focused window | nothing |
+| FN + R1 / FN + R2 | `BTN_MODE` + `BTN_TR` / `BTN_TR2` | next / previous workspace | nothing |
+| Right stick, R3, other FN combinations | — | nothing (ignored, counted in the status) | nothing |
 | FN + Start, both held 2 s | `BTN_MODE` + `BTN_START` | **recovery** (below) | recovery |
+
+**Button-only operation (added under the green light):** the user's acceptance is to operate Luna with only the buttons and the input zone. A person therefore also needs to open the application menu, move between windows, and close them without a keyboard. Start (the menu, as on a classic desktop), Select (window cycling), and FN as a held modifier for window management fill that gap. These are Wyoh decisions taken during autonomous work, kept in `gamepad.toml`, and open to change. FN alone does nothing; while FN is held, its combinations replace the plain meaning of the second button. Window-management actions are Sway IPC commands, not synthetic key chords.
 
 Keys are pressed on button-down and released on button-up, so holding the D-pad repeats through the normal Wayland key repeat. While a button is held, its key stays held. A modifier (Shift for R2) is pressed and released around its key.
 
@@ -50,7 +60,7 @@ The left stick moves the pointer at a speed proportional to how far it is pushed
 - below a **dead zone** of `dz = 0.12` (about 216 of 1800), nothing moves;
 - above it, `speed = v_max × ((r − dz) / (1 − dz))^γ`, with `v_max = 900 px/s` (about 0.8 s to cross the 720 px panel) and `γ = 2` (fine control near the centre).
 
-The daemon emits motion at 100 Hz while the stick is out of the dead zone, and keeps fractional pixels between ticks, so slow motion is smooth. It emits nothing at rest. Sway applies a flat 1:1 profile to the daemon's mouse, as it already does for the test mouse. Every number is in the config file.
+The daemon emits motion at the configured rate (60 Hz on Luna, near the panel's 54.5 Hz refresh; 100 Hz by default) while the stick is out of the dead zone, and keeps fractional pixels between ticks, so slow motion is smooth. It emits nothing at rest. Sway applies a flat 1:1 profile to the daemon's mouse, as it already does for the test mouse. Every number is in the config file.
 
 ### Input zone
 
@@ -80,11 +90,11 @@ Holding **FN + Start for 2 seconds**, in any state:
 2. closes the zone without delivering;
 3. records the event in the status.
 
-It doesn't restart anything. *Proposed; awaiting the user's confirmation.*
+It doesn't restart anything. *Default adopted under the green light; the user can change it.*
 
 ### Ownership of the device
 
-The daemon takes the gamepad exclusively (`EVIOCGRAB`). Nobody else sees its events, including ArchR's `input_sense`, so ArchR's gamepad hotkeys (brightness, LED, kill) stop while the daemon runs. *Trade-off proposed; awaiting the user's confirmation.* The kernel releases the grab when the daemon exits for any reason, so a crash gives the gamepad back to ArchR. Other input devices (power key, ADC keys, USB keyboard and mouse) are untouched.
+The daemon takes the gamepad exclusively (`EVIOCGRAB`). Nobody else sees its events, including ArchR's `input_sense`, so ArchR's gamepad hotkeys (brightness, LED, kill) stop while the daemon runs. *Default adopted under the green light; the user can change it.* The kernel releases the grab when the daemon exits for any reason, so a crash gives the gamepad back to ArchR. Other input devices (power key, ADC keys, USB keyboard and mouse) are untouched.
 
 ## Implementation approach
 
@@ -102,7 +112,7 @@ The daemon takes the gamepad exclusively (`EVIOCGRAB`). Nobody else sees its eve
 
 | Failure | Behaviour |
 | --- | --- |
-| gamepad not found at start | Waits and retries every 2 s; status `no-device`; keyboard and mouse keep working |
+| gamepad not found at start | Waits and checks again every 5 s (only rereads the device list when `/dev/input` changes); status `no-device`; keyboard and mouse keep working |
 | gamepad disappears | Releases everything it holds, discards an open zone, waits for the device again |
 | uinput unavailable | Refuses to start, with an error; nothing is grabbed |
 | Sway socket missing | Mapping and pointer keep working; the zone refuses to open (status `no-sway`) |
@@ -140,9 +150,14 @@ Step 5 is done when:
 - the deterministic and virtual-gamepad tests pass, with inspected screenshots;
 - the resource budget holds.
 
-## Open points for the user
+## Defaults adopted for the open points (2026-10-07, autonomous work)
 
-1. Recovery combination: FN + Start held 2 s. Keep it?
-2. Suspending ArchR's gamepad hotkeys (brightness, LED) while the daemon runs: acceptable?
-3. No right click for now: acceptable?
-4. A in the open zone validates, and B discards (same as L2 and L1), matching Enter/Esc in Mycroft's console. Keep, or should A and B stay plain keys inside the zone?
+The user green-lit autonomous work without answering the four open points; these defaults apply and can be changed in `gamepad.toml`:
+1. Recovery: FN + Start held 2 s.
+2. Exclusive grab: ArchR's gamepad hotkeys (brightness, LED) pause while the daemon runs.
+3. No right click.
+4. A validates and B discards while the zone is open, like Enter and Esc in Mycroft's console.
+
+## Simulating the person (testing)
+
+Per the user's instruction, live tests simulate the person through MCP. In `--full-ipc-development` mode only, the MCP server gains development tools that create a **virtual gamepad** with the device's 17 buttons and 4 axes (name `wyoh-virtual-gamepad`), press, hold, and release its buttons, deflect its sticks, and type on a **virtual keyboard** standing in for the USB keyboard. The daemon serves the real gamepad and the virtual one at the same time, so the real device stays usable during tests. These tools are development authority, like `sway_command`, never a product capability.

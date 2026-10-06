@@ -1,6 +1,6 @@
 #!/bin/sh
-# swaybar status line: key hints and a clock, refreshed every 20 seconds.
+# swaybar status line: gamepad hints (Step 5) and a clock, refreshed every 20 seconds.
 while :; do
-    printf '%s   %s\n' "Alt+Enter term | Alt+d menu | Alt+Shift+q close" "$(date +%H:%M)"
+    printf '%s   %s\n' "Start menu | L1 input | Select next | FN+B close" "$(date +%H:%M)"
     sleep 20
 done

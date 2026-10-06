@@ -136,7 +136,26 @@ def test_tool_discovery_exposes_every_request_and_subscription_operation() -> No
         "wyoh_server_status",
         "wyoh_capture_screenshot",
         "wyoh_stop_owned_child_for_test",
+        # Step 5: development-only simulated person, and the gamepad daemon's status
+        "wyoh_dev_gamepad_tap",
+        "wyoh_dev_gamepad_buttons",
+        "wyoh_dev_gamepad_stick",
+        "wyoh_dev_keyboard_type",
+        "wyoh_dev_keyboard_key",
+        "wyoh_gamepad_status",
     }
+
+
+def test_simulated_person_refuses_unknown_buttons_before_creating_a_device(monkeypatch: pytest.MonkeyPatch) -> None:
+    created: list[str] = []
+    monkeypatch.setattr(server, "_person", lambda kind: created.append(kind))
+    with pytest.raises(ValueError, match="unknown gamepad buttons"):
+        server.wyoh_dev_gamepad_tap(["BTN_EAST", "BTN_NOPE"])
+    with pytest.raises(ValueError, match="hold_seconds"):
+        server.wyoh_dev_gamepad_tap(["BTN_EAST"], hold_seconds=60)
+    with pytest.raises(ValueError, match="stick"):
+        server.wyoh_dev_gamepad_stick(100, 0, seconds=1, stick="middle")
+    assert created == []
 
 
 def test_main_refuses_an_ambient_sway_socket_before_starting_a_child(monkeypatch: pytest.MonkeyPatch) -> None:

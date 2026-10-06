@@ -1,0 +1,23 @@
+[Unit]
+Description=Wyoh gamepad daemon: Luna's controls drive the Wyoh Sway session (development)
+# Started and stopped with the Sway session; see worklines/wyoh/docs/0500_01.
+# It grabs the gamepad exclusively; the kernel releases it when this stops.
+PartOf=wyoh-sway.service
+After=wyoh-sway.service
+Requires=wyoh-sway.service
+
+[Service]
+Type=simple
+Environment=HOME=/storage
+Environment=XDG_RUNTIME_DIR=/run/wyoh
+Environment=LANG=en_US.UTF-8
+Environment=XKB_CONFIG_ROOT=/usr/share/X11/xkb
+Environment=XDG_DATA_DIRS=/storage/.local/share/tanstfaafllm/wyoh/deploy/luna/share:/usr/local/share:/usr/share
+Environment=PATH=/storage/.local/opt/wyoh-tools/bin:/usr/local/bin:/usr/bin:/usr/sbin
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3 /storage/.local/share/tanstfaafllm/wyoh/wyoh_gamepad.py --config /storage/.local/share/tanstfaafllm/wyoh/deploy/luna/gamepad.toml
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=wyoh-sway.service

@@ -539,6 +539,105 @@ def wyoh_stop_owned_child_for_test() -> dict[str, Any]:
     return _bridge().stop_owned_child_for_test()
 
 
+# --- Development-only simulated person (Wyoh Step 5) --------------------------
+# Virtual gamepad and keyboard on the target; development authority like
+# `sway_command`, never a product capability. Created on first use, destroyed
+# when the server exits.
+
+_PERSON: dict[str, Any] = {}
+
+
+def _person(kind: str) -> Any:
+    import wyoh_virtual_input as virtual  # stdlib-only sibling module
+
+    if kind not in _PERSON:
+        device = virtual.VirtualGamepad() if kind == "gamepad" else virtual.VirtualKeyboard()
+        name = virtual.GAMEPAD_NAME if kind == "gamepad" else virtual.KEYBOARD_NAME
+        # A new device is only usable once the kernel lists it and libinput/Sway
+        # have added it; events sent earlier are lost (first keys went missing).
+        deadline = time.monotonic() + 5.0
+        while f'Name="{name}"' not in Path("/proc/bus/input/devices").read_text(encoding="utf-8"):
+            if time.monotonic() > deadline:
+                device.close()
+                raise RuntimeError(f"{name} did not appear")
+            time.sleep(0.05)
+        time.sleep(1.0)
+        _PERSON[kind] = device
+    return _PERSON[kind]
+
+
+def _close_person() -> None:
+    for device in _PERSON.values():
+        device.close()
+    _PERSON.clear()
+
+
+def _check_buttons(buttons: list[str]) -> None:
+    import wyoh_gamepad
+
+    unknown = [name for name in buttons if name not in wyoh_gamepad.BUTTONS]
+    if unknown:
+        raise ValueError(f"unknown gamepad buttons: {unknown}")
+
+
+@mcp.tool()
+def wyoh_dev_gamepad_tap(buttons: list[str], hold_seconds: float = 0.08) -> dict[str, Any]:
+    """Development only: press buttons in order, hold, release in reverse."""
+    _check_buttons(buttons)
+    if not 0 <= hold_seconds <= 10:
+        raise ValueError("hold_seconds must be between 0 and 10")
+    _person("gamepad").tap(buttons, hold_seconds)
+    return {"tapped": buttons, "hold_seconds": hold_seconds}
+
+
+@mcp.tool()
+def wyoh_dev_gamepad_buttons(press: list[str] | None = None, release: list[str] | None = None) -> dict[str, Any]:
+    """Development only: press and/or release buttons without the other half (e.g. hold FN)."""
+    press, release = press or [], release or []
+    _check_buttons(press + release)
+    gamepad = _person("gamepad")
+    gamepad.buttons(press, True)
+    gamepad.buttons(release, False)
+    return {"pressed": press, "released": release}
+
+
+@mcp.tool()
+def wyoh_dev_gamepad_stick(x: int, y: int, seconds: float, stick: str = "left") -> dict[str, Any]:
+    """Development only: deflect a stick (raw units, ±1800) for some seconds, then centre it."""
+    if stick not in ("left", "right") or not 0 < seconds <= 10:
+        raise ValueError("stick must be left/right and seconds within (0, 10]")
+    axes = ("ABS_X", "ABS_Y") if stick == "left" else ("ABS_RX", "ABS_RY")
+    gamepad = _person("gamepad")
+    gamepad.stick(*axes, x, y)
+    time.sleep(seconds)
+    gamepad.stick(*axes, 0, 0)
+    return {"stick": stick, "x": x, "y": y, "seconds": seconds}
+
+
+@mcp.tool()
+def wyoh_dev_keyboard_type(text: str) -> dict[str, Any]:
+    """Development only: type text on the virtual AZERTY keyboard (the USB keyboard stand-in)."""
+    _person("keyboard").type(text)
+    return {"typed_characters": len(text)}
+
+
+@mcp.tool()
+def wyoh_dev_keyboard_key(name: str) -> dict[str, Any]:
+    """Development only: press and release one named key (enter, esc, backspace, tab, ...)."""
+    _person("keyboard").press(name)
+    return {"key": name}
+
+
+@mcp.tool()
+def wyoh_gamepad_status() -> dict[str, Any]:
+    """Read the gamepad daemon's status file (no typed text is ever in it)."""
+    path = Path("/run/wyoh/gamepad.json")
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {"running": False}
+
+
 def _arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--full-ipc-development", action="store_true")
@@ -566,6 +665,7 @@ def main() -> int:
         _BRIDGE = SwayBridge(session, socket_path)
         mcp.run(transport="stdio")
     finally:
+        _close_person()
         if _BRIDGE is not None:
             _BRIDGE.close()
         session.stop()
