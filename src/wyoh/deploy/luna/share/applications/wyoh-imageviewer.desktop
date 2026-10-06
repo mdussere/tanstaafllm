@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Image Viewer
+Comment=View a picture (swayimg)
+Icon=image-viewer
+# Without SWAYSOCK, swayimg does not float itself transparently over the
+# focused window (its Sway integration); it tiles like any other window.
+Exec=env -u SWAYSOCK -u I3SOCK swayimg -c general.background=#202020 /usr/share/retroarch-assets/rgui/wallpaper/leaves.png
+Categories=Utility;

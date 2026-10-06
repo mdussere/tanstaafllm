@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Calculator
+Comment=Arbitrary precision calculator (bc)
+Icon=accessories-calculator
+Exec=foot -a wyoh-calc bc -q
+Categories=Utility;

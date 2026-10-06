@@ -1,0 +1,30 @@
+[Unit]
+Description=Wyoh-owned Sway session on Luna's DSI panel (development)
+# Uses ArchR's unmodified Sway 1.11 on the real display. Not enabled at boot;
+# start/stop it from SSH. It displaces ArchR's own Sway/EmulationStation.
+Requires=seatd.service
+After=seatd.service
+Conflicts=sway.service essway.service
+
+[Service]
+Type=simple
+Environment=HOME=/storage
+Environment=XDG_RUNTIME_DIR=/run/wyoh
+RuntimeDirectory=wyoh
+RuntimeDirectoryMode=0700
+Environment=LANG=en_US.UTF-8
+# Wyoh's application entries and its Papirus icon subset (fuzzel menu).
+Environment=XDG_DATA_DIRS=/storage/.local/share/tanstfaafllm/wyoh/deploy/luna/share:/usr/local/share:/usr/share
+Environment=XKB_CONFIG_ROOT=/usr/share/X11/xkb
+Environment=WLR_BACKENDS=drm,libinput
+Environment=WLR_DRM_DEVICES=/dev/dri/card0
+Environment=WLR_LIBINPUT_NO_DEVICES=1
+# wtype 0.4-3+b1 and fuzzel 1.12.0+ds-1 are Debian 13 arm64 binaries; ArchR
+# packages neither (Arch Linux ARM's fuzzel needs glibc 2.43 through resvg).
+Environment=PATH=/storage/.local/opt/wyoh-tools/bin:/usr/local/bin:/usr/bin
+# The text-mode boot skips ArchR's graphical autostart, which loads the Mali
+# GPU driver (mali_kbase + libmali bind mounts). Without it Sway renders in
+# software and the DSI panel stays black. Run ArchR's own step if needed.
+ExecStartPre=/bin/sh -c 'test -e /dev/mali0 || /usr/lib/archr/gpudriver --start'
+ExecStart=/usr/bin/sway --config /storage/.local/share/tanstfaafllm/wyoh/deploy/luna/sway.conf
+Restart=no

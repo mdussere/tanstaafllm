@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Task Manager
+Comment=Processes and resources (htop)
+Icon=utilities-system-monitor
+Exec=foot -a wyoh-htop htop
+Categories=Utility;
