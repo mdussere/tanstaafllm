@@ -4,9 +4,7 @@
 
 # Wyoh requirements proposal and solution paths
 
-> **Superseded as the product requirements document:** read `0000_05_controller-first-handheld-model.md` first. This document retains useful transport, revision, capability, error, and wait ideas, but its desktop/window assumptions are not the Wyoh product model.
-
-> The active product shape is a Handheld Interaction Object Model (HIOM): one foreground surface, bounded overlays, explicit directional navigation, and a finite action catalogue.
+> **History (corrected 2026-10-04):** Between the controller-first reframe and the Sway follow-up, this document was marked superseded by `0000_05_controller-first-handheld-model.md` and its HIOM. That HIOM model is itself now historical; the status note above is current. Solution paths A–D and the "decisions requested" below are the 2026-09-25 proposal, not the ratified path (see `0101_06_sway-v0-contract.md`).
 
 ## Question answered
 

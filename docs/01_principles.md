@@ -154,7 +154,7 @@ The point is not to hide standard operations behind lore. “Pressure high” ca
 ## Current delivery boundaries
 
 - **Mycroft’s measured baseline** is authorised as offline, context-free French ASR: recorded audio in, text out. Its wider input/composition architecture remains planned; it includes neither ungreen-lit context feeds, command execution, Mike integration, nor Luna-specific audio work.
-- **Wyoh** is deferred until the handheld is available. No VM or emulator will be created merely to start window-manager work.
+- **Wyoh** has ratified unmodified Sway plus its IPC as v0 and validated it only on the `luna-pi` reference board (headless Sway, a development-only MCP bridge, and a shared Sway + WayVNC session). Production-base selection waits for direct Luna evidence; no VM or emulator is used as a substitute for the handheld.
 - **Mannie** comes later. It is a development use of Luna, not the prerequisite for Luna’s basic interaction model.
 - **Adam** is an interaction and presentation contract now; it need not begin as a separate runtime or a full conversational system.
 

@@ -44,4 +44,4 @@ The immediate output is a contract and selection method. Cloning a WM, choosing 
 
 ## Source
 
-- [Complete initial discussion](../../general/docs/0001_01_initial_discussion.md), especially “Identifie les wm opensource…” and “Qqchose en python ?”.
+- [Complete initial discussion](../../professor/docs/0001_01_initial_discussion.md), especially “Identifie les wm opensource…” and “Qqchose en python ?”.

@@ -41,12 +41,13 @@ The current active worklines are:
 | `professor` | `worklines/professor/plan_professor.md` | Project framing, decision ledger, and coordination/isolation of specialist worklines; it does not implement their subsystems. |
 | `mycroft` | `worklines/mycroft/plan_mycroft.md` | Input/composition architecture and its pre-hardware ASR baseline; no ungreen-lit context feed, command routing, target-device audio work, or implementation. |
 | `wyoh` | `worklines/wyoh/plan_wyoh.md` | Desktop/WM observability and interface design; no premature compositor fork or target-hardware implementation. |
+| `luna` | `worklines/luna/plan_luna.md` | `luna-pi` reference setup and physical-Luna characterisation, imaging, and boot/network bring-up on disposable cards; no Mycroft/Wyoh/Mike implementation outside a green-lit step. |
 
 ## Tests and experiments
 
 Read [docs/02_testing.md](docs/02_testing.md) before creating or running a test or experiment.
 
-- **pytest is mandatory by default.** Store every repeatable test and experiment in `test/<workline>/`; do not make `tmp/`, Bash snippets, one-off CLIs, or local notebooks the authoritative harness.
+- **pytest is mandatory by default, run through uv** (`uv sync`, then `uv run pytest …`). Store every repeatable test and experiment in `test/<workline>/`; do not make `tmp/`, Bash snippets, one-off CLIs, or local notebooks the authoritative harness.
 - Prefer Python and SDK/protocol interfaces. Use a CLI/subprocess only when the executable boundary itself is under test, and preserve its complete output.
 - Keep the default suite deterministic. Mark device, network, model-asset, audio, graphical, or other external-state checks with `@pytest.mark.live` or `@pytest.mark.integration`, and run them explicitly.
 - Use a neighbouring Gherkin `.feature` file as the readable behavioural contract for graphical, interactive, multi-step, non-deterministic, or otherwise complex tests. Pytest remains the execution mechanism.

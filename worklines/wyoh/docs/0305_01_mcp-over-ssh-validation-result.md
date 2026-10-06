@@ -50,13 +50,13 @@ All ten event names are accepted and mapped through the subscription tools. “U
 | `shutdown` | Observed | The test-only owned-child lifecycle helper terminated the child cleanly. |
 | `output` | Untriggerable | No hotplug, output reconfiguration, or additional output producer in the fixed headless fixture. |
 | `mode` | Untriggerable | No input/binding-mode transition is produced by the fixture. |
-| `window` | Untriggerable | It deliberately launches no Wayland/Xwayland client. |
+| `window` | Untriggerable here; observed in Step 3.6 | This fixture deliberately launches no Wayland/Xwayland client. The Step 3.6 shared session observed a `window` `new` event for an MCP-launched `lxterminal` ([0306_03](0306_03_shared-sway-wayvnc-result.md)). |
 | `barconfig_update` | Untriggerable | The fixture has no bar or bar-configuration mutation. |
 | `binding` | Untriggerable | There is no physical or virtual input sequence/binding execution. |
 | `bar_state_update` | Untriggerable | There is no bar state/input-mode producer. |
 | `input` | Untriggerable | There is no input hotplug or virtual input device. |
 
-This establishes protocol reachability and complete mapping, not a claim that those seven behaviours have been functionally exercised on Luna.
+This establishes protocol reachability and complete mapping, not a claim that those seven behaviours have been functionally exercised on Luna. `window` has since been observed on `luna-pi` in Step 3.6; the other six remain unexercised.
 
 ## Verification
 

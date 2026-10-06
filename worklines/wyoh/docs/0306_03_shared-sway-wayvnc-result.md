@@ -2,7 +2,9 @@
 
 **Step:** Wyoh 3.6
 
-**Status:** completed on 2026-09-30
+**Status:** completed on 2026-09-30 — **rendered-client claim withdrawn 2026-10-04**
+
+> **Correction (2026-10-04).** The VNC frame-difference proof below is invalid. When inspected visually, `terminal-visible.png` (in both the 2026-09-29 and 2026-10-04 runs) shows only the `aurora.jpg` wallpaper, because the test captured on Sway's `window` `new` event, before `lxterminal` drew its first frame. `before-terminal.png` shows a terminal left open by the preceding MCP test, whose `kill` targeted the focused container. The "frames differ" assertion therefore passed for the wrong reason. Separately taken grim and VNC captures (2026-10-04) do show a rendered `lxterminal`, so Sway, WayVNC, and the MCP screenshot path work; what was never shown is a correct test of it. The session itself has no key bindings, bar, or launcher, so a VNC user cannot operate it. Wyoh Step 3.7 replaces this proof. The other results in this record (service ownership, deploy path, descriptor-bound attachment, screenshot-to-file) stand.
 
 **Scope:** `luna-pi` development evidence only; not Luna hardware or product-shell evidence.
 
