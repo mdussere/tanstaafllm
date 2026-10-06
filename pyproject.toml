@@ -1,0 +1,32 @@
+[project]
+name = "tanstaafllm"
+version = "0.0.0"
+description = "Resource-aware, AI-native personal-computing experiment for a constrained handheld."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+# Test runner shared by every workline (`docs/02_testing.md`).
+dev = [
+    "pytest>=9.1.1",
+    "pytest-timeout>=2.4.0",
+]
+# Wyoh development MCP client and VNC/screenshot evidence.
+# The MCP SDK version must match the luna-pi bridge venv
+# (`src/wyoh/requirements-mcp-over-ssh.txt`).
+wyoh = [
+    "mcp==2.2.0",
+    "pillow>=12.1.1",
+    "vncdotool>=1.4.2",
+]
+# Shared-chat transcript scraper (`scripts/scrape_shared_chat.py`).
+scrape = [
+    "playwright==1.63.0",
+]
+
+[tool.uv]
+# The repository is a collection of scripts, tests, and workline evidence, not
+# an installable package.
+package = false
+default-groups = ["dev", "wyoh", "scrape"]

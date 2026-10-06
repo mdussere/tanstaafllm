@@ -34,13 +34,19 @@ Use Python tests and library/SDK interfaces by default:
 
 A Bash script or bare CLI invocation is not an experiment framework. It may be a documented operational command, but the repeatable check belongs in `test/<workline>/`.
 
+## Environment
+
+The development-host environment is managed by [uv](https://docs.astral.sh/uv/) from the root `pyproject.toml` and the committed `uv.lock`. Run `uv sync` once, then invoke every test through `uv run pytest …` so the pinned pytest, pytest-timeout, MCP SDK, Pillow, and vncdotool versions are used. Do not install test dependencies into a system, conda, or hand-made virtual environment. `pytest.ini` restricts discovery to `test/`.
+
+Remote environments (for example the `luna-pi` MCP bridge venv) are pinned separately by their workline.
+
 ## Deterministic tests first; live tests honestly separate
 
-The ordinary project suite is `pytest -m "not live and not integration"`. It must remain fast and deterministic: no private recordings, reachable devices, model downloads, real APIs, or graphical session required. Do not treat bare `pytest` as the safe suite until a future configuration change enforces that selection.
+The ordinary project suite is `uv run pytest -m "not live and not integration"`. It must remain fast and deterministic: no private recordings, reachable devices, model downloads, real APIs, or graphical session required. Do not treat bare `pytest` as the safe suite until a future configuration change enforces that selection.
 
 Use the existing markers for exceptional cases:
 
-- `@pytest.mark.live` — a reachable device, graphical session, network service, or other external state is required. Run only by explicit selection, for example `pytest -m live test/luna`.
+- `@pytest.mark.live` — a reachable device, graphical session, network service, or other external state is required. Run only by explicit selection, for example `uv run pytest -m live test/luna`.
 - `@pytest.mark.integration` — installed pinned assets or an external runtime is required. It is also excluded from the ordinary lightweight run.
 
 A live failure is evidence, not a reason to weaken the assertion. Preserve the logs and artifacts, state what was observed, and keep target-specific conclusions separate from desktop or `luna-pi` evidence.
