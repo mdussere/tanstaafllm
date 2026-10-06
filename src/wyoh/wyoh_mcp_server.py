@@ -254,7 +254,8 @@ class SharedVncSwaySession:
     def capture_screenshot(self) -> dict[str, Any]:
         if self.state != "running" or self.runtime_dir is None or self.wayland_display is None:
             raise SwayIPCError("the shared Sway/WayVNC session is not running")
-        stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        # Microseconds keep consecutive captures within one second distinct.
+        stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
         result_dir = Path.home() / ".local/state/tanstfaafllm/results/wyoh/screenshots" / stamp
         result_dir.mkdir(parents=True, mode=0o700)
         screenshot = result_dir / "desktop.png"

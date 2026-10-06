@@ -36,10 +36,6 @@ Feature: Wyoh exposes complete Sway IPC only through an owned development sessio
     And its screenshot tool writes a server-chosen file path and digest without returning image bytes
     And closing the MCP stream does not stop the persistent Sway/WayVNC service
 
-  Scenario: An independent VNC client sees the MCP-operated session change
-    Given `wyoh-sway-vnc.service` owns the loopback-only VNC endpoint
-    And the live test creates a temporary SSH tunnel to that endpoint
-    When MCP starts `lxterminal` and observes its Sway `window` event
-    Then the test persists one VNC image before the terminal and one while it is visible
-    And the two VNC frames differ
-    And the test closes the terminal and its temporary tunnel
+  # The former "independent VNC client sees the frame change" scenario was
+  # withdrawn on 2026-10-04: it captured before the client drew and compared
+  # against a stale frame. Its replacement is `minimal_env.feature`.

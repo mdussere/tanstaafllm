@@ -231,7 +231,8 @@ def test_luna_pi_shared_sway_vnc_session_is_operated_over_mcp() -> None:
                         break
                 assert created is not None, evidence["events"]
                 screenshot = await call("wyoh_capture_screenshot")
-                await call("sway_command", {"command": "kill"})
+                con_id = created["payload"]["container"]["id"]
+                await call("sway_command", {"command": f"[con_id={con_id}] kill"})
                 await call("sway_unsubscribe", {"subscription_id": subscription_id})
                 evidence.update({"before": before, "screenshot": screenshot})
         return evidence
