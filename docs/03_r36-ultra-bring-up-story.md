@@ -85,7 +85,7 @@ The fix had nothing to do with the handheld. In the router's settings we changed
 
 The last goal was to stop typing on a tiny screen and log in from the PC with SSH.
 
-- **Setting a password didn't work.** ArchR keeps its system folder read-only, so the usual password command couldn't save anything. That turned out not to matter, because we wanted key-based login anyway.
+- **Setting a password was fiddly.** ArchR's small built-in `passwd` refused our quick, simple password at first. It didn't matter, because we wanted key-based login anyway.
 - **We sent the PC's public key over the network.** The handheld listened for one incoming connection and saved what it received, and the PC sent its public key. Then we switched on the SSH service, and `ssh luna` from the PC opened a shell on the handheld.
 
 ## Step 11 — Surviving a reboot

@@ -14,9 +14,11 @@ As of 2026-10-04, Luna boots the disposable ArchR card, rejoins Wi-Fi by itself,
 
 ## 5.8h — Installing the SSH key
 
-### Why `passwd` could not work
+### Why the password route was dropped
 
-ArchR's root filesystem keeps `/etc` read-only, and `/etc/shadow` is a symlink to `/storage/.cache/shadow`. `passwd` rewrites the file in `/etc`, fails, and reports `password unchanged`, whatever the password's strength. `chpasswd` would fail the same way. The temporary-password route (`ssh-copy-id`) was therefore abandoned.
+The plan was to set a temporary root password and use `ssh-copy-id`. The user's `passwd` attempt reported a weak password and `password unchanged`. At the time this was wrongly attributed to a read-only `/etc`.
+
+> **Correction (2026-10-04, read-only check):** `/` is mounted read-write and `/etc` is writable by root. `passwd` is BusyBox's applet (`/usr/bin/passwd -> busybox`, v1.36.1); there is no PAM. `/etc/shadow` links to `/storage/.cache/shadow`, which by then held a SHA-512 root hash dated 2026-10-04 (file time 16:48). So one of the attempts did set a root password, and the first failure was BusyBox's weak-password refusal, not a filesystem limit. The password was not needed: key login was installed as below.
 
 ### How the key was installed
 
@@ -59,7 +61,7 @@ ArchR already creates `/storage/.cache/iwd` and `/storage/.cache/ssh` (`z_03_iwd
 
 ### The fix: two systemd drop-ins on `/storage`
 
-`/storage/.config/system.d` appears in systemd's `UnitPath` ahead of `/etc` and `/usr/lib`, so drop-ins placed there override the read-only image without modifying it.
+`/storage/.config/system.d` appears in systemd's `UnitPath` ahead of `/etc` and `/usr/lib`, so drop-ins placed there override the image's units without modifying them.
 
 `/storage/.config/system.d/iwd.service.d/10-persistent-state.conf`:
 
