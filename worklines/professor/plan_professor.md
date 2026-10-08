@@ -98,6 +98,14 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 - [ ] 5.2 Record decisions that change public naming, hardware assumptions, interfaces, or delivery scope.
 - [ ] 5.3 Acceptance: the Professor workline always exposes the current project direction, workline boundaries, and next approved action.
 
+### Step 6 — Analyse Omarchy as an external reference
+**Status**: 🧪 Ready for review — analysis done 2026-10-05 ([note](docs/0601_01_omarchy-analysis.md))
+
+- [x] 6.1 Read Omarchy's public site and manual and record what it is: base, compositor, packaging, update/recovery model, keybinding and menu model, theming, hardware assumptions.
+- [x] 6.2 Compare it with TANSTAAFLLM's principles and the active Wyoh/Luna/Mycroft direction, judged against the low-end R36 Ultra target (RK3326, ~1 GiB, 720×720, no GPU driver on ArchR, controller plus optional USB keyboard).
+- [x] 6.3 Classify each idea as adoptable, adaptable, or rejected for Luna, with the reason; name the owning workline for each without opening any work there.
+- [ ] 6.4 Acceptance: a reviewable note in `docs/` that makes no hardware or performance claim beyond published sources and recorded Luna evidence, and starts no implementation in another workline.
+
 ---
 
 ## Progress tracking ✅
@@ -109,6 +117,7 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 - ⏳ Step 3 — Design the workline map.
 - ⏳ Step 4 — Open approved foundation workline(s).
 - ⏳ Step 5 — Maintain programme integration.
+- 🧪 Step 6 — Omarchy analysis ready for review.
 
 ---
 
@@ -125,6 +134,7 @@ date
 | 2026-09-25 | Created draft coordinating-workline plan; no implementation or specialised workline was initiated. |
 | 2026-09-25T01:24:13+02:00 | Renamed the coordinating workline from `general` to `professor` (Professor de la Paz); updated its role to maintain cross-workline coordination and isolation. No implementation started. |
 | 2026-09-25T02:22:12+02:00 | Green-lit Sections 1 and 2 produced a complete-source decision ledger and a review-ready v0 charter. No subsystem implementation, hardware operation, model download, or benchmark was run. |
+| 2026-10-05 | Added Step 6 (Omarchy as an external reference) and ran it on the user's direct instruction. Documentation only; ideas are proposed to Wyoh, Luna, Mycroft and Mannie without opening work there. |
 
 ---
 
@@ -153,3 +163,4 @@ See [the cleaned decision record](docs/0102_03_shared-chatgpt-options-decision.m
 
 - `worklines/professor/docs/0102_02_shared-chatgpt-options-source.md` — canonical raw export.
 - `worklines/professor/docs/0102_03_shared-chatgpt-options-decision.md` — cleaned decisions and owner consequences.
+- `worklines/professor/docs/0601_01_omarchy-analysis.md` — Step 6: Omarchy compared with TANSTAAFLLM for the R36 Ultra; ideas classified adopt/adapt/reject with proposed owners.
