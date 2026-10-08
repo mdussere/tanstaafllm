@@ -53,9 +53,9 @@ def test_r2_is_shift_tab_released_in_reverse_order(core):
     assert release(core, "BTN_TR2") == [g.Key(K["KEY_TAB"], False), g.Key(K["KEY_LEFTSHIFT"], False)]
 
 
-def test_l3_is_left_click(core):
-    assert press(core, "BTN_THUMBL") == [g.Click(g.BTN_LEFT, True)]
-    assert release(core, "BTN_THUMBL") == [g.Click(g.BTN_LEFT, False)]
+def test_r3_is_left_click(core):
+    assert press(core, "BTN_THUMBR") == [g.Click(g.BTN_LEFT, True)]
+    assert release(core, "BTN_THUMBR") == [g.Click(g.BTN_LEFT, False)]
 
 
 def test_start_opens_the_menu_and_select_cycles_windows(core):
@@ -70,14 +70,20 @@ def test_device_autorepeat_press_is_ignored(core):
 
 
 def test_unassigned_buttons_are_ignored_and_counted(core):
-    assert press(core, "BTN_THUMBR") == [g.Note("ignored:BTN_THUMBR")]
+    assert press(core, "BTN_THUMBL") == [g.Note("ignored:BTN_THUMBL")]
     assert press(core, "BTN_TL2") == [g.Note("ignored:BTN_TL2")]  # L2 does nothing while the zone is closed
     assert core.counters["ignored"] == 2
 
 
-def test_right_stick_is_unassigned(core):
-    assert core.axis(g.ABS_RX, 1800) == []
+def test_left_stick_is_unassigned(core):
+    assert core.axis(g.ABS_X, 1800) == []
     assert not core.needs_tick()
+
+
+def test_pointer_stick_can_be_switched_back_to_the_left():
+    core = g.GamepadCore(g.Config(pointer_stick="left"))
+    core.axis(g.ABS_X, 1800)
+    assert core.needs_tick()
 
 
 # --- FN combinations ---------------------------------------------------------
@@ -189,7 +195,7 @@ def test_fn_start_does_not_open_the_menu(core):
 # --- pointer -----------------------------------------------------------------
 
 def test_dead_zone_produces_no_motion_and_no_ticks(core):
-    core.axis(g.ABS_X, 200)  # 0.11 < 0.12
+    core.axis(g.ABS_RX, 200)  # 0.11 < 0.12
     assert not core.needs_tick()
     assert core.tick(0.01) == []
 
@@ -207,7 +213,7 @@ def test_curve_is_gentle_near_the_centre():
 
 
 def test_slow_motion_accumulates_fractions(core):
-    core.axis(g.ABS_X, int(0.2 * 1800))  # about 7.4 px/s: under 1 px per tick
+    core.axis(g.ABS_RX, int(0.2 * 1800))  # about 7.4 px/s: under 1 px per tick
     total = 0
     for step in range(1, 101):  # one second at 100 Hz
         for action in core.tick(step / 100):
@@ -216,10 +222,10 @@ def test_slow_motion_accumulates_fractions(core):
 
 
 def test_stick_return_stops_motion(core):
-    core.axis(g.ABS_Y, 1800)
+    core.axis(g.ABS_RY, 1800)
     assert core.needs_tick()
     assert core.tick(0.01) and core.tick(0.02)
-    core.axis(g.ABS_Y, 0)
+    core.axis(g.ABS_RY, 0)
     assert not core.needs_tick()
     assert core.tick(0.03) == []
 
@@ -238,6 +244,7 @@ def test_deployed_config_loads():
     ('keys = { BTN_EAST = "KEY_NOPE" }', "unknown key"),
     ('[pointer]\nwobble = 1', "unknown pointer"),
     ('[pointer]\ndead_zone = 1.5', "invalid pointer"),
+    ('pointer_stick = "middle"', "pointer_stick"),
 ])
 def test_invalid_config_is_refused(tmp_path, text, message):
     path = tmp_path / "gamepad.toml"

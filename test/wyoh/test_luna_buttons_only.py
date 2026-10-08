@@ -23,15 +23,15 @@ from mcp import Client, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from PIL import Image, ImageChops
 
-from test_luna_fuzzel import SILVER, _menu_closed, _menu_open
-from test_luna_minimal_env import HOST, REMOTE_SERVER, REMOTE_VENV, RUNTIME_DIR, _ssh
-from test_minimal_env import RENDER_TIMEOUT, Predicate, _app_windows, _drawn, _empty_desktop, _fraction, _tool_payload
+from test_luna_minimal_env import SSH_MUX, HOST, REMOTE_SERVER, REMOTE_VENV, RUNTIME_DIR, _ssh
+from test_minimal_env import RENDER_TIMEOUT, Predicate, _app_windows, _fraction, _tool_payload
+from luna_screen import _drawn, _empty_desktop, _menu_closed, _menu_open, _silver_visible
 
 FULL = {"x": 0, "y": 0, "width": 720, "height": 720}
 
 
 def _zone_visible(image: Image.Image) -> bool:
-    return _fraction(image, FULL, SILVER) > 0.02
+    return _silver_visible(image)
 
 
 @pytest.mark.live
@@ -51,7 +51,7 @@ def test_luna_is_operated_with_only_buttons_and_the_input_zone() -> None:
     async def exercise() -> None:
         parameters = StdioServerParameters(
             command="ssh",
-            args=["-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", HOST,
+            args=[*SSH_MUX, "-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", HOST,
                   "env", f"XDG_RUNTIME_DIR={RUNTIME_DIR}", f"{REMOTE_VENV}/bin/python", REMOTE_SERVER,
                   "--full-ipc-development", "--shared-vnc-session"],
         )
@@ -77,7 +77,8 @@ def test_luna_is_operated_with_only_buttons_and_the_input_zone() -> None:
                     await call("wyoh_dev_keyboard_type", {"text": text})
 
                 async def stick(x: int, y: int, seconds: float) -> None:
-                    await call("wyoh_dev_gamepad_stick", {"x": x, "y": y, "seconds": seconds})
+                    # The pointer is on the right stick since 2026-10-08.
+                    await call("wyoh_dev_gamepad_stick", {"x": x, "y": y, "seconds": seconds, "stick": "right"})
 
                 # observation
                 async def status() -> dict[str, Any]:
@@ -89,29 +90,35 @@ def test_luna_is_operated_with_only_buttons_and_the_input_zone() -> None:
                 async def focused() -> dict[str, Any] | None:
                     return next((item for item in await windows() if item["focused"]), None)
 
-                async def screenshot(path: Path) -> Image.Image:
-                    shot = await call("wyoh_capture_screenshot")
-                    fetched = subprocess.run(["scp", "-q", f"{HOST}:{shot['path']}", str(path)],
-                                             capture_output=True, text=True, timeout=30, check=False)
+                async def screenshot(path: Path, shot: dict[str, Any] | None = None) -> Image.Image:
+                    shot = shot or await call("wyoh_capture_screenshot", {"image_format": "jpeg", "quality": 85})
+                    fetched = subprocess.run(["scp", *SSH_MUX, "-q", f"{HOST}:{shot['path']}", str(path)],
+                                             capture_output=True, text=True, timeout=90, check=False)
                     assert fetched.returncode == 0, fetched.stderr
                     with Image.open(path) as image:
                         return image.convert("RGB")
 
                 async def observe(name: str, predicate: Predicate = lambda image: True) -> Image.Image:
-                    deadline = time.monotonic() + RENDER_TIMEOUT
-                    previous: Image.Image | None = None
+                    """Wait for two identical consecutive frames (compared by SHA-256 on
+                    Luna, so nothing is transferred while waiting), then fetch that
+                    frame once and check the end state. Luna's Wi-Fi moves about
+                    160 KB/s and a wallpaper frame is about 1 MB."""
+                    deadline = time.monotonic() + 3 * RENDER_TIMEOUT
+                    previous = ""
                     while True:
-                        image = await screenshot(result_dir / f"{name}.png")
-                        settled = previous is not None and ImageChops.difference(previous, image).getbbox() is None
-                        if settled and predicate(image):
-                            steps.append({"step": name, "status": await status(), "windows": await windows()})
-                            return image
+                        shot = await call("wyoh_capture_screenshot", {"image_format": "jpeg", "quality": 85})
+                        if shot["sha256"] == previous:
+                            image = await screenshot(result_dir / f"{name}.jpg", shot)
+                            if predicate(image):
+                                steps.append({"step": name, "status": await status(), "windows": await windows()})
+                                return image
                         assert time.monotonic() < deadline, f"{name}: end state not reached on a settled frame"
-                        previous = image
+                        previous = shot["sha256"]
                         await asyncio.sleep(0.3)
 
                 async def until(description: str, check) -> Any:
-                    deadline = time.monotonic() + RENDER_TIMEOUT
+                    # Generous: one MCP round trip can stall on Luna's Wi-Fi (13 Mbit/s rx, many retries).
+                    deadline = time.monotonic() + 3 * RENDER_TIMEOUT
                     while True:
                         value = await check()
                         if value:
@@ -177,7 +184,9 @@ def test_luna_is_operated_with_only_buttons_and_the_input_zone() -> None:
                 await tap("BTN_EAST")
                 viewer = await new_window(before, "swayimg")
                 await until("viewer focused", lambda: _focused_is(focused, viewer["id"]))
-                await observe("11-viewer-beside-terminal", lambda image: _menu_closed(image))
+                # The layout policy puts the second window on top (vertical split).
+                await until("viewer above terminal", lambda: _above(windows, viewer["id"], terminal["id"]))
+                await observe("11-viewer-above-terminal", lambda image: _menu_closed(image))
                 await tap("BTN_SELECT")
                 await until("terminal focused", lambda: _focused_is(focused, terminal["id"]))
                 await observe("12-select-focus-terminal")
@@ -187,10 +196,10 @@ def test_luna_is_operated_with_only_buttons_and_the_input_zone() -> None:
                 await fn("BTN_EAST")
                 await until("terminal tiled again", lambda: _fullscreen_is(windows, terminal["id"], 0))
                 await observe("14-fn-a-back")
-                await stick(-1800, -1800, 1.5)   # into the top-left corner
-                await stick(1800, 0, 0.65)       # right, onto the viewer (x > 360)
-                await stick(0, 1800, 0.45)       # down, into the window body
-                await tap("BTN_THUMBL")
+                await stick(-1800, -1800, 1.5)   # right stick: into the top-left corner
+                await stick(1800, 0, 0.35)       # right, to the middle of the top half
+                await stick(0, 1800, 0.25)       # down, into the viewer (top half, y < 371)
+                await tap("BTN_THUMBR")
                 await until("viewer focused by click", lambda: _focused_is(focused, viewer["id"]))
                 await observe("15-pointer-click-viewer")
                 await tap("BTN_SELECT")
@@ -266,3 +275,8 @@ async def _fullscreen_is(windows, con_id: int, mode: int) -> bool:
 
 async def _fewer(windows, count: int) -> bool:
     return len(await windows()) < count
+
+
+async def _above(windows, top: int, bottom: int) -> bool:
+    rects = {item["id"]: item["rect"] for item in await windows()}
+    return top in rects and bottom in rects and rects[top]["y"] < rects[bottom]["y"]

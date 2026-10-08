@@ -75,7 +75,9 @@ class Config:
         "BTN_WEST": "KEY_BACKSPACE", "BTN_NORTH": "KEY_DELETE",
         "BTN_TR": "KEY_TAB", "BTN_TR2": "KEY_LEFTSHIFT+KEY_TAB",
     })
-    click: str = "BTN_THUMBL"
+    # Right thumb on the pointer, left thumb on the D-pad (user, 2026-10-08).
+    pointer_stick: str = "right"  # "left" | "right"
+    click: str = "BTN_THUMBR"
     zone_toggle: str = "BTN_TL"
     zone_validate: str = "BTN_TL2"
     zone_validate_alt: str = "BTN_EAST"   # A validates while the zone is open
@@ -136,6 +138,8 @@ def _validate(config: Config) -> None:
         for key in chord.split("+"):
             if key not in KEYS:
                 raise ConfigError(f"unknown key: {key}")
+    if config.pointer_stick not in ("left", "right"):
+        raise ConfigError("pointer_stick must be left or right")
     if len(config.recovery) != 2:
         raise ConfigError("recovery needs exactly two buttons")
     p = config.pointer
@@ -215,7 +219,8 @@ class GamepadCore:
         # gamepad button -> outputs it pressed and must release on button-up
         self.pressed_outputs: dict[int, list[Action]] = {}
         self.zone_state = "closed"  # closed | open | delivering
-        self.stick = {ABS_X: 0.0, ABS_Y: 0.0}
+        self.axes = (ABS_X, ABS_Y) if config.pointer_stick == "left" else (ABS_RX, ABS_RY)
+        self.stick = {axis: 0.0 for axis in self.axes}
         self.fraction = [0.0, 0.0]
         self.last_tick: float | None = None
         self.recovery_since: float | None = None
@@ -324,10 +329,10 @@ class GamepadCore:
     def axis(self, code: int, value: int) -> list[Action]:
         if code in self.stick:
             self.stick[code] = float(value)
-        return []  # right stick (ABS_RX/RY) is unassigned
+        return []  # the other stick is unassigned
 
     def needs_tick(self) -> bool:
-        x, y = self.stick[ABS_X], self.stick[ABS_Y]
+        x, y = (self.stick[axis] for axis in self.axes)
         return pointer_speed(x, y, self.config.pointer) != (0.0, 0.0) or self.recovery_since is not None
 
     def tick(self, now: float) -> list[Action]:
@@ -335,7 +340,7 @@ class GamepadCore:
         if self.recovery_since is not None and now - self.recovery_since >= self.config.recovery_hold_s:
             actions += self.recover()
             self.recovery_since = None
-        vx, vy = pointer_speed(self.stick[ABS_X], self.stick[ABS_Y], self.config.pointer)
+        vx, vy = pointer_speed(*(self.stick[axis] for axis in self.axes), self.config.pointer)
         if (vx, vy) == (0.0, 0.0):
             self.last_tick = None
             self.fraction = [0.0, 0.0]
@@ -373,7 +378,7 @@ class GamepadCore:
         for code in list(self.pressed_outputs):
             actions += self._release(code)
         self.held.clear()
-        self.stick = {ABS_X: 0.0, ABS_Y: 0.0}
+        self.stick = {axis: 0.0 for axis in self.axes}
         self.recovery_since = None
         return actions
 

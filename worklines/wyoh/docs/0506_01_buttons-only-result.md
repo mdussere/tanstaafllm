@@ -96,3 +96,18 @@ The first measurement was 20% of a core with the stick deflected, and 2 ticks pe
 - **5.7:** the user's check with the physical buttons, sticks and panel. Stick polarity and the feel of the pointer curve can only be judged by hand.
 - Text in the zone still comes from a keyboard (virtual in tests, USB in person), as planned until voice arrives (Mycroft).
 - ArchR's gamepad hotkeys (brightness, LED) are off while the daemon runs (accepted default).
+
+## Addendum (2026-10-09): user feedback, four-tile layout, and link limits
+
+**Changes after the user's first use:**
+- **Pointer moved to the right stick.** The click moved to R3 and the left stick is unassigned ("right thumb on the mouse, left thumb on the D-pad"). `pointer_stick` in the config; 51 core tests pass.
+- **Wallpaper.** The user's own `TANSTAAF-LLM_background.png` (updated with a blond Wyoh), pre-scaled to `deploy/luna/share/backgrounds/tanstaafllm-720.png`. ArchR's gdk-pixbuf has PNG support built in but no MIME database, so `swaybg` rejected every image. Wyoh deploys `share/mime/mime.cache` (shared-mime-info 2.4 from Debian 13, SHA-256 `24a34007…bc7c89c`) in its `XDG_DATA_DIRS`. A capture of the desktop matches the image file pixel for pixel below the bar; `swaybg` uses 7.3 MB.
+- **Four tiles per workspace** (user requirement): `wyoh_layout.py` and `wyoh-layout.service` place the 2nd window on top, the 3rd top-right and the 4th bottom-right. A 5th is closed at once and a red "Too many tiles" pop-up appears, dismissed with B. The policy works from current geometry, so it keeps working after windows close, and a new tile keeps the focus. 11 policy tests pass. The layout scenario (`test_luna_layout.py`) passed on Luna twice; the screenshots of `20261008T215715Z` were inspected. The daemon uses about 17 MB.
+
+**Link limits found:**
+- **Luna's OpenSSH 9.8 PerSourcePenalties** temporarily refuse an address after unauthenticated or timed-out connections. All Luna tests now share one multiplexed connection (`SSH_MUX`), and `make` takes `WYOH_LUNA_SSH`.
+- **Luna's Wi-Fi moves about 160 KB/s** (receive 13 Mbit/s MCS 1, signal −62 dBm, about 1,500 retries) and sometimes stalls for over a minute. The acceptance tests now settle frames by comparing SHA-256 on Luna and fetch one JPEG per step (about 200 KB instead of 1 MB), with tolerant colour checks (`luna_screen.py`).
+
+**Not established:**
+- The full button-only scenario has not passed again since these changes. Its re-runs stopped on link stalls at different steps (once after completing steps 00–18), and the user asked to stop rerunning it after every change.
+- The right-stick pointer and the R3 click have not yet been checked live.

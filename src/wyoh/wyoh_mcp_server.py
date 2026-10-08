@@ -251,18 +251,21 @@ class SharedVncSwaySession:
     def stop(self) -> None:
         """A client disconnect must never stop the shared service."""
 
-    def capture_screenshot(self) -> dict[str, Any]:
+    def capture_screenshot(self, image_format: str = "png", quality: int = 90) -> dict[str, Any]:
+        if image_format not in ("png", "jpeg") or not 1 <= quality <= 100:
+            raise ValueError("image_format must be png or jpeg, quality 1-100")
         if self.state != "running" or self.runtime_dir is None or self.wayland_display is None:
             raise SwayIPCError("the shared Sway/WayVNC session is not running")
         # Microseconds keep consecutive captures within one second distinct.
         stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
         result_dir = Path.home() / ".local/state/tanstfaafllm/results/wyoh/screenshots" / stamp
         result_dir.mkdir(parents=True, mode=0o700)
-        screenshot = result_dir / "desktop.png"
+        screenshot = result_dir / ("desktop.png" if image_format == "png" else "desktop.jpg")
         environment = os.environ.copy()
         environment.update({"XDG_RUNTIME_DIR": str(self.runtime_dir), "WAYLAND_DISPLAY": self.wayland_display})
         completed = subprocess.run(
-            ["/usr/bin/grim", str(screenshot)], env=environment, stdout=subprocess.PIPE,
+            ["/usr/bin/grim", "-t", image_format, *(["-q", str(quality)] if image_format == "jpeg" else []),
+             str(screenshot)], env=environment, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, text=True, timeout=15.0, check=False,
         )
         (result_dir / "grim.stderr.log").write_text(completed.stderr, encoding="utf-8")
@@ -385,10 +388,10 @@ class SwayBridge:
             "active_subscription_count": len(self.subscriptions),
         }
 
-    def capture_screenshot(self) -> dict[str, Any]:
+    def capture_screenshot(self, image_format: str = "png", quality: int = 90) -> dict[str, Any]:
         if not isinstance(self.session, SharedVncSwaySession):
             raise SwayIPCError("screenshots require --shared-vnc-session")
-        return self.session.capture_screenshot()
+        return self.session.capture_screenshot(image_format, quality)
 
     def stop_owned_child_for_test(self) -> dict[str, Any]:
         """Terminate only the bridge-owned child for shutdown-event evidence."""
@@ -528,9 +531,10 @@ def wyoh_server_status() -> dict[str, Any]:
 
 
 @mcp.tool()
-def wyoh_capture_screenshot() -> dict[str, Any]:
-    """Capture the shared VNC session to a server-chosen file; no image bytes return."""
-    return _bridge().capture_screenshot()
+def wyoh_capture_screenshot(image_format: str = "png", quality: int = 90) -> dict[str, Any]:
+    """Capture the shared session to a server-chosen file (PNG, or JPEG for slow
+    links: Luna's Wi-Fi moves about 160 KB/s); no image bytes return."""
+    return _bridge().capture_screenshot(image_format, quality)
 
 
 @mcp.tool()

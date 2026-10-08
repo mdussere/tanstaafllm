@@ -30,8 +30,9 @@ ArchR's `input_sense` reads the same device for hotkeys (L1/Select/Start combina
 | Control | Code | Normal mode | Zone open |
 | --- | --- | --- | --- |
 | D-pad ↑ ↓ ← → | `BTN_DPAD_*` | arrow keys | arrow keys (move in the text) |
-| Left stick | `ABS_X/Y` | pointer motion | pointer motion |
-| L3 (left stick click) | `BTN_THUMBL` | left button | left button |
+| Left stick | `ABS_X/Y` | nothing (unassigned since 2026-10-08) | nothing |
+| Right stick | `ABS_RX/RY` | pointer motion (user change 2026-10-08: right thumb on the pointer, left thumb on the D-pad) | pointer motion |
+| R3 (right stick click) | `BTN_THUMBR` | left button | left button |
 | A | `BTN_EAST` | Return | **validate** (same as L2) |
 | B | `BTN_SOUTH` | Escape | **close and discard** (same as L1) |
 | Y | `BTN_WEST` | Backspace | Backspace |
@@ -46,7 +47,7 @@ ArchR's `input_sense` reads the same device for hotkeys (L1/Select/Start combina
 | FN + A | `BTN_MODE` + `BTN_EAST` | toggle fullscreen of the focused window | nothing |
 | FN + B | `BTN_MODE` + `BTN_SOUTH` | close the focused window | nothing |
 | FN + R1 / FN + R2 | `BTN_MODE` + `BTN_TR` / `BTN_TR2` | next / previous workspace | nothing |
-| Right stick, R3, other FN combinations | — | nothing (ignored, counted in the status) | nothing |
+| L3, other FN combinations | — | nothing (ignored, counted in the status) | nothing |
 | FN + Start, both held 2 s | `BTN_MODE` + `BTN_START` | **recovery** (below) | recovery |
 
 **Button-only operation (added under the green light):** the user's acceptance is to operate Luna with only the buttons and the input zone. A person therefore also needs to open the application menu, move between windows, and close them without a keyboard. Start (the menu, as on a classic desktop), Select (window cycling), and FN as a held modifier for window management fill that gap. These are Wyoh decisions taken during autonomous work, kept in `gamepad.toml`, and open to change. FN alone does nothing; while FN is held, its combinations replace the plain meaning of the second button. Window-management actions are Sway IPC commands, not synthetic key chords.
@@ -55,7 +56,7 @@ Keys are pressed on button-down and released on button-up, so holding the D-pad 
 
 ### Pointer
 
-The left stick moves the pointer at a speed proportional to how far it is pushed, like the small stick in the middle of some laptop keyboards. With `r` = deflection normalised to 0…1 (the length of the X/Y vector, capped at 1):
+The right stick (left stick until 2026-10-08) moves the pointer at a speed proportional to how far it is pushed, like the small stick in the middle of some laptop keyboards. With `r` = deflection normalised to 0…1 (the length of the X/Y vector, capped at 1):
 
 - below a **dead zone** of `dz = 0.12` (about 216 of 1800), nothing moves;
 - above it, `speed = v_max × ((r − dz) / (1 − dz))^γ`, with `v_max = 900 px/s` (about 0.8 s to cross the 720 px panel) and `γ = 2` (fine control near the centre).

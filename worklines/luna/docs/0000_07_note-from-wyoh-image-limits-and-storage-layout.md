@@ -133,3 +133,11 @@ L5 ("no GPU driver") is wrong. ArchR selects and loads the GPU driver in its gra
 ### Update to section 8 (2026-10-07)
 
 User decision: Luna is a single-user device with no keyboard, so the Wyoh session **stays root for now**, with no password login. Wyoh therefore withdraws, for the time being, its request for "a normal user able to run Sway". If a non-root session user comes later, it should log in automatically (no password), with seatd or logind giving it the display and input, and the Mali GPU-driver step should stay a root system step before the session.
+
+## 10. Addendum (2026-10-09): MIME database, SSH penalties, Wi-Fi link
+
+| # | Observation | Consequence |
+| --- | --- | --- |
+| L15 | ArchR has no shared-mime-info database (`/usr/share/mime/mime.cache`), and its gdk-pixbuf `loaders.cache` lists a loader directory that does not exist (PNG is built in) | Image loading through gdk-pixbuf/GIO fails ("Couldn't recognize the image file format"): `swaybg` could not show any picture. Wyoh deploys its own `mime.cache` in its `XDG_DATA_DIRS`; a system-level `shared-mime-info` would fix it for every program. |
+| L16 | OpenSSH 9.8 on Luna applies `PerSourcePenalties` (noauth, grace-exceeded, …) | Bursts of short or interrupted connections from the development host get refused or timed out for minutes. Wyoh now multiplexes one connection. A LAN exemption (`PerSourcePenaltyExemptList`) is Luna's call. |
+| L17 | Wi-Fi (RK915): signal −62 dBm, receive 13 Mbit/s (MCS 1), about 1,500 retries, measured throughput about 160 KB/s, with stalls over 60 s | Remote testing and screenshot transfer are slow and intermittent. Worth a look on the Luna side (channel, power save, driver). |

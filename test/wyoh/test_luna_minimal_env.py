@@ -29,10 +29,16 @@ from mcp import Client, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from PIL import Image, ImageChops
 
-from test_minimal_env import BAR, BAR_ROW, RENDER_TIMEOUT, Predicate, _app_windows, _drawn, _empty_desktop, _fraction, _tool_payload
+from test_minimal_env import BAR, BAR_ROW, RENDER_TIMEOUT, Predicate, _app_windows, _fraction, _tool_payload
+from luna_screen import _drawn, _empty_desktop
 
 
 HOST = "luna"
+# Luna's OpenSSH 9.8 penalises bursts of new connections (PerSourcePenalties),
+# so every Luna test reuses one multiplexed connection.
+SSH_MUX = ["-o", "ControlMaster=auto", "-o", f"ControlPath={Path.home()}/.ssh/cm/%r@%h:%p",
+           "-o", "ControlPersist=15m"]
+(Path.home() / ".ssh/cm").mkdir(mode=0o700, exist_ok=True)
 REMOTE_VENV = "/storage/.local/opt/wyoh-mcp-2.2.0"
 REMOTE_SERVER = "/storage/.local/share/tanstfaafllm/wyoh/wyoh_mcp_server.py"
 RUNTIME_DIR = "/run/wyoh"
@@ -44,7 +50,7 @@ EDITOR_COMMAND = "foot -a wyoh-editor vim"
 
 def _ssh(command: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", HOST, command],
+        ["ssh", *SSH_MUX, "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", HOST, command],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30, check=False,
     )
 
@@ -53,12 +59,12 @@ class Person:
     """A person at Luna's keyboard and mouse: uinput devices on the target, fed over SSH."""
 
     def __init__(self, result_dir: Path) -> None:
-        staged = subprocess.run(["scp", "-q", str(KEYBOARD), f"{HOST}:{REMOTE_KEYBOARD}"],
+        staged = subprocess.run(["scp", *SSH_MUX, "-q", str(KEYBOARD), f"{HOST}:{REMOTE_KEYBOARD}"],
                                 capture_output=True, text=True, timeout=30, check=False)
         assert staged.returncode == 0, staged.stderr
         self.log = (result_dir / "keyboard.log").open("w", encoding="utf-8")
         self.process = subprocess.Popen(
-            ["ssh", "-T", "-o", "BatchMode=yes", HOST, "python3", "-u", REMOTE_KEYBOARD],
+            ["ssh", *SSH_MUX, "-T", "-o", "BatchMode=yes", HOST, "python3", "-u", REMOTE_KEYBOARD],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.log, text=True,
         )
         ready = self._read()
@@ -122,7 +128,7 @@ def test_luna_panel_reproduces_the_luna_pi_run() -> None:
     async def exercise() -> None:
         parameters = StdioServerParameters(
             command="ssh",
-            args=["-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", HOST,
+            args=[*SSH_MUX, "-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", HOST,
                   "env", f"XDG_RUNTIME_DIR={RUNTIME_DIR}", f"{REMOTE_VENV}/bin/python", REMOTE_SERVER,
                   "--full-ipc-development", "--shared-vnc-session"],
         )
@@ -149,7 +155,7 @@ def test_luna_panel_reproduces_the_luna_pi_run() -> None:
 
                 async def screenshot(path: Path) -> Image.Image:
                     shot = await call("wyoh_capture_screenshot")
-                    fetched = subprocess.run(["scp", "-q", f"{HOST}:{shot['path']}", str(path)],
+                    fetched = subprocess.run(["scp", *SSH_MUX, "-q", f"{HOST}:{shot['path']}", str(path)],
                                              capture_output=True, text=True, timeout=30, check=False)
                     assert fetched.returncode == 0, fetched.stderr
                     with Image.open(path) as image:

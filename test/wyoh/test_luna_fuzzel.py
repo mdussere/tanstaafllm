@@ -22,8 +22,9 @@ from mcp import Client, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from PIL import Image, ImageChops
 
-from test_luna_minimal_env import HOST, REMOTE_SERVER, REMOTE_VENV, RUNTIME_DIR, Person, _ssh
-from test_minimal_env import RENDER_TIMEOUT, Predicate, _app_windows, _drawn, _empty_desktop, _fraction, _tool_payload
+from test_luna_minimal_env import SSH_MUX, HOST, REMOTE_SERVER, REMOTE_VENV, RUNTIME_DIR, Person, _ssh
+from test_minimal_env import RENDER_TIMEOUT, Predicate, _app_windows, _fraction, _tool_payload
+from luna_screen import _drawn, _empty_desktop
 
 
 FUZZEL_CONFIG = "/storage/.local/share/tanstfaafllm/wyoh/deploy/luna/fuzzel.ini"
@@ -64,7 +65,7 @@ def test_luna_fuzzel_menu_interactions() -> None:
     async def exercise() -> None:
         parameters = StdioServerParameters(
             command="ssh",
-            args=["-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", HOST,
+            args=[*SSH_MUX, "-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", HOST,
                   "env", f"XDG_RUNTIME_DIR={RUNTIME_DIR}", f"{REMOTE_VENV}/bin/python", REMOTE_SERVER,
                   "--full-ipc-development", "--shared-vnc-session"],
         )
@@ -91,7 +92,7 @@ def test_luna_fuzzel_menu_interactions() -> None:
 
                 async def screenshot(path: Path) -> Image.Image:
                     shot = await call("wyoh_capture_screenshot")
-                    fetched = subprocess.run(["scp", "-q", f"{HOST}:{shot['path']}", str(path)],
+                    fetched = subprocess.run(["scp", *SSH_MUX, "-q", f"{HOST}:{shot['path']}", str(path)],
                                              capture_output=True, text=True, timeout=30, check=False)
                     assert fetched.returncode == 0, fetched.stderr
                     with Image.open(path) as image:

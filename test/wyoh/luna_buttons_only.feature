@@ -4,7 +4,7 @@ Feature: Luna is operated with only its buttons and the input zone (Wyoh Step 5)
   Executed by `test_luna_buttons_only.py`. The person is simulated through MCP:
   the development tools create a virtual gamepad (the device's 17 buttons and
   4 axes) and a virtual keyboard (the USB keyboard that types into the input
-  zone, until voice replaces it). Only gamepad buttons, the left stick, and
+  zone, until voice replaces it). Only gamepad buttons, the right stick (pointer), and
   typing inside the input zone are used; no Sway command operates the session
   on the person's behalf. MCP observes Sway, reads the gamepad daemon's
   status, and saves a settled screenshot of DSI-1 after each step under
@@ -38,12 +38,12 @@ Feature: Luna is operated with only its buttons and the input zone (Wyoh Step 5)
 
     # Second window, focus, fullscreen, pointer
     When the person presses Start, Down three times, and A
-    Then the image viewer opens beside the terminal
+    Then the image viewer opens above the terminal (layout policy: the second window goes on top)
     When the person presses Select
     Then the focus moves to the other window
     When the person holds FN and presses A, twice
     Then the focused window goes fullscreen and back
-    When the person pushes the left stick to the top-left corner, then onto the image viewer, and clicks L3
+    When the person pushes the right stick to the top-left corner, then into the image viewer (top half), and clicks R3
     Then the image viewer has the focus
     When the person presses Select
     Then the terminal has the focus again
