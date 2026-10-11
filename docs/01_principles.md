@@ -1,6 +1,6 @@
 # TANSTAAFLLM principles and concept
 
-**Status:** living conceptual reference<br>
+**Status:** living conceptual reference (revised 2026-10-11)<br>
 **Scope:** project identity, interaction model, component roles, and design principles
 
 ## Purpose
@@ -29,16 +29,18 @@ The current repository slug is historical and may not match the intended project
 | **TANSTAAFLLM** | project and design philosophy | yes | The whole experiment and its resource-aware principle. |
 | **Luna** | handheld device and its local environment | yes | The home of the system’s components. |
 | **luna-pi** | Raspberry Pi reference/prototyping target | mostly internal | A development and comparison target, not a replacement for Luna. |
-| **Adam Selene** / **Adam** | the system’s human-facing identity | yes | The person-like interface the user addresses. It is not another intelligence or privileged agent. |
-| **Mike** | local brain | internal | Interprets requests, holds or consults state, routes work, and decides which capability to invoke. |
+| **Adam Selene** / **Adam** | the system’s human-facing identity | — | **On hold** (user, 2026-10-09): not part of the current design. Results go to the user directly. Kept below as a possible later layer. |
+| **Mike** | local brain | internal | A small local model on Luna (candidate: LFM2.5-350M). It interprets a request and proposes one action through Wyoh, which the user accepts or refuses. When a request is too hard, it escalates to Mannie. |
 | **Mycroft** | input and composition capability | internal | Turns voice into an editable, reviewable proposal. Its ASR baseline is context-free; bounded contextual vocabulary is a separately measured later capability. |
-| **Wyoh** | interface, state, context, and possible actions | internal, rendered to the user | Makes the environment legible and actionable for Mike and Adam. |
-| **Mannie** | development capability | internal | One use of Luna: code, build, test, and development tasks using Codex or another frontier model within normal developer permissions. |
-| **Professor de la Paz** / **Professor** | coordinating workline | internal | Maintains project direction and the coordination and isolation of specialised worklines; it is not another system runtime or local model. |
+| **Wyoh** | interface, state, context, and possible actions | internal, rendered to the user | Makes the environment legible and actionable for Mike, and drivable with Luna's buttons. |
+| **Mannie** | frontier-model capability | internal | Claude, Codex or another frontier model reached remotely: development work (code, build, test) and the costly escalation behind Mike. Always within normal developer permissions, never unattended. |
+| **Professor de la Paz** / **Professor** | coordinating workline | internal | Coordinates work that crosses worklines, hands out shared devices, and supervises the cell when the user delegates it. The user works with each workline's agent directly. It is not a system runtime or local model. |
 
-The naming is deliberately layered. **Luna is the machine. Adam is the assistant a person uses. Mike is the local intelligence behind Adam.** Mycroft, Wyoh, and Mannie provide specialised input, environment, and development capabilities. **Professor** is the coordinating project workline, not another component running on Luna.
+The naming is deliberately layered. **Luna is the machine. Mike is the local intelligence. Mannie is the expensive one far away.** Mycroft and Wyoh provide input and the environment. **Professor** is the coordinating project workline, not another component running on Luna. **Adam**, the single public face, is on hold until a real need for it appears.
 
-## Adam Selene: one public identity, not one more agent
+## Adam Selene: one public identity, not one more agent (on hold)
+
+*On hold since 2026-10-09: the user does not see Adam in the story for now, and results go to the user directly. The section is kept as the design to return to.*
 
 Adam Selene is the public identity under which Mike presents itself to the user. Adam is not a second brain, a hidden model, or an additional authority layer.
 
@@ -49,6 +51,8 @@ Mike reasons and routes. Adam communicates: it provides a stable point of addres
 The user does not need to know which internal component completed a request in order to use the device. The system, however, must keep those components inspectable: Adam must not obscure what Mike decided, what Wyoh observed, which tool ran, or whether Mannie/Codex was involved.
 
 ## Interaction model
+
+*While Adam is on hold, the same spoken instructions are simply addressed to Luna: dictated into the Slate, or asked of Mike.*
 
 The intended interaction is not “Hey Siri.” The natural form is an instruction addressed to Adam:
 
@@ -61,26 +65,11 @@ The intended interaction is not “Hey Siri.” The natural form is an instructi
 
 ### Request and response path
 
-```text
-Voice input                         Typed or UI input
-───────────                         ─────────────────
-user ──audio──► Mycroft ──text──┐   user ──request──┐
-                                │                  │
-                                ▼                  ▼
-                          Mike — local brain / routing
-                                │
-                 ┌──────────────┼──────────────┐
-                 ▼              ▼              ▼
-              Wyoh            tools          Mannie
-        state, context,     local system,    development
-        possible actions    services, data   / Codex
-                 └──────────────┼──────────────┘
-                                ▼
-                  Adam Selene — human-facing result
-                    text, status, dialogue, notifications
-```
+![The path of a request](img/request-path.svg)
 
-The diagram is a responsibility map, not a claim that all components must be processes or models. A v0 may implement only a small part of it.
+There are three roads, cheapest first. **Buttons** go through Wyoh's gamepad daemon. **Voice** goes through Mycroft into Wyoh's Slate, where the user corrects it before sending. **Asking** goes to Mike, who proposes one action through Wyoh, with Mannie as a costed escalation. Details and status: [`04_architecture.md`](04_architecture.md).
+
+The diagram is a responsibility map, not a claim that all components must be processes or models.
 
 ## Component contracts
 
@@ -94,11 +83,11 @@ Wyoh describes the current environment in a form Mike can use: state, focus, ava
 
 ### Mike ↔ Mannie
 
-Mannie is development work, not the operating system’s universal brain. It can use Codex or another frontier model for code, build, test, and Git tasks. It has no greater authority than the normal development workflow: its actions remain subject to the same permissions, review, and observability as development from the desktop.
+Mannie is the frontier model, not the operating system’s universal brain. Mike escalates to it only when a request is too hard, and the cost is shown first. It also does development work with Codex, Claude Code or another frontier model: code, build, test, and Git tasks. It has no greater authority than the normal development workflow: its actions remain subject to the same permissions, review, and observability as development from the desktop.
 
-### Mike / components → Adam
+### Mike / components → the user
 
-Adam is the surface that explains results to the person. It should be able to distinguish a completed action, a proposed action, a blocked action, a degraded result, and an external-model request. The user should see meaningful status rather than a fabricated impression of certainty.
+While Adam is on hold, results go to the user directly, through Wyoh's desktop and each tool's own output. Whatever surface shows them is the one that explains results to the person. It should be able to distinguish a completed action, a proposed action, a blocked action, a degraded result, and an external-model request. The user should see meaningful status rather than a fabricated impression of certainty.
 
 ## Design principles
 
@@ -153,17 +142,29 @@ The point is not to hide standard operations behind lore. “Pressure high” ca
 
 ## Current delivery boundaries
 
-- **Mycroft’s measured baseline** is authorised as offline, context-free French ASR: recorded audio in, text out. Its wider input/composition architecture remains planned; it includes neither ungreen-lit context feeds, command execution, Mike integration, nor Luna-specific audio work.
-- **Wyoh** has ratified unmodified Sway plus its IPC as v0 and validated it only on the `luna-pi` reference board (headless Sway, a development-only MCP bridge, and a shared Sway + WayVNC session). Production-base selection waits for direct Luna evidence; no VM or emulator is used as a substitute for the handheld.
-- **Mannie** comes later. It is a development use of Luna, not the prerequisite for Luna’s basic interaction model.
-- **Adam** is an interaction and presentation contract now; it need not begin as a separate runtime or a full conversational system.
+The live status of every part is in [`04_architecture.md`](04_architecture.md), section 5. In short, on 2026-10-11:
+
+- **Wyoh** runs on Luna. It boots straight into the desktop, every button mode works, and the Slate, the menu and the first apps are in place.
+- **Mycroft** is installed on Luna and wired into the Slate. It still lacks a working microphone, and recognition is still slower than real time on Luna's CPU.
+- **Mike** has been measured on the desk host. It is not yet on Luna.
+- **Mannie** has been measured on `luna-pi` (Claude Code). It is not yet on Luna.
+- **GPU computing (OpenCL)** is available on Luna, and parked until dictation works on the CPU.
+
+## Documentation conventions
+
+- **Language.** Everything is written in English. Agents talk to the user in French.
+- **One place.** All project documentation lives in `docs/` under one numbering, and [`docs/README.md`](README.md) is the way in. Workline evidence stays in `worklines/<name>/docs/`, and the project pages summarise it and link to it.
+- **Diagrams.** Diagrams are hand-written **SVG**, not Mermaid. They use the visual style of Luna's wallpaper: deep navy and violet, chrome titles, amber accents, cyan for what is live. Each one is rendered to PNG (`scripts/render_svg.py`) and inspected before it counts as done.
+- **Tone.** Plain technical sentences come first. The novel's world, the cell and the retro-gaming look go in titles, captions and short asides, and every one of them is explained once.
+- **Honesty.** Every figure names where it was measured (Luna, `luna-pi` or the desk host), every page names its sources, and anything not measured says "planned".
+- **Reading time.** A capable reader should get the big picture in 15 minutes and everything in about an hour, without help from an AI.
 
 ## Open questions
 
-1. What is the first demonstrable end-to-end Adam interaction once hardware arrives?
+1. What is the first demonstrable end-to-end interaction on Luna (voice → Slate or Mike → Wyoh → app)?
 2. Which state and action contract does Wyoh expose to Mike?
 3. Which Mycroft ASR candidate meets the French, offline, memory, and latency constraints in practice?
-4. What exact confirmation model applies when Adam asks Mike to invoke tools or Mannie?
+4. What exact confirmation model applies when Mike invokes Wyoh actions or escalates to Mannie?
 5. Which resource costs should be exposed by default, and at what level of detail?
 6. When does a remote model provide enough additional value to justify its cost?
 

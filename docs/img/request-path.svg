@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>The path of a request</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="42" y="88" width="2" height="2" fill="#6f7fa8"/>
+    </pattern>
+    <marker id="aC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#3ee6e0"/></marker>
+    <marker id="aA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#ffb347"/></marker>
+    <marker id="aV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#a98cf5"/></marker>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .h { font: bold 14px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .t { font: 12.5px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .lab { font: bold 12px 'DejaVu Sans Mono', monospace; }
+    .box { fill: #141b3d; stroke: #3b4a7a; stroke-width: 3; }
+  </style>
+  <rect width="960" height="560" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">THE PATH OF A REQUEST</text>
+  <text x="30" y="68" class="sub">three roads from a person to the desktop · cheapest first</text>
+
+  <!-- person -->
+  <g shape-rendering="crispEdges">
+    <rect x="30" y="200" width="120" height="120" fill="#22182e" stroke="#ff7b39" stroke-width="3"/>
+  </g>
+  <text x="90" y="232" class="h" text-anchor="middle">YOU</text>
+  <text x="90" y="256" class="t" text-anchor="middle">buttons,</text>
+  <text x="90" y="274" class="t" text-anchor="middle">voice,</text>
+  <text x="90" y="292" class="t" text-anchor="middle">approval</text>
+
+  <!-- road 1: buttons -->
+  <rect x="230" y="96" width="200" height="74" class="box" shape-rendering="crispEdges"/>
+  <text x="244" y="120" class="h">GAMEPAD DAEMON</text>
+  <text x="244" y="140" class="t">buttons become keys,</text>
+  <text x="244" y="157" class="t">pointer and window moves</text>
+
+  <!-- road 2: voice -->
+  <rect x="230" y="222" width="200" height="74" class="box" shape-rendering="crispEdges"/>
+  <text x="244" y="246" class="h">MYCROFT</text>
+  <text x="244" y="266" class="t">speech → editable text</text>
+  <text x="244" y="283" class="t">(local, no network)</text>
+
+  <rect x="500" y="222" width="180" height="74" class="box" shape-rendering="crispEdges"/>
+  <text x="514" y="246" class="h">SLATE</text>
+  <text x="514" y="266" class="t">you correct with the</text>
+  <text x="514" y="283" class="t">buttons, then send</text>
+
+  <!-- desktop target -->
+  <rect x="760" y="96" width="170" height="200" fill="#1b1446" stroke="#7a5cd6" stroke-width="3" shape-rendering="crispEdges"/>
+  <text x="774" y="120" class="h">SWAY + APPS</text>
+  <text x="774" y="142" class="t">the window that</text>
+  <text x="774" y="159" class="t">has the focus:</text>
+  <text x="774" y="181" class="t">terminal, calculator,</text>
+  <text x="774" y="198" class="t">files, a game…</text>
+
+  <!-- road 3: Mike and Mannie -->
+  <rect x="500" y="356" width="180" height="88" class="box" shape-rendering="crispEdges"/>
+  <text x="514" y="380" class="h">MIKE</text>
+  <text x="514" y="400" class="t">local brain: proposes</text>
+  <text x="514" y="417" class="t">ONE action; you accept</text>
+  <text x="514" y="434" class="t">or refuse it</text>
+
+  <rect x="760" y="356" width="170" height="88" class="box" shape-rendering="crispEdges"/>
+  <text x="774" y="380" class="h">WYOH MCP</text>
+  <text x="774" y="400" class="t">finite, named</text>
+  <text x="774" y="417" class="t">desktop actions</text>
+
+  <rect x="500" y="474" width="180" height="70" fill="#1b1446" stroke="#a98cf5" stroke-width="3" stroke-dasharray="8 4" shape-rendering="crispEdges"/>
+  <text x="514" y="498" class="h">MANNIE</text>
+  <text x="514" y="518" class="t">frontier model, remote;</text>
+  <text x="514" y="535" class="t">cost shown before use</text>
+
+  <!-- arrows -->
+  <g fill="none" stroke-width="3">
+    <path d="M150 230 C190 230 190 133 228 133" stroke="#3ee6e0" marker-end="url(#aC)"/>
+    <path d="M430 133 H758" stroke="#3ee6e0" marker-end="url(#aC)"/>
+    <path d="M150 259 H228" stroke="#ffb347" marker-end="url(#aA)"/>
+    <path d="M430 259 H498" stroke="#ffb347" marker-end="url(#aA)"/>
+    <path d="M680 259 H758" stroke="#ffb347" marker-end="url(#aA)"/>
+    <path d="M590 296 V354" stroke="#a98cf5" stroke-dasharray="6 4" marker-end="url(#aV)"/>
+    <path d="M680 400 H758" stroke="#a98cf5" stroke-dasharray="6 4" marker-end="url(#aV)"/>
+    <path d="M845 356 V298" stroke="#a98cf5" stroke-dasharray="6 4" marker-end="url(#aV)"/>
+    <path d="M590 444 V472" stroke="#a98cf5" stroke-dasharray="6 4" marker-end="url(#aV)"/>
+  </g>
+  <text x="594" y="125" class="lab" fill="#3ee6e0" text-anchor="middle">1 · BUTTONS · live</text>
+  <text x="464" y="251" class="lab" fill="#ffb347" text-anchor="middle">2 · VOICE</text>
+  <text x="719" y="251" class="lab" fill="#ffb347" text-anchor="middle">FN+A</text>
+  <text x="600" y="332" class="lab" fill="#a98cf5">3 · ASK</text>
+  <text x="600" y="462" class="lab" fill="#a98cf5">too hard</text>
+
+  <!-- legend -->
+  <text x="30" y="380" class="t">1 · works on Luna today</text>
+  <text x="30" y="400" class="t">2 · wired; waits for a microphone</text>
+  <text x="30" y="420" class="t">3 · planned: Mike measured on the</text>
+  <text x="30" y="437" class="t">     desk host, Mannie on luna-pi</text>
+  <text x="30" y="472" class="t">Nothing acts without you:</text>
+  <text x="30" y="489" class="t">text is sent, and actions run,</text>
+  <text x="30" y="506" class="t">only after you accept them.</text>
+</svg>

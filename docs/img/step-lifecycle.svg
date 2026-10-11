@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" width="960" height="420" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>The life of a step</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+    <marker id="aC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#3ee6e0"/></marker>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .h { font: bold 13px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .t { font: 12px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .s { font: 11.5px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .box { fill: #141b3d; stroke: #3b4a7a; stroke-width: 3; }
+  </style>
+  <rect width="960" height="420" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">THE LIFE OF A STEP</text>
+  <text x="30" y="68" class="sub">every piece of work in every workline goes through the same six stations</text>
+
+  <g shape-rendering="crispEdges">
+    <rect x="30" y="100" width="140" height="120" class="box"/>
+    <rect x="186" y="100" width="140" height="120" fill="#22182e" stroke="#ff7b39" stroke-width="3"/>
+    <rect x="342" y="100" width="140" height="120" class="box"/>
+    <rect x="498" y="100" width="140" height="120" class="box"/>
+    <rect x="654" y="100" width="140" height="120" class="box"/>
+    <rect x="810" y="100" width="120" height="120" class="box"/>
+  </g>
+  <text x="44" y="124" class="h">1 · PLAN</text>
+  <text x="44" y="146" class="t">a step with</text><text x="44" y="162" class="t">sub-steps and</text><text x="44" y="178" class="t">acceptance, in</text><text x="44" y="194" class="t">plan_&lt;line&gt;.md</text>
+  <text x="200" y="124" class="h">2 · GREEN LIGHT</text>
+  <text x="200" y="146" class="t">only the user:</text><text x="200" y="162" class="t">"🟩 go Step N"</text><text x="200" y="182" class="s">planning and docs</text><text x="200" y="196" class="s">need none</text>
+  <text x="356" y="124" class="h">3 · INTENT</text>
+  <text x="356" y="146" class="t">behaviour, failure</text><text x="356" y="162" class="t">modes, budget and</text><text x="356" y="178" class="t">tests, written</text><text x="356" y="194" class="t">before code</text>
+  <text x="512" y="124" class="h">4 · BUILD, TEST</text>
+  <text x="512" y="146" class="t">pytest via uv;</text><text x="512" y="162" class="t">Gherkin for live</text><text x="512" y="178" class="t">scenarios; every</text><text x="512" y="194" class="t">screenshot checked</text>
+  <text x="668" y="124" class="h">5 · RESULT</text>
+  <text x="668" y="146" class="t">a docs/ page with</text><text x="668" y="162" class="t">figures, where</text><text x="668" y="178" class="t">measured, and</text><text x="668" y="194" class="t">what failed</text>
+  <text x="824" y="124" class="h">6 · LOG</text>
+  <text x="824" y="146" class="t">time log in</text><text x="824" y="162" class="t">the plan, and</text><text x="824" y="178" class="t">docs/LOGBOOK</text>
+  <g fill="none" stroke="#3ee6e0" stroke-width="3">
+    <path d="M170 160 H184" marker-end="url(#aC)"/>
+    <path d="M326 160 H340" marker-end="url(#aC)"/>
+    <path d="M482 160 H496" marker-end="url(#aC)"/>
+    <path d="M638 160 H652" marker-end="url(#aC)"/>
+    <path d="M794 160 H808" marker-end="url(#aC)"/>
+  </g>
+
+  <text x="30" y="262" class="h">WHEN SOMETHING GOES SIDEWAYS</text>
+  <text x="30" y="284" class="t">· Blocked or unsure: stop, write the state in the plan, ask the user in your own console. No guessing past a blocker.</text>
+  <text x="30" y="304" class="t">· Needs another line: leave a note in its docs/, or ask Professor. Never message another comrade directly.</text>
+  <text x="30" y="324" class="t">· Needs Luna: ask Professor for the token (worklines/luna-access.md), reboot Luna after each test series.</text>
+  <text x="30" y="344" class="t">· Scope changes: update the plan first, then the LOGBOOK, then act.</text>
+  <text x="30" y="384" class="s">Evidence lives in results/&lt;line&gt;/&lt;topic&gt;/&lt;timestamp&gt;/ (not committed); the result page links to it. Nothing is claimed without a measurement.</text>
+</svg>

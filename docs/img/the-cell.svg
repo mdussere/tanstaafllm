@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>The cell: how the agents build Luna</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="42" y="88" width="2" height="2" fill="#6f7fa8"/>
+    </pattern>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .h { font: bold 14px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .t { font: 12.5px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .s { font: 11.5px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .lab { font: bold 11.5px 'DejaVu Sans Mono', monospace; }
+    .box { fill: #141b3d; stroke: #3b4a7a; stroke-width: 3; }
+  </style>
+  <rect width="960" height="600" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">THE CELL</text>
+  <text x="30" y="68" class="sub">how a handful of agents build Luna without stepping on each other</text>
+
+  <!-- the user -->
+  <rect x="380" y="90" width="200" height="66" fill="#22182e" stroke="#ff7b39" stroke-width="3" shape-rendering="crispEdges"/>
+  <text x="480" y="116" class="h" text-anchor="middle">THE USER</text>
+  <text x="480" y="136" class="t" text-anchor="middle">works with each agent</text>
+  <text x="480" y="151" class="t" text-anchor="middle">directly; green-lights all</text>
+
+  <!-- professor -->
+  <rect x="370" y="236" width="220" height="92" fill="#1b1446" stroke="#7a5cd6" stroke-width="3" shape-rendering="crispEdges"/>
+  <text x="480" y="262" class="h" text-anchor="middle">PROFESSOR</text>
+  <text x="480" y="282" class="t" text-anchor="middle">only for work across agents,</text>
+  <text x="480" y="299" class="t" text-anchor="middle">supervision while you are</text>
+  <text x="480" y="316" class="t" text-anchor="middle">away, and the Luna token</text>
+
+  <!-- comrades -->
+  <g shape-rendering="crispEdges">
+    <rect x="30" y="200" width="170" height="70" class="box"/>
+    <rect x="30" y="330" width="170" height="70" class="box"/>
+    <rect x="760" y="200" width="170" height="70" class="box"/>
+    <rect x="760" y="330" width="170" height="70" class="box"/>
+    <rect x="395" y="430" width="170" height="70" class="box"/>
+  </g>
+  <text x="44" y="224" class="h">WYOH</text><text x="44" y="244" class="t">desktop, buttons, apps</text><text x="44" y="261" class="s">plan_wyoh.md</text>
+  <text x="44" y="354" class="h">MYCROFT</text><text x="44" y="374" class="t">voice to text</text><text x="44" y="391" class="s">plan_mycroft.md</text>
+  <text x="774" y="224" class="h">MIKE</text><text x="774" y="244" class="t">local brain</text><text x="774" y="261" class="s">plan_mike.md</text>
+  <text x="774" y="354" class="h">MANNIE</text><text x="774" y="374" class="t">frontier model</text><text x="774" y="391" class="s">plan_mannie.md</text>
+  <text x="409" y="454" class="h">LUNA</text><text x="409" y="474" class="t">the device itself</text><text x="409" y="491" class="s">plan_luna.md</text>
+
+  <!-- links: user consoles (amber), Professor messages (violet) -->
+  <g fill="none" stroke-width="3">
+    <path d="M480 156 V234" stroke="#ff7b39"/>
+    <path d="M380 123 C300 123 160 140 115 198" stroke="#ff7b39"/>
+    <path d="M580 123 C660 123 800 140 845 198" stroke="#ff7b39"/>
+    <path d="M370 270 H202" stroke="#a98cf5"/>
+    <path d="M370 300 C290 300 280 365 202 365" stroke="#a98cf5"/>
+    <path d="M590 270 H758" stroke="#a98cf5"/>
+    <path d="M590 300 C670 300 680 365 758 365" stroke="#a98cf5"/>
+    <path d="M480 328 V428" stroke="#a98cf5"/>
+    <!-- notes between comrades (dashed) -->
+    <path d="M115 270 V328" stroke="#6f7fa8" stroke-dasharray="5 4"/>
+    <path d="M845 270 V328" stroke="#6f7fa8" stroke-dasharray="5 4"/>
+    <path d="M200 395 C300 470 330 465 393 465" stroke="#6f7fa8" stroke-dasharray="5 4"/>
+  </g>
+  <text x="488" y="202" class="lab" fill="#ff7b39">coordination, delegation</text>
+  <text x="232" y="176" class="lab" fill="#ff7b39">direct work, in each console</text>
+  <text x="208" y="262" class="lab" fill="#a98cf5">messages</text>
+  <text x="122" y="304" class="lab" fill="#9fb3c8">notes</text>
+
+  <!-- console badges: the user talks to each agent directly -->
+  <rect x="182" y="206" width="12" height="12" fill="#ff7b39" shape-rendering="crispEdges"/><rect x="182" y="336" width="12" height="12" fill="#ff7b39" shape-rendering="crispEdges"/><rect x="912" y="206" width="12" height="12" fill="#ff7b39" shape-rendering="crispEdges"/><rect x="912" y="336" width="12" height="12" fill="#ff7b39" shape-rendering="crispEdges"/><rect x="547" y="436" width="12" height="12" fill="#ff7b39" shape-rendering="crispEdges"/>
+  <rect x="620" y="508" width="12" height="12" fill="#ff7b39" shape-rendering="crispEdges"/><text x="638" y="519" class="s">your console with that agent</text>
+
+  <!-- luna token -->
+  <g shape-rendering="crispEdges">
+    <rect x="620" y="440" width="150" height="50" fill="#0f2a33" stroke="#3ee6e0" stroke-width="3"/>
+  </g>
+  <text x="695" y="462" class="lab" fill="#3ee6e0" text-anchor="middle">LUNA TOKEN</text>
+  <text x="695" y="480" class="s" text-anchor="middle">one holder at a time</text>
+
+  <!-- rules -->
+  <text x="30" y="536" class="t">You talk to each agent in its own console. Agents never message each other: they leave notes, or go through Professor.</text>
+  <text x="30" y="555" class="t">The plan is the channel: every request lands in a plan step, and the user can read any plan at any time.</text>
+  <text x="30" y="574" class="s">As in the novel's revolutionary cells, each comrade knows only what it needs. Here it keeps the work traceable, not secret.</text>
+</svg>

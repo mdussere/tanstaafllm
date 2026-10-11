@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" width="960" height="620" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Inside Wyoh</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+    <marker id="aC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#3ee6e0"/></marker>
+    <marker id="aA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#ffb347"/></marker>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .h { font: bold 14px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .t { font: 12.5px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .s { font: 11.5px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .lab { font: bold 11px 'DejaVu Sans Mono', monospace; fill: #3ee6e0; }
+    .box { fill: #141b3d; stroke: #3b4a7a; stroke-width: 3; }
+  </style>
+  <rect width="960" height="620" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">INSIDE WYOH</text>
+  <text x="30" y="68" class="sub">from a button press to a window · all processes on Luna</text>
+
+  <!-- gamepad -->
+  <rect x="30" y="110" width="150" height="70" fill="#22182e" stroke="#ff7b39" stroke-width="3" shape-rendering="crispEdges"/>
+  <text x="44" y="134" class="h">GAMEPAD</text>
+  <text x="44" y="154" class="t">17 buttons,</text>
+  <text x="44" y="170" class="t">2 sticks (evdev)</text>
+
+  <!-- daemon -->
+  <rect x="250" y="96" width="290" height="250" fill="#1b1446" stroke="#7a5cd6" stroke-width="3" shape-rendering="crispEdges"/>
+  <text x="264" y="120" class="h">GAMEPAD DAEMON</text>
+  <text x="264" y="140" class="s">wyoh_gamepad.py · Python, no dependency</text>
+  <rect x="264" y="152" width="262" height="78" class="box" shape-rendering="crispEdges"/>
+  <text x="276" y="172" class="t">pure core: mapping, modes,</text>
+  <text x="276" y="189" class="t">FN chords, recovery, pointer</text>
+  <text x="276" y="206" class="t">curve, two-cursor keyboard</text>
+  <text x="276" y="223" class="s">tested offline, no device</text>
+  <text x="264" y="252" class="t">per-app profile, from each</text>
+  <text x="264" y="269" class="t">app's wyoh-app.toml:</text>
+  <text x="264" y="289" class="t">· keys: buttons become keys</text>
+  <text x="264" y="306" class="t">· key map: game-specific keys</text>
+  <text x="264" y="323" class="t">· raw: the game reads the pad</text>
+  <text x="264" y="338" class="s">17.5 MiB · 0 CPU at rest</text>
+
+  <!-- sway -->
+  <rect x="640" y="96" width="290" height="250" fill="#141b3d" stroke="#3ee6e0" stroke-width="3" shape-rendering="crispEdges"/>
+  <text x="654" y="120" class="h">SWAY 1.11</text>
+  <text x="654" y="140" class="s">ArchR's own, unmodified</text>
+  <rect x="654" y="152" width="124" height="70" class="box" shape-rendering="crispEdges"/>
+  <text x="664" y="172" class="t">window 1</text>
+  <rect x="790" y="152" width="126" height="34" class="box" shape-rendering="crispEdges"/>
+  <text x="800" y="174" class="t">window 2</text>
+  <rect x="790" y="188" width="62" height="34" class="box" shape-rendering="crispEdges"/>
+  <rect x="854" y="188" width="62" height="34" class="box" shape-rendering="crispEdges"/>
+  <text x="821" y="210" class="s" text-anchor="middle">3</text><text x="885" y="210" class="s" text-anchor="middle">4</text>
+  <text x="654" y="244" class="t">four tiles at most (layout service);</text>
+  <text x="654" y="261" class="t">a fifth gets "Too many tiles"</text>
+  <text x="654" y="285" class="t">apps: calculator, files,</text>
+  <text x="654" y="302" class="t">Wolfenstein 3D… from the</text>
+  <text x="654" y="319" class="t">menu (fuzzel, Start)</text>
+  <text x="654" y="338" class="s">Sway + bar + wallpaper ≈ 46 MiB</text>
+
+  <!-- slate + keyboard -->
+  <rect x="250" y="400" width="290" height="92" class="box" shape-rendering="crispEdges"/>
+  <text x="264" y="424" class="h">SLATE + KEYBOARD</text>
+  <text x="264" y="444" class="t">multi-line editor (L1) with an</text>
+  <text x="264" y="461" class="t">AZERTY on-screen keyboard typed</text>
+  <text x="264" y="478" class="t">by two stick cursors · +35 MiB</text>
+
+  <!-- dictation -->
+  <rect x="30" y="400" width="170" height="92" class="box" shape-rendering="crispEdges"/>
+  <text x="44" y="424" class="h">MYCROFT</text>
+  <text x="44" y="444" class="t">dictation process,</text>
+  <text x="44" y="461" class="t">started by L2;</text>
+  <text x="44" y="478" class="t">JSON lines out</text>
+
+  <!-- dev bridge -->
+  <rect x="640" y="400" width="290" height="92" fill="#1a1f33" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 4" shape-rendering="crispEdges"/>
+  <text x="654" y="424" class="h">MCP BRIDGE (development)</text>
+  <text x="654" y="444" class="t">agents drive Sway over SSH:</text>
+  <text x="654" y="461" class="t">windows, keys, screenshots, a</text>
+  <text x="654" y="478" class="t">virtual gamepad "person"</text>
+
+  <!-- arrows -->
+  <g fill="none" stroke-width="3">
+    <path d="M180 145 H248" stroke="#3ee6e0" marker-end="url(#aC)"/>
+    <path d="M540 170 H638" stroke="#3ee6e0" marker-end="url(#aC)"/>
+    <path d="M540 280 H638" stroke="#3ee6e0" marker-end="url(#aC)"/>
+    <path d="M395 346 V398" stroke="#3ee6e0" marker-end="url(#aC)"/>
+    <path d="M200 446 H248" stroke="#ffb347" marker-end="url(#aA)"/>
+    <path d="M540 446 C590 446 600 300 638 300" stroke="#3ee6e0" marker-end="url(#aC)"/>
+    <path d="M785 400 V348" stroke="#ffb347" stroke-dasharray="6 4" marker-end="url(#aA)"/>
+  </g>
+  <text x="214" y="137" class="lab" text-anchor="middle">grab</text>
+  <text x="589" y="162" class="lab" text-anchor="middle">uinput keys</text>
+  <text x="589" y="272" class="lab" text-anchor="middle">Sway IPC</text>
+  <text x="402" y="378" class="lab">socket</text>
+  <text x="604" y="400" class="lab">send</text>
+  <text x="224" y="438" class="lab" fill="#ffb347" text-anchor="middle">text</text>
+  <text x="792" y="380" class="lab" fill="#ffb347">IPC</text>
+
+  <!-- boot -->
+  <text x="30" y="530" class="h">AT BOOT</text>
+  <text x="30" y="552" class="t">systemd → wyoh-gpu.sh (binds the Mali driver) → wyoh-sway.service → gamepad and layout services.</text>
+  <text x="30" y="570" class="t">No login, no terminal: the panel shows the desktop.</text>
+  <text x="30" y="592" class="t">Recovery: hold FN + Start for 2 s. Every key is released, the Slate closes, and a game gives the gamepad back.</text>
+  <text x="930" y="612" class="s" text-anchor="end">memory measured on Luna (Wyoh 0407_01, 0506_01, 0605_01)</text>
+</svg>

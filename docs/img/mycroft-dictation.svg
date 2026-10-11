@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="960" height="520" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Mycroft: from voice to the Slate</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+    <marker id="aA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#ffb347"/></marker>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .h { font: bold 14px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .t { font: 12.5px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .s { font: 11.5px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .lab { font: bold 11.5px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .in { font: bold 12px 'DejaVu Sans Mono', monospace; fill: #0b1026; }
+    .box { fill: #141b3d; stroke: #3b4a7a; stroke-width: 3; }
+  </style>
+  <rect width="960" height="520" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">MYCROFT · VOICE TO THE SLATE</text>
+  <text x="30" y="68" class="sub">local speech recognition, no network · the user corrects before anything is sent</text>
+
+  <g shape-rendering="crispEdges">
+    <rect x="30" y="100" width="150" height="80" fill="#22182e" stroke="#ff7b39" stroke-width="3"/>
+    <rect x="240" y="100" width="250" height="80" class="box"/>
+    <rect x="550" y="100" width="170" height="80" class="box"/>
+    <rect x="780" y="100" width="150" height="80" fill="#1b1446" stroke="#7a5cd6" stroke-width="3"/>
+  </g>
+  <text x="44" y="126" class="h">MICROPHONE</text>
+  <text x="44" y="146" class="t">16 kHz audio</text>
+  <text x="44" y="166" class="s">jack: no signal; USB next</text>
+  <text x="254" y="126" class="h">mycroft_dictate</text>
+  <text x="254" y="146" class="t">Sherpa-ONNX, streaming</text>
+  <text x="254" y="164" class="t">French model, 2 threads</text>
+  <text x="564" y="126" class="h">WYOH DAEMON</text>
+  <text x="564" y="146" class="t">starts it on L2,</text>
+  <text x="564" y="164" class="t">stops it on L2</text>
+  <text x="794" y="126" class="h">SLATE</text>
+  <text x="794" y="146" class="t">underlined draft,</text>
+  <text x="794" y="164" class="t">then real text</text>
+  <g fill="none" stroke="#ffb347" stroke-width="3">
+    <path d="M180 140 H238" marker-end="url(#aA)"/>
+    <path d="M490 140 H548" marker-end="url(#aA)"/>
+    <path d="M720 140 H778" marker-end="url(#aA)"/>
+  </g>
+  <text x="520" y="206" class="lab" text-anchor="middle">JSON lines: ready · partial · final · error</text>
+
+  <!-- comparison -->
+  <text x="30" y="252" class="h">TWO FRENCH MODELS, SAME CLIPS</text>
+  <text x="30" y="272" class="s">current: Zipformer FR (int8) · candidate: Kroko FR (4× fewer parameters, punctuated) · measured on luna-pi, aarch64</text>
+
+  <text x="30" y="312" class="t">Peak memory</text>
+  <g shape-rendering="crispEdges">
+    <rect x="200" y="298" width="444" height="22" fill="#6f7fa8"/>
+    <rect x="200" y="324" width="318" height="22" fill="#ffb347"/>
+  </g>
+  <text x="208" y="314" class="in">current 222 MiB</text>
+  <text x="208" y="340" class="in">Kroko 159 MiB</text>
+
+  <text x="30" y="384" class="t">Decoding work</text>
+  <g shape-rendering="crispEdges">
+    <rect x="200" y="370" width="440" height="22" fill="#6f7fa8"/>
+    <rect x="200" y="396" width="232" height="22" fill="#ffb347"/>
+  </g>
+  <text x="208" y="386" class="in">current ×1</text>
+  <text x="208" y="412" class="in">Kroko ×0.53 (1.9× faster)</text>
+
+  <text x="30" y="456" class="t">Load time</text>
+  <g shape-rendering="crispEdges">
+    <rect x="200" y="442" width="164" height="22" fill="#6f7fa8"/>
+    <rect x="200" y="468" width="440" height="22" fill="#ff7b39"/>
+  </g>
+  <text x="208" y="458" class="in">current 4.1 s</text>
+  <text x="208" y="484" class="in">Kroko 11 s (2.4 s once pre-optimised)</text>
+
+  <text x="680" y="320" class="t">On Luna itself, the current</text>
+  <text x="680" y="338" class="t">model needs ~17 s to load and</text>
+  <text x="680" y="356" class="t">runs at ~0.75× real time:</text>
+  <text x="680" y="374" class="t">too slow and too heavy to</text>
+  <text x="680" y="392" class="t">stay resident. Hence Kroko.</text>
+  <text x="680" y="430" class="s">Sources: Mycroft 0802_01 (Luna),</text>
+  <text x="680" y="446" class="s">0903_01 (desk), 0903_02 (luna-pi).</text>
+</svg>

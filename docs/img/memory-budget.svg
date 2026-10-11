@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="960" height="520" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Pressure: the 1 GiB budget</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+    <pattern id="free" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#10233a"/><rect width="4" height="4" fill="#132b47"/><rect x="4" y="4" width="4" height="4" fill="#132b47"/>
+    </pattern>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .h { font: bold 14px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .t { font: 12.5px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .s { font: 11px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .in { font: bold 12px 'DejaVu Sans Mono', monospace; fill: #0b1026; }
+    .inL { font: bold 12px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; }
+  </style>
+  <rect width="960" height="520" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">PRESSURE · THE 1 GiB BUDGET</text>
+  <text x="30" y="68" class="sub">983 MiB of RAM for everything · scale: 1 px ≈ 1.12 MiB</text>
+
+  <!-- Scale: 880 px for 983 MiB, from x=40. 1 MiB = 0.895 px -->
+  <text x="40" y="104" class="h">AT REST, ON LUNA</text>
+  <g shape-rendering="crispEdges">
+    <rect x="40" y="116" width="112" height="40" fill="#6f7fa8"/>
+    <rect x="152" y="116" width="56" height="40" fill="#3ee6e0"/>
+    <rect x="208" y="116" width="712" height="40" fill="url(#free)" stroke="#3b4a7a" stroke-width="2"/>
+  </g>
+  <text x="96" y="141" class="in" text-anchor="middle">system</text>
+  <text x="180" y="141" class="in" text-anchor="middle">Wyoh</text>
+  <text x="564" y="141" class="inL" text-anchor="middle">available ≈ 795 MiB</text>
+  <text x="40" y="176" class="s">kernel + ArchR ≈ 125 MiB (derived)</text>
+  <text x="300" y="176" class="s">Wyoh ≈ 63 MiB: Sway 28, bar 11, wallpaper 5, status 3, gamepad daemon 17.5 (Slate + keyboard +35 when open)</text>
+
+  <!-- candidates -->
+  <text x="40" y="222" class="h">WHO WANTS THE AVAILABLE MEMORY</text>
+  <!-- limit line at x = 208 + 712 = 920 (795 MiB from 208) -->
+  <line x1="920" y1="232" x2="920" y2="470" stroke="#ff5f6d" stroke-width="3" stroke-dasharray="6 4"/>
+  <text x="916" y="486" class="s" text-anchor="end" fill="#ff5f6d">limit: what Luna has left</text>
+
+  <!-- rows start at x = 208. widths: Mycroft 250 -> 224, Kroko 160 -> 143, Mike 351 -> 314, Mike 230M 263 -> 235, Mannie 244 -> 218, Wolf 66 -> 59 -->
+  <g shape-rendering="crispEdges">
+    <!-- row A -->
+    <rect x="208" y="244" width="224" height="34" fill="#ffb347"/>
+    <rect x="432" y="244" width="314" height="34" fill="#a98cf5"/>
+    <!-- row B -->
+    <rect x="208" y="300" width="224" height="34" fill="#ffb347"/>
+    <rect x="432" y="300" width="314" height="34" fill="#a98cf5"/>
+    <rect x="746" y="300" width="218" height="34" fill="#ff7b39"/>
+    <!-- row C -->
+    <rect x="208" y="356" width="143" height="34" fill="#ffd58a"/>
+    <rect x="351" y="356" width="235" height="34" fill="#c7b4ff"/>
+    <rect x="586" y="356" width="218" height="34" fill="#ff7b39"/>
+    <!-- row D -->
+    <rect x="208" y="412" width="59" height="34" fill="#3ee6e0"/>
+  </g>
+  <text x="320" y="266" class="in" text-anchor="middle">Mycroft 250</text>
+  <text x="589" y="266" class="in" text-anchor="middle">Mike 351</text>
+  <text x="320" y="322" class="in" text-anchor="middle">Mycroft 250</text>
+  <text x="589" y="322" class="in" text-anchor="middle">Mike 351</text>
+  <text x="840" y="322" class="in" text-anchor="middle">Mannie 244</text>
+  <text x="279" y="378" class="in" text-anchor="middle">Kroko 160</text>
+  <text x="468" y="378" class="in" text-anchor="middle">Mike 230M 263</text>
+  <text x="695" y="378" class="in" text-anchor="middle">Mannie 244</text>
+  
+  <text x="40" y="266" class="t">A · voice + brain</text>
+  <text x="40" y="322" class="t">B · + Mannie</text>
+  <text x="40" y="378" class="t">C · lighter models</text>
+  <text x="40" y="434" class="t">D · a game</text>
+  <text x="756" y="266" class="s">601 · fits</text>
+  <text x="40" y="338" class="s" fill="#ff5f6d">845 · does not fit</text>
+  <text x="812" y="378" class="s">667 · fits</text>
+  <text x="276" y="434" class="t">Wolfenstein 3D 66 · alone, a game is cheap</text>
+
+  <text x="40" y="506" class="s">Peak RSS in MiB. Mycroft and ECWolf measured on Luna; Kroko and Mannie (Claude Code, one request) on luna-pi; Mike (lean, Python included) on the desk host.</text>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" width="960" height="460" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Luna's cards</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .h { font: bold 14px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .t { font: 12.5px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .s { font: 11.5px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .in { font: bold 12px 'DejaVu Sans Mono', monospace; fill: #0b1026; }
+  </style>
+  <rect width="960" height="460" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">LUNA'S CARDS</text>
+  <text x="30" y="68" class="sub">Seal first: the original is archived, and we only ever work on a copy</text>
+
+  <!-- factory card -->
+  <g shape-rendering="crispEdges">
+    <rect x="30" y="96" width="250" height="110" fill="#22182e" stroke="#ff7b39" stroke-width="3"/>
+  </g>
+  <text x="44" y="120" class="h">FACTORY CARD · SEALED</text>
+  <text x="44" y="142" class="t">the seller's EmuELEC system,</text>
+  <text x="44" y="160" class="t">imaged and checked by SHA-256,</text>
+  <text x="44" y="178" class="t">then put away. Never written.</text>
+
+  <!-- working card -->
+  <text x="320" y="120" class="h">WORKING CARD · ArchR, reshaped (Luna Step 6)</text>
+  <!-- 64 GB card, widths: boot 0.25 GiB tiny, root 24 GiB, home 8 GiB, storage 26 GiB. 600 px for 58.3 GiB -->
+  <g shape-rendering="crispEdges">
+    <rect x="320" y="132" width="14" height="44" fill="#ff7b39"/>
+    <rect x="334" y="132" width="247" height="44" fill="#6f7fa8"/>
+    <rect x="581" y="132" width="82" height="44" fill="#a98cf5"/>
+    <rect x="663" y="132" width="267" height="44" fill="#3ee6e0"/>
+  </g>
+  <text x="457" y="159" class="in" text-anchor="middle">/ · 24 GiB</text>
+  <text x="622" y="159" class="in" text-anchor="middle">/home 8</text>
+  <text x="796" y="159" class="in" text-anchor="middle">/storage · 26 GiB</text>
+  <text x="320" y="196" class="s">boot (DTB, panel and Wi-Fi overlays)</text>
+  <text x="663" y="196" class="s">our code, models, apps, settings</text>
+
+  <text x="30" y="246" class="h">WHAT IT TOOK TO GET HERE</text>
+  <text x="30" y="270" class="t">· the right system for the 720 × 720 panel: a wrong display profile gave a black or 640 × 480 screen</text>
+  <text x="30" y="290" class="t">· a terminal on a handheld: boot into text mode, then a USB keyboard with an AZERTY console</text>
+  <text x="30" y="310" class="t">· Wi-Fi: the RK915 chip needed a device-tree overlay, and the router a fixed 2.4 GHz channel</text>
+  <text x="30" y="330" class="t">· SSH by key only, a stable host key, and settings that survive a reboot</text>
+  <text x="30" y="350" class="t">· room to grow: the root was 97 % full, so the card was reshaped from a full checkpoint image</text>
+
+  <text x="30" y="392" class="h">STILL OPEN</text>
+  <text x="30" y="414" class="t">· the headset jack gives no microphone signal under ArchR, even with the factory codec values</text>
+  <text x="30" y="434" class="t">· only root exists: normal accounts, and whether to keep ArchR or put a plain Arch/Debian root on its boot</text>
+</svg>
