@@ -112,7 +112,7 @@ TANSTAAFL applies to model weights, RAM, shared GPU memory, battery, storage, de
 
 - [x] 5.1 Write the intent before implementation: commands/parameters, state scenarios, terminal bindings, draft ownership, one-model policy, implementation seams, and test policy.
 - [x] 5.2 Implement the foreground text console with mic and deterministic replay audio-source adapters, incremental hypotheses, and an editable draft.
-- [x] 5.3 Implement the F5 start, F6 stop, Enter accept, Esc discard, and safe quit semantics; accepting emits text only and never executes it.
+- [x] 5.3 Implement the Space start/stop (originally F5/F6; changed 2026-10-09 because editor terminals capture function keys), Enter accept, Esc discard, and safe quit semantics; accepting emits text only and never executes it.
 - [x] 5.4 Keep exactly one pinned ASR model/runtime in v0, loaded by the foreground process; document the future-compatible model-profile seam without adding a runtime picker.
 - [ ] 5.5 Complete live-microphone/manual-terminal smoke and foreground resource evidence. State-machine, renderer, replay-contract, and recogniser-adapter pytest coverage is implemented and passing; no real-device claim is made.
 - [ ] 5.6 Acceptance: microphone and replay drive the same visible composition flow; edits survive; accept emits exactly once; discard has no side effect; tests and resource evidence pass with one pinned local model.
@@ -125,6 +125,21 @@ TANSTAAFL applies to model weights, RAM, shared GPU memory, battery, storage, de
 - [ ] 6.3 Record deferred context biasing as a future Mycroft phase with an explicit privacy, data-source, and bounded-vocabulary design.
 - [ ] 6.4 Acceptance: hardware arrival can trigger a bounded validation task rather than reopening v0 design; no target configuration, flashing, or GPU work is implied by this plan.
 
+### Step 7 — Dictation provider for Wyoh's Slate
+**Status**: 🚧 In progress — 🟩 go 7.2–7.4 given 2026-10-09 22:40 by Professor on the user's behalf (decision D3, [`0503_01`](../professor/docs/0503_01_delegated-coordination-log-2026-10-09.md)). Limits: the `luna-pi` measurement in 7.3 waits until `luna-pi` is back on; no Luna install, no Slate code, no commit.
+
+User direction: try voice input in Wyoh's Slate (dictate, correct, send). The Slate is Wyoh's; Mycroft provides the text. Proposal and open questions: [Wyoh note `0600_02`](../wyoh/docs/0600_02_note-from-mycroft-dictation-in-slate.md).
+
+- [x] 7.1 Apply the user's display decisions in Mycroft's console: one text area (no separate hypothesis pane) and lower-case output.
+- [x] 7.2 Interface agreed with Wyoh (`0600_02` §6) and recorded: a separate process started by Wyoh's gamepad daemon; `ready`/`partial`/`final`/`error` JSON lines; stop by closing stdin; exit 0/2/3; capture device as `--input`. See `docs/0704_01_dictation-provider.md`.
+- [~] 7.3 Runtime selected by architecture: the official prebuilt `linux-aarch64-shared-cpu-lib` (checksum verified; needs glibc 2.17 and GLIBCXX 3.4.19, no compiler). **Open:** load and measure on `luna-pi` (off on 2026-10-09), then on Luna once Luna Step 8 locates the microphone.
+- [x] 7.4 `scripts/mycroft_dictate.py` with a `--fake` mode for Wyoh; `test/mycroft/dictate.feature` and `test_dictate.py`. Desk host: model load 1.27 s, first partial 1.29 s after `ready`, stop→final under 10 ms, peak RSS 217.5 MiB (`results/mycroft/dictate/20261009T203427Z/`).
+- [ ] 7.5 Acceptance: dictated text appears in the Slate and can be corrected and sent there; resource cost recorded against the ledger.
+
+**Recorded for later (not authorised):**
+- **Re-format action:** one press finishes sentences and adds punctuation and capitals. Candidates are rules, a French punctuation model (existence unverified), or Mike.
+- **Input modes:** command line (correct before sending) versus Mike and Mannie (direct dictation, sent as it is).
+
 ---
 
 ## Progress tracking ✅
@@ -134,8 +149,9 @@ TANSTAAFL applies to model weights, RAM, shared GPU memory, battery, storage, de
 - 🧪 Step 2 — Reopened for compact contextual-ASR evidence; baseline shortlist preserved.
 - 🧪 Step 3 — Reopened for the matched contextual evaluation protocol; baseline harness preserved.
 - 🧪 Step 4 — Reopened; Sherpa remains the context-free reference pending expanded evidence.
-- 🚧 Step 5 — Console test coverage comprises 15 asset-free checks plus 2 optional pinned-adapter integrations; live-microphone smoke and foreground resource evidence remain.
+- 🚧 Step 5 — Console test coverage comprises 20 asset-free checks plus 3 optional pinned-asset integrations, including a real-terminal scenario; live-microphone smoke and foreground resource evidence remain.
 - ⏳ Step 6 — Hand off target-hardware validation.
+- 🚧 Step 7 — Dictation provider: 7.1, 7.2, 7.4 done; 7.3 done on the desk host, `luna-pi` measurement waiting; 7.5 needs Wyoh's Step 12 and the user.
 
 ---
 
@@ -159,6 +175,11 @@ date
 | 2026-09-25T22:08:52+02:00 | User supplied a consented 130-second representative recording. Ran only the two approved desktop candidates on an explicit temporary 16 kHz mono conversion: Sherpa WER 0.134 versus Whisper Tiny q5_1 WER 0.427. The private audio and raw logs remain uncommitted; target fit remains unproven. |
 | 2026-09-25T23:30:00+02:00 | Reframed Mycroft v0 as a text-only microphone/replay composition console. Wrote the required intent before implementation; Step 1 is reopened and Step 5 is paused after the intent pending a new green light. |
 | 2026-09-26 | Step 5 was green-lit. Implemented the one-profile foreground console and pytest evidence under `test/mycroft/`: 15 asset-free checks pass, while 2 pinned-C-API/public-WAV integrations pass only when their external assets are installed and otherwise skip. Live microphone/terminal and foreground resource validation remain open; no Luna claim is made. |
+| 2026-10-09 | User reported the console filling the terminal with repeated frames. Reproduced in a pseudo-terminal and fixed within the green-lit Step 5: staircase/scrolling redraws, unresponsive lone Esc, `q` losing an editable draft, invisible accepted text, and a model reload on every F5. Added a real-terminal integration scenario (`test/mycroft/console_terminal.feature`). Live microphone acceptance (5.5) remains open. |
+| 2026-10-09 | User found that VS Code's terminal captures F5 (debugger). Replaced F5/F6 with a Space start/stop toggle (ordinary text inside a stopped draft) and made the key decoder ignore unbound escape sequences. Intent `0501_01` amended. |
+| 2026-10-09 | User direction: one text area and lower case (done in the console; peak RSS 218.7 MiB on x86_64), a later re-format action, per-destination input modes, and a Slate dictation trial. Proposed Step 7 and sent Wyoh note `0600_02`; no Slate code touched. |
+| 2026-10-09T22:45 | Wyoh accepted the separate dictation process (`0600_02` §6, its Step 12). Professor gave 🟩 go 7.2–7.4 on the user's behalf (D3 in `worklines/professor/docs/0503_01_delegated-coordination-log-2026-10-09.md`); desk-host work only, `luna-pi` measurement deferred while it is off, no commit. |
+| 2026-10-09T22:40–23:00 | Did 7.2–7.4 under D3: interface recorded, aarch64 runtime selected and inspected, `mycroft_dictate.py` with fake mode and tests (31 passed + 4 integration passed; default suite 292 passed). Blocked: the `luna-pi` part of 7.3 (`luna-pi` off). Stopped as instructed; no commit. |
 
 ---
 
@@ -178,6 +199,8 @@ date
 
 - `worklines/mycroft/docs/0501_01_text-console-intent.md` — required v0 console intent: sources, interactions, state behaviour, implementation seams, one-model policy, and test harness.
 - `worklines/mycroft/docs/0502_02_text-console-implementation.md` — v0 implementation boundary, pytest evidence, and explicit remaining live-input/resource acceptance.
+- `worklines/wyoh/docs/0600_02_note-from-mycroft-dictation-in-slate.md` — Step 7 proposal to Wyoh: dictation into the Slate, with Wyoh's reply.
+- `worklines/mycroft/docs/0704_01_dictation-provider.md` — Steps 7.2–7.4: interface, aarch64 runtime, implementation and desk-host evidence.
 
 ## Active architecture and reopened evidence — 2026-09-25
 

@@ -10,13 +10,16 @@ from __future__ import annotations
 
 import argparse
 import array
+import codecs
 import ctypes
 import os
+import platform
 import re
 import select
 import subprocess
 import sys
 import termios
+import textwrap
 import time
 import tty
 import wave
@@ -27,7 +30,12 @@ from typing import Callable, Iterator, Optional
 
 
 MODEL_DIRNAME = "sherpa-onnx-streaming-zipformer-fr-2023-04-14"
-RUNTIME_DIRNAME = "sherpa-onnx-v1.13.8-linux-x64-shared-no-tts"
+# One pinned Sherpa release; only the prebuilt CPU library for the running
+# machine's architecture differs.  Luna and luna-pi are aarch64.
+RUNTIME_DIRNAMES = {
+    "x86_64": "sherpa-onnx-v1.13.8-linux-x64-shared-no-tts",
+    "aarch64": "sherpa-onnx-v1.13.8-linux-aarch64-shared-cpu-lib",
+}
 MODEL_ID = "sherpa-onnx-fr-zipformer-int8 / 2023-04-14"
 CHUNK_MS = 200
 PCM_CAPTURE_PATH = re.compile(r"^/dev/snd/pcmC(?P<card>\d+)D(?P<device>\d+)c$")
@@ -54,7 +62,7 @@ class ConsoleState:
     draft: str = ""
     edited: bool = False
     cursor: int = 0
-    status: str = "F5 starts a session. No audio is retained."
+    status: str = "Space starts a session. No audio is retained."
     accepted_text: Optional[str] = None
 
 
@@ -67,12 +75,12 @@ class DraftController:
 
     def start(self, source_label: str) -> bool:
         if self.state.phase == Phase.RECORDING:
-            self.state.status = "Already recording; F6 stops or Esc discards."
+            self.state.status = "Already recording; Space stops or Esc discards."
             return False
         self.state = ConsoleState(
             phase=Phase.RECORDING,
             source_label=source_label,
-            status="Recording: hypotheses are visible below the draft.",
+            status="Recording: the text appears as it is recognised.",
         )
         return True
 
@@ -86,7 +94,7 @@ class DraftController:
 
     def stop(self, final_text: str = "") -> bool:
         if self.state.phase != Phase.RECORDING:
-            self.state.status = "F6 is available only while recording."
+            self.state.status = "Stopping is available only while recording."
             return False
         if final_text:
             self.hypothesis(final_text)
@@ -101,7 +109,7 @@ class DraftController:
 
     def edit(self, key: str) -> bool:
         if self.state.phase != Phase.STOPPED_DRAFT:
-            self.state.status = "Draft editing is available after F6 (or replay EOF)."
+            self.state.status = "Draft editing is available after Space stops recording (or replay EOF)."
             return False
         text = self.state.draft
         cursor = self.state.cursor
@@ -136,7 +144,7 @@ class DraftController:
         self._accept_sink(text)
         self.state.phase = Phase.ACCEPTED
         self.state.accepted_text = text
-        self.state.status = "Accepted once. F5 starts a fresh session; q quits."
+        self.state.status = "Accepted once. Space starts a fresh session; q quits."
         return True
 
     def discard(self) -> bool:
@@ -155,7 +163,7 @@ class DraftController:
 
     def can_quit(self) -> bool:
         if self.state.phase == Phase.RECORDING:
-            self.state.status = "Use F6 to stop or Esc to discard before quitting."
+            self.state.status = "Use Space to stop or Esc to discard before quitting."
             return False
         return True
 
@@ -170,16 +178,55 @@ def render_snapshot(state: ConsoleState) -> str:
             f"Model: {MODEL_ID}",
             f"Status: {state.status}",
             "",
-            "Draft:",
+            "Text:",
             state.draft or "(empty)",
             cursor_marker,
             "",
-            "ASR hypothesis:",
-            state.hypothesis or "(waiting)",
-            "",
-            "F5 start  F6 stop  Enter accept  Esc discard  q quit",
+            "Space start/stop  Enter accept  Esc discard  q quit",
         )
     )
+
+
+_KEY_HINTS = {
+    Phase.IDLE: "Space start  q quit",
+    Phase.RECORDING: "Space stop  Esc discard",
+    Phase.STOPPED_DRAFT: "type to edit  ←/→ Home End  Enter accept  Esc discard  Ctrl-C quit",
+    Phase.ACCEPTED: "Space new session  q quit",
+    Phase.DISCARDED: "Space new session  q quit",
+    Phase.ERROR: "q quit",
+}
+
+
+def _word_wrap(text: str, width: int) -> list[str]:
+    return textwrap.wrap(text, width) or [""]
+
+
+def layout_screen(state: ConsoleState, width: int, height: int) -> tuple[list[str], tuple[int, int] | None]:
+    """Lay the state out as at most ``height`` lines narrower than ``width``.
+
+    Lines stay one column short of the terminal width so that no line ever
+    triggers the terminal's automatic wrap.  The draft is hard-wrapped so that
+    the editing cursor maps directly to a (row, column) on screen; the cursor
+    is returned only while the draft is editable.
+    """
+    usable = max(10, width - 1)
+    rule = "─" * usable
+    lines = [f"Mycroft v0 — {state.phase.value}"[:usable], f"Source: {state.source_label}"[:usable], rule, "Text:"]
+    draft_top = len(lines)
+    draft = state.draft or ("" if state.phase in (Phase.STOPPED_DRAFT, Phase.RECORDING) else "(empty)")
+    lines += [draft[i : i + usable] for i in range(0, len(draft), usable)] or [""]
+    if state.phase == Phase.STOPPED_DRAFT and state.cursor == len(draft) and draft and len(draft) % usable == 0:
+        lines.append("")
+    lines += [rule] + _word_wrap(state.status, usable) + [_KEY_HINTS[state.phase][:usable]]
+    cursor = None
+    if state.phase == Phase.STOPPED_DRAFT:
+        cursor = (draft_top + state.cursor // usable, state.cursor % usable)
+    if len(lines) > height:
+        # Keep the header, status, and key hints; clip the middle.
+        lines = lines[: height - 3] + ["…"] + lines[-2:]
+        if cursor and cursor[0] >= height - 3:
+            cursor = None
+    return lines, cursor
 
 
 class ReplaySource:
@@ -198,7 +245,7 @@ class ReplaySource:
             raise ConsoleError("Replay requires RIFF/WAVE signed 16-bit mono PCM; convert explicitly before v0.")
         self.sample_rate = self._wave.getframerate()
         self.chunk_frames = max(1, self.sample_rate * chunk_ms // 1000)
-        self.label = f"replay {path} ({self.sample_rate} Hz mono PCM)"
+        self.label = f"replay {path.name} ({self.sample_rate} Hz mono PCM)"
         self._next_at = 0.0
         self._finished = False
 
@@ -341,7 +388,7 @@ class SherpaStreamingRecognizer:
 
     def __init__(self, asset_root: Path) -> None:
         model_dir = asset_root / MODEL_DIRNAME
-        runtime_dir = asset_root / RUNTIME_DIRNAME
+        runtime_dir = asset_root / runtime_dirname()
         lib_path = runtime_dir / "lib" / "libsherpa-onnx-c-api.so"
         required = {
             "encoder": model_dir / "encoder-epoch-29-avg-9-with-averaged-model.int8.onnx",
@@ -386,6 +433,13 @@ class SherpaStreamingRecognizer:
         self._recognizer = self._lib.SherpaOnnxCreateOnlineRecognizer(ctypes.byref(self._config))
         if not self._recognizer:
             raise ConsoleError("Pinned Sherpa rejected its recognizer configuration.")
+        self._stream = None
+        self.reset()
+
+    def reset(self) -> None:
+        """Start a fresh utterance stream on the already-loaded model."""
+        if self._stream:
+            self._lib.SherpaOnnxDestroyOnlineStream(self._stream)
         self._stream = self._lib.SherpaOnnxCreateOnlineStream(self._recognizer)
         if not self._stream:
             self.close()
@@ -405,7 +459,9 @@ class SherpaStreamingRecognizer:
         if not result:
             return ""
         try:
-            return (result.contents.text or b"").decode("utf-8", "replace")
+            # The pinned model emits upper case without punctuation; lower case
+            # is the less awkward base for editing and later re-formatting.
+            return (result.contents.text or b"").decode("utf-8", "replace").lower()
         finally:
             self._lib.SherpaOnnxDestroyOnlineRecognizerResult(result)
 
@@ -437,6 +493,14 @@ class SherpaStreamingRecognizer:
             self._recognizer = None
 
 
+def runtime_dirname(machine: str | None = None) -> str:
+    machine = machine or platform.machine()
+    try:
+        return RUNTIME_DIRNAMES[machine]
+    except KeyError:
+        raise ConsoleError(f"No pinned Sherpa runtime for the {machine} architecture.") from None
+
+
 def default_asset_root() -> Path:
     supplied = os.environ.get("MYCROFT_ASSET_ROOT")
     if supplied:
@@ -453,12 +517,46 @@ def make_source(path: Path) -> ReplaySource | AlsaCaptureSource:
 
 
 class KeyDecoder:
-    """Decode the documented function keys and standard single-line editing keys."""
+    """Decode the console's keys from raw terminal input.
 
-    _ESCAPES = {"\x1b[15~": "f5", "\x1b[17~": "f6", "\x1b[D": "left", "\x1b[C": "right", "\x1b[H": "home", "\x1b[F": "end", "\x1b[3~": "delete"}
+    Only keys that every common terminal (including editor-embedded ones) passes
+    through are bound: printable text, Enter, Backspace, Esc, Ctrl-C, arrows,
+    Home/End/Delete.  Any other escape sequence (function keys, Alt chords,
+    mouse reports) is consumed whole and ignored, so it can never leak bytes
+    into the draft.  A lone Esc is ambiguous with the start of a sequence, so
+    it stays pending until more bytes arrive or the caller reports that the
+    input went quiet (``flush``).
+    """
+
+    _SEQUENCES = {
+        "\x1b[D": "left", "\x1b[C": "right", "\x1bOD": "left", "\x1bOC": "right",
+        "\x1b[H": "home", "\x1b[F": "end", "\x1bOH": "home", "\x1bOF": "end",
+        "\x1b[1~": "home", "\x1b[4~": "end", "\x1b[7~": "home", "\x1b[8~": "end", "\x1b[3~": "delete",
+    }
+    _CONTROLS = {"\r": "enter", "\n": "enter", "\x7f": "backspace", "\x08": "backspace", "\x03": "ctrl-c"}
 
     def __init__(self) -> None:
         self._buffer = ""
+
+    @property
+    def pending(self) -> bool:
+        return bool(self._buffer)
+
+    @staticmethod
+    def _sequence_length(buffer: str) -> int | None:
+        """Length of the complete escape sequence at the buffer start, or None if incomplete."""
+        if len(buffer) < 2:
+            return None
+        if buffer[1] == "O":  # SS3: one final character
+            return 3 if len(buffer) >= 3 else None
+        if buffer[1] != "[":
+            return 1  # Esc followed by an ordinary key (an Alt chord): drop the Esc alone
+        if buffer.startswith("\x1b[["):  # Linux console function keys
+            return 4 if len(buffer) >= 4 else None
+        for index in range(2, len(buffer)):  # CSI: parameters, then one final byte
+            if "\x40" <= buffer[index] <= "\x7e":
+                return index + 1
+        return None
 
     def feed(self, text: str) -> list[str]:
         self._buffer += text
@@ -466,21 +564,28 @@ class KeyDecoder:
         while self._buffer:
             if self._buffer[0] != "\x1b":
                 char, self._buffer = self._buffer[0], self._buffer[1:]
-                events.append({"\r": "enter", "\n": "enter", "\x7f": "backspace", "\x08": "backspace"}.get(char, char))
+                events.append(self._CONTROLS.get(char, char))
                 continue
-            complete = next((seq for seq in self._ESCAPES if self._buffer.startswith(seq)), None)
-            if complete:
-                events.append(self._ESCAPES[complete])
-                self._buffer = self._buffer[len(complete):]
-            elif any(seq.startswith(self._buffer) for seq in self._ESCAPES):
+            length = self._sequence_length(self._buffer)
+            if length is None:
                 break
-            else:
-                self._buffer = self._buffer[1:]
+            sequence, self._buffer = self._buffer[:length], self._buffer[length:]
+            if length == 1:
                 events.append("escape")
+            elif sequence in self._SEQUENCES:
+                events.append(self._SEQUENCES[sequence])
         return events
+
+    def flush(self) -> list[str]:
+        """Input went quiet: a lone pending Esc is the Esc key; a cut-off sequence is dropped."""
+        lone_escape = self._buffer == "\x1b"
+        self._buffer = ""
+        return ["escape"] if lone_escape else []
 
 
 class TerminalConsole:
+    ESC_TIMEOUT = 0.05
+
     def __init__(self, input_path: Path, asset_root: Path, output: Callable[[str], None]) -> None:
         self.input_path = input_path
         self.asset_root = asset_root
@@ -488,20 +593,41 @@ class TerminalConsole:
         self.source: ReplaySource | AlsaCaptureSource | None = None
         self.recognizer: SherpaStreamingRecognizer | None = None
         self.running = True
+        self._last_frame: str | None = None
 
     def redraw(self) -> None:
-        sys.stderr.write("\x1b[2J\x1b[H" + render_snapshot(self.controller.state) + "\n")
-        sys.stderr.flush()
+        size = os.get_terminal_size(sys.stderr.fileno())
+        lines, cursor = layout_screen(self.controller.state, size.columns, size.lines)
+        # Home, overwrite each line, erase its tail, then erase below: no
+        # full-screen clear, no trailing newline, so nothing ever scrolls.
+        frame = "\x1b[H" + "\r\n".join(line + "\x1b[K" for line in lines) + "\x1b[J"
+        frame += f"\x1b[{cursor[0] + 1};{cursor[1] + 1}H\x1b[?25h" if cursor else "\x1b[?25l"
+        if frame != self._last_frame:
+            sys.stderr.write(frame)
+            sys.stderr.flush()
+            self._last_frame = frame
+
+    def load_model(self) -> None:
+        """Load the one pinned model once; sessions reuse it."""
+        if self.recognizer is None:
+            self.recognizer = SherpaStreamingRecognizer(self.asset_root)
+
+    def _release_source(self) -> None:
+        if self.source:
+            self.source.close()
+        self.source = None
 
     def _start(self) -> None:
         try:
             source = make_source(self.input_path)
-            recognizer = SherpaStreamingRecognizer(self.asset_root)
+            self.load_model()
+            assert self.recognizer is not None
+            self.recognizer.reset()
             source.start()
         except ConsoleError as exc:
             self.controller.state.status = str(exc)
             return
-        self.source, self.recognizer = source, recognizer
+        self.source = source
         self.controller.start(source.label)
 
     def _stop(self) -> None:
@@ -514,27 +640,29 @@ class TerminalConsole:
         except ConsoleError as exc:
             self.controller.audio_failed(str(exc))
         finally:
-            self.source.close()
-            self.recognizer.close()
-            self.source = self.recognizer = None
+            self._release_source()
 
     def action(self, event: str) -> None:
-        if event == "f5":
-            self._start()
-        elif event == "f6":
+        phase = self.controller.state.phase
+        if event == " " and phase == Phase.RECORDING:
             self._stop()
+        elif event == " " and phase in (Phase.IDLE, Phase.ACCEPTED, Phase.DISCARDED):
+            self._start()
         elif event == "escape":
-            if self.controller.state.phase == Phase.RECORDING:
-                if self.source:
-                    self.source.close()
-                if self.recognizer:
-                    self.recognizer.close()
-                self.source = self.recognizer = None
+            if phase == Phase.RECORDING:
+                self._release_source()
             self.controller.discard()
         elif event == "enter":
             self.controller.accept()
-        elif event == "q" and self.controller.can_quit():
+        elif event == "ctrl-c":
+            # Quit without emitting anything, whatever the state.
+            self._release_source()
+            if phase in (Phase.RECORDING, Phase.STOPPED_DRAFT):
+                self.controller.discard()
             self.running = False
+        elif event == "q" and phase != Phase.STOPPED_DRAFT:
+            if self.controller.can_quit():
+                self.running = False
         else:
             self.controller.edit(event)
 
@@ -546,41 +674,54 @@ class TerminalConsole:
             if pcm is None:
                 return
             if pcm == b"":
-                self._stop()  # replay EOF has exactly the F6 finalisation semantics
+                self._stop()  # replay EOF has exactly the Space-stop finalisation semantics
                 return
             self.controller.hypothesis(self.recognizer.accept_pcm(pcm, self.source.sample_rate))
         except ConsoleError as exc:
             self.controller.audio_failed(str(exc))
-            if self.source:
-                self.source.close()
-            if self.recognizer:
-                self.recognizer.close()
-            self.source = self.recognizer = None
+            self._release_source()
 
     def run(self) -> int:
         if not sys.stdin.isatty() or not sys.stderr.isatty():
             raise ConsoleError("Mycroft v0 needs an interactive terminal for its editable foreground console.")
-        old_settings = termios.tcgetattr(sys.stdin.fileno())
+        stdin = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(stdin)
         decoder = KeyDecoder()
+        utf8 = codecs.getincrementaldecoder("utf-8")("replace")
         try:
-            tty.setraw(sys.stdin.fileno())
+            tty.setraw(stdin)
+            sys.stderr.write("\x1b[?1049h")  # alternate screen: leaves no scrollback behind
+            self.controller.state.status = "Loading the pinned model…"
             self.redraw()
+            try:
+                self.load_model()
+                self.controller.state.status = "Ready. Space starts a session. No audio is retained."
+            except ConsoleError as exc:
+                self.controller.state.status = str(exc)
+            self.redraw()
+            quiet_since = time.monotonic()
             while self.running:
-                ready, _, _ = select.select([sys.stdin], [], [], 0.05)
+                ready, _, _ = select.select([stdin], [], [], 0.02)
                 if ready:
-                    data = os.read(sys.stdin.fileno(), 64).decode("utf-8", "replace")
-                    for event in decoder.feed(data):
+                    events = decoder.feed(utf8.decode(os.read(stdin, 64)))
+                    quiet_since = time.monotonic()
+                elif decoder.pending and time.monotonic() - quiet_since >= self.ESC_TIMEOUT:
+                    events = decoder.flush()
+                else:
+                    events = []
+                for event in events:
+                    if self.running:
                         self.action(event)
                 self.tick()
                 self.redraw()
         finally:
-            if self.source:
-                self.source.close()
+            self._release_source()
             if self.recognizer:
                 self.recognizer.close()
-            termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_settings)
-            sys.stderr.write("\x1b[2J\x1b[H")
+                self.recognizer = None
+            sys.stderr.write("\x1b[?25h\x1b[?1049l")
             sys.stderr.flush()
+            termios.tcsetattr(stdin, termios.TCSADRAIN, old_settings)
         return 0
 
 
@@ -592,12 +733,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
+    # Accepted text is emitted exactly once on stdout.  When stdout is the same
+    # terminal as the full-screen view, the next redraw would erase it, so it
+    # is written after the view is closed; a pipe or file receives it at once.
+    deferred: list[str] = []
+    emit = deferred.append if sys.stdout.isatty() else (lambda text: print(text, flush=True))
     try:
-        console = TerminalConsole(Path(args.input), default_asset_root(), lambda text: print(text, flush=True))
+        console = TerminalConsole(Path(args.input), default_asset_root(), emit)
         return console.run()
     except ConsoleError as exc:
         print(f"mycroft-console: {exc}", file=sys.stderr)
         return 2
+    finally:
+        for text in deferred:
+            print(text, flush=True)
 
 
 if __name__ == "__main__":

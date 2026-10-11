@@ -78,9 +78,15 @@ def test_invalid_actions_do_not_change_the_state() -> None:
 @pytest.mark.parametrize(
     ("raw", "expected"),
     [
-        ("\x1b[15~", ["f5"]),
-        ("\x1b[17~", ["f6"]),
+        (" ", [" "]),
+        ("\x1b[15~", []),
+        ("\x1b[17~", []),
+        ("\x1b[1;5D", []),
+        ("\x1b[[E", []),
+        ("\x1bx", ["escape", "x"]),
         ("\x1b[D", ["left"]),
+        ("\x1bOH", ["home"]),
+        ("\x03", ["ctrl-c"]),
         ("\r", ["enter"]),
         ("\x7f", ["backspace"]),
         ("x", ["x"]),
@@ -98,8 +104,8 @@ def test_renderer_snapshot_is_terminal_independent() -> None:
     snapshot = console.render_snapshot(controller.state)
 
     assert "State: recording | Source: replay fixture.wav" in snapshot
-    assert "Draft:\nbonjour" in snapshot
-    assert "ASR hypothesis:\nbonjour" in snapshot
+    assert "Text:\nbonjour" in snapshot
+    assert "hypothesis" not in snapshot  # one text area, not draft + hypothesis
     assert "\x1b" not in snapshot
 
 
@@ -150,3 +156,102 @@ def test_default_asset_root_is_the_repository_local_installation_slot(monkeypatc
     monkeypatch.delenv("MYCROFT_ASSET_ROOT", raising=False)
     expected = Path(__file__).parents[2] / ".mycroft-assets"
     assert console.default_asset_root() == expected
+
+
+def _stopped_draft(text: str) -> console.DraftController:
+    controller = console.DraftController(lambda _: None)
+    controller.start("replay fixture.wav")
+    controller.stop(text)
+    return controller
+
+
+def test_screen_layout_never_reaches_the_terminal_edge_or_bottom() -> None:
+    controller = _stopped_draft("mot " * 200)
+
+    lines, cursor = console.layout_screen(controller.state, width=40, height=12)
+
+    assert len(lines) <= 12
+    assert all(len(line) < 40 for line in lines)
+    assert lines[-1].startswith("type to edit")
+    assert cursor is None  # the end of an 800-character draft is clipped out of view
+
+
+def test_screen_layout_places_the_cursor_inside_the_wrapped_draft() -> None:
+    controller = _stopped_draft("abcdefghijklmnopqrstuvwxyz")
+    controller.edit("home")
+    for _ in range(12):
+        controller.edit("right")
+
+    lines, cursor = console.layout_screen(controller.state, width=11, height=40)
+
+    draft_top = lines.index("Text:") + 1
+    assert lines[draft_top : draft_top + 3] == ["abcdefghij", "klmnopqrst", "uvwxyz"]
+    assert cursor == (draft_top + 1, 2)
+
+
+def test_lone_escape_is_reported_only_when_input_goes_quiet() -> None:
+    decoder = console.KeyDecoder()
+
+    assert decoder.feed("\x1b") == []
+    assert decoder.pending
+    assert decoder.flush() == ["escape"]
+    assert not decoder.pending
+    assert decoder.feed("\x1b[3") == []
+    assert decoder.feed("~") == ["delete"]
+    assert decoder.feed("\x1b[1") == []
+    assert decoder.flush() == []  # a cut-off sequence is dropped, never typed
+
+
+def test_q_is_draft_text_while_editing_and_quit_otherwise(tmp_path: Path) -> None:
+    emitted: list[str] = []
+    app = console.TerminalConsole(tmp_path / "unused.wav", tmp_path, emitted.append)
+    app.controller.start("replay fixture.wav")
+    app.controller.stop("pour")
+
+    for key in " quoi":
+        app.action(key)
+    assert app.running is True
+    assert app.controller.state.draft == "pour quoi"
+
+    app.action("enter")
+    app.action("q")
+    assert emitted == ["pour quoi"]
+    assert app.running is False
+
+
+def test_ctrl_c_quits_from_a_draft_without_emitting(tmp_path: Path) -> None:
+    emitted: list[str] = []
+    app = console.TerminalConsole(tmp_path / "unused.wav", tmp_path, emitted.append)
+    app.controller.start("replay fixture.wav")
+    app.controller.stop("ne pas envoyer")
+
+    assert console.KeyDecoder().feed("\x03") == ["ctrl-c"]
+    app.action("ctrl-c")
+
+    assert app.running is False
+    assert emitted == []
+    assert app.controller.state.phase is console.Phase.DISCARDED
+
+
+def test_space_toggles_recording_but_is_text_in_a_draft(tmp_path: Path) -> None:
+    app = console.TerminalConsole(tmp_path / "unused.wav", tmp_path, lambda _: None)
+    starts: list[str] = []
+    stops: list[str] = []
+    app._start = lambda: starts.append("start") or app.controller.start("replay fixture.wav")  # type: ignore[method-assign]
+    app._stop = lambda: stops.append("stop") or app.controller.stop("bonjour")  # type: ignore[method-assign]
+
+    app.action(" ")
+    assert starts == ["start"] and app.controller.state.phase is console.Phase.RECORDING
+    app.action(" ")
+    assert stops == ["stop"] and app.controller.state.phase is console.Phase.STOPPED_DRAFT
+    app.action("end")
+    app.action(" ")
+    assert app.controller.state.draft == "bonjour "
+    assert starts == ["start"]
+
+
+def test_runtime_directory_follows_the_machine_architecture() -> None:
+    assert console.runtime_dirname("x86_64") == "sherpa-onnx-v1.13.8-linux-x64-shared-no-tts"
+    assert console.runtime_dirname("aarch64") == "sherpa-onnx-v1.13.8-linux-aarch64-shared-cpu-lib"
+    with pytest.raises(console.ConsoleError, match="armv7l"):
+        console.runtime_dirname("armv7l")

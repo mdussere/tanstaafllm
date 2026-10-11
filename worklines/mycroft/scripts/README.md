@@ -51,7 +51,7 @@ Replay accepts only RIFF/WAVE, signed 16-bit mono PCM. This is deliberately the
 same narrow format as the existing v0 evaluation contract: convert M4A, MP3,
 or stereo files explicitly before invoking Mycroft. Replay is paced in 200 ms
 chunks through the same recogniser callback path as live capture; EOF has the
-same finalisation semantics as `F6`.
+same finalisation semantics as stopping with `Space`.
 
 For live capture, pass a Linux capture-node path such as
 `/dev/snd/pcmC0D0c`. The source adapter validates that exact character device
@@ -61,10 +61,16 @@ host/runtime prerequisite; its availability and real microphone operation are
 not yet evidence of Luna compatibility. The process reads raw PCM only and
 never writes an audio file.
 
-The interactive terminal bindings are `F5` start, `F6` stop, `Enter` accept,
-`Esc` discard, and `q` quit while not recording. Accepted text is emitted once
-to stdout as UTF-8; it is never executed or sent anywhere. After a user edit,
-later hypotheses remain visible but cannot overwrite the draft.
+The console uses the terminal's alternate screen, loads the model once at
+startup, and redraws only when its state changes. The interactive bindings are
+`Enter` accept, `Esc` discard, `q` quit when no draft is
+being edited, and `Ctrl-C` quit without emitting anything. `Space` toggles
+recording (start, then stop); inside a stopped draft `Space` and `q` are
+ordinary text. Function keys are not used, because editor-embedded terminals
+such as VS Code's capture them; unbound escape sequences are ignored. Accepted text is emitted once to stdout as UTF-8; when
+stdout is the terminal it is printed after the full-screen view closes, so it
+stays visible. It is never executed or sent anywhere. After a user edit, later
+hypotheses remain visible but cannot overwrite the draft.
 
 ### Tests and experiments
 
@@ -81,5 +87,25 @@ MYCROFT_ASSET_ROOT=/path/to/assets \
 
 The second command verifies the pinned C adapter and the complete public-WAV
 replay composition flow. It requires the externally installed Sherpa assets.
-A real-terminal live-microphone smoke test remains manual and pending; do not
-mistake a skipped test for device validation.
+The integration run includes `test_console_terminal.py`, which runs the real
+program on an 80×24 pseudo-terminal, emulates the screen with `pyte`, and saves
+each screen under `results/mycroft/console-terminal/<timestamp>/`
+(`console_terminal.feature` is its contract). A real-terminal live-microphone
+smoke test remains manual and pending; do not mistake a skipped test for
+device validation.
+
+## Mycroft dictation provider
+
+`mycroft_dictate.py` produces one utterance of live text for a host that owns
+it (Wyoh's gamepad daemon, for the Slate). It writes JSON lines on stdout
+(`ready`, `partial`, `final`, `error`) and stops when its stdin is closed. The
+protocol is in `worklines/mycroft/docs/0704_01_dictation-provider.md`.
+
+```text
+python3 worklines/mycroft/scripts/mycroft_dictate.py --input /dev/snd/pcmC0D0c --assets /path/to/assets
+python3 worklines/mycroft/scripts/mycroft_dictate.py --fake "ouvre le terminal"
+```
+
+The Sherpa runtime directory is chosen by architecture: the x64 no-TTS
+release on a desktop, and the official `linux-aarch64-shared-cpu-lib` release
+on Luna or `luna-pi`.

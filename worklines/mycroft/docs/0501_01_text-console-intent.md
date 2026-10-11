@@ -32,19 +32,22 @@ The terminal shows a status line, the current mode/source, a single-line editabl
 
 | Key | Action | Allowed states | Behaviour |
 | --- | --- | --- | --- |
-| `F5` | Start recording | idle, stopped draft, discarded, accepted | Starts a fresh capture session and clears only the unaccepted draft after confirmation in the status area. |
-| `F6` | Stop recording | recording | Stops audio capture, finalises outstanding ASR audio, and leaves the resulting draft editable. |
+| `Space` | Start recording | idle, discarded, accepted | Starts a fresh capture session. In a stopped draft `Space` is ordinary text, so an unaccepted draft is never replaced: `Esc` discards it first. |
+| `Space` | Stop recording | recording | Stops audio capture, finalises outstanding ASR audio, and leaves the resulting draft editable. |
 | `Enter` | Accept text | stopped draft | Emits the exact current draft as the sole UTF-8 result, marks it accepted, and performs no destination action. |
 | `Esc` | Discard text | recording, stopped draft, accepted | Stops capture if necessary, clears the local draft/hypothesis view, and reports discard. |
 | ordinary printable keys, arrows, backspace/delete | Edit or supplement draft | stopped draft | Normal single-line terminal editing. `Enter` is reserved for accept, so v0 does not create multiline input. |
-| `q` | Quit | non-recording | Exits without retaining an unaccepted draft. During recording it explains that `F6` or `Esc` is required first. |
+| `q` | Quit | idle, accepted, discarded | Exits. During recording it explains that `Space` or `Esc` is required first; in a stopped draft it is ordinary text. |
+| `Ctrl-C` | Quit | any | Stops capture if necessary and exits without emitting the draft. |
+
+**Amended 2026-10-09:** `F5`/`F6` were replaced by `Space` because editor-embedded terminals (VS Code binds `F5` to its debugger) do not pass function keys through. Unbound escape sequences, including function keys, are ignored rather than typed into the draft.
 
 The binding names are part of the v0 intent and must be configurable only if the test harness can still address their semantic actions. They are keyboard bindings for the pre-hardware console, not a claim about final handheld button mapping.
 
 ## State and scenario contract
 
 ```text
-idle --F5--> recording --F6--> stopped-draft --Enter--> accepted
+idle --Space--> recording --Space--> stopped-draft --Enter--> accepted
                    |                 |                    |
                    +------Esc--------+---------Esc--------+--> discarded
 ```
@@ -52,7 +55,7 @@ idle --F5--> recording --F6--> stopped-draft --Enter--> accepted
 | Scenario | Required result |
 | --- | --- |
 | Start microphone capture | Status changes to recording; partial ASR updates remain visible; no accepted output yet exists. |
-| Start replay | The audio file produces timed pseudo-stream chunks and the same partial/final UI events as microphone capture. End of file behaves as `F6`. |
+| Start replay | The audio file produces timed pseudo-stream chunks and the same partial/final UI events as microphone capture. End of file behaves as the `Space` stop. |
 | Stop | Capture stops once; the last recogniser final result is merged only into untouched draft text; manual edits survive. |
 | Edit/supplement | User text can correct, delete, or add to the stopped draft before acceptance. No ASR update may erase an edit. |
 | Accept | Only permitted from stopped draft. stdout/result sink receives the exact edited text once; the application does not parse it as a command. |

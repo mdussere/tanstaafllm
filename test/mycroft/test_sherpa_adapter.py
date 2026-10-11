@@ -48,7 +48,7 @@ def test_pinned_sherpa_adapter_emits_a_streaming_result() -> None:
 
 @pytest.mark.integration
 def test_replay_and_console_share_the_streaming_composition_flow() -> None:
-    """Public WAV: replay EOF must have F6 semantics and accept only after edit."""
+    """Public WAV: replay EOF must have Space-stop semantics and accept only after edit."""
     root_text = os.environ.get("MYCROFT_ASSET_ROOT")
     if not root_text:
         pytest.skip("MYCROFT_ASSET_ROOT is not set; pinned assets are external to the repository")

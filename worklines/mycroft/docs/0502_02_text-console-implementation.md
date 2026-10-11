@@ -63,6 +63,34 @@ cleanly until `MYCROFT_ASSET_ROOT` again points at the externally installed
 package. These are desktop functional results only, not Luna latency, RAM, or
 microphone compatibility evidence.
 
+## 2026-10-09 terminal correction
+
+The user reported the console filling the terminal with repeated frames. The
+previous evidence tested the state machine and adapter but never the real
+terminal loop. Running the program on a pseudo-terminal reproduced six defects:
+
+1. Frames used bare line feeds in raw mode, so each line began where the
+   previous one ended and frames scrolled into the scrollback.
+2. A full clear and redraw ran every 50 ms even when nothing changed.
+3. A lone `Esc` stayed pending until another key arrived, so discard did not
+   work.
+4. `q` quit from an editable draft, losing it, and could not be typed.
+5. Accepted text reached stdout and was erased by the next redraw.
+6. Each `F5` reloaded the model (about 1.4 s with no redraw).
+
+The console now uses the alternate screen, `\r\n`-terminated lines clipped to
+the terminal size, change-only redraws, a 50 ms `Esc` timeout, `q` as draft
+text while editing, `Ctrl-C` to quit without emitting, one model load at
+startup with a visible loading status, and post-view printing of accepted text
+when stdout is the terminal.
+
+Evidence: 20 asset-free tests and 3 pinned-asset integrations pass, including
+`test_console_terminal.py` (contract `test/mycroft/console_terminal.feature`).
+Its six screens in `results/mycroft/console-terminal/20261009T191427Z/` were
+inspected: readable frames at every state, no output while idle, and the
+accepted draft printed exactly once after exit. This is replay-only desktop
+evidence; the microphone path is still untested.
+
 ## Remaining acceptance evidence
 
 1. Run the documented console inside a real terminal against a permitted live

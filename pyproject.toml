@@ -9,6 +9,7 @@ dependencies = []
 [dependency-groups]
 # Test runner shared by every workline (`docs/02_testing.md`).
 dev = [
+    "pyte>=0.8.2",
     "pytest>=9.1.1",
     "pytest-timeout>=2.4.0",
 ]
