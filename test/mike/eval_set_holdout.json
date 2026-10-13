@@ -1,0 +1,308 @@
+{
+ "about": "Mike Step 2.1 held-out set: written after the keyword baseline and prompt v3, never used to tune them. Same desktops as eval_set.json.",
+ "desktops": {
+  "A": {
+   "open": [
+    "terminal",
+    "calculator"
+   ],
+   "focus": "calculator"
+  },
+  "B": {
+   "open": [
+    "editor"
+   ],
+   "focus": "editor"
+  },
+  "C": {
+   "open": [],
+   "focus": null
+  },
+  "D": {
+   "open": [
+    "terminal",
+    "images",
+    "tasks"
+   ],
+   "focus": "images"
+  },
+  "E": {
+   "open": [
+    "editor",
+    "terminal"
+   ],
+   "focus": "terminal"
+  }
+ },
+ "cases": [
+  {
+   "request": "tu peux m'ouvrir l'éditeur",
+   "desktop": "A",
+   "tool": "launch_app",
+   "args": {
+    "app": "editor"
+   },
+   "tag": "launch"
+  },
+  {
+   "request": "mets-moi la calculatrice",
+   "desktop": "B",
+   "tool": "launch_app",
+   "args": {
+    "app": "calculator"
+   },
+   "tag": "launch"
+  },
+  {
+   "request": "j'aimerais naviguer sur internet",
+   "desktop": "A",
+   "tool": "launch_app",
+   "args": {
+    "app": "browser"
+   },
+   "tag": "launch"
+  },
+  {
+   "request": "une partie de wolf",
+   "desktop": "C",
+   "tool": "launch_app",
+   "args": {
+    "app": "wolfenstein"
+   },
+   "tag": "launch"
+  },
+  {
+   "request": "démarre le gestionnaire de tâches s'il te plaît",
+   "desktop": "B",
+   "tool": "launch_app",
+   "args": {
+    "app": "tasks"
+   },
+   "tag": "launch"
+  },
+  {
+   "request": "il me faudrait un terminal",
+   "desktop": "B",
+   "tool": "launch_app",
+   "args": {
+    "app": "terminal"
+   },
+   "tag": "launch"
+  },
+  {
+   "request": "affiche mes photos",
+   "desktop": "A",
+   "tool": "launch_app",
+   "args": {
+    "app": "images"
+   },
+   "tag": "launch"
+  },
+  {
+   "request": "lance le petit jeu du dino",
+   "desktop": "E",
+   "tool": "launch_app",
+   "args": {
+    "app": "dino"
+   },
+   "tag": "launch"
+  },
+  {
+   "request": "retourne sur le terminal",
+   "desktop": "A",
+   "tool": "focus_window",
+   "args": {
+    "app": "terminal"
+   },
+   "tag": "focus"
+  },
+  {
+   "request": "je veux l'éditeur devant",
+   "desktop": "E",
+   "tool": "focus_window",
+   "args": {
+    "app": "editor"
+   },
+   "tag": "focus"
+  },
+  {
+   "request": "donne-moi la main sur les tâches",
+   "desktop": "D",
+   "tool": "focus_window",
+   "args": {
+    "app": "tasks"
+   },
+   "tag": "focus"
+  },
+  {
+   "request": "va dans la console",
+   "desktop": "D",
+   "tool": "focus_window",
+   "args": {
+    "app": "terminal"
+   },
+   "tag": "focus"
+  },
+  {
+   "request": "passe à l'éditeur",
+   "desktop": "E",
+   "tool": "focus_window",
+   "args": {
+    "app": "editor"
+   },
+   "tag": "focus"
+  },
+  {
+   "request": "tu peux fermer le terminal",
+   "desktop": "E",
+   "tool": "close_window",
+   "args": {
+    "app": "terminal"
+   },
+   "tag": "close"
+  },
+  {
+   "request": "ferme-moi cette calculatrice",
+   "desktop": "A",
+   "tool": "close_window",
+   "args": {
+    "app": "calculator"
+   },
+   "tag": "close"
+  },
+  {
+   "request": "je n'ai plus besoin de l'éditeur",
+   "desktop": "B",
+   "tool": "close_window",
+   "args": {
+    "app": "editor"
+   },
+   "tag": "close"
+  },
+  {
+   "request": "quitte les tâches",
+   "desktop": "D",
+   "tool": "close_window",
+   "args": {
+    "app": "tasks"
+   },
+   "tag": "close"
+  },
+  {
+   "request": "colle le terminal sur la gauche",
+   "desktop": "A",
+   "tool": "move_window",
+   "args": {
+    "app": "terminal",
+    "place": "left"
+   },
+   "tag": "move"
+  },
+  {
+   "request": "le terminal en grand",
+   "desktop": "E",
+   "tool": "move_window",
+   "args": {
+    "app": "terminal",
+    "place": "full"
+   },
+   "tag": "move"
+  },
+  {
+   "request": "pousse la visionneuse vers la droite",
+   "desktop": "D",
+   "tool": "move_window",
+   "args": {
+    "app": "images",
+    "place": "right"
+   },
+   "tag": "move"
+  },
+  {
+   "request": "monte les tâches en haut",
+   "desktop": "D",
+   "tool": "move_window",
+   "args": {
+    "app": "tasks",
+    "place": "top"
+   },
+   "tag": "move"
+  },
+  {
+   "request": "écris je reviens dans cinq minutes",
+   "desktop": "B",
+   "tool": "type_text",
+   "args": {
+    "text": "je reviens dans cinq minutes"
+   },
+   "tag": "type"
+  },
+  {
+   "request": "tape make test",
+   "desktop": "E",
+   "tool": "type_text",
+   "args": {
+    "text": "make test"
+   },
+   "tag": "type"
+  },
+  {
+   "request": "saisis bonjour paul",
+   "desktop": "B",
+   "tool": "type_text",
+   "args": {
+    "text": "bonjour paul"
+   },
+   "tag": "type"
+  },
+  {
+   "request": "qu'est-ce qui tourne en ce moment",
+   "desktop": "D",
+   "tool": "list_windows",
+   "args": {},
+   "tag": "list"
+  },
+  {
+   "request": "fais-moi la liste des fenêtres",
+   "desktop": "A",
+   "tool": "list_windows",
+   "args": {},
+   "tag": "list"
+  },
+  {
+   "request": "lis-moi mes messages",
+   "desktop": "A",
+   "tool": "none",
+   "args": {},
+   "tag": "none"
+  },
+  {
+   "request": "réserve un train pour lyon",
+   "desktop": "B",
+   "tool": "none",
+   "args": {},
+   "tag": "none"
+  },
+  {
+   "request": "combien de batterie il me reste",
+   "desktop": "A",
+   "tool": "none",
+   "args": {},
+   "tag": "none"
+  },
+  {
+   "request": "ouvre youtube",
+   "desktop": "A",
+   "tool": "none",
+   "args": {},
+   "tag": "none-off-list"
+  },
+  {
+   "request": "mets de la musique",
+   "desktop": "D",
+   "tool": "none",
+   "args": {},
+   "tag": "none"
+  }
+ ]
+}
