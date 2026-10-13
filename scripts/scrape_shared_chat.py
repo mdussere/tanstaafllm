@@ -74,8 +74,13 @@ def current_window(page: Page) -> list[dict[str, str]]:
     )
     messages = []
     for message in raw:
-        message_id = message["id"] or f"{message['role']}\x1f{message['text']}"
-        messages.append({"id": message_id, "role": message["role"], "text": message["text"]})
+        text = message["text"]
+        # innerText includes the expand/collapse buttons' labels.
+        for label in ("Show less", "Show more"):
+            if text.rstrip().endswith(label):
+                text = text.rstrip()[: -len(label)]
+        message_id = message["id"] or f"{message['role']}\x1f{text}"
+        messages.append({"id": message_id, "role": message["role"], "text": text})
     return messages
 
 
@@ -90,7 +95,11 @@ def collect_conversation(page: Page, root: Locator) -> tuple[dict[str, dict[str,
     while True:
         window = current_window(page)
         for message in window:
-            messages.setdefault(message["id"], message)
+            # A message can be sampled while still collapsed or not yet
+            # rendered (empty); keep the most complete version seen.
+            seen = messages.get(message["id"])
+            if seen is None or len(message["text"]) > len(seen["text"]):
+                messages[message["id"]] = message
         for before, after in zip(window, window[1:]):
             if before["id"] != after["id"]:
                 edges.add((before["id"], after["id"]))
@@ -179,7 +188,9 @@ def main() -> None:
         final_scroll = root.evaluate("node => node.scrollTop")
         browser.close()
 
-    ordered = chronological_order(messages, edges)
+    # Placeholders that never received text (for example a pending request
+    # node) carry nothing to preserve.
+    ordered = [m for m in chronological_order(messages, edges) if m["text"].strip()]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(render_markdown(args.url, ordered), encoding="utf-8")
     if args.debug_json:

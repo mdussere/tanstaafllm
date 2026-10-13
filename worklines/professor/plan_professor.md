@@ -98,6 +98,8 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 - [ ] 5.2 Record decisions that change public naming, hardware assumptions, interfaces, or delivery scope.
 - [ ] 5.3 Acceptance: the Professor workline always exposes the current project direction, workline boundaries, and next approved action.
 
+- [ ] 5.4 **Delegated coordination, 2026-10-09 22:30 → midnight (user mandate).** The user is away and asked Professor to manage the cell, relaunch sessions that have finished, and decide in their place, within the limits written in the log. Every instruction and decision is recorded in [`docs/0503_01_delegated-coordination-log-2026-10-09.md`](docs/0503_01_delegated-coordination-log-2026-10-09.md) for the user's review.
+
 ### Step 6 — Analyse Omarchy as an external reference
 **Status**: 🧪 Ready for review — analysis done 2026-10-05 ([note](docs/0601_01_omarchy-analysis.md))
 
@@ -105,6 +107,62 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 - [x] 6.2 Compare it with TANSTAAFLLM's principles and the active Wyoh/Luna/Mycroft direction, judged against the low-end R36 Ultra target (RK3326, ~1 GiB, 720×720, no GPU driver on ArchR, controller plus optional USB keyboard).
 - [x] 6.3 Classify each idea as adoptable, adaptable, or rejected for Luna, with the reason; name the owning workline for each without opening any work there.
 - [ ] 6.4 Acceptance: a reviewable note in `docs/` that makes no hardware or performance claim beyond published sources and recorded Luna evidence, and starts no implementation in another workline.
+
+### Step 7 — Document the software produced and the architecture
+**Status**: 🧪 In progress: green-lit 2026-10-11; stage 1 written (architecture and the six component pages), stopped for the user's review.
+
+**Why:** the project now produces real software spread across six worklines, but it is described only in plans, intents, results and the LOGBOOK. Nobody can see how the pieces fit, how to run them, or what they cost, without reading the history. The user wants a documentation of the **software elements and the architecture**, not of the worklines themselves.
+
+**What exists to document** (inventory of 2026-10-11, to be completed in 7.1):
+
+| Area | Software | Where |
+|---|---|---|
+| Wyoh (desktop) | Sway configuration and units; gamepad daemon (`wyoh_gamepad.py`), with per-app profiles and key maps; Slate (`wyoh_slate.py`); patched AZERTY on-screen keyboard (`wvkbd`); four-tile layout (`wyoh_layout.py`); app manifests and menu (`wyoh_apps.py`, `apps/`: calculator, Commander, Wolfenstein 3D, Dino); development MCP server (`wyoh_mcp_server.py`) and virtual input; deploy and Make targets | `src/wyoh/`, `Makefile` |
+| Mycroft (input) | text console (`mycroft_console.py`); dictation provider for the Slate (`mycroft_dictate.py`, JSON-lines protocol); ASR benchmark and model pre-optimisation | `worklines/mycroft/scripts/` |
+| Mike (local brain) | tool contract (`mike_contract.py`), evaluation harness and fake Wyoh, manual chat (`mike_chat.py`) | `src/mike/`, `test/mike/`, `worklines/mike/scripts/` |
+| Mannie (frontier model) | Claude Code install and measurement probes | `test/mannie/` |
+| Luna (device) | card archive, flash, reshape, Wi-Fi overlay, console and boot scripts | `worklines/luna/scripts/` |
+| Cross-cutting | test conventions, live tests over SSH, `luna-access.md`, `agents.md`, skills | `docs/02_testing.md`, `test/`, `skills/` |
+
+- [ ] 7.1 **Inventory (read-only):** list every program, service, configuration, interface between components (MCP tools, sockets, JSON-lines protocols, status files, Make targets), deployment location on Luna or `luna-pi`, and measured cost. Mark what is live on Luna and what is offline only. Output: an appendix to the intent.
+- [x] 7.2 **Options chosen by the user, 2026-10-11:**
+  - **Audience:** the user, then very capable friends and colleagues, interested in the architecture, choices and models.
+  - **Layers:** all five, with decision records at a high level; everything readable without two hours or an AI.
+  - **Form:** Markdown in `docs/`, diagrams in SVG (not Mermaid), each one rendered to PNG and inspected.
+  - **Tone:** *Moon Is a Harsh Mistress*, the agent cell, and retro gaming, like the wallpaper.
+  - **Checking:** no formal tests; each workline reviews its own page after each stage.
+  - **Writer:** Professor writes the first version.
+  - **Order:** in stages, architecture and components first; the 7.1 inventory is done along the way.
+  - The options as offered:
+  - **(a) Audience:**
+    - a newcomer, human or agent, who must run and change the system;
+    - the user, as a map of their own project;
+    - an outside reader.
+    - One primary audience, possibly a second.
+  - **(b) Layers** (one or several):
+    1. **Architecture overview:** the components on Luna, the processes and who starts them, the data flows (voice → Mycroft → Slate or Mike → Wyoh → apps; Mannie as escalation), the interfaces between them, the 1 GiB memory budget, and what runs where (desk host, `luna-pi`, Luna).
+    2. **Component reference, one page per software element:** purpose, how to run it, configuration, interfaces, deployment, tests, measured cost, status, and known limits.
+    3. **Operations:** set up or restore Luna, deploy, Make targets, reboot rule, sharing Luna between sessions, troubleshooting (SSH stalls, GPU display).
+    4. **User guide:** controls (from Wyoh's controls reference and cheat sheet), apps, Slate, dictation.
+    5. **Decision records:** the decisions that shape the architecture, with their reasons (Sway v0, the gamepad grab, the Mike/Mannie split, CPU before OpenCL, and so on).
+  - **(c) Form and place:**
+    - Markdown in `docs/` (for example `docs/architecture/`, `docs/components/`), or a `README.md` next to each piece of code (`src/wyoh/README.md` already exists), or both, with an index.
+    - Diagrams as Mermaid in the Markdown.
+    - Optionally, a published page that gathers it all.
+  - **(d) Staying true:** which parts are generated or checked against the code, the way Wyoh's 5.12 checks its controls reference against `Config`. Candidates: MCP tool list, configuration keys, Make targets, protocol messages. A test fails when the doc and the code disagree.
+  - **(e) Who writes:**
+    - Professor writes everything from the repository;
+    - or Professor writes the architecture and the index, and each workline writes its own component pages through a note and a sub-step in its plan (cell rules).
+- [ ] 7.3 **Intent** written: [`docs/0703_01_documentation-intent.md`](docs/0703_01_documentation-intent.md), awaiting the user's approval. From the user's choices: structure, page list, templates, generation and checks, sources, order of writing, what is out of scope, acceptance. The user approves it.
+- [ ] 7.4 **Write** after `🟩 go Step 7`, in the chosen order; inspect rendered diagrams.
+  - *2026-10-11, 🟩 go from the user: "start with the architecture and Wyoh, then stop".* Written: `docs/README.md`, `docs/04_architecture.md`, `docs/10_wyoh.md` (first written under `docs/guide/`, merged into `docs/` at the user's request); five SVG diagrams in `docs/img/` (`luna-machine`, `request-path`, `memory-budget`, `the-cell`, `wyoh-inside`), each rendered to PNG with `scripts/render_svg.py` (Chromium) and inspected, with fixes for overflow and wording. Image prompts for ChatGPT: [`docs/0704_01_image-prompts.md`](docs/0704_01_image-prompts.md). Stopped for review; the user then asked to merge the guide into `docs/` and to continue.
+  - *2026-10-11, continued:*
+    - the guide was merged into `docs/` (one numbering, `docs/README.md` as the way in);
+    - `01_principles.md` was revised: Adam on hold, current roles, the request path as SVG, current boundaries, and a new "Documentation conventions" section; `AGENTS.md` vocabulary was aligned;
+    - written: `11_mycroft.md`, `12_mike.md`, `13_mannie.md`, `14_luna.md` and `15_the-cell.md`, with four more SVG diagrams (`mycroft-dictation`, `mike-one-action`, `luna-card`, `step-lifecycle`), rendered and inspected.
+
+    **Stopped for the user's review.** Not yet: operations, user guide, decisions; the workline reviews.
+- [ ] 7.5 Acceptance: following the docs alone, a newcomer can explain the architecture, find each component, run it, and know its cost and status. Generated or checked parts pass their tests. Each page names its sources.
 
 ---
 
@@ -118,6 +176,7 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 - ⏳ Step 4 — Open approved foundation workline(s).
 - ⏳ Step 5 — Maintain programme integration.
 - 🧪 Step 6 — Omarchy analysis ready for review.
+- 📝 Step 7 — Documentation of the software and the architecture: proposed, options for the user.
 
 ---
 
@@ -135,6 +194,11 @@ date
 | 2026-09-25T01:24:13+02:00 | Renamed the coordinating workline from `general` to `professor` (Professor de la Paz); updated its role to maintain cross-workline coordination and isolation. No implementation started. |
 | 2026-09-25T02:22:12+02:00 | Green-lit Sections 1 and 2 produced a complete-source decision ledger and a review-ready v0 charter. No subsystem implementation, hardware operation, model download, or benchmark was run. |
 | 2026-10-05 | Added Step 6 (Omarchy as an external reference) and ran it on the user's direct instruction. Documentation only; ideas are proposed to Wyoh, Luna, Mycroft and Mannie without opening work there. |
+| 2026-10-11 23:26 | Guide merged into `docs/`, principles revised, component pages 11–15 written with four more diagrams. Stopped for review. |
+| 2026-10-11 23:30 | Step 7 green-lit (architecture and Wyoh first): three guide pages, five SVG diagrams rendered and inspected, and image prompts. Stopped for review. |
+| 2026-10-11 22:30 | Added Step 7 (documentation of the software produced and of the architecture) at the user's request. Options listed for the user; the intent follows their choices. Documentation only. |
+| 2026-10-09 22:30 | User away until midnight: Professor manages the cell and decides in the user's place (Step 5.4). Log: `docs/0503_01_delegated-coordination-log-2026-10-09.md`. |
+| 2026-10-09 | Step 5 integration work: the graphical-apps shortlist was selected by the user and sent to Wyoh as a coordination note. Who assembles the apps is not decided; Professor implements nothing. |
 
 ---
 
@@ -164,3 +228,9 @@ See [the cleaned decision record](docs/0102_03_shared-chatgpt-options-decision.m
 - `worklines/professor/docs/0102_02_shared-chatgpt-options-source.md` — canonical raw export.
 - `worklines/professor/docs/0102_03_shared-chatgpt-options-decision.md` — cleaned decisions and owner consequences.
 - `worklines/professor/docs/0601_01_omarchy-analysis.md` — Step 6: Omarchy compared with TANSTAAFLLM for the R36 Ultra; ideas classified adopt/adapt/reject with proposed owners.
+- `worklines/wyoh/docs/0900_01_note-from-professor-graphical-apps.md` — note to Wyoh: the user's selection of graphical apps, the menu clean-up, the search-engine caveat, and questions about who assembles the apps.
+- `worklines/professor/docs/0503_01_delegated-coordination-log-2026-10-09.md` — log of the instructions Professor sent and the decisions it took while the user was away (2026-10-09, 22:30 to midnight).
+- `worklines/professor/docs/0703_01_documentation-intent.md` — Step 7 intent: the structure, reading budget, SVG style, tone and stages of the project guide.
+- `docs/` — the project documentation (Step 7): `README.md` (navigation), `04_architecture.md`, `10_wyoh.md`…, diagrams in `docs/img/`.
+- `worklines/professor/docs/0704_01_image-prompts.md` — ChatGPT prompts for the guide's illustrations.
+- `scripts/render_svg.py` — renders SVG diagrams to PNG with Chromium, for visual review.

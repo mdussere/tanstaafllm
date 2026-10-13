@@ -4,24 +4,26 @@
 
 TANSTAAFLLM is a resource-aware, AI-native personal-computing experiment for a constrained handheld. Read [README.md](README.md) and [docs/01_principles.md](docs/01_principles.md) before proposing architectural or naming changes.
 
-Use English by default unless the user switches language. Keep the literary vocabulary useful and secondary to clear technical behaviour.
+Language: write everything in English (code, docs, plans, notes, commit messages, messages between sessions), and talk to the user in French, even when they write or dictate in English (user rule, 2026-10-11). Keep the literary vocabulary useful and secondary to clear technical behaviour.
 
 ### Shared component vocabulary
 
-- **Adam** is the human-facing identity the user addresses. It is not a separate brain or privileged agent.
-- **Mike** is the local reasoning and routing layer behind Adam.
+- **Adam** is the human-facing identity the user addresses. It is not a separate brain or privileged agent. **On hold** since 2026-10-09: results go to the user directly.
+- **Mike** is the local reasoning and routing layer: a small local model on Luna that proposes Wyoh actions.
 - **Mycroft** is Luna’s interactive input and composition capability. Its measured ASR baseline is offline, context-free audio-to-text; bounded contextualisation and the composition interface are separate, explicitly planned stages.
 - **Wyoh** is the observable desktop/window-management layer: state, context, and available actions.
-- **Mannie** is the development capability; it is one use of the system, not the universal brain.
+- **Mannie** is the frontier-model capability (Claude, Codex…): development work and Mike's costed escalation; not the universal brain.
 - **Luna** is the intended handheld environment; `luna-pi` is the Raspberry Pi reference/prototyping target.
 
 Some older records use historical names while nomenclature is consolidated. Follow the active plan and the principles document; do not silently rename components across the repository.
 
 ## Mandatory skill
 
-The only repository-mandatory skill at present is **`workplan`**.
+The first repository-mandatory skill is **`workplan`**.
 
 Use it whenever work involves a workline, plan, roadmap, multi-step effort, or a new tracked discovery/implementation stream. Read its `SKILL.md` before acting. It defines the canonical workline layout, plan template, green-light protocol, artifact naming, and logbook requirement.
+
+The second mandatory skill is **`cell-coordination`** (`skills/cell-coordination/SKILL.md`). Read it before sending or answering any cross-session message, or before writing a note for another workline. In short, Professor coordinates the cell. Other sessions message only Professor and never each other; between worklines they leave notes. Every request goes into the receiving plan, and a blocked session records its state in its plan and asks the user in its own console. `worklines/agents.md` lists the running sessions.
 
 No other skill is mandatory solely because of this repository. Use other available skills only when the user request or task clearly requires them.
 
@@ -42,6 +44,8 @@ The current active worklines are:
 | `mycroft` | `worklines/mycroft/plan_mycroft.md` | Input/composition architecture and its pre-hardware ASR baseline; no ungreen-lit context feed, command routing, target-device audio work, or implementation. |
 | `wyoh` | `worklines/wyoh/plan_wyoh.md` | Desktop/WM observability and interface design; no premature compositor fork or target-hardware implementation. |
 | `luna` | `worklines/luna/plan_luna.md` | `luna-pi` reference setup and physical-Luna characterisation, imaging, and boot/network bring-up on disposable cards; no Mycroft/Wyoh/Mike implementation outside a green-lit step. |
+| `mike` | `worklines/mike/plan_mike.md` | Mike, the local brain: the small local model that proposes Wyoh actions through MCP. Desk host and `luna-pi` first; every action runs only after the user accepts it. |
+| `mannie` | `worklines/mannie/plan_mannie.md` | Mannie, the frontier-model capability: Claude Code on Luna, measured on `luna-pi` first. No secrets in the repository and no unattended mode. |
 
 ## Tests and experiments
 

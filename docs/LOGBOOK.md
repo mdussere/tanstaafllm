@@ -431,3 +431,22 @@
   - **Next:** operations, user guide and decision records, then the workline reviews, after the user's review.
 - **Mycroft: the user's acceptance rule for a new model, and `--model` for a live quality test.** No load wait is acceptable when the Slate opens, so the model will be resident. Kroko is adopted if it is real-time on Luna, ~40 % lighter, and of the same quality. The console and provider gained `--model` (`zipformer-fr-2023`, the default, or `kroko-fr-2025`, which keeps its own case and punctuation) so the user can judge Kroko live on termidor. `uv run pytest -m "not live and not integration"`: 386 passed; Mycroft integration: 6 passed.
 - **Mycroft: Kroko kept by the user** after a live test on termidor ("top" quality, fewer errors, punctuation). Next: its Luna measurement.
+- **Mycroft 9.3 on Luna: Kroko keeps up with speech.** At 2 threads: RTF 0.76–0.79 against 1.48–1.54 for the current model, 167 against 236 MiB, but a 47.7 s load as published, so a resident process is needed. Luna rebooted and released.
+
+## 2026-10-13
+
+- **Luna Step 8.2e: a USB-C headset gives Luna a working microphone.** The user's TTGK "LUDOS Earphones" enumerates as ALSA card 1 (`hw:1,0`, `/dev/snd/pcmC1D0c`, S16_LE stereo 48 kHz). Speech records at +22 dB over silence, and the card survives a reboot. The 3.5 mm jack stays unusable as a microphone under ArchR (8.2c). The user gave Luna directly (no Professor session running), and it was released after a reboot. Wyoh's note `worklines/luna/docs/0800_01` was updated with the device names.
+
+## 2026-10-13
+
+- **Wyoh 12.3:** the user's USB-C headset (card 1, `pcmC1D0c`) is picked automatically by the daemon. Mycroft's real provider starts on it on Luna (ready after 19.7 s, clean stop). Luna was rebooted, and the voice test is handed to the user.
+- **Wyoh 12.4:** the user switches dictation to Kroko, tested on Luna, with a resident model (no reload after hiding the Slate). Note to Mycroft `worklines/mycroft/docs/0903_03` asks for Kroko on Luna, its measurement and licence, and a resident start/stop mode; Wyoh's side follows.
+- **Mycroft 9.7–9.8 added (Wyoh's note `0903_03`, user decisions of 2026-10-13):** a resident dictation provider (load once; start/stop on stdin) and the prepared Kroko installed and measured on Luna.
+- **Wyoh 9.8b:** user feedback on Wolfenstein: both sticks back (regression), fire on R1/A, doors on L1/B, A/B no longer swapped, and an icon. Planned as a remapped virtual joystick fed by the daemon.
+- **Mycroft 9.7 done (resident provider: load once, start/stop on stdin) and 9.8 prepared.** The adapter now pads 1.0 s of silence at stop, because Kroko dropped its last word without it. The prepared Kroko (ONNX Runtime 'extended', same text, load −45 % on the desk host) is the `kroko-fr-2025` profile. Luna run waiting for a slot.
+- **Wyoh 9.8b: Wolfenstein controls fixed after user feedback.**
+  - The daemon feeds the game a remapped virtual joystick (`gamepad-virtual`): both sticks in analog (the regression is fixed), A/R1 fire and validate, B/L1 open doors and go back.
+  - The menu shows BJ's face as the icon.
+  - `WYOH_LUNA_LIVE=1 uv run pytest -m live test/wyoh/test_luna_apps.py`: 1 passed (`results/wyoh/luna-apps/20261013T203744Z`, inspected); offline: 276 passed.
+  - Luna was rebooted and freed.
+- **Wyoh 9.8b accepted by the user** (controls and icon). Wolfenstein's controls are added to the controls reference `0512_01`, checked by a new test (277 offline tests pass).

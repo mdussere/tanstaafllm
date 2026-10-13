@@ -9,6 +9,7 @@ dependencies = []
 [dependency-groups]
 # Test runner shared by every workline (`docs/02_testing.md`).
 dev = [
+    "chess==1.11.2",
     "pyte>=0.8.2",
     "pytest>=9.1.1",
     "pytest-timeout>=2.4.0",
@@ -24,6 +25,11 @@ wyoh = [
 # Shared-chat transcript scraper (`scripts/scrape_shared_chat.py`).
 scrape = [
     "playwright==1.63.0",
+]
+# Mike local-model runtime (llama.cpp). Not a default group: it compiles
+# llama.cpp. Use `uv run --group mike pytest test/mike -m integration`.
+mike = [
+    "llama-cpp-python==0.3.36",
 ]
 
 [tool.uv]

@@ -1,0 +1,61 @@
+# Luna access
+
+Only one session uses Luna (the R36 Ultra, `ssh luna`) at a time. Luna has about 1 GiB of RAM: a speech model and a graphical test running together would distort each other's measurements, or exhaust the memory. Professor decides who holds Luna. A session that wants Luna asks Professor, and does not contact the session that holds it.
+
+**Rules for the holder:**
+- Reboot Luna after each test series (`ssh luna reboot`, then wait for SSH), as the user asked.
+- Install only under `/storage/.local/`. Make no change to the boot partition, the card layout, or ArchR's own files.
+- To release Luna: finish the current series, reboot Luna, record the state in your plan, then tell Professor "Luna released".
+
+## Current holder
+
+| Since | Holder | Purpose | Release condition |
+|---|---|---|---|
+| 2026-10-13 22:41 | Mycroft | 9.8: install the prepared Kroko and measure the resident provider for the Slate, about 25 min, reboot before and after | "Luna released" after a reboot |
+
+## Queue
+
+| Order | Session | Purpose | Granted by |
+|---|---|---|---|
+| 1 | Wyoh | Step 9 and 12.4, after Mycroft's 9.8 | Professor |
+
+## History
+
+| Time | Event |
+|---|---|
+| 2026-10-11 12:35 | Professor created this file on the user's instruction: Wyoh finishes first, then Luna passes to Mycroft. |
+| 2026-10-11 12:37 | Wyoh released Luna: series finished, Luna rebooted, state in `plan_wyoh.md` 9.11. |
+| 2026-10-11 12:38 | Professor gave Luna to Mycroft. |
+| 2026-10-11 12:42 | Mycroft released Luna: 7.3b done (`worklines/mycroft/docs/0703_01_luna-footprint-result.md`), Luna rebooted. |
+| 2026-10-11 12:43 | Professor gave Luna back to Wyoh. |
+| 2026-10-11 | The user allowed 2–4 threads for Mycroft and asked for the load time and the cost of Python to be examined. Mycroft queued after Wyoh's current series. |
+| 2026-10-11 13:15 | Professor ran one read-only listing on Luna (GPU libraries) during Wyoh's slot, at the user's request; nothing was run on the GPU. |
+| 2026-10-11 13:25 | Mycroft reports that the user gave it Luna directly for its steps 8.2–8.4 (about 25 min). Professor paused Wyoh. |
+| 2026-10-11 13:42 | Mycroft released Luna (8.2–8.4 done, Luna rebooted). Professor gave Luna back to Wyoh. |
+| 2026-10-11 22:34 | Wyoh idle. Professor gave Luna to Mycroft for step 9.3 (about 20 min). |
+| 2026-10-11 22:40 | User decision: Mycroft works on `luna-pi` instead of Luna, so the 22:34 slot was withdrawn. Wyoh holds Luna. |
+| 2026-10-13 | No session running, so the 2026-10-11 23:39 Mycroft entry is stale. The user asked the Luna session (tanstfaafllm-a0) directly to rerun the microphone tests with a USB-C headset; Luna holds Luna for 8.2e. |
+| 2026-10-13 | Luna released Luna: 8.2e done (USB-C headset microphone works), Luna rebooted, SSH answering. |
+
+## luna-pi
+
+`luna-pi` (Raspberry Pi 4) is shared too, under the same rules: one session at a time, and ask Professor for it.
+
+| Since | Holder | Purpose |
+|---|---|---|
+| — | (free) | Mycroft released it after 9.3 (results `worklines/mycroft/docs/0903_02`); not rebooted because the user's own SSH session is open on it |
+
+Waiting for `luna-pi`: Mannie (Claude Code, the 600 MiB rehearsal if green-lit).
+| 2026-10-11 22:35 | Mycroft confirmed: 9.3 stopped early, Luna rebooted and answering; only a partial Kroko `encoder.onnx` remains under `/storage/.local/opt/mycroft` (no measurement run). |
+| 2026-10-11 22:46 | Wyoh released Luna (rebooted). Professor gave it to the Luna session for 8.2b. |
+| 2026-10-11 22:48 | Luna session released Luna (8.2b done, rebooted). Professor gave it back to Wyoh. |
+| 2026-10-11 22:56 | Wyoh released Luna (rebooted after deploying the USB-microphone choice). Professor gave Luna exclusively to the Luna session for 8.2c (user green light). |
+| 2026-10-11 23:02 | Luna session released Luna: 8.2c negative (no jack-mic signal even with factory register values); registers restored, rebooted. Professor gave Luna back to Wyoh. |
+| 2026-10-11 23:02 | Wyoh idle, had not resumed. Professor gave Luna to the Luna session for 8.2d. |
+| 2026-10-11 23:07 | Luna session released Luna: 8.2d, the USB-C/jack adapter shows only a GenesysLogic hub (no USB audio). Rebooted. Professor gave Luna back to Wyoh. |
+| 2026-10-11 23:39 | Wyoh idle. Professor gave Luna to Mycroft for 9.3 (Kroko on Luna, user request). |
+| 2026-10-13 | Wyoh took the free Luna for its 12.3 at the user's request; no Professor session was running to arbitrate. |
+| 2026-10-13 | Wyoh released Luna (rebooted after its 12.3 checks). Next Luna use for dictation is Mycroft's Kroko install and measurement (note `worklines/mycroft/docs/0903_03`). |
+| 2026-10-13 | Wyoh took the free Luna for 9.8b (Wolfenstein controls) at the user's request. |
+| 2026-10-13 | Wyoh released Luna after 9.8b (rebooted). |
+| 2026-10-13 22:41 | Professor (new session tanstfaafllm-96) gave the free Luna to Mycroft for 9.8. |
