@@ -198,6 +198,8 @@ Hardware facts (read-only, `r36s_Gamepad`, `/dev/input/event7`): 17 buttons (`BT
 | Select, Start, FN | unassigned (later: major modes such as terminal, Mannie, desktop, menu) |
 | FN + Start held 2 s | **proposed recovery:** release every key and button, close the input zone, return focus to the workspace |
 
+> **Controls superseded (2026-10-09):** the mapping described in this step (left-stick pointer, L1 open/discard, L2 validate) is out of date. The current reference, checked against the code by a test, is [`docs/0512_01_luna-controls-reference.md`](docs/0512_01_luna-controls-reference.md).
+
 Intent (behaviour, states, failure modes, budget, tests): [`docs/0500_01_gamepad-input-intent.md`](docs/0500_01_gamepad-input-intent.md). Sub-steps run in this order; each ends with its tests passing and, where it has a visible effect, inspected screenshots.
 
 - [x] 5.0 Intent written before any code (2026-10-07); four open points listed in it for the user.
@@ -209,17 +211,259 @@ Intent (behaviour, states, failure modes, budget, tests): [`docs/0500_01_gamepad
 - [x] 5.6 **Button-only scenario through MCP.** Development MCP tools create a virtual gamepad and keyboard (the person); the daemon serves it alongside the real gamepad. Gherkin + pytest end to end on Luna's panel with inspected MCP screenshots, as in the intent's testing policy.
 - [ ] 5.10 **User feedback (2026-10-08), deployed; full re-run pending.** (a) Pointer on the **right stick**, click on **R3**, left stick unassigned (51 core tests pass). (b) The user's `TANSTAAF-LLM_background.png` (updated with a blond Wyoh) is the wallpaper, pre-scaled to 720×720; it needed GIO's MIME database, which ArchR lacks (`share/mime/mime.cache` from shared-mime-info 2.4, deployed only). A capture matches the image exactly. **Not done:** the full button-only scenario has not passed again since these changes. Its re-runs failed on Wi-Fi stalls at different steps, not on a demonstrated Wyoh fault, and the user asked to stop rerunning it after every change.
 - [x] 5.11 **Four tiles per workspace (user requirement 2026-10-08).** `wyoh_layout.py` + `wyoh-layout.service` (wanted by the Sway unit): 2nd window on top (vertical split), 3rd top-right, 4th bottom-right, 5th closed with a "Too many tiles" pop-up dismissed by B. 11 policy tests pass; the layout scenario passed twice on Luna (`results/wyoh/luna-layout/20261008T215715Z`, inspected; `20261008T220831Z`, not yet inspected).
+- [x] 5.12 🟩 **Green-lit by Professor on the user's behalf (D4, 2026-10-09).** *Done:*
+  - [`docs/0512_01_luna-controls-reference.md`](docs/0512_01_luna-controls-reference.md), one table per mode, with "live" or "core only" per row;
+  - `test/wyoh/test_luna_controls_reference.py`: 24 checks against the deployed `Config`; a deliberate mismatch fails it;
+  - Step 5 and `0500_01` marked superseded;
+  - the four cheat-sheet fixes: Y = selection; 6.9 marked "bientôt"; brightness not adjustable (proposal FN+L1/FN+L2, not implemented); volume to verify; arrow repeat and Start closing the menu.
+
+  Original request: **Controls reference in Markdown (requested by the user through Professor, 2026-10-09).** Write `docs/0512_01_luna-controls-reference.md`, one current description of every interactor, in English. Today the controls are described only by the cheat sheet (`0609_01`). The Step 5 table above and the intent `0500_01` are out of date: they still say left stick = pointer, L1 opens/discards, L2 validates.
+  - One table per mode (desktop, Slate open, with FN, menu, gamepad-raw app), plus recovery, the four-tile rule and the two-thumb keyboard. Each row names the physical control, the evdev code and the resulting key, Sway command or Slate operation.
+  - Generated from, or checked against, `wyoh_gamepad.Config`, with a deterministic test that fails when the document and the code disagree. Each row says whether it is live on Luna or only in the core (6.9's daemon side is not live yet).
+  - Mark the Step 5 table and `0500_01`'s mapping as superseded by the reference.
+  - Professor's review of the cheat sheet, to fix in the SVG/PNG at the same time:
+    1. **Y in the Slate** reads "Majuscule". It is Shift held for selection, not capitals; write "Sélection : maintenir Y + croix".
+    2. The sheet shows 6.9 (L1 hide with text kept, FN+A send, FN+X clear) as working, but only the core is done. Mark these as "bientôt" until the daemon side is live, as already done for L2.
+    3. **Brightness and LED.** The exclusive grab stops ArchR's `input_sense` hotkeys (FN+D-pad brightness, FN+B LED), and Wyoh now uses FN+cross and FN+B itself. The sheet does not say how to change brightness, or say that it cannot be changed. Add it, and propose a mapping to the user if needed. Also state where volume is, if the volume keys are a separate device.
+    4. D-pad and key repeat when held, and "Start: application menu" while the menu is open (does Start close it?), are worth one line each.
 - [ ] 5.7 **User check** on the physical controls, panel in view; record the result in `docs/0507_01_gamepad-input-result.md`. *Pending: the only open item.*
 - [x] 5.8 **Boot into the session (user requirement, 2026-10-07: "we must stop landing on terminal on boot").** Enable `wyoh-sway.service` and `wyoh-gamepad.service` in the boot target the card uses today (`textmode.target`, set by the Luna workline in `extlinux.conf`), through `[Install]` sections and links under `/storage/.config/system.d`, without touching the boot partition. The Mali driver step runs before Sway; the tty1 shell stays underneath as a fallback. Verified by a real reboot: the panel shows the session with no SSH action. Removing the links restores the text-console boot.
 - [ ] 5.9 Acceptance as in the intent, plus booting straight into the session: every control works through the real gamepad; the zone delivers once and discards cleanly; recovery works; stopping the daemon returns the gamepad to ArchR; tests pass; budget holds.
 
-### Step 6 — Productise only the selected agent-native workspace path
+### Step 6 — Slate (multi-line input) and backup on-screen keyboard
+**Status**: 🧪 In progress — green-lit 2026-10-09; built and passing on Luna in simulation ([result](docs/0605_01_slate-result.md)); the user's check (6.6) and the whole-cross calibration are open
+
+Proposal (name, layout, build options, controls, passwords, risks, budget, tests): [`docs/0600_01_slate-and-keyboard-proposal.md`](docs/0600_01_slate-and-keyboard-proposal.md). The ChatGPT discussion behind it is kept raw in [`docs/0500_02_input-widget-discussion-raw.md`](docs/0500_02_input-widget-discussion-raw.md). The user confirmed the name Slate.
+
+- [x] 6.0 User decisions recorded (2026-10-09), and the proposal now serves as the intent:
+  - name Slate;
+  - in the Slate, A Return, B Backspace, X Delete, Y Shift for selection; the cross pressed as a whole selects the word, twice selects the line;
+  - the keyboard is shown whenever the Slate is open;
+  - black Slate with a white 2 px border and white half-size text; the keyboard has the same look, sized to 720 px;
+  - L1 discards with no confirmation;
+  - R1/R2 move to the next/previous word.
+- [ ] 6.1 **Calibration and wvkbd fit on Luna.** *Done except the whole-cross calibration, which needs the user's hands (see 6.6):* wvkbd 0.15 from Debian runs on Luna; an AZERTY build (`src/wyoh/wvkbd/`, built on `luna-pi`) is deployed; zone font measured (capitals 17 px, so the Slate uses 12 px); landscape-mode and sizing findings in the result. Record what pressing the whole cross reports (`evtest`, with the user); stop and report if it isn't distinct. Measure the zone font's rendered height. Check wvkbd: Provenance (aarch64 build or Debian arm64, versions and checksums recorded, deployed under `/storage`, not committed). Measure RSS and CPU while hidden. Check show/hide by signal, key clicks with the right-stick pointer and R3, and AZERTY and accented letters with Sway's `xkb fr`. Check wvkbd's colour and font options for the black-and-white look. Build a compact Luna layout (letters, digits and symbols, about 240 px high, font fitted to 720 px).
+- [x] 6.2 **Slate core offline.** (`wyoh_slate.py`; 107 Slate and gamepad tests pass) Deterministic tests, and text is never written to disk or logs:
+  - pure editor: buffer, cursor, wrap, Return, Backspace, Delete, Shift selection, word toggle, line select, typing over a selection, empty send;
+  - whole-cross detection with timing, in the gamepad core.
+- [x] 6.3 **Slate replaces the fuzzel zone.** Floating `foot` window at the top, Python standard library; the daemon keeps target capture, delivery once, discard, and the status file (state and length only). Multi-line delivery to terminals as specified in the proposal's risks.
+- [x] 6.4 **Keyboard and look.** wvkbd is shown and hidden together with the Slate (L1 / L2). The Slate has its white border: the daemon switches `client.focused` while it's open and restores it afterwards. Font sizes are set from 6.1.
+- [x] 6.5 **Live scenario** — passed, 20 screenshots inspected (`results/wyoh/luna-slate/20261008T232237Z`, stock QWERTY build; re-run with the AZERTY two-selection build and an `é`: `20261009T155843Z`). Budget: Slate 22.3 MB and wvkbd 13.0 MB, both over the proposal's targets (recorded). (Gherkin + pytest, MCP person, inspected screenshots): two lines sent once to a terminal; multi-line discard; keyboard keys clicked with the stick; selection by word and line with the cross; the look checked on screenshots; a dummy password sent through the Slate leaves no trace in status, logs or results. Budget measured.
+- [x] 6.8 **Two-cursor keyboard (user request, 2026-10-09; replaces the pointer clicks and the planned V1).** Done: `luna-cursors.patch` and the core; the live scenario passed with the final AZERTY build (`results/wyoh/luna-slate/20261009T155843Z`, 22 frames inspected). While the Slate is open:
+  - the left stick moves a **pastel green** selection over the on-screen keyboard and L3 types its key;
+  - the right stick moves a **pastel red** selection and R3 types its key;
+  - so two thumbs can type ("tap with 2 fingers"), and each selection can stay on its half of the keyboard;
+  - the pointer is off while the Slate is open.
+
+  Implementation: a small wvkbd patch (two selections drawn in pastel, commands `move`/`press` on its standard input), and stick-to-step logic with repeat in the gamepad core. Tests: deterministic core tests plus the live scenario typing with both selections.
+- [ ] 6.9 **Slate controls redefined (user, 2026-10-09).**
+  - **L1** shows or hides the Slate. Hiding keeps the text: the window goes to Sway's scratchpad and the keyboard is hidden by signal.
+  - **L2** starts or stops dictation. It is a no-op with a note until Step 12 brings Mycroft.
+  - **FN+X** clears the Slate.
+  - **FN+A** sends the text into the window that had focus, then clears and hides the Slate.
+
+  **Verified live 2026-10-11** (Slate scenario `20261011T104403Z`): L1 hide keeps the text, L1 show brings it back, FN+X clears, and FN+A sends once. L2 dictation waits for Step 12. This replaces "L1 open/discard, L2 send". The target window is captured each time the Slate is shown. Implementation, core tests and live re-run.
+  *Progress:*
+  - Core done (show/hide, dictate, FN+X clear, FN+A send).
+  - Daemon side done offline (Professor D5): L1 hides the Slate in Sway's scratchpad and wvkbd gets SIGUSR1/SIGUSR2; the Slate's `clear` operation; the hint line "FN+A send · FN+X clear · L1 hide"; L2 records "dictation unavailable (Step 12)".
+  - The live scenario is updated (hide keeps text, show, FN+X clear, FN+A send). 192 Wyoh offline tests pass.
+  - The live re-run waits for Luna (D8). User cheat sheet (French, front and top views, every button in each mode): [`docs/0609_01_luna-cheat-sheet.svg`](docs/0609_01_luna-cheat-sheet.svg) (PNG export next to it).
+- [ ] 6.6 **User check** on the panel: readability of the half-size font, the whole-cross press (does the real cross report two directions at once?), and how two-thumb typing feels (step size, repeat speed, start positions).
+- [ ] 6.7 Acceptance: multi-line text composed and sent with buttons alone; the keyboard usable as a backup, including for a password; tests pass; budget holds.
+
+### Step 7 — Wi-Fi network selection from the buttons
+**Status**: ⏳ Pending — proposal written, user decisions open, no green light; depends on Step 6 for password entry
+
+Proposal (ownership, candidates, design, risks, tests): [`docs/0700_01_wifi-settings-proposal.md`](docs/0700_01_wifi-settings-proposal.md). **Boundary:** the network stack (iwd, ConnMan, persistence, DHCP) belongs to the Luna workline; Wyoh owns only the screen and the button flow, and writes a note to Luna rather than changing the stack.
+
+- [ ] 7.0 User decisions recorded: fuzzel panel on iwd (instead of NetworkManager); entry point; the office network's security type; a phone hotspot as the test access point.
+- [ ] 7.1 **Read-only inventory on Luna:** iwd version and D-Bus objects via `busctl`; whether iwd or ConnMan configures `wlan0`'s addresses; profile directory and file encoding. Any conflict goes to Luna as a note, and the step stops.
+- [ ] 7.2 **Panel core offline.** Parse `busctl` JSON, menu text and ordering, profile file content and name encoding, failure messages; deterministic tests, including that no secret appears in any log or status.
+- [ ] 7.3 **Panel on Luna.** fuzzel list (connected mark, SSID, security, signal; Rescan, Forget, Disconnect), connect to known networks, new WPA-PSK networks through the Step 6 keyboard (iwd profile written with mode 600, removed after a failed attempt), honest result pop-ups, SSID and signal in the bar.
+- [ ] 7.4 **Live scenario** (Gherkin + pytest, MCP person, inspected screenshots, user-provided test access point): connected network shown; rescan; join the test access point with a dummy password; a wrong password is refused and leaves no profile; return home. The home network is never forgotten by tests.
+- [ ] 7.5 **User check:** join the office network (WPA-Enterprise is out of v0 and becomes its own step if needed).
+- [ ] 7.6 Acceptance: a person joins, switches and forgets PSK and open networks with buttons alone; no secret in Git, logs, results or screenshots; tests pass.
+
+### Step 9 — Graphical applications and menu clean-up (Professor's note)
+**Status**: 🧪 In progress — green-lit by the user on 2026-10-09 ("vas-y, branche les applications que professeur a sélectionnées"). Request and Wyoh's reply: [`docs/0900_01_note-from-professor-graphical-apps.md`](docs/0900_01_note-from-professor-graphical-apps.md).
+
+**Ownership (interpretation, recorded):** the user asked Wyoh to plug the apps in, and Professor's plan does not allow it to build subsystems. So Wyoh both assembles (fetches or builds) and integrates the apps. Recipes live in `src/wyoh/apps/<app>/` (build script, patches, checksums); binaries are deployed under `/storage/.local/opt/<app>-<version>/` and never committed.
+
+**Apps (the user's choice via Professor):** a Windows 3.1-style calculator (new), Wolfenstein 3D (PortMaster `wolf3d`), chess (pygameUCI + Stockfish), files (Commander), the Dino game (white on black), and the NetSurf browser (images off; Google if it works without JavaScript, otherwise FrogFind, then DuckDuckGo Lite).
+
+- [ ] 9.0 **Blocked (2026-10-09):** Luna first answered ping but timed out at the SSH banner, then stopped answering ping. `luna-pi.local` no longer resolves either, so the build host is unavailable too. Every device-side sub-step waits; the question is with the user. Debian 13 already packages `stockfish` 17 and `love` 11.5 (checked on sources.debian.org); `netsurf-fb` and `python3-pygame` arm64 are to be confirmed with `apt` on `luna-pi`.
+- [ ] 9.1 Read-only runtime check on Luna (partly done, 2026-10-09, after the user's reboot):
+  - **Present:** SDL2 2.32.10 (KMSDRM **and Wayland** back ends), SDL2_image/ttf/mixer/gfx/net, LuaJIT, OpenAL, libmodplug, EGL/GLES (`libmali`), Python 3.13.5; `/` has 20 GB free. **No pygame.**
+  - **pacman:** only ArchR's own repository; its sync failed (GitHub returned 500).
+  - **Already installed by ArchR:** **Commander** (`/usr/bin/commander`; ArchR runs it under Sway with `sway_fullscreen`), RetroArch with the **`ecwolf` (Wolfenstein 3D)** and `tyrquake` cores, gzdoom, ScummVM, TIC-80, mpv, gmu, VLC, PortMaster and `gptokeyb`.
+  - **Finding:** Commander starts under Wyoh's Sway (app_id `commander`; it goes full screen with a 320 × 240 surface), but every `grim` capture is entirely black, with SDL's software and GLES renderers alike. Unknown whether the panel shows it or `grim` cannot read Mali (EGL) buffers; a GLES demo (`glmark2`) was started to tell them apart, and Luna then dropped off the network. **Question to the user:** what does the panel show?
+- [x] 9.1b **GPU apps under Wyoh's Sway — solved 2026-10-11 ("essaie en gpu").**
+  - **Cause:** Mali clients send their buffers through Mali's own `mali_buffer_sharing` protocol (seen with `WAYLAND_DEBUG`), which Sway cannot import (`eglCreateImageKHR failed`).
+  - **Fix:** `libmali` has `MALI_WAYLAND_DMABUF_PROTOCOL`. Set to 1, clients use the standard `zwp_linux_dmabuf_v1` (XBGR8888, Mali modifier), Sway imports them with zero errors, and `grim` captures them.
+  - **Evidence (inspected):** `results/wyoh/apps-probe/20261011/`: `calculator-dmabuf-before.png` (Windows 3.1 calculator in a window), `calculator-dmabuf-typed.png` ("75" typed through a uinput keyboard), `commander-dmabuf.png` (Commander's two panes, full screen).
+  - **Made permanent:** `Environment=MALI_WAYLAND_DMABUF_PROTOCOL=1` in `wyoh-sway.service` and `wyoh-gamepad.service`, and in the apps' `run`. Commander has its own manifest (`src/wyoh/apps/commander`, menu name "Files", full screen).
+  - **Fix verified live (2026-10-11):** the Slate scenario passed with `deliver_path: uinput` (`results/wyoh/luna-slate/20261011T104403Z`, 25 frames inspected, "echo aé" typed correctly). Written offline: `type_events()` and the shared `AZERTY` table (Shift and AltGr) in `wyoh_gamepad.py`; `deliver()` types through the daemon's uinput keyboard and records `deliver_path` in the status; 6 new tests, 245 Wyoh offline tests pass. Earlier wording: the daemon types Slate text itself through its uinput keyboard (an AZERTY table with Shift and AltGr, shared with the test keyboard), falling back to `wtype` only for characters the layout cannot produce.
+  - **Known issue:** SDL2 apps segfault inside `SDL_WaitEvent` on keys sent by `wtype` (a virtual-keyboard keymap per key), while uinput keys work. **The Slate's delivery uses `wtype`, so sending Slate text to an SDL app would crash it.** To fix: deliver through the daemon's uinput keyboard for SDL targets.
+  - **Superseded:** the GPU-free route (experiments 1 and 2) is no longer needed. The history below is kept.
+
+  History, superseded by the fix above:
+  - **Finding:** Sway logs `eglCreateImageKHR failed` / `Failed to upload buffer` for each frame of an SDL2 window (calculator, Commander). It cannot import Mali client buffers, so composed windows show only their border. Sway loads `libmali` with ArchR's `libmali-hook`.
+  - **Hypothesis:** ArchR runs its apps full screen, where wlroots can scan the client buffer out directly without an EGL import. That would explain why ArchR's EmulationStation works and our floating calculator does not.
+  - **Not verifiable by capture:** `grim` composes through the same failing import, so full-screen GPU apps capture black whatever the panel shows. The user is asked to look at the panel (the calculator is left running full screen).
+  - **If confirmed:** GPU apps must run full screen (`window = "fullscreen"`), and the capture evidence for them must come from another path.
+  - **If not:** this is a GPU-stack question (libmali and wlroots dmabuf import), to note to Luna.
+  - **D14 test (2026-10-09):** `SDL_RENDER_DRIVER=software SDL_FRAMEBUFFER_ACCELERATION=0` does not avoid EGL. Under Wayland, SDL2 has no wl_shm framebuffer: the calculator still maps `libmali`, and Sway logs the same import errors (12 in 5 s). So the software route is closed inside SDL's Wayland back end.
+  - **Options, blocked on the user (asked in the Wyoh console):**
+    1. The panel check (does a full-screen GPU app show?). If yes, GPU apps go full screen.
+    2. Enable Xwayland **without glamor** (`XWAYLAND_NO_GLAMOR=1` in Sway's environment, `xwayland enable`), and run SDL apps with `SDL_VIDEODRIVER=x11` and the software renderer. X11 apps then pass shared-memory buffers, and Commander and the calculator could run in windows. This changes `wyoh-sway.service` (`/storage/.config/system.d`, outside D14's `/storage/.local` limit), needs a Sway restart, and costs Xwayland's memory while an X app runs.
+    3. A Luna-workline note about libmali and wlroots dmabuf import (the GPU stack is Luna's).
+    4. The calculator only: draw it without SDL's window (a small Wayland shared-memory client in Python), which does not help Commander.
+  - **User decisions (2026-10-11):**
+    - **No app needs the GPU.** The heaviest target is a Wolfenstein 3D-style shooter, whose sprite and raycast rendering needs no GPU. Policy: applications draw on the CPU and hand Sway shared-memory buffers; GPU paths are avoided rather than repaired.
+    - **Window policy:** the four-tile split stays for now and gets adapted. A **full-screen-only policy**, where every app is full screen and a quick key combination switches between open apps, is the likely simpler future (to propose as its own step).
+  - **Order of experiments (CPU only, no GPU stress):**
+    1. Point SDL apps at Mesa's software EGL (llvmpipe, wl_shm) instead of `libmali`, per app in its `run`: no Xwayland, no session restart.
+    2. Otherwise, Xwayland without glamor with `SDL_VIDEODRIVER=x11` and the software renderer.
+  - **Experiment 1 (2026-10-11), Mesa software EGL:**
+    - Mesa 26.1.3 (llvmpipe/swrast) and libglvnd 1.7.0 are on Luna, but `libmali` is bind-mounted over glvnd's `libEGL.so.1.1.0`/`libGLESv2.so.2.1.0`.
+    - The original dispatchers were copied, read-only, through a temporary non-recursive bind mount of `/` to `/storage/.local/opt/wyoh-cpu-gl/lib/`; nothing of ArchR's was changed.
+    - The calculator was run with `LD_LIBRARY_PATH` set to that directory, `__EGL_VENDOR_LIBRARY_FILENAMES=…/50_mesa.json`, `LIBGL_ALWAYS_SOFTWARE=1` and `GALLIUM_DRIVER=llvmpipe`. Sway logged no import error, but the calculator exited at once: `libEGL warning: egl: failed to create dri2 screen`.
+    - **Correction (user, 2026-10-11):** Luna was not blocked. Only SSH from the desk stalled; Luna's interface and the user's own SSH worked. Wyoh's claim was wrong. The Mesa failure is just the DRI2 error above. **New practice (user):** reboot Luna preventively after each test or small series (`ssh luna reboot`, about 30 s).
+    - **Diagnosis after the reboot:** with `EGL_LOG_LEVEL=debug`, Mesa does choose a CPU renderer, then rejects every config (`DRI2: failed to validate config` / `conflicting surface type and native visual`), and `eglInitialize` fails (`EGL_NOT_INITIALIZED`). **Experiment 1 is a dead end** short of debugging Mesa's Wayland software path.
+    - The calculator now exits with a clear message instead of a segfault when SDL has no renderer.
+    - Luna rebooted preventively by Wyoh after the series (user rule).
+    - **Next: experiment 2 (Xwayland without glamor).** Wyoh asks the user before changing `wyoh-sway.service` and restarting the session.
+  - Done meanwhile: `make wyoh-luna-apps` ran on Luna. The menu set was confirmed: gmu and mupen64plus are in `/usr/local/share/applications`, swayimg/wine/Xwayland are already NoDisplay, and mupen64plus is now hidden too.
+- [ ] 9.2 *Done offline (Professor D10):*
+  - `src/wyoh/wyoh_apps.py` validates `wyoh-app.toml` (required keys; `input`, `window` and `gpu` checked; launcher, icon and SHA-256 checked) and generates:
+    - one `wyoh-app-<id>.desktop` per app (Exec = the app's `run`);
+    - `Hidden=true` overrides;
+    - `generated/sway-apps.conf`, included by `sway.conf`;
+    - `generated/app-profiles.toml`, merged by the daemon through `app_profiles_file`.
+  - `make wyoh-luna-apps` runs it on Luna and reports menu IDs it doesn't find there.
+  - The calculator has its manifest and `run` (`SDL_VIDEO_WAYLAND_WMCLASS=wyoh-calculator`).
+  - 18 tests.
+
+  Not yet run on Luna. Original item: App convention: the `wyoh-app.toml` manifest (as in the reply to Professor), a `run` launcher, and Wyoh-generated `.desktop` entries; deploy and Make targets.
+- [ ] 9.3 *Offline part done: `Config.app_profiles`, `GamepadCore.focus()`, the `Grab` action, raw mode (FN+B and recovery still ours; recovery takes the gamepad back), and the daemon's Sway focus subscription; 7 new tests, 188 Wyoh offline tests pass. Live check pending.* Per-app gamepad profiles in the daemon, keyed by Wayland app_id: `keys`, `pointer`, or `gamepad-raw`. With `gamepad-raw`, the grab is released while the app has focus, and recovery and FN+B are still read. Deterministic tests.
+- [ ] 9.4 *Prepared offline (D10):*
+  - `deploy/luna/menu.toml` hides htop, nvtop, cups (Manage Printing), mpv, gmu and Wyoh's old `bc` calculator.
+  - A test builds the menu as fuzzel would see it (Wyoh's directory first) and checks it holds exactly Calculator, Image Viewer, Task Manager, Terminal and Text Editor, plus any other system entry. ArchR's VLC, for example, is not hidden; nobody asked for that.
+  - ArchR's real desktop-file IDs (gmu especially) are verified at deploy time.
+
+  Original item: Menu clean-up: hide ArchR's duplicate Htop, Manage Printing and nvtop with `Hidden=true` overrides; replace the `bc` calculator. **mpv and Gmu: hidden** (Professor D6, confirming the user's default; reversible).
+- [ ] 9.5 *Desk check skipped (D10 item 4): this desk has no Sway, so `wyoh_calc.py` has not run anywhere yet.* *Window written: `wyoh_calc.py`, SDL2 and SDL2_ttf through ctypes (no pygame needed), Windows 3.1 look, gamepad selection, keyboard and pointer input; not yet run on Luna.* *Core done: `src/wyoh/apps/calculator/calc_core.py` (Decimal arithmetic, left to right, repeated `=`, 12 digits, Error; 4 × 5 keypad with wide 0 and tall =, and gamepad selection moves), 32 tests. The window waits for the runtime check (pygame or SDL2).* Calculator: pure core with deterministic tests, plus a flat-grey window with 18 keys (Windows 3.1), gamepad-driven.
+- [ ] 9.6 Files: Commander (SDL2), built on `luna-pi`.
+- [ ] 9.7 **Chess (in progress, 2026-10-11).** pygameUCI needs pygame, which Luna lacks (9.1). So Wyoh writes a small chess app the same way as the calculator, keeping what the user chose pygameUCI for: a flat 2D board, a gamepad cursor, and PGN files.
+  - **Built from:** SDL2 and SDL2_ttf through ctypes (shared with the calculator), python-chess 1.11.2 (pure Python, GPL-3.0+) for the rules and PGN, and Stockfish 17 from Debian arm64 (`stockfish_17-1_arm64.deb`, SHA-256 `114c2280…69881`; needs glibc 2.38 and libstdc++ 13, and Luna has 2.40 and GCC 14) with threads and hash capped.
+  - **Controls:** cross = cursor, A = take/place, B = cancel, Y = undo the last move pair, X = new game.
+  - **Process:** a pure core with tests, the window, an assembly script for Stockfish and python-chess under `/storage/.local/opt/`, then a live scenario.
+
+  Original item: Chess: pygameUCI with Stockfish (threads and hash capped).
+- [x] 9.8b **Wolfenstein controls — done 2026-10-13.**
+  - New `gamepad-virtual` profile: `app_pad` in the core, `PadButton`/`PadAxis`, the daemon's uinput joystick "wyoh-game-pad" (16 buttons, analog sticks, created at start), and a `[pad]` table in manifests. The launcher keeps SDL to that joystick (`SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT=0x1209/0x0012`).
+  - **Mapping:** A and R1 fire/validate; B and L1 open doors/back; Y run; X strafe; L2/R2 change weapon; cross and Start are keys.
+  - **Icon:** BJ's face cropped from the port's cover (`fetch_wolf3d.py`), seen in the menu (`results/wyoh/wolf3d-probe/20261013/menu-with-icon.png`).
+  - **Evidence:** live scenario passed (`results/wyoh/luna-apps/20261013T203744Z`, inspected). A through the menus to Floor 1; left stick forward; R1 fired (ammo 8 → 7); L1 opened the door; FN+B closed.
+  - **Tests:** 7 new core tests; 276 Wyoh offline tests pass.
+  - **Accepted by the user (2026-10-13):** controls and icon are right.
+  - Controls added to the reference `0512_01` (checked by `test_luna_controls_reference.py`). **To do:** the cheat sheet (its language is still the user's choice).
+
+  Original feedback:
+  - **Regression:** in an earlier session the user played with both sticks (the game read the real gamepad, `gamepad-raw`). The 9.8 key profile moved the sticks to the pointer and left the game on the cross.
+  - **Wanted:** both sticks back. R1 fires (right hand), L1 opens doors (left hand). A also fires and validates; B also says "no" (back) and opens doors. The user felt A and B were swapped (on the R36, B is SDL button 0).
+  - **Design (Wyoh):** a `gamepad-virtual` profile. The daemon keeps the real gamepad and feeds the focused game a remapped uinput joystick: sticks passed through as analog; A and R1 → game button 0 (fire / select); B and L1 → game button 1 (use / back). ECWolf's config binds attack to 0 and use to 1, and nothing else on the shoulders. FN+B and recovery stay Wyoh's.
+  - **Also:** the menu icon (the `./wolf3d.png` fix was never deployed).
+- [x] 9.8 **Wolfenstein 3D works on Luna (2026-10-11).**
+  - The live scenario passed (`results/wyoh/luna-apps/20261011T190536Z`, inspected). From the menu ("wolf"), X goes through the menus to Floor 1; the cross held up, R1 (fire: ammo 8 → 7) and A (open) move through the first door; FN+B closes it.
+  - Per-app key map in its manifest; `app_keys` in the core, `wyoh_apps` and the generated profiles; 8 new tests, 253 offline tests pass.
+  - Icon fixed to `./wolf3d.png` after the run, so the menu shows the cover (to see at the next deploy).
+
+  Preparation history:
+  - `src/wyoh/apps/wolf3d/`: `wyoh-app.toml` (gamepad-raw, full screen), `run` and `fetch_wolf3d.py`. The script takes ECWolf (aarch64, glibc 2.17), `ecwolf.pk3`, the 8 shareware `.WL1` files, a libjpeg and the cover from PortMaster's wolf3d port at commit `d36a1c22…`, and writes the manifest with each file's SHA-256.
+  - Assembled in `results/wyoh/wolf3d-build/20261011` (12 files verified by `wyoh_apps.load`).
+  - `make wyoh-luna-app APP_DIR=… APP_NAME=wolf3d-ecwolf` copies it to Luna.
+  - **On Luna (2026-10-11):**
+    - ECWolf 1.4.1 runs: zero import errors, the daemon releases the gamepad when it takes focus (`raw_app`), about 66 MB RSS.
+    - **Display:** ECWolf only takes 4:3 sizes, so 720 × 720 became 960 × 720 and was cropped, and SDL's own full screen shifts the image. Fix: a 720 × 540 window (its own `--config` and `--savedir` in the app directory), made full screen by Sway; the whole image shows, with a black band at the bottom.
+    - **Startup:** 32 s with SDL's default audio (it waits for the absent PulseAudio), 3 s with `SDL_AUDIODRIVER=alsa`, now in `run`.
+    - **Gamepad:** with `gamepad-raw`, ECWolf does not react to the virtual gamepad (it is not in SDL's controller database, or SDL does not open it). A **uinput keyboard works fully**: Enter goes through the main menu, the episode, the difficulty and **Floor 1 in play** (`results/wyoh/wolf3d-probe/20261011/kb-sequence.png`, inspected).
+    - **Decision (Wyoh, recorded for the user):** Wolfenstein uses a **per-app key profile** instead of `gamepad-raw`. The daemon keeps the gamepad and maps: cross = arrows, A = Space (open/select), X = Enter, B = Escape, R1 = Ctrl (fire), R2 = Alt (strafe), Y held = Shift (run), L1 = Slate. To build in 9.3: `[keys]` in the manifest, `app_keys` in the generated profiles and in the daemon.
+    - `make wyoh-luna-apps` now also reloads Sway, so new window rules apply.
+    - Next: rebuild and redeploy with ALSA, then the gamepad test (virtual gamepad created before launch), then a live scenario.
+
+  Original item: Wolfenstein 3D: engine from PortMaster `wolf3d` (shareware data), under Sway.
+- [ ] 9.9 *Prepared offline (D10):*
+  - `src/wyoh/apps/dino/make_night.py` builds Dino Love2D white on black: pinned commit `b4fbaa44…` with its source SHA-256 checked; sprite colours inverted with alpha kept and the levels stretched, so Chrome grey becomes white; `main.lua` clears to black.
+  - The `.love` build is reproducible: `09e068c9…`. Provenance and a preview on black are in `results/wyoh/dino-night/20261009/`, inspected.
+  - 3 tests.
+  - **Needs Love2D 11.5 on Luna:** PortMaster's runtime is not checked yet.
+
+  Original item: Dino: Dino Love2D white on black (sprite sheet inverted); fallback pygame-dino if Love2D's GL path fails under Sway.
+- [ ] 9.10 Browser: NetSurf with images off. Test Google without JavaScript on Luna; fall back to FrogFind, then DuckDuckGo Lite. Record the evidence.
+- [ ] 9.11 *Calculator and Files done (2026-10-11):*
+  - `test/wyoh/test_luna_apps.py` + `luna_apps.feature` passed in 45 s (`results/wyoh/luna-apps/20261011T103418Z`, 10 frames + overview inspected);
+  - the menu holds exactly Calculator, Files, Image Viewer, Task Manager, Terminal and Text Editor;
+  - the calculator computes 3 × 7 = 21 with the cross and A; Files opens full screen and its selection moves; FN+B closes each.
+  - Files icon: Commander's own `folder-open.svg`, verified in the menu (`results/wyoh/luna-apps/20261011T104611Z/04-files-menu.jpg`).
+  - Open: Wolfenstein, chess, Dino and NetSurf are still to do.
+
+  Original item: Per-app live scenario (launch from the menu with the buttons, use, close with FN+B; inspected screenshots; RSS) and acceptance.
+
+### Step 10 — Icons on the desktop
+**Status**: ⏳ Pending — proposal written ([`docs/1000_01_desktop-icons-proposal.md`](docs/1000_01_desktop-icons-proposal.md)). Professor (D7, 2026-10-09): **not green-lit tonight**. Wyoh's recommendations (FN+Select, a "Pin to desktop…" entry, default icons) are noted as provisional; the GPL-3.0 question stays with the user.
+
+- [ ] 10.1 Survey existing wlroots desktop-icon programs without GTK; record the result.
+- [ ] 10.2 `wyoh-desk`: a bottom-layer surface with icons on a grid, positions kept in `/storage/.config/wyoh/desktop.toml`, observable state.
+- [ ] 10.3 Gamepad: enter the desktop (FN+Select proposed), move the selection, A launch, X + D-pad move an icon, Y unpin; the pointer drags.
+- [ ] 10.4 Pin from the menu ("Pin to desktop…" entry proposed).
+- [ ] 10.5 Deterministic and live tests with inspected screenshots; budget.
+
+### Step 12 — Mycroft in the Slate
+**Status**: 🧪 In progress — green-lit by the user on 2026-10-11 ("je voudrais que tu travailles un peu sur le step 12… branche-le, fais tous les branchements et je ferai les tests"). Wyoh wires everything and tests with Mycroft's `--fake` mode; the user does the real voice test. Earlier: requested on 2026-10-09 ("et après tu intégreras Mycroft à Slate"), to follow Step 9. Mycroft proposed the interface in [`docs/0600_02_note-from-mycroft-dictation-in-slate.md`](docs/0600_02_note-from-mycroft-dictation-in-slate.md) (its Step 7); Wyoh replied in section 6 of that note
+
+Goal: speech becomes text in the Slate, where the person corrects it with the buttons and sends it with L2, as the intent of Step 5 already foresaw.
+
+- [x] 12.1 Boundary agreed in principle (Wyoh's reply to Mycroft's note):
+  - Mycroft provides a separate `mycroft_dictate` process that emits `ready`, `partial`, `final` and `error` JSON lines and stops when its stdin closes; Mycroft's side needs its own green light;
+  - the gamepad daemon starts the process and passes its lines to the Slate as `provisional` and `insert` operations;
+  - the Slate owns the text, shows provisional text underlined, and ends dictation on any edit;
+  - **Control (user, 2026-10-09):** L2 starts and stops dictation (see 6.9).
+- [x] 12.2 **Wiring done and verified with the fake provider (2026-10-11).**
+  - **Daemon:** `dictate_command` (the real command deployed); L2 starts or stops the provider; its lines become Slate operations (`split_lines`, `slate_operations`: ready → listening, partial → provisional, final → insert, error → shown); the Slate's `stop-dictation` (any key) closes its stdin; hiding stops it, and closing or sending kills it; `dictation` and `dictation_exit` in the status; stderr goes to `/run/wyoh/dictation.log`.
+  - **Slate:** provisional text underlined at the cursor (not part of the text); "dictation: loading… / listening (L2 stops)" in the hint; `insert_dictated` adds a separating space.
+  - **Tests:** 13 new deterministic tests (266 Wyoh offline tests pass). Live: `WYOH_LUNA_LIVE=1 uv run pytest -m live test/wyoh/test_luna_slate_dictation.py` passed (`results/wyoh/luna-slate-dictation/20261011T201903Z`, 4 frames inspected). It switches the daemon to `mycroft_dictate.py --fake "bonjour luna"` and restores the real command afterwards: provisional "bonjour" underlined, then "bonjour luna" inserted after "echo ", sent with FN+A, and the terminal wrote it to the file.
+
+  Original wiring notes:
+  - **Provider on Luna:** `mycroft_dictate.py` (Mycroft Step 7.4, contract `worklines/mycroft/docs/0704_01`), installed by Mycroft under `/storage/.local/share/tanstfaafllm/mycroft/`, assets under `/storage/.local/opt/mycroft/`.
+  - **Daemon command:** `--input /dev/snd/pcmC0D0c --assets /storage/.local/opt/mycroft --threads 2` (Mycroft 8.2: 2 threads is best).
+  - **Expect on Luna (Mycroft 8.1–8.3):** about 17 s to load the model, decoding slightly slower than real time, about 250 MiB while dictating. The microphone path is unproven (Luna Step 8).
+  - **Behaviour:** L2 starts dictation; the Slate shows "loading…", then "listening", and provisional text underlined at the cursor. L2 again, or any key, stops it; the final text is inserted at the cursor. Hiding, sending or clearing the Slate stops it too.
+
+  Original item: Wyoh side: the control, the daemon's process handling, the Slate's `provisional`/`insert` operations and "loading…/listening" hint; deterministic tests and a live test against a fake dictation process.
+- [ ] 12.4 **Kroko, resident (user decisions 2026-10-13).**
+  - Switch dictation to Kroko (`kroko-fr-2025`; ~160 MiB on `luna-pi` against ~252 MiB on Luna for the current model) and test it on Luna.
+  - The model stays loaded: hiding and showing the Slate must not cost a reload.
+  - **Mycroft's part** (note `worklines/mycroft/docs/0903_03_note-from-wyoh-kroko-resident-in-slate.md`): Kroko files and current scripts on Luna, a Luna measurement, the licence, and a resident mode (proposed: `--resident`, stdin `start`/`stop`, idle between utterances).
+  - **Wyoh's part:** start the provider at the first Slate opening and keep it alive while hidden; FN+A keeps the Slate process (send, clear, hide); L2 → `start`/`stop`; `--model kroko-fr-2025` once installed.
+  - Blocked on Mycroft's resident mode: no Mycroft session is running (2026-10-13).
+- [ ] 12.3 **Blocked on a microphone (2026-10-11).**
+  - The user tested through the interface: no dictation with a 4-pole jack headset or a microphone-only jack.
+  - The user thinks the jack is output only. Luna's `0802_01` suggests the line is wired but not enabled by ArchR. Note to Luna: `worklines/luna/docs/0800_01_note-from-wyoh-jack-microphone-user-test.md`.
+  - **Settled by Luna's 8.2c (2026-10-11):** with the codec set at runtime to the factory driver's capture values, the jack still gave no signal. The jack's microphone contact very probably doesn't reach the codec. **Dictation needs a USB-C microphone.**
+  - The daemon picks a USB capture device when one is present (`{capture}`, deployed 2026-10-11). Luna records the device names (its 8.2d) when one is plugged in.
+  - **2026-10-13: a USB-C headset works** (Luna's note `0800_01`: TTGK "LUDOS Earphones", ALSA card 1 `Earphones`, `/dev/snd/pcmC1D0c`, S16_LE stereo, 48 kHz only). Mycroft's capture opens `plughw:C,D` at 16 kHz mono, so ALSA converts. The user asked Wyoh to continue the integration ("continuez l'intégration"): check the device choice and a real provider start on Luna, then hand over the voice test.
+  - **Checked on Luna (2026-10-13):** the headset is card 1 with `usbid 3302:3b77`. The deployed daemon's `choose_capture()` returns `/dev/snd/pcmC1D0c`. A real `mycroft_dictate.py --input /dev/snd/pcmC1D0c --threads 2` sent `ready` after 19.7 s, then an empty `final` when stdin closed (silence) and exit 0. Luna rebooted. **Handed to the user for the voice test.**
+
+  Earlier: The user's real voice test (handed over 2026-10-11): L1, L2, speak French, L2. The microphone path (`/dev/snd/pcmC0D0c`, rk817) is unproven (Luna Step 8): if nothing is recognised, `/run/wyoh/dictation.log` and the `dictation` status say why. Expect about 17 s of "loading…" before "listening".
+
+### Step 11 — Productise only the selected agent-native workspace path
 **Status**: ⏳ Pending
 
-- [ ] 6.1 Fork/pin only the selected upstream; retain licence, provenance, and upgrade strategy.
-- [ ] 6.2 Implement only the approved Sway configuration, capability mediator, and/or Wyoh adapter; retain the Step 5 controller mapping and recovery and deterministic startup.
-- [ ] 6.3 Add contract tests and target smoke tests for state, events, focus/layout operation, capability rejection, focused input fallback, wait, process exit, malformed/stale request, and restart.
-- [ ] 6.4 Acceptance: Luna boots a recoverable agent-native Wyoh workspace and passes its selected Sway/adapter contract suite inside its measured budget.
+- [ ] 11.1 Fork/pin only the selected upstream; retain licence, provenance, and upgrade strategy.
+- [ ] 11.2 Implement only the approved Sway configuration, capability mediator, and/or Wyoh adapter; retain the Step 5 controller mapping and recovery and deterministic startup.
+- [ ] 11.3 Add contract tests and target smoke tests for state, events, focus/layout operation, capability rejection, focused input fallback, wait, process exit, malformed/stale request, and restart.
+- [ ] 11.4 Acceptance: Luna boots a recoverable agent-native Wyoh workspace and passes its selected Sway/adapter contract suite inside its measured budget.
 
 ---
 
@@ -235,7 +479,12 @@ Intent (behaviour, states, failure modes, budget, tests): [`docs/0500_01_gamepad
 - ✅ Step 3.7 — Minimal workable Sway environment operated through MCP, with inspected screenshots.
 - 🧪 Step 4 — Physical Luna stock-image inventory in progress; production base remains unselected.
 - 🧪 Step 5 — Device interactors: built, proven in simulation, boots into the session; awaiting the user's physical check.
-- ⏳ Step 6 — Productise the selected agent-native workspace path.
+- 🧪 Step 6 — Slate (multi-line input) and backup on-screen keyboard: built, passing on Luna in simulation; user check and whole-cross calibration open.
+- ⏳ Step 7 — Wi-Fi network selection from the buttons: proposal, decisions open.
+- 🧪 Step 9 — Graphical applications and menu clean-up: green-lit 2026-10-09, Wyoh assembles and integrates; Luna SSH unreachable for now.
+- ⏳ Step 10 — Icons on the desktop: proposal, decisions open.
+- ⏳ Step 12 — Mycroft in the Slate (after Step 9; boundary note to Mycroft).
+- ⏳ Step 11 — Productise the selected agent-native workspace path (was Step 6, then 8).
 
 ---
 
@@ -277,6 +526,64 @@ date
 | 2026-10-07 | Promoted the device-controls work from sub-step 4.9 to its own **Step 5 — Device interactors** (user request); the former Step 5 (productise) is now Step 6. Intent renamed `0500_01`. |
 | 2026-10-07 | Step 5 built autonomously: gamepad daemon (49 core tests), MCP-simulated person, button-only scenario passed with 20 inspected screenshots, budget met after optimisation (17.5 MB, 0 ticks at rest, 3.8% with the stick), boot straight into the session with Mali (PATH bug fixed). User check 5.7 pending. |
 | 2026-10-09 | User feedback applied: pointer on the right stick (R3 click), the user's wallpaper (MIME database fix), and a four-tile layout policy with a "Too many tiles" pop-up (layout scenario passed). Luna tests now share one multiplexed SSH connection (OpenSSH 9.8 PerSourcePenalties) and fetch JPEG frames settled by hash (Wi-Fi about 160 KB/s with stalls). The full button-only scenario has not re-passed since; its failures were link stalls. Committed at the user's request. |
+| 2026-10-09 | Added Step 6 (Slate multi-line input and wvkbd backup keyboard) and Step 7 (Wi-Fi selection on iwd, stack owned by Luna) at the user's request, with proposals `0600_01` and `0700_01`; the user's ChatGPT discussion is kept raw as `0500_02`. Productise is now Step 8. Planning only; no code. |
+| 2026-10-09 | Step 6 green-lit and built: `wyoh_slate.py` (multi-line editor in a floating foot window), Slate mode and whole-cross detection in the gamepad daemon, wvkbd 0.15 (AZERTY build from `luna-pi`) shown with the Slate, white border while open. 107 deterministic tests; the live Slate scenario passed with 20 inspected screenshots. Open: user check, whole-cross calibration, AZERTY re-run, memory slightly over target. |
+| 2026-10-09 | 6.8 two-thumb typing (user request): pastel green and red selections on the AZERTY keyboard, steered by the left and right sticks, typed with L3/R3 (wvkbd patch plus core). 124 tests; the live scenario passed with the final build, 22 frames inspected. |
+| 2026-10-09 | Added Step 9 (graphical apps and menu clean-up, from Professor's note `0900_01`, with Wyoh's reply in its section 6) and Step 10 (desktop icons, proposal `1000_01`, user request). Productise is now Step 11. Planning only; Luna did not answer SSH, so the runtime check is still to do. |
+| 2026-10-09 | Step 9 green-lit by the user; Wyoh assembles and integrates the apps (sub-steps 9.0–9.11). Step 12 added: Mycroft in the Slate, after Step 9, by user request. Luna SSH times out at the banner exchange (ping works), so Luna-side work is blocked; offline work proceeds. |
+| 2026-10-09 | Offline progress on Step 9: calculator core (32 tests) and per-app gamepad profiles (7 tests; 188 Wyoh offline tests pass). Step 12: Wyoh replied to Mycroft's dictation note (`0600_02`, section 6). Blocked: Luna and `luna-pi` both unreachable; questions put to the user. |
+| 2026-10-09 | User answers: Luna is being rebooted and `luna-pi` is off; mpv and Gmu are hidden by default; new Slate controls (6.9): L1 show/hide, L2 dictation, FN+X clear, FN+A send + clear + hide. |
+| 2026-10-09 | 6.9 core done; Luna cheat sheet (SVG and PNG) made at the user's request, because the controls were getting hard to follow. |
+| 2026-10-09 | Step 9.1 partial: runtimes inventoried (SDL2 with Wayland, no pygame; Commander and RetroArch ecwolf already installed). Commander's captures are black (panel unknown); Luna dropped off the network after a GLES demo was started. Calculator window written (SDL2 via ctypes). Blocked again on Luna. |
+| 2026-10-09 | Professor's delegated decisions for the user (log `worklines/professor/docs/0503_01`): D5 finish 6.9's daemon side offline (done); D4 go 5.12; D6 hide mpv and Gmu; D7 no Step 10 tonight; D8 Luna device work, the black Commander captures and 6.6 wait for the user, and the GLES demo is not repeated. |
+| 2026-10-09 | 5.12 done (reference, 24-check test, superseded marks, cheat-sheet fixes). 6.9's daemon side done offline. Stopped as instructed: Luna device work (6.9 and 6.6 live checks, Step 9 deployment, Commander's black captures) waits for the user (D8). |
+| 2026-10-09 | Professor D10 (for the user, inside green-lit Step 9; nothing touches Luna), in order: 9.2 manifest schema, validator, launcher convention, `.desktop` generation, Make targets and tests; 9.4 `Hidden=true` overrides and the new menu set, with a test; 9.9 prep: Dino Love2D source and the white-on-black sprites on the desk, with provenance; a headless-Sway check of the calculator on the desk if available. |
+| 2026-10-09 | D10 done: 9.2 manifests and generation (18 tests), 9.4 menu set (test of the resulting menu), 9.9 white-on-black Dino build (3 tests, preview inspected); the headless calculator check was skipped (no Sway on the desk). 237 Wyoh offline tests pass. **Only Luna-dependent work remains; stopped** until the user checks Luna (D8). |
+| 2026-10-09 | Luna rebooted by the user. Apps generated and the menu deployed on Luna. Found that Sway cannot import Mali client buffers (`eglCreateImageKHR failed`), so SDL/GL windows show nothing when composed; the user is asked to check full screen on the panel (9.1b). |
+| 2026-10-09 | Professor D14 (for the user):
+  - continue Step 9 on Luna around GL: force SDL's software path (wl_shm, not EGL) for the calculator and Commander, and check with grim;
+  - if it works, put the setting in their `run` launchers and do Commander's live scenario (9.11);
+  - no glmark2 or other GLES stress tonight; Love2D/Dino and other GL apps wait;
+  - only files under `/storage/.local`; no boot, card or ArchR change; no commit;
+  - 9.1b (the user's panel check) stays open. |
+| 2026-10-09 | D14 test: SDL's software renderer still uses EGL under Wayland (same import errors), so the SDL route is closed. Stopped and asked the user: panel check, Xwayland without glamor (needs a unit change outside D14's limit), a note to Luna, or a shared-memory calculator. |
+| 2026-10-11 | User decisions: no app needs the GPU (CPU rendering, shared-memory buffers); the split stays for now; a full-screen-only policy with quick app switching is a likely future step. Next: try Mesa's software EGL per app, then Xwayland without glamor. |
+| 2026-10-11 | Experiment 1 (Mesa software EGL for the calculator): Mesa failed to create a DRI2 screen and the app exited; Luna then stopped answering SSH (ping still works), probably after Mesa touched the GPU. Stopped; asked the user to reboot Luna and choose between a safer Mesa retry and Xwayland without glamor. |
+| 2026-10-11 | Correction: Luna was not blocked, only the desk's SSH stalled (the user's SSH and the panel worked). User rule: reboot Luna preventively after each test series. The user rebooted it. |
+| 2026-10-11 | Experiment 1 dead end: Mesa rejects every software config under this Sway (EGL never initialises). Calculator fails cleanly now. Luna rebooted preventively. Asking the user to confirm experiment 2 (Xwayland without glamor; unit change and session restart). |
+| 2026-10-11 | User: "essaie en gpu". Experiment 2 is set aside; Wyoh now tries to make Mali GPU apps display. G1: count Sway's import errors while the calculator redraws, windowed vs full screen (direct-scanout hypothesis). G2: inspect the client's buffer protocol, format and modifier (`WAYLAND_DEBUG`). Reboot after each series. |
+| 2026-10-11 | 9.1b solved: `MALI_WAYLAND_DMABUF_PROTOCOL=1` makes Mali clients use linux-dmabuf. Calculator and Commander display and capture correctly. Variable added to both units and the apps' launchers; Commander manifest added. Known issue: `wtype` keys crash SDL2 apps, which affects Slate delivery to SDL apps. |
+| 2026-10-11 | Professor (tanstfaafllm-80): Luna access is now arbitrated (`worklines/luna-access.md`). Wyoh holds Luna until the end of the current app series, about 13:30 at the latest, then reboots it, records the state and tells Professor "Luna released"; Mycroft (7.3b, speech-to-text measurements) goes next, and Wyoh resumes after. Offline work in the meantime (for example the wtype/SDL2 crash). Live run 1 of the 9.11 scenario: the calculator computed 21 with the gamepad and Files opened full screen; the Files check was fixed to use Commander's colours. |
+| 2026-10-11 12:36 | 9.11 run 2 passed (calculator 21, Files, clean menu; inspected). Luna rebooted and **released** to Professor for Mycroft (7.3b). Wyoh waits for Luna to come back, and does offline work meanwhile (the wtype/SDL2 crash, the Files icon). |
+| 2026-10-11 | Offline while Luna is with Mycroft: Slate delivery now types through the daemon's uinput keyboard (AZERTY table with Shift and AltGr; wtype only as a fallback), which avoids the SDL2 crash; 245 offline tests pass. Files icon pointed at Commander's own SVG. Both need a live check when Luna comes back. |
+| 2026-10-11 12:43 | Professor: Luna back to Wyoh (Mycroft released it after a reboot; its speech-to-text uses about 250 MiB when running). Same rules. Next series: deploy, then live checks of uinput Slate delivery, the Files icon and the apps scenario. |
+| 2026-10-11 12:47 | Verification series passed. Slate scenario: the 6.9 keys work live, and delivery goes through uinput ("echo aé" correct). Apps scenario: calculator 21, Files with its icon, clean menu. The Slate test now filters the menu with "term". Luna rebooted. Next: Wolfenstein 3D (RetroArch ecwolf, shareware data). |
+| 2026-10-11 | Professor: Luna paused for Wyoh (the user gave it to Mycroft for about 25 min); no `ssh luna` until "Luna is yours". Not mid-series: Luna had just been rebooted after the verification series. Offline: preparing Wolfenstein 3D (9.8). |
+| 2026-10-11 | Offline during the pause: Wolfenstein 3D assembled from PortMaster's wolf3d port (ECWolf + shareware data, checksums in the manifest) and the `wyoh-luna-app` Make target added; waiting for "Luna is yours" to deploy and test. |
+| 2026-10-11 | Professor: Luna back to Wyoh (Mycroft finished and rebooted it). Series: deploy Wolfenstein 3D, regenerate the menu, first launch. |
+| 2026-10-11 | Wolfenstein series: runs on Luna; display fixed (720 × 540 windowed, Sway full screen); startup cut from 32 s to 3 s with ALSA. Professor's pause (usage limit) was announced and lifted before this was written; resuming with the gamepad test. |
+| 2026-10-11 | Wolfenstein: the gamepad is not seen in `gamepad-raw`, but the keyboard drives it fully to Floor 1. Next: per-app key maps (offline). Luna rebooted after the series. |
+| 2026-10-11 19:06 | Per-app key maps implemented (`app_keys`); Wolfenstein 3D plays on Luna with the gamepad (scenario passed: Floor 1, fire, door, FN+B). Luna rebooted. Next in Step 9: chess, then Dino and NetSurf; also the controls reference and cheat sheet for Wolfenstein's keys. |
+| 2026-10-11 | Professor relays two user rules: (1) language: everything written in English, the user is addressed in French (AGENTS.md); (2) original names restored: Mike = local brain, Mannie = frontier model. Wyoh's files already follow both, except the French cheat sheet `0609_01`, made in French for the user; whether to translate it is asked to the user. |
+| 2026-10-11 | Step 12 green-lit by the user: wire Mycroft's `mycroft_dictate.py` into the Slate (daemon process handling, Slate provisional text and state), test with `--fake`, and leave the real voice test to the user. |
+| 2026-10-11 20:20 | Step 12 wired: L2 starts and stops Mycroft's dictation, with provisional text underlined and the final text inserted. Live test with the fake provider passed; the real command is deployed. Luna rebooted. 12.3 (real voice) is handed to the user. |
+| 2026-10-11 22:34 | Professor: Luna goes to Mycroft for about 20 min (its 9.3); no `ssh luna` until "Luna is yours". Wyoh was not mid-series (Luna rebooted after the dictation test). |
+| 2026-10-11 | User: Mycroft now works on `luna-pi` and must not load Luna; Wyoh continues on Luna (Professor informed). Next in Step 9: chess (9.7). |
+| 2026-10-11 | Professor confirms Luna is Wyoh's for 9.7 and the rest of Step 9. Chess approach: Wyoh's own SDL2 app with python-chess and Stockfish, since pygame is unavailable (recorded in 9.7). |
+| 2026-10-11 | The user stopped the chess work (it was not what they asked: 9.7 paused, nothing written for it beyond the plan entry and the `chess` dev dependency). Then they tested dictation through the interface: no microphone on the jack (headset and microphone-only). Note left for Luna; next: a USB-C microphone, with automatic capture-device choice in the daemon. |
+| 2026-10-11 | Luna replied in the note (8.1c recorded; 8.2b read-only register check; 8.2c register test to propose to the user). At Professor's request, Luna rebooted and **released** for Luna's 8.2b (about 10 min). Wyoh is not mid-series. Pending on Luna's return: deploy the `{capture}` choice (USB microphone) when the user has a USB-C headset. |
+| 2026-10-11 | Luna back to Wyoh (Luna's 8.2b done). Deployed the `{capture}` choice (USB microphone if present, else RK817). Step 9 chess not resumed: the user had stopped it, so the next Step 9 item waits for the user. |
+| 2026-10-11 | Luna **released** to Professor for Luna's 8.2c (codec register test, green-lit by the user, about 20 min). Wyoh is idle; Luna had just been rebooted after the `{capture}` deployment. The next Step 9 item waits for the user's choice. |
+| 2026-10-11 | Luna back to Wyoh. Luna's 8.2c: no microphone on the jack, so 12.3 waits for a USB-C microphone (the daemon side is ready). |
+| 2026-10-11 | Professor: hold off on Luna for about 10 min (Luna's 8.2d, a USB-C audio adapter tested with the user). Wyoh is idle; it waits for "Luna is yours". |
+| 2026-10-11 | Luna back to Wyoh. Luna's 8.2d: the user's USB-C-to-jack adapter is passive (no USB audio device). 12.3 needs a real USB sound card or USB microphone, for example through the USB-C-to-A adapter that worked for the keyboard. Wyoh's daemon side is ready; nothing to change. The next Step 9 item waits for the user's choice. |
+| 2026-10-11 | Professor: Mycroft has Luna for about 20 min (its Kroko test, 9.3); no `ssh luna` until "Luna is yours". Wyoh is idle. |
+| 2026-10-13 | The user's USB-C headset works. User: continue the Mycroft integration (12.3). Luna was free (`luna-access.md`); Wyoh takes it and tells Professor. |
+| 2026-10-13 | 12.3 preparation done on Luna: the daemon picks the USB headset, Mycroft's provider is ready after 19.7 s on it and exits cleanly. Luna rebooted; the voice test is the user's. |
+| 2026-10-13 | User decisions: switch to Kroko and test it on Luna; the model must stay loaded (no 20 s wait after hiding the Slate). Note to Mycroft `0903_03` (Kroko on Luna, measurement, licence, resident mode); Wyoh's side recorded as 12.4. |
+| 2026-10-13 | User feedback on Wolfenstein (9.8b): both sticks back (regression), R1/A fire, L1/B open doors and back, A/B no longer swapped, and an icon. Wyoh takes the free Luna for it. |
+| 2026-10-13 | 9.8b done: Wolfenstein gets a remapped virtual joystick (both sticks analog, A/R1 fire, B/L1 doors) and a BJ-face icon; scenario passed; Luna rebooted and freed in `luna-access.md`. |
+| 2026-10-09 | Professor (on the user's request) reviewed the cheat sheet and added sub-step 5.12: a Markdown controls reference checked against the code, plus four fixes to the sheet. Not started; it follows the green-light protocol. |
 
 ---
 
@@ -333,6 +640,15 @@ Luna evidence (Step 4):
 - `worklines/wyoh/docs/0405_01_luna-stock-image-inventory.md` — physical Luna's EmuELEC baseline and explicit evidence gaps.
 - `worklines/wyoh/docs/0506_01_buttons-only-result.md` (with a 2026-10-09 addendum: right stick, wallpaper, four-tile layout, link limits) — Step 5 result: daemon, mapping, button-only scenario (20 inspected steps), boot into the session, cost, findings.
 - `worklines/wyoh/docs/0500_01_gamepad-input-intent.md` — Step 5 intent: gamepad mapping, pointer, input zone, recovery, failure modes, budget, tests.
+- `worklines/wyoh/docs/0500_02_input-widget-discussion-raw.md` — raw export of the user's ChatGPT discussion on the keyboard and Wi-Fi (2026-10-09); source evidence, not verified documentation.
+- `worklines/wyoh/docs/0600_01_slate-and-keyboard-proposal.md` — Step 6 proposal: Slate multi-line input, wvkbd backup keyboard, controls, passwords, open decisions.
+- `worklines/wyoh/docs/0605_01_slate-result.md` — Step 6 result: the Slate, wvkbd-luna, evidence, cost, findings, whole-cross calibration still open.
+- `worklines/wyoh/docs/0700_01_wifi-settings-proposal.md` — Step 7 proposal: Wi-Fi panel on iwd, ownership boundary with Luna, open decisions.
+- `worklines/wyoh/docs/0512_01_luna-controls-reference.md` — current controls reference per mode, checked against the code by `test/wyoh/test_luna_controls_reference.py`.
+- `worklines/wyoh/docs/0609_01_luna-cheat-sheet.svg` (+ `.png`) — the user's cheat sheet: front and top of the R36 Ultra, every button on the desktop, in the Slate and with FN; menu, windows, games, recovery.
+- `src/wyoh/wyoh_apps.py`, `src/wyoh/apps/` (calculator, dino), `src/wyoh/deploy/luna/menu.toml` — Step 9 app convention, menu set, and app recipes.
+- `worklines/wyoh/docs/0900_01_note-from-professor-graphical-apps.md` — Professor's request (apps, menu, assembly) with Wyoh's reply (section 6).
+- `worklines/wyoh/docs/1000_01_desktop-icons-proposal.md` — Step 10 proposal: desktop icons, gamepad controls, pinning, open decisions.
 - `worklines/wyoh/docs/0408_01_luna-fuzzel-menu.md` — Step 4.8 fuzzel menu, interactions, evidence, GPU-driver correction.
 - `worklines/wyoh/docs/0407_01_luna-real-display-session.md` — Step 4.7: the Step 3.7 session on Luna's panel with ArchR's Sway 1.11, MCP scenario, cost, and findings.
 - `worklines/wyoh/docs/0405_02_luna-reachability-recheck.md` — failed read-only recheck and the resulting Step 4 boundary.

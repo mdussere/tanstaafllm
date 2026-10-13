@@ -585,13 +585,20 @@ def _check_buttons(buttons: list[str]) -> None:
 
 
 @mcp.tool()
-def wyoh_dev_gamepad_tap(buttons: list[str], hold_seconds: float = 0.08) -> dict[str, Any]:
-    """Development only: press buttons in order, hold, release in reverse."""
+def wyoh_dev_gamepad_tap(buttons: list[str], hold_seconds: float = 0.08, repeat: int = 1,
+                         gap_seconds: float = 0.1) -> dict[str, Any]:
+    """Development only: press buttons in order, hold, release in reverse; `repeat`
+    times with `gap_seconds` between taps (a double press needs both within
+    one call, as the link adds its own latency between calls)."""
     _check_buttons(buttons)
-    if not 0 <= hold_seconds <= 10:
-        raise ValueError("hold_seconds must be between 0 and 10")
-    _person("gamepad").tap(buttons, hold_seconds)
-    return {"tapped": buttons, "hold_seconds": hold_seconds}
+    if not 0 <= hold_seconds <= 10 or not 1 <= repeat <= 10 or not 0 <= gap_seconds <= 5:
+        raise ValueError("hold_seconds within [0, 10], repeat within [1, 10], gap_seconds within [0, 5]")
+    gamepad = _person("gamepad")
+    for index in range(repeat):
+        if index:
+            time.sleep(gap_seconds)
+        gamepad.tap(buttons, hold_seconds)
+    return {"tapped": buttons, "hold_seconds": hold_seconds, "repeat": repeat}
 
 
 @mcp.tool()

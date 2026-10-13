@@ -1,0 +1,40 @@
+# Template: fetch_wolf3d.py turns it into the app's wyoh-app.toml (with checksums).
+# Wolfenstein 3D, shareware episode 1 (id Software, freely distributable
+# shareware), on the ECWolf engine from PortMaster's wolf3d port. Assembled by
+# fetch_wolf3d.py into /storage/.local/opt/wolf3d-ecwolf/; not committed.
+id = "wolf3d"
+name = "Wolfenstein 3D"
+comment = "The 1992 shooter, shareware episode (ECWolf)"
+version = "ecwolf-portmaster-d36a1c2"
+source = "https://github.com/PortsMaster/PortMaster-New/tree/d36a1c2297277b7434591dd5a190751ff7424f6f/ports/wolf3d"
+licence = "ECWolf GPL-2.0+ (engine); Wolfenstein 3D shareware data, id Software, redistributable as shareware"
+wayland_app_id = "ecwolf"
+input = "gamepad-virtual"  # Wyoh feeds ECWolf a remapped joystick: both sticks, two buttons per action
+window = "fullscreen"
+gpu = true
+quit = "Escape menu > Quit, or FN+B (Sway kill)"
+icon = "./wolf3d-icon.png"  # BJ's face, made by fetch_wolf3d.py (a bare name would be an icon-theme name)
+categories = ["Game", "ActionGame"]
+
+# The virtual joystick (user, 2026-10-13): fire with the right hand (R1) or A,
+# open doors with the left hand (L1) or B. ECWolf's default bindings match:
+# Attack 0, Use 1, Run 2, Strafe 3, Next_Weapon 4, Prev_Weapon 5. In its menus
+# button 0 validates and button 1 goes back, so A validates and B says no.
+[pad]
+BTN_EAST = 0      # A: fire, validate
+BTN_TR = 0        # R1: fire
+BTN_SOUTH = 1     # B: open doors, back
+BTN_TL = 1        # L1: open doors
+BTN_WEST = 2      # Y held: run
+BTN_NORTH = 3     # X held: strafe with the left stick
+BTN_TL2 = 4       # L2: next weapon
+BTN_TR2 = 5       # R2: previous weapon
+
+# Keys still sent while it has the focus: the cross for the menus, Start for
+# the game's own menu.
+[keys]
+BTN_DPAD_UP = "KEY_UP"
+BTN_DPAD_DOWN = "KEY_DOWN"
+BTN_DPAD_LEFT = "KEY_LEFT"
+BTN_DPAD_RIGHT = "KEY_RIGHT"
+BTN_START = "KEY_ESC"

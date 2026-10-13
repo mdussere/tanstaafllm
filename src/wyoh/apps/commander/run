@@ -1,0 +1,6 @@
+#!/bin/sh
+# Launcher for ArchR's Commander in the Wyoh session. MALI_WAYLAND_DMABUF_PROTOCOL
+# makes Mali hand Sway standard dmabuf buffers (Wyoh 9.1b).
+export HOME=/storage SDL_VIDEODRIVER=wayland MALI_WAYLAND_DMABUF_PROTOCOL=1
+cd /storage || exit 1
+exec /usr/bin/commander "$@"

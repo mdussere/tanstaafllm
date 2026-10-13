@@ -16,6 +16,7 @@ import os
 import struct
 import time
 
+from wyoh_gamepad import AZERTY as GAMEPAD_AZERTY, PHYSICAL  # noqa: E402
 from wyoh_gamepad import (
     ABS_RX, ABS_RY, ABS_X, ABS_Y, BUS_VIRTUAL, BUTTONS, EV_ABS, EV_KEY, EV_SYN, EVENT_FORMAT,
     SYN_REPORT, UI_DEV_CREATE, UI_DEV_DESTROY, UI_DEV_SETUP, UI_SET_EVBIT, UI_SET_KEYBIT, VENDOR,
@@ -28,28 +29,9 @@ UI_ABS_SETUP = 0x401C5504
 AXES = {"ABS_X": ABS_X, "ABS_Y": ABS_Y, "ABS_RX": ABS_RX, "ABS_RY": ABS_RY}
 AXIS_RANGE = 1800
 
-# Linux key codes at physical (US-labelled) positions.
-_KEY = {
-    "1": 2, "2": 3, "3": 4, "4": 5, "5": 6, "6": 7, "7": 8, "8": 9, "9": 10, "0": 11,
-    "q": 16, "w": 17, "e": 18, "r": 19, "t": 20, "y": 21, "u": 22, "i": 23, "o": 24, "p": 25,
-    "a": 30, "s": 31, "d": 32, "f": 33, "g": 34, "h": 35, "j": 36, "k": 37, "l": 38,
-    "semicolon": 39, "z": 44, "x": 45, "c": 46, "v": 47, "b": 48, "n": 49, "m": 50,
-    "comma": 51, "dot": 52, "slash": 53, "space": 57, "enter": 28, "esc": 1,
-    "backspace": 14, "tab": 15, "shift": 42,
-}
-
-# Character -> (physical key, shift) on a French AZERTY keyboard.
-AZERTY: dict[str, tuple[str, bool]] = {
-    **{c: (c, False) for c in "bcdefghijklnoprstuvxy"},
-    **{c.upper(): (c, True) for c in "bcdefghijklnoprstuvxy"},
-    "a": ("q", False), "A": ("q", True), "q": ("a", False), "Q": ("a", True),
-    "z": ("w", False), "Z": ("w", True), "w": ("z", False), "W": ("z", True),
-    "m": ("semicolon", False), "M": ("semicolon", True),
-    **{d: (d, True) for d in "1234567890"},  # digits are shifted on AZERTY
-    " ": ("space", False), "-": ("6", False), "_": ("8", False),
-    ",": ("m", False), ".": ("comma", True), "/": ("dot", True),
-    ";": ("comma", False), ":": ("dot", False), "!": ("slash", False),
-}
+# The AZERTY table is shared with the gamepad daemon (it types Slate text too).
+_KEY = PHYSICAL
+AZERTY = {char: (name, modifier == "shift") for char, (name, modifier) in GAMEPAD_AZERTY.items() if modifier != "altgr"}
 
 
 def _setup(fd: int, name: str, product: int) -> None:

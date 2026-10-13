@@ -1,0 +1,299 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 990" width="1400" height="990" font-family="Liberation Sans, Arial, sans-serif">
+  <!-- Luna cheat sheet (Wyoh, 2026-10-09). Schematic: button positions are approximate.
+       Controls as decided by the user up to Wyoh 6.9; dictation (L2) arrives with Step 12. -->
+  <defs>
+    <style>
+      .ink { fill: #2b2b2b; }
+      .t { font-size: 12.5px; fill: #2b2b2b; }
+      .tb { font-size: 13px; font-weight: bold; fill: #2b2b2b; }
+      .h { font-size: 13px; font-weight: bold; fill: #2b2b2b; }
+      .small { font-size: 11px; fill: #555; }
+      .badge circle { fill: #2b2b2b; }
+      .badge text { font-size: 12px; font-weight: bold; fill: #fbf7ee; text-anchor: middle; dominant-baseline: central; }
+      .lead { stroke: #2b2b2b; stroke-width: 1.2; fill: none; }
+      .btn { fill: #e9e4d8; stroke: #2b2b2b; stroke-width: 1.5; }
+      .lbl { font-size: 13px; font-weight: bold; fill: #2b2b2b; text-anchor: middle; dominant-baseline: central; }
+      .box { fill: #ffffff; stroke: #2b2b2b; stroke-width: 1.2; }
+      .boxtitle { font-size: 14px; font-weight: bold; fill: #2b2b2b; }
+    </style>
+  </defs>
+
+  <!-- paper -->
+  <rect width="1400" height="990" fill="#fbf7ee"/>
+  <rect x="14" y="14" width="1372" height="962" fill="none" stroke="#2b2b2b" stroke-width="2"/>
+  <rect x="20" y="20" width="1360" height="950" fill="none" stroke="#2b2b2b" stroke-width="0.6"/>
+
+  <!-- title -->
+  <text x="40" y="62" font-size="30" font-weight="bold" class="ink" letter-spacing="2">LUNA</text>
+  <text x="140" y="62" font-size="22" class="ink">— notice des commandes</text>
+  <text x="40" y="86" class="small">R36 Ultra · session Wyoh (Sway) · pense-bête du 9 octobre 2026 · schéma indicatif, positions approximatives</text>
+  <line x1="40" y1="98" x2="1360" y2="98" stroke="#2b2b2b" stroke-width="1"/>
+
+  <!-- ===================== FRONT ===================== -->
+  <text x="60" y="128" class="h">FACE AVANT</text>
+  <rect x="80" y="140" width="440" height="500" rx="46" fill="#d9d4c7" stroke="#2b2b2b" stroke-width="2"/>
+  <!-- screen -->
+  <rect x="170" y="165" width="260" height="235" rx="8" fill="#2b2b2b"/>
+  <rect x="185" y="175" width="230" height="215" fill="#3d4a63"/>
+  <rect x="185" y="175" width="230" height="10" fill="#333"/>
+  <text x="300" y="275" font-size="13" fill="#e8e8e8" text-anchor="middle">écran 720 × 720</text>
+  <text x="300" y="293" font-size="11" fill="#c8c8c8" text-anchor="middle">barre en haut : aides et heure</text>
+
+  <!-- D-pad -->
+  <g transform="translate(160,470)">
+    <rect x="-14" y="-44" width="28" height="88" rx="4" class="btn"/>
+    <rect x="-44" y="-14" width="88" height="28" rx="4" class="btn"/>
+    <rect x="-13" y="-13" width="26" height="26" fill="#e9e4d8"/>
+    <path d="M0 -38 L6 -29 L-6 -29 Z" class="ink"/>
+    <path d="M0 38 L6 29 L-6 29 Z" class="ink"/>
+    <path d="M-38 0 L-29 -6 L-29 6 Z" class="ink"/>
+    <path d="M38 0 L29 -6 L29 6 Z" class="ink"/>
+  </g>
+  <!-- sticks -->
+  <circle cx="225" cy="575" r="30" class="btn"/><circle cx="225" cy="575" r="18" fill="#cfc9bb" stroke="#2b2b2b"/>
+  <circle cx="375" cy="575" r="30" class="btn"/><circle cx="375" cy="575" r="18" fill="#cfc9bb" stroke="#2b2b2b"/>
+  <!-- ABXY -->
+  <g>
+    <circle cx="440" cy="432" r="17" class="btn"/><text x="440" y="432" class="lbl">X</text>
+    <circle cx="478" cy="470" r="17" class="btn"/><text x="478" y="470" class="lbl">A</text>
+    <circle cx="440" cy="508" r="17" class="btn"/><text x="440" y="508" class="lbl">B</text>
+    <circle cx="402" cy="470" r="17" class="btn"/><text x="402" y="470" class="lbl">Y</text>
+  </g>
+  <!-- select / start / fn -->
+  <rect x="246" y="450" width="40" height="16" rx="8" class="btn"/><text x="266" y="482" font-size="10" text-anchor="middle" class="ink">SELECT</text>
+  <rect x="314" y="450" width="40" height="16" rx="8" class="btn"/><text x="334" y="482" font-size="10" text-anchor="middle" class="ink">START</text>
+  <circle cx="300" cy="528" r="13" class="btn"/><text x="300" y="528" class="lbl" font-size="10">FN</text>
+
+  <!-- front badges -->
+  <g class="badge"><circle cx="105" cy="420" r="11"/><text x="105" y="420">1</text></g>
+  <path class="lead" d="M114 427 L132 442"/>
+  <g class="badge"><circle cx="180" cy="620" r="11"/><text x="180" y="620">2</text></g>
+  <path class="lead" d="M189 613 L203 598"/>
+  <g class="badge"><circle cx="420" cy="620" r="11"/><text x="420" y="620">3</text></g>
+  <path class="lead" d="M411 613 L397 598"/>
+  <g class="badge"><circle cx="505" cy="440" r="11"/><text x="505" y="440">4</text></g>
+  <path class="lead" d="M500 450 L492 458"/>
+  <g class="badge"><circle cx="478" cy="545" r="11"/><text x="478" y="545">5</text></g>
+  <path class="lead" d="M469 538 L455 522"/>
+  <g class="badge"><circle cx="440" cy="398" r="11"/><text x="440" y="398">6</text></g>
+  <path class="lead" d="M440 409 L440 415"/>
+  <g class="badge"><circle cx="372" cy="510" r="11"/><text x="372" y="510">7</text></g>
+  <path class="lead" d="M380 502 L390 484"/>
+  <g class="badge"><circle cx="246" cy="428" r="11"/><text x="246" y="428">8</text></g>
+  <path class="lead" d="M252 438 L260 450"/>
+  <g class="badge"><circle cx="354" cy="428" r="11"/><text x="354" y="428">9</text></g>
+  <path class="lead" d="M348 438 L340 450"/>
+  <g class="badge"><circle cx="300" cy="565" r="11"/><text x="300" y="565">10</text></g>
+  <path class="lead" d="M300 554 L300 541"/>
+
+  <!-- ===================== TOP / BACK ===================== -->
+  <text x="60" y="682" class="h">DESSUS — les quatre gâchettes</text>
+  <rect x="80" y="694" width="440" height="120" rx="22" fill="#d9d4c7" stroke="#2b2b2b" stroke-width="2"/>
+  <rect x="100" y="706" width="140" height="30" rx="8" class="btn"/><text x="170" y="721" class="lbl">L1</text>
+  <rect x="100" y="744" width="140" height="30" rx="8" class="btn"/><text x="170" y="759" class="lbl">L2</text>
+  <rect x="360" y="706" width="140" height="30" rx="8" class="btn"/><text x="430" y="721" class="lbl">R1</text>
+  <rect x="360" y="744" width="140" height="30" rx="8" class="btn"/><text x="430" y="759" class="lbl">R2</text>
+  <text x="300" y="796" font-size="11" text-anchor="middle" class="ink">(vues du dessus, écran face à vous : L à gauche, R à droite)</text>
+  <g class="badge"><circle cx="262" cy="721" r="11"/><text x="262" y="721">11</text></g>
+  <path class="lead" d="M251 721 L241 721"/>
+  <g class="badge"><circle cx="262" cy="759" r="11"/><text x="262" y="759">12</text></g>
+  <path class="lead" d="M251 759 L241 759"/>
+  <g class="badge"><circle cx="338" cy="721" r="11"/><text x="338" y="721">13</text></g>
+  <path class="lead" d="M349 721 L359 721"/>
+  <g class="badge"><circle cx="338" cy="759" r="11"/><text x="338" y="759">14</text></g>
+  <path class="lead" d="M349 759 L359 759"/>
+
+  <!-- two-thumb keyboard legend -->
+  <rect x="60" y="834" width="480" height="122" class="box"/>
+  <text x="74" y="856" class="boxtitle">Clavier à deux pouces (Slate ouvert)</text>
+  <rect x="74" y="868" width="34" height="26" rx="4" fill="#b8e6b8" stroke="#2b2b2b"/><text x="91" y="881" class="lbl" font-size="12" fill="#1e1e1e">f</text>
+  <text x="118" y="878" class="t">vert : stick gauche déplace,</text>
+  <text x="118" y="893" class="t">L3 (enfoncer) tape la touche</text>
+  <rect x="300" y="868" width="34" height="26" rx="4" fill="#f5b5b5" stroke="#2b2b2b"/><text x="317" y="881" class="lbl" font-size="12" fill="#1e1e1e">j</text>
+  <text x="344" y="878" class="t">rouge : stick droit déplace,</text>
+  <text x="344" y="893" class="t">R3 (enfoncer) tape la touche</text>
+  <text x="74" y="920" class="t">Clavier AZERTY avec é è à ç ; touche 123 : chiffres, symboles.</text>
+  <text x="74" y="938" class="t">Départ sur f et j ; une poussée = une touche, maintenir = répéter.</text>
+
+  <!-- ===================== TABLE ===================== -->
+  <g transform="translate(580,112)">
+    <!-- header -->
+    <rect x="0" y="0" width="780" height="34" fill="#2b2b2b"/>
+    <text x="14" y="22" font-size="13" font-weight="bold" fill="#fbf7ee">#</text>
+    <text x="40" y="22" font-size="13" font-weight="bold" fill="#fbf7ee">Bouton</text>
+    <rect x="150" y="0" width="190" height="34" fill="#5294e2"/>
+    <text x="160" y="22" font-size="13" font-weight="bold" fill="#ffffff">Bureau</text>
+    <rect x="340" y="0" width="240" height="34" fill="#5f8f5f"/>
+    <text x="350" y="22" font-size="13" font-weight="bold" fill="#ffffff">Slate ouvert</text>
+    <rect x="580" y="0" width="200" height="34" fill="#b8862b"/>
+    <text x="590" y="22" font-size="13" font-weight="bold" fill="#ffffff">avec FN (maintenu)</text>
+
+    <!-- rows: 40 px each, zebra -->
+    <g>
+      <rect x="0" y="34"  width="780" height="40" fill="#ffffff"/>
+      <rect x="0" y="74"  width="780" height="40" fill="#f3efe4"/>
+      <rect x="0" y="114" width="780" height="40" fill="#ffffff"/>
+      <rect x="0" y="154" width="780" height="40" fill="#f3efe4"/>
+      <rect x="0" y="194" width="780" height="40" fill="#ffffff"/>
+      <rect x="0" y="234" width="780" height="40" fill="#f3efe4"/>
+      <rect x="0" y="274" width="780" height="40" fill="#ffffff"/>
+      <rect x="0" y="314" width="780" height="40" fill="#f3efe4"/>
+      <rect x="0" y="354" width="780" height="40" fill="#ffffff"/>
+      <rect x="0" y="394" width="780" height="40" fill="#f3efe4"/>
+      <rect x="0" y="434" width="780" height="40" fill="#ffffff"/>
+      <rect x="0" y="474" width="780" height="40" fill="#f3efe4"/>
+      <rect x="0" y="514" width="780" height="40" fill="#ffffff"/>
+      <rect x="0" y="554" width="780" height="40" fill="#f3efe4"/>
+      <rect x="0" y="0" width="780" height="594" fill="none" stroke="#2b2b2b" stroke-width="1.2"/>
+      <line x1="150" y1="0" x2="150" y2="594" stroke="#2b2b2b" stroke-width="0.6"/>
+      <line x1="340" y1="0" x2="340" y2="594" stroke="#2b2b2b" stroke-width="0.6"/>
+      <line x1="580" y1="0" x2="580" y2="594" stroke="#2b2b2b" stroke-width="0.6"/>
+    </g>
+
+    <!-- row helper: badge at x=16, button name at 40, cells at 160 / 350 / 590; line 1 y+17, line 2 y+32 -->
+    <g class="badge"><circle cx="18" cy="54" r="10"/><text x="18" y="54">1</text></g>
+    <text x="40" y="58" class="tb">Croix</text>
+    <text x="160" y="51" class="t">Flèches</text>
+    <text x="160" y="66" class="t">(maintenue : répète)</text>
+    <text x="350" y="51" class="t">Déplacer le curseur</text>
+    <text x="350" y="66" class="t">Croix entière : mot · 2 fois : ligne</text>
+    <text x="590" y="58" class="t">Focus fenêtre ← ↑ ↓ →</text>
+
+    <g class="badge"><circle cx="18" cy="94" r="10"/><text x="18" y="94">2</text></g>
+    <text x="40" y="91" class="tb">Stick gauche</text>
+    <text x="40" y="106" class="t">+ L3 (enfoncer)</text>
+    <text x="160" y="98" class="t">—</text>
+    <text x="350" y="91" class="t">Déplace la sélection verte</text>
+    <text x="350" y="106" class="t">L3 : tape la touche verte</text>
+    <text x="590" y="98" class="t">—</text>
+
+    <g class="badge"><circle cx="18" cy="134" r="10"/><text x="18" y="134">3</text></g>
+    <text x="40" y="131" class="tb">Stick droit</text>
+    <text x="40" y="146" class="t">+ R3 (enfoncer)</text>
+    <text x="160" y="131" class="t">Pointeur de souris</text>
+    <text x="160" y="146" class="t">R3 : clic</text>
+    <text x="350" y="131" class="t">Déplace la sélection rouge</text>
+    <text x="350" y="146" class="t">R3 : tape la touche rouge</text>
+    <text x="590" y="138" class="t">—</text>
+
+    <g class="badge"><circle cx="18" cy="174" r="10"/><text x="18" y="174">4</text></g>
+    <text x="40" y="178" class="tb">A</text>
+    <text x="160" y="178" class="t">Entrée / valider</text>
+    <text x="350" y="178" class="t">Nouvelle ligne</text>
+    <text x="590" y="171" class="t">Bureau : plein écran</text>
+    <text x="590" y="186" class="t" font-weight="bold">Slate : envoyer… (bientôt)</text>
+
+    <g class="badge"><circle cx="18" cy="214" r="10"/><text x="18" y="214">5</text></g>
+    <text x="40" y="218" class="tb">B</text>
+    <text x="160" y="218" class="t">Échap / annuler</text>
+    <text x="350" y="218" class="t">Effacer à gauche</text>
+    <text x="590" y="218" class="t">Fermer la fenêtre</text>
+
+    <g class="badge"><circle cx="18" cy="254" r="10"/><text x="18" y="254">6</text></g>
+    <text x="40" y="258" class="tb">X</text>
+    <text x="160" y="258" class="t">Suppr</text>
+    <text x="350" y="258" class="t">Suppr</text>
+    <text x="590" y="258" class="t" font-weight="bold">Slate : tout effacer (bientôt)</text>
+
+    <g class="badge"><circle cx="18" cy="294" r="10"/><text x="18" y="294">7</text></g>
+    <text x="40" y="298" class="tb">Y</text>
+    <text x="160" y="298" class="t">Effacer à gauche</text>
+    <text x="350" y="291" class="t">Sélection : maintenir Y</text>
+    <text x="350" y="306" class="t">+ croix</text>
+    <text x="590" y="298" class="t">—</text>
+
+    <g class="badge"><circle cx="18" cy="334" r="10"/><text x="18" y="334">8</text></g>
+    <text x="40" y="338" class="tb">Select</text>
+    <text x="160" y="338" class="t">Fenêtre suivante</text>
+    <text x="350" y="338" class="t">—</text>
+    <text x="590" y="338" class="t">—</text>
+
+    <g class="badge"><circle cx="18" cy="374" r="10"/><text x="18" y="374">9</text></g>
+    <text x="40" y="378" class="tb">Start</text>
+    <text x="160" y="378" class="t">Menu des applications</text>
+    <text x="350" y="378" class="t">—</text>
+    <text x="590" y="371" class="t" font-weight="bold">Maintenir 2 s : secours</text>
+    <text x="590" y="386" class="t">(voir encadré)</text>
+
+    <g class="badge"><circle cx="18" cy="414" r="10"/><text x="18" y="414">10</text></g>
+    <text x="40" y="418" class="tb">FN</text>
+    <text x="160" y="418" class="t">Maintenir + autre bouton</text>
+    <text x="350" y="418" class="t">Maintenir + autre bouton</text>
+    <text x="590" y="418" class="t">—</text>
+
+    <g class="badge"><circle cx="18" cy="454" r="10"/><text x="18" y="454">11</text></g>
+    <text x="40" y="458" class="tb">L1</text>
+    <text x="160" y="458" class="t" font-weight="bold">Afficher le Slate</text>
+    <text x="350" y="451" class="t" font-weight="bold">Masquer le Slate, texte gardé</text>
+    <text x="350" y="466" class="t">(bientôt)</text>
+    <text x="590" y="458" class="t">—</text>
+
+    <g class="badge"><circle cx="18" cy="494" r="10"/><text x="18" y="494">12</text></g>
+    <text x="40" y="498" class="tb">L2</text>
+    <text x="160" y="498" class="t">—</text>
+    <text x="350" y="491" class="t" font-weight="bold">Dictée marche / arrêt</text>
+    <text x="350" y="506" class="t">(arrive avec Mycroft)</text>
+    <text x="590" y="498" class="t">—</text>
+
+    <g class="badge"><circle cx="18" cy="534" r="10"/><text x="18" y="534">13</text></g>
+    <text x="40" y="538" class="tb">R1</text>
+    <text x="160" y="538" class="t">Tab : champ suivant</text>
+    <text x="350" y="538" class="t">Mot suivant</text>
+    <text x="590" y="538" class="t">Bureau virtuel suivant</text>
+
+    <g class="badge"><circle cx="18" cy="574" r="10"/><text x="18" y="574">14</text></g>
+    <text x="40" y="578" class="tb">R2</text>
+    <text x="160" y="578" class="t">Maj+Tab : champ précédent</text>
+    <text x="350" y="578" class="t">Mot précédent</text>
+    <text x="590" y="578" class="t">Bureau virtuel précédent</text>
+  </g>
+
+  <!-- ===================== BOXES ===================== -->
+  <!-- Menu -->
+  <rect x="580" y="726" width="250" height="110" class="box"/>
+  <text x="594" y="748" class="boxtitle">Menu (Start)</text>
+  <text x="594" y="770" class="t">croix ↑ ↓ : choisir</text>
+  <text x="594" y="788" class="t">A : lancer l'application</text>
+  <text x="594" y="806" class="t">B ou Start : fermer le menu</text>
+  <text x="594" y="824" class="t">stick droit + R3 : clic aussi</text>
+
+  <!-- Windows -->
+  <rect x="845" y="726" width="250" height="110" class="box"/>
+  <text x="859" y="748" class="boxtitle">Fenêtres : 4 au maximum</text>
+  <g transform="translate(859,760)">
+    <rect x="0" y="0" width="64" height="64" fill="#fff" stroke="#2b2b2b"/>
+    <line x1="0" y1="32" x2="64" y2="32" stroke="#2b2b2b"/><line x1="32" y1="0" x2="32" y2="64" stroke="#2b2b2b"/>
+    <text x="16" y="21" font-size="12" text-anchor="middle" class="ink">2</text>
+    <text x="48" y="21" font-size="12" text-anchor="middle" class="ink">3</text>
+    <text x="16" y="53" font-size="12" text-anchor="middle" class="ink">1</text>
+    <text x="48" y="53" font-size="12" text-anchor="middle" class="ink">4</text>
+  </g>
+  <text x="934" y="772" class="t">ordre d'ouverture</text>
+  <text x="934" y="790" class="t">5ᵉ fenêtre refusée :</text>
+  <text x="934" y="808" class="t">« Too many tiles »</text>
+  <text x="934" y="826" class="t">(B ferme le message)</text>
+
+  <!-- Recovery -->
+  <rect x="1110" y="726" width="250" height="110" class="box" stroke-width="2"/>
+  <text x="1124" y="748" class="boxtitle">Secours</text>
+  <text x="1124" y="770" class="t" font-weight="bold">FN + Start maintenus 2 s :</text>
+  <text x="1124" y="788" class="t">relâche toutes les touches,</text>
+  <text x="1124" y="806" class="t">ferme le Slate, et reprend la</text>
+  <text x="1124" y="824" class="t">manette à un jeu.</text>
+
+  <!-- Games -->
+  <rect x="580" y="848" width="380" height="108" class="box"/>
+  <text x="594" y="870" class="boxtitle">Jeux et applis « manette » (Wolfenstein…)</text>
+  <text x="594" y="892" class="t">Tant qu'ils ont le focus, ils lisent la manette eux-mêmes :</text>
+  <text x="594" y="910" class="t">les boutons font ce que le jeu prévoit.</text>
+  <text x="594" y="928" class="t">Restent à Luna : FN + B ferme · FN + Start 2 s : secours.</text>
+  <text x="594" y="946" class="small">Luminosité : pas réglable (proposé FN+L1 / L2) · volume : à vérifier</text>
+
+  <!-- Slate summary -->
+  <rect x="975" y="848" width="385" height="108" class="box"/>
+  <text x="989" y="870" class="boxtitle">Le Slate en 4 gestes (bientôt)</text>
+  <text x="989" y="892" class="t"><tspan font-weight="bold">L1</tspan> afficher / masquer (le texte reste)</text>
+  <text x="989" y="910" class="t"><tspan font-weight="bold">FN + A</tspan> envoyer dans la fenêtre, puis vider et masquer</text>
+  <text x="989" y="928" class="t"><tspan font-weight="bold">FN + X</tspan> tout effacer · <tspan font-weight="bold">L2</tspan> dictée (bientôt)</text>
+  <text x="989" y="946" class="small">Aujourd'hui sur Luna : L1 ouvre / jette, L2 envoie.</text>
+</svg>

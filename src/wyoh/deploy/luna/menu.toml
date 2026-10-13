@@ -1,0 +1,14 @@
+# Wyoh's menu set (Step 9.4). ArchR entries hidden from fuzzel with Hidden=true
+# overrides of the same desktop-file IDs in Wyoh's own data directory; ArchR's
+# files are untouched. `wyoh_apps.py` reports any ID it does not find on Luna.
+# Decisions: Professor's note 0900_01 section 3; mpv and Gmu hidden (Professor
+# D6 for the user, 2026-10-09).
+hide = [
+    "htop.desktop",      # duplicate of Wyoh's Task Manager
+    "nvtop.desktop",     # GPU monitor, of no use on Luna
+    "cups.desktop",      # "Manage Printing": no printer
+    "mpv.desktop",       # media player
+    "gmu.desktop",       # Gmu Music Player (/usr/local/share/applications on Luna)
+    "mupen64plus.desktop",  # N64 emulator: of no use without games in the desktop menu
+    "wyoh-calculator.desktop",  # Wyoh's old bc calculator, replaced by the calculator app
+]

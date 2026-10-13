@@ -1,0 +1,23 @@
+#!/bin/sh
+# Launcher for Wolfenstein 3D (shareware) in the Wyoh session. The game reads
+# the gamepad itself (profile gamepad-raw: Wyoh releases its grab while it has
+# the focus). Its private libraries come first; MALI_WAYLAND_DMABUF_PROTOCOL
+# lets Sway import its frames (Wyoh 9.1b).
+here=$(dirname "$(readlink -f "$0")")
+export HOME=/storage SDL_VIDEODRIVER=wayland MALI_WAYLAND_DMABUF_PROTOCOL=1
+export SDL_VIDEO_WAYLAND_WMCLASS=ecwolf
+# No PulseAudio in the Wyoh session: SDL waits about 30 s for it before
+# falling back. ALSA (Luna's rk817 card) starts in about 3 s.
+export SDL_AUDIODRIVER=alsa
+export LD_LIBRARY_PATH="$here/libs${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# Read only Wyoh's remapped joystick "wyoh-game-pad" (vendor 0x1209, product
+# 0x0012; Wyoh 9.8b): the real gamepad stays with the daemon.
+export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT=0x1209/0x0012
+cd "$here/data" || exit 1
+# Its own config and saves, inside the app directory (Luna's rule: install only
+# under /storage/.local). ECWolf only takes 4:3 sizes: 720 x 720 becomes 960 x 720
+# and is cropped, and SDL's own full screen shifts the image. So it draws a
+# 720 x 540 window and Sway makes it full screen (window = "fullscreen").
+mkdir -p "$here/saves"
+[ -f "$here/ecwolf.cfg" ] || cp "$here/ecwolf.default.cfg" "$here/ecwolf.cfg"
+exec "$here/ecwolf" --config "$here/ecwolf.cfg" --savedir "$here/saves" --data wl1 --windowed "$@"

@@ -1,0 +1,354 @@
+Wyoh Step 6.8 (user request 2026-10-09): two key selections for gamepad typing.
+
+Adds --cursors: a pastel green (0) and a pastel red (1) selection on the keys,
+moved and pressed by commands on standard input, one per line:
+  move <0|1> <up|down|left|right>    press <0|1>
+Options --cursor0/--cursor1/--cursor-text set the colours, --home0/--home1 the
+start positions (fractions of the keyboard). Applies to wvkbd 0.15 with
+patch -p1; GPL-3.0-or-later, like wvkbd.
+
+diff -ruN orig/keyboard.c wvkbd-0.15/keyboard.c
+--- orig/keyboard.c	2026-10-09 01:37:59.529185803 +0200
++++ wvkbd-0.15/keyboard.c	2026-10-09 01:38:43.469857242 +0200
+@@ -2,6 +2,7 @@
+ #include <linux/input-event-codes.h>
+ #include <stddef.h>
+ #include <stdio.h>
++#include <string.h>
+ #include <sys/mman.h>
+ #include "keyboard.h"
+ #include "drw.h"
+@@ -556,10 +557,28 @@
+         fprintf(stderr, "Draw key +%d+%d %dx%d -> %s\n", k->x, k->y, k->w, k->h,
+                 label);
+     struct clr_scheme *scheme = &kb->schemes[k->scheme];
++    Color text = scheme->text;
++    bool selected[2] = {false, false};
++    if (kb->cursors && kb->cursors_placed) {
++        for (int i = 0; i < 2; i++) {
++            selected[i] = kb->cursor_x[i] >= k->x && kb->cursor_x[i] < k->x + k->w &&
++                          kb->cursor_y[i] >= k->y && kb->cursor_y[i] < k->y + k->h;
++        }
++    }
+ 
+     switch (type) {
+     case None:
+     case Unpress:
++        if (selected[0] || selected[1]) {
++            /* both selections on one key: green on the left, red on the right */
++            draw_inset(kb->surf, k->x, k->y, k->w, k->h, KBD_KEY_BORDER,
++                       kb->cursor_color[selected[0] ? 0 : 1], scheme->rounding);
++            if (selected[0] && selected[1])
++                draw_inset(kb->surf, k->x + k->w / 2, k->y, k->w - k->w / 2, k->h,
++                           KBD_KEY_BORDER, kb->cursor_color[1], scheme->rounding);
++            text = kb->cursor_text;
++            break;
++        }
+         draw_inset(kb->surf, k->x, k->y, k->w, k->h, KBD_KEY_BORDER,
+                    scheme->fg, scheme->rounding);
+         break;
+@@ -573,7 +592,7 @@
+         break;
+     }
+ 
+-    drw_draw_text(kb->surf, scheme->text, k->x, k->y, k->w, k->h,
++    drw_draw_text(kb->surf, text, k->x, k->y, k->w, k->h,
+                   KBD_KEY_BORDER, label, scheme->font_description);
+     wl_surface_damage(kb->surf->surf, k->x, k->y, k->w, k->h);
+ 
+@@ -597,6 +616,135 @@
+     }
+ }
+ 
++/* --- Wyoh (Luna): selections ------------------------------------------- */
++
++static bool
++kbd_pressable(struct key *k)
++{
++    return k->type != Pad && k->type != EndRow && k->type != Last && k->w > 0;
++}
++
++/* The key whose centre is nearest to (x, y). */
++static struct key *
++kbd_nearest_key(struct kbd *kb, uint32_t x, uint32_t y)
++{
++    struct key *best = NULL;
++    double best_d = 0;
++    for (struct key *k = kb->layout->keys; k->type != Last; k++) {
++        if (!kbd_pressable(k))
++            continue;
++        if (x >= k->x && x < k->x + k->w && y >= k->y && y < k->y + k->h)
++            return k;
++        double dx = (double)x - (k->x + k->w / 2.0);
++        double dy = (double)y - (k->y + k->h / 2.0);
++        double d = dx * dx + dy * dy;
++        if (!best || d < best_d) {
++            best = k;
++            best_d = d;
++        }
++    }
++    return best;
++}
++
++static void
++kbd_snap_cursors(struct kbd *kb)
++{
++    if (!kb->cursors || !kb->w || !kb->layout)
++        return;
++    for (int i = 0; i < 2; i++) {
++        if (!kb->cursors_placed) {
++            kb->cursor_x[i] = (uint32_t)(kb->cursor_home[i][0] * kb->w);
++            kb->cursor_y[i] = (uint32_t)(kb->cursor_home[i][1] * kb->h);
++        }
++        struct key *k = kbd_nearest_key(kb, kb->cursor_x[i], kb->cursor_y[i]);
++        if (k) {
++            kb->cursor_x[i] = k->x + k->w / 2;
++            kb->cursor_y[i] = k->y + k->h / 2;
++        }
++    }
++    kb->cursors_placed = true;
++}
++
++static void
++kbd_redraw_key(struct kbd *kb, struct key *k)
++{
++    if ((k->type == Mod && kb->mods & k->code) ||
++        (k->type == Compose && kb->compose))
++        kbd_draw_key(kb, k, Press);
++    else
++        kbd_draw_key(kb, k, None);
++}
++
++/* The neighbour of `from` in a direction: same row for left/right; for
++ * up/down, the nearest row that way, then the key closest horizontally. */
++static struct key *
++kbd_neighbour(struct kbd *kb, struct key *from, const char *direction)
++{
++    double cx = from->x + from->w / 2.0, cy = from->y + from->h / 2.0;
++    struct key *best = NULL;
++    double best_row = 0, best_dx = 0;
++    for (struct key *k = kb->layout->keys; k->type != Last; k++) {
++        if (!kbd_pressable(k) || k == from)
++            continue;
++        double kx = k->x + k->w / 2.0, ky = k->y + k->h / 2.0;
++        bool same_row = ky > cy - from->h / 2.0 && ky < cy + from->h / 2.0;
++        if (!strcmp(direction, "left") || !strcmp(direction, "right")) {
++            bool way = !strcmp(direction, "left") ? kx < cx : kx > cx;
++            double dx = kx > cx ? kx - cx : cx - kx;
++            if (same_row && way && (!best || dx < best_dx)) {
++                best = k;
++                best_dx = dx;
++            }
++        } else {
++            bool way = !strcmp(direction, "up") ? ky < cy - from->h / 2.0
++                                                : ky > cy + from->h / 2.0;
++            if (!way)
++                continue;
++            double row = ky > cy ? ky - cy : cy - ky;
++            double dx = kx > cx ? kx - cx : cx - kx;
++            if (!best || row < best_row - 1 ||
++                (row < best_row + 1 && dx < best_dx)) {
++                best = k;
++                best_row = row;
++                best_dx = dx;
++            }
++        }
++    }
++    return best;
++}
++
++/* Commands, one per line: "move <0|1> <up|down|left|right>", "press <0|1>". */
++void
++kbd_cursor_command(struct kbd *kb, const char *line, uint32_t time)
++{
++    char verb[16] = {0}, direction[16] = {0};
++    int which = -1;
++    int n = sscanf(line, "%15s %d %15s", verb, &which, direction);
++    if (!kb->cursors || n < 2 || which < 0 || which > 1 || !kb->w)
++        return;
++    kbd_snap_cursors(kb);
++    struct key *k = kbd_nearest_key(kb, kb->cursor_x[which], kb->cursor_y[which]);
++    if (!k)
++        return;
++    if (!strcmp(verb, "move") && n == 3) {
++        struct key *next = kbd_neighbour(kb, k, direction);
++        if (!next)
++            return;
++        kb->cursor_x[which] = next->x + next->w / 2;
++        kb->cursor_y[which] = next->y + next->h / 2;
++        kbd_redraw_key(kb, k);
++        kbd_redraw_key(kb, next);
++        drwsurf_flip(kb->surf);
++    } else if (!strcmp(verb, "press")) {
++        kbd_press_key(kb, k, time);
++        kbd_release_key(kb, time);
++        /* a layer switch may have moved keys under the selections */
++        kbd_snap_cursors(kb);
++        kbd_draw_layout(kb);
++        drwsurf_flip(kb->surf);
++    }
++}
++
+ void
+ kbd_draw_layout(struct kbd *kb)
+ {
+@@ -604,6 +752,7 @@
+     struct key *next_key = kb->layout->keys;
+     if (kb->debug)
+         fprintf(stderr, "Draw layout\n");
++    kbd_snap_cursors(kb);
+ 
+     drw_fill_rectangle(d, kb->schemes[0].bg, 0, 0, kb->w, kb->h, 0);
+ 
+diff -ruN orig/keyboard.h wvkbd-0.15/keyboard.h
+--- orig/keyboard.h	2026-10-09 01:37:59.529204722 +0200
++++ wvkbd-0.15/keyboard.h	2026-10-09 01:38:43.469486135 +0200
+@@ -119,6 +119,16 @@
+ 	struct zwp_virtual_keyboard_v1 *vkbd;
+ 
+ 	uint32_t last_popup_x, last_popup_y, last_popup_w, last_popup_h;
++
++	/* Wyoh (Luna): two key selections driven by commands on standard input,
++	 * so a gamepad can type with both sticks. Each selection is a point that
++	 * lies in the selected key; it survives layer switches. */
++	bool cursors;
++	bool cursors_placed;
++	double cursor_home[2][2]; /* start positions, fractions of the keyboard */
++	uint32_t cursor_x[2], cursor_y[2];
++	Color cursor_color[2];
++	Color cursor_text;
+ };
+ 
+ void draw_inset(struct drwsurf *ds, uint32_t x, uint32_t y, uint32_t width,
+@@ -139,6 +149,7 @@
+ void kbd_clear_last_popup(struct kbd *kb);
+ void kbd_draw_key(struct kbd *kb, struct key *k, enum key_draw_type);
+ void kbd_draw_layout(struct kbd *kb);
++void kbd_cursor_command(struct kbd *kb, const char *line, uint32_t time);
+ void kbd_resize(struct kbd *kb, struct layout *layouts, uint8_t layoutcount);
+ uint8_t kbd_get_rows(struct layout *l);
+ double kbd_get_row_length(struct key *k);
+diff -ruN orig/main.c wvkbd-0.15/main.c
+--- orig/main.c	2026-10-09 01:37:59.529410234 +0200
++++ wvkbd-0.15/main.c	2026-10-09 01:39:11.102503569 +0200
+@@ -11,6 +11,7 @@
+ #include <sys/mman.h>
+ #include <sys/signalfd.h>
+ #include <poll.h>
++#include <time.h>
+ #include <unistd.h>
+ #include <wayland-client-protocol.h>
+ #include <wayland-client.h>
+@@ -684,6 +685,11 @@
+     fprintf(stderr, "  -R [int]    - Rounding radius in pixels\n");
+     fprintf(stderr, "  --fn [font] - Set font (e.g: DejaVu Sans 20)\n");
+     fprintf(stderr, "  --hidden    - Start hidden (send SIGUSR2 to show)\n");
++    fprintf(stderr, "  --cursors   - Two key selections driven from standard input:\n"
++                    "                \"move <0|1> <up|down|left|right>\", \"press <0|1>\"\n");
++    fprintf(stderr, "  --cursor0 / --cursor1 [rrggbb|aa] - Selection colours\n");
++    fprintf(stderr, "  --cursor-text [rrggbb|aa]         - Text on selected keys\n");
++    fprintf(stderr, "  --home0 / --home1 [fx,fy]         - Start positions (fractions)\n");
+     fprintf(
+         stderr,
+         "  --alpha [int]          - Set alpha value for all colors [0-255]\n");
+@@ -845,6 +851,15 @@
+     bool alpha_defined = false;
+ 
+     int i;
++    /* Wyoh (Luna) selection defaults: pastel green and red, dark text. */
++    set_kbd_colors(keyboard.cursor_color[0].bgra, "b8e6b8ff");
++    set_kbd_colors(keyboard.cursor_color[1].bgra, "f5b5b5ff");
++    set_kbd_colors(keyboard.cursor_text.bgra, "1e1e1eff");
++    keyboard.cursor_home[0][0] = 0.35;
++    keyboard.cursor_home[0][1] = 0.375;
++    keyboard.cursor_home[1][0] = 0.65;
++    keyboard.cursor_home[1][1] = 0.375;
++
+     for (i = 1; argv[i]; i++) {
+         if ((!strcmp(argv[i], "-v")) || (!strcmp(argv[i], "--version"))) {
+             printf("wvkbd-%s\n", VERSION);
+@@ -971,6 +986,26 @@
+         } else if ((!strcmp(argv[i], "-hidden")) ||
+                    (!strcmp(argv[i], "--hidden"))) {
+             hidden = true;
++        } else if (!strcmp(argv[i], "--cursors")) {
++            keyboard.cursors = true;
++        } else if (!strcmp(argv[i], "--cursor0") || !strcmp(argv[i], "--cursor1") ||
++                   !strcmp(argv[i], "--cursor-text")) {
++            if (i >= argc - 1) {
++                usage(argv[0]);
++                exit(1);
++            }
++            Color *target = !strcmp(argv[i], "--cursor0")   ? &keyboard.cursor_color[0]
++                            : !strcmp(argv[i], "--cursor1") ? &keyboard.cursor_color[1]
++                                                            : &keyboard.cursor_text;
++            set_kbd_colors(target->bgra, argv[++i]);
++        } else if (!strcmp(argv[i], "--home0") || !strcmp(argv[i], "--home1")) {
++            int which = argv[i][6] - '0';
++            if (i >= argc - 1 ||
++                sscanf(argv[++i], "%lf,%lf", &keyboard.cursor_home[which][0],
++                       &keyboard.cursor_home[which][1]) != 2) {
++                usage(argv[0]);
++                exit(1);
++            }
+         } else if ((!strcmp(argv[i], "-list-layers")) ||
+                    (!strcmp(argv[i], "--list-layers"))) {
+             list_layers();
+@@ -1051,11 +1086,16 @@
+     if (!hidden)
+         show();
+ 
+-    struct pollfd fds[2];
++    struct pollfd fds[3];
+     int WAYLAND_FD = 0;
+     int SIGNAL_FD = 1;
++    int COMMAND_FD = 2;
+     fds[WAYLAND_FD].events = POLLIN;
+     fds[SIGNAL_FD].events = POLLIN;
++    fds[COMMAND_FD].events = POLLIN;
++    fds[COMMAND_FD].fd = keyboard.cursors ? STDIN_FILENO : -1; /* poll ignores -1 */
++    char commands[512];
++    size_t command_len = 0;
+ 
+     fds[WAYLAND_FD].fd = wl_display_get_fd(display);
+     if (fds[WAYLAND_FD].fd == -1) {
+@@ -1079,7 +1119,7 @@
+ 
+     while (run_display) {
+         wl_display_flush(display);
+-        poll(fds, 2, -1);
++        poll(fds, 3, -1);
+ 
+         if (fds[WAYLAND_FD].revents & POLLIN)
+             wl_display_dispatch(display);
+@@ -1090,6 +1130,30 @@
+             die("Wayland socket has been disconnected.\n");
+         }
+ 
++        if (fds[COMMAND_FD].fd >= 0 && (fds[COMMAND_FD].revents & (POLLIN | POLLHUP))) {
++            ssize_t got = read(fds[COMMAND_FD].fd, commands + command_len,
++                               sizeof(commands) - 1 - command_len);
++            if (got <= 0) {
++                fds[COMMAND_FD].fd = -1; /* no more commands; keep the keyboard */
++            } else {
++                command_len += (size_t)got;
++                commands[command_len] = 0;
++                char *start = commands, *end;
++                struct timespec now;
++                clock_gettime(CLOCK_MONOTONIC, &now);
++                uint32_t ms = (uint32_t)(now.tv_sec * 1000 + now.tv_nsec / 1000000);
++                while ((end = strchr(start, '\n'))) {
++                    *end = 0;
++                    kbd_cursor_command(&keyboard, start, ms);
++                    start = end + 1;
++                }
++                command_len = strlen(start);
++                memmove(commands, start, command_len);
++                if (command_len >= sizeof(commands) - 1)
++                    command_len = 0; /* an overlong line: drop it */
++            }
++        }
++
+         if (fds[SIGNAL_FD].revents & POLLIN) {
+             struct signalfd_siginfo si;
+ 

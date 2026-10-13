@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """Wyoh gamepad daemon: operate the Luna session with the device's own controls.
 
-Intent: worklines/wyoh/docs/0500_01_gamepad-input-intent.md (Wyoh Step 5).
+Intent: worklines/wyoh/docs/0500_01_gamepad-input-intent.md (Wyoh Step 5);
+the Slate and its controls: worklines/wyoh/docs/0600_01_slate-and-keyboard-proposal.md
+(Wyoh Step 6).
 
 Standard library only. The module has two layers:
 
 * a pure core (`GamepadCore`) that turns gamepad events and clock ticks into
   output actions; it is fully testable without devices;
-* thin adapters (evdev input, uinput output, Sway IPC, the input zone) and the
-  `select()` loop in `main()`.
+* thin adapters (evdev input, uinput output, Sway IPC, the Slate and its
+  on-screen keyboard) and the `select()` loop in `main()`.
+
+The "zone" of Step 5 is now the Slate (`wyoh_slate.py`): a floating terminal
+window that receives editing keys from this daemon's virtual keyboard and
+commands (select, send, discard) on a private Unix socket.
 """
 
 from __future__ import annotations
@@ -19,6 +25,7 @@ import json
 import math
 import os
 import select
+import signal
 import socket
 import struct
 import subprocess
@@ -45,11 +52,65 @@ BUTTONS = {
     "BTN_DPAD_UP": 0x220, "BTN_DPAD_DOWN": 0x221, "BTN_DPAD_LEFT": 0x222, "BTN_DPAD_RIGHT": 0x223,
 }
 BUTTON_NAMES = {code: name for name, code in BUTTONS.items()}
+PAD_BUTTONS = 16  # the virtual joystick's buttons, codes 0x130.. in order (SDL numbers them 0..15)
+DPAD = {BUTTONS[f"BTN_DPAD_{d}"] for d in ("UP", "DOWN", "LEFT", "RIGHT")}
 
 KEYS = {
-    "KEY_ESC": 1, "KEY_BACKSPACE": 14, "KEY_TAB": 15, "KEY_ENTER": 28, "KEY_LEFTSHIFT": 42,
+    "KEY_ESC": 1, "KEY_BACKSPACE": 14, "KEY_TAB": 15, "KEY_ENTER": 28, "KEY_LEFTCTRL": 29, "KEY_LEFTSHIFT": 42,
+    "KEY_LEFTALT": 56, "KEY_SPACE": 57,
     "KEY_UP": 103, "KEY_LEFT": 105, "KEY_RIGHT": 106, "KEY_DOWN": 108, "KEY_DELETE": 111,
 }
+
+# Physical key codes (US-labelled positions); Sway applies `xkb_layout fr`.
+PHYSICAL = {
+    "1": 2, "2": 3, "3": 4, "4": 5, "5": 6, "6": 7, "7": 8, "8": 9, "9": 10, "0": 11,
+    "minus": 12, "equal": 13,
+    "q": 16, "w": 17, "e": 18, "r": 19, "t": 20, "y": 21, "u": 22, "i": 23, "o": 24, "p": 25,
+    "rightbrace": 27,
+    "a": 30, "s": 31, "d": 32, "f": 33, "g": 34, "h": 35, "j": 36, "k": 37, "l": 38,
+    "semicolon": 39, "apostrophe": 40, "backslash": 43,
+    "z": 44, "x": 45, "c": 46, "v": 47, "b": 48, "n": 49, "m": 50,
+    "comma": 51, "dot": 52, "slash": 53, "space": 57, "enter": 28, "tab": 15, "esc": 1,
+    "backspace": 14, "shift": 42, "altgr": 100, "less": 86,
+}
+
+# Character -> (physical key, modifier) on a French AZERTY keyboard; modifier is
+# "" (none), "shift" or "altgr". Used to type Slate text through the daemon's
+# own uinput keyboard (SDL2 apps crash on wtype's per-key keymaps, Wyoh 9.1b).
+AZERTY: dict[str, tuple[str, str]] = {
+    **{c: (c, "") for c in "bcdefghijklnoprstuvxy"},
+    **{c.upper(): (c, "shift") for c in "bcdefghijklnoprstuvxy"},
+    "a": ("q", ""), "A": ("q", "shift"), "q": ("a", ""), "Q": ("a", "shift"),
+    "z": ("w", ""), "Z": ("w", "shift"), "w": ("z", ""), "W": ("z", "shift"),
+    "m": ("semicolon", ""), "M": ("semicolon", "shift"),
+    **{d: (d, "shift") for d in "1234567890"},  # digits are shifted on AZERTY
+    "&": ("1", ""), "é": ("2", ""), '"': ("3", ""), "'": ("4", ""), "(": ("5", ""), "-": ("6", ""),
+    "è": ("7", ""), "_": ("8", ""), "ç": ("9", ""), "à": ("0", ""), ")": ("minus", ""), "=": ("equal", ""),
+    "°": ("minus", "shift"), "+": ("equal", "shift"),
+    "~": ("2", "altgr"), "#": ("3", "altgr"), "{": ("4", "altgr"), "[": ("5", "altgr"), "|": ("6", "altgr"),
+    "`": ("7", "altgr"), "\\": ("8", "altgr"), "^": ("9", "altgr"), "@": ("0", "altgr"),
+    "]": ("minus", "altgr"), "}": ("equal", "altgr"),
+    "$": ("rightbrace", ""), "£": ("rightbrace", "shift"), "ù": ("apostrophe", ""), "%": ("apostrophe", "shift"),
+    "*": ("backslash", ""), "µ": ("backslash", "shift"),
+    " ": ("space", ""), "\n": ("enter", ""), "\t": ("tab", ""),
+    ",": ("m", ""), "?": ("m", "shift"), ";": ("comma", ""), ".": ("comma", "shift"),
+    ":": ("dot", ""), "/": ("dot", "shift"), "!": ("slash", ""), "§": ("slash", "shift"),
+    "<": ("less", ""), ">": ("less", "shift"),
+}
+
+
+def type_events(text: str) -> list[tuple[int, int]] | None:
+    """(key code, 1 or 0) presses that type `text` on AZERTY, or None if a
+    character has no key (the caller then falls back to wtype)."""
+    events: list[tuple[int, int]] = []
+    for char in text:
+        if char not in AZERTY:
+            return None
+        name, modifier = AZERTY[char]
+        codes = ([PHYSICAL[modifier]] if modifier else []) + [PHYSICAL[name]]
+        events += [(code, 1) for code in codes] + [(code, 0) for code in reversed(codes)]
+    return events
+
 
 # --- Configuration -----------------------------------------------------------
 
@@ -78,10 +139,56 @@ class Config:
     # Right thumb on the pointer, left thumb on the D-pad (user, 2026-10-08).
     pointer_stick: str = "right"  # "left" | "right"
     click: str = "BTN_THUMBR"
+    # The Slate (user, 2026-10-09): L1 shows or hides it (its text is kept),
+    # L2 starts or stops dictation (Step 12), and inside it FN+X clears and
+    # FN+A sends, then clears and hides.
     zone_toggle: str = "BTN_TL"
-    zone_validate: str = "BTN_TL2"
-    zone_validate_alt: str = "BTN_EAST"   # A validates while the zone is open
-    zone_discard_alt: str = "BTN_SOUTH"   # B discards while the zone is open
+    zone_dictate: str = "BTN_TL2"
+    zone_fn: dict[str, str] = field(default_factory=lambda: {"BTN_NORTH": "clear", "BTN_EAST": "validate"})
+    zone_validate: str = ""  # optional plain-button send ("" = none)
+    zone_validate_alt: str = ""  # optional second validate button ("" = none)
+    zone_discard_alt: str = ""   # optional second discard button ("" = none)
+    # While the Slate is open (user, 2026-10-09): A Return, B Backspace,
+    # X Delete, Y Shift (selection with the arrows), R1/R2 next/previous word.
+    zone_keys: dict[str, str] = field(default_factory=lambda: {
+        "BTN_DPAD_UP": "KEY_UP", "BTN_DPAD_DOWN": "KEY_DOWN",
+        "BTN_DPAD_LEFT": "KEY_LEFT", "BTN_DPAD_RIGHT": "KEY_RIGHT",
+        "BTN_EAST": "KEY_ENTER", "BTN_SOUTH": "KEY_BACKSPACE",
+        "BTN_NORTH": "KEY_DELETE", "BTN_WEST": "KEY_LEFTSHIFT",
+        "BTN_TR": "KEY_LEFTCTRL+KEY_RIGHT", "BTN_TR2": "KEY_LEFTCTRL+KEY_LEFT",
+    })
+    # The whole cross pressed at once (two directions within cross_window_s)
+    # selects the word; a second one within cross_double_s selects the line.
+    # Only inside the Slate, where arrows wait cross_window_s before moving.
+    cross_window_s: float = 0.04
+    cross_double_s: float = 0.4
+    # Two-thumb typing on the on-screen keyboard (user, 2026-10-09): while the
+    # Slate is open, the left stick steps the green selection and L3 types its
+    # key; the right stick steps the red one and R3 types its key. A deflection
+    # past board_threshold is one step; held, it repeats after board_delay_s
+    # every board_repeat_s; below board_release it is let go.
+    board_press: dict[str, int] = field(default_factory=lambda: {"BTN_THUMBL": 0, "BTN_THUMBR": 1})
+    board_threshold: float = 0.5
+    board_release: float = 0.35
+    board_delay_s: float = 0.3
+    board_repeat_s: float = 0.12
+    # Per-app gamepad profiles (Step 9.3), keyed by the Wayland app_id Sway
+    # reports: "keys" (default: this mapping), "pointer" (the same), or
+    # "gamepad-raw": while that app has the focus the daemon releases its grab
+    # and the app reads the gamepad itself; FN+B (close) and FN+Start held
+    # (recovery, which also takes the gamepad back) still work.
+    app_profiles: dict[str, str] = field(default_factory=dict)
+    # Per-app key maps (Step 9.3): while that app has the focus, these buttons
+    # send these keys instead of `keys` (e.g. Wolfenstein: R1 = Ctrl to fire).
+    app_keys: dict[str, dict[str, str]] = field(default_factory=dict)
+    # "gamepad-virtual" apps (Step 9.8b): the daemon keeps the real gamepad and
+    # feeds the app a remapped joystick ("wyoh-game-pad"): these buttons press
+    # these virtual button numbers (several buttons may share one), the sticks
+    # pass through as analog axes, and app_keys still send keys.
+    app_pad: dict[str, dict[str, int]] = field(default_factory=dict)
+    # Generated by wyoh_apps.py from the apps' manifests; merged at start.
+    app_profiles_file: str = ""
+    raw_close: str = "BTN_SOUTH"  # with FN, in a gamepad-raw app
     menu: str = "BTN_START"
     next_window: str = "BTN_SELECT"
     modifier: str = "BTN_MODE"
@@ -96,8 +203,20 @@ class Config:
     recovery_hold_s: float = 2.0
     pointer: PointerConfig = PointerConfig()
     menu_command: str = ""
+    # The Slate window; "{socket}" is replaced by the daemon's Slate socket.
     zone_command: tuple[str, ...] = ()
+    # The on-screen keyboard, shown whenever the Slate is open (user, 2026-10-09).
+    keyboard_command: tuple[str, ...] = ()
+    # Sway commands run when the Slate opens and closes (the white border).
+    zone_open_sway: str = ""
+    zone_close_sway: str = ""
+    # Run once the Slate has connected (its window exists): place it.
+    zone_ready_sway: str = ""
     deliver_command: tuple[str, ...] = ("wtype", "-s", "100", "-d", "10", "--")
+    deliver_key_delay_s: float = 0.004  # between key events when typing through uinput
+    # Mycroft's dictation provider (Step 12), started by L2 in the Slate; it
+    # writes ready/partial/final/error JSON lines and stops when stdin closes.
+    dictate_command: tuple[str, ...] = ()
 
 
 class ConfigError(ValueError):
@@ -123,18 +242,47 @@ def load_config(path: Path | None) -> Config:
         else:
             raise ConfigError(f"unknown setting: {key}")
     config = Config(**{**base.__dict__, **values})
+    if config.app_profiles_file and Path(config.app_profiles_file).is_file():
+        generated = tomllib.loads(Path(config.app_profiles_file).read_text(encoding="utf-8"))
+        unknown = set(generated) - {"app_profiles", "app_keys", "app_pad"}
+        if unknown:
+            raise ConfigError(f"{config.app_profiles_file}: unknown settings {sorted(unknown)}")
+        merged = {**generated.get("app_profiles", {}), **config.app_profiles}  # the main file wins
+        keys = {**generated.get("app_keys", {}), **config.app_keys}
+        pad = {**generated.get("app_pad", {}), **config.app_pad}
+        config = Config(**{**config.__dict__, "app_profiles": merged, "app_keys": keys, "app_pad": pad})
     _validate(config)
     return config
 
 
 def _validate(config: Config) -> None:
-    named = [config.click, config.zone_toggle, config.zone_validate, config.zone_validate_alt,
-             config.zone_discard_alt, config.menu, config.next_window, config.modifier,
-             *config.recovery, *config.keys, *config.fn_sway]
-    for name in named:
+    named = [config.click, config.zone_toggle, config.zone_dictate, *config.zone_fn, config.menu, config.next_window,
+             config.modifier, *config.recovery, *config.keys, *config.zone_keys, *config.fn_sway]
+    optional = [config.zone_validate, config.zone_validate_alt, config.zone_discard_alt]
+    if set(config.zone_fn.values()) - {"clear", "validate"}:
+        raise ConfigError("zone_fn values must be clear or validate")
+    for name in named + [name for name in optional if name] + list(config.board_press):
         if name not in BUTTONS:
             raise ConfigError(f"unknown button: {name}")
-    for chord in config.keys.values():
+    if not (0 < config.cross_window_s < config.cross_double_s):
+        raise ConfigError("need 0 < cross_window_s < cross_double_s")
+    if set(config.app_profiles.values()) - {"keys", "pointer", "gamepad-raw", "gamepad-virtual"}:
+        raise ConfigError("app_profiles values must be keys, pointer, gamepad-raw or gamepad-virtual")
+    for app_id, mapping in config.app_pad.items():
+        for name, index in mapping.items():
+            if name not in BUTTONS or not (isinstance(index, int) and 0 <= index < PAD_BUTTONS):
+                raise ConfigError(f"app_pad {app_id}: {name} = {index} (buttons 0-{PAD_BUTTONS - 1})")
+    if config.raw_close not in BUTTONS:
+        raise ConfigError(f"unknown button: {config.raw_close}")
+    if not (0 < config.board_release < config.board_threshold <= 1 and config.board_delay_s > 0
+            and config.board_repeat_s > 0) or set(config.board_press.values()) - {0, 1}:
+        raise ConfigError("invalid board settings")
+    for app_id, mapping in config.app_keys.items():
+        for name in mapping:
+            if name not in BUTTONS:
+                raise ConfigError(f"app_keys {app_id}: unknown button: {name}")
+    for chord in [*config.keys.values(), *config.zone_keys.values(),
+                  *(chord for mapping in config.app_keys.values() for chord in mapping.values())]:
         for key in chord.split("+"):
             if key not in KEYS:
                 raise ConfigError(f"unknown key: {key}")
@@ -175,7 +323,7 @@ class Sway:
 
 @dataclass(frozen=True)
 class Zone:
-    op: str  # "open" | "validate" | "discard"
+    op: str  # open | hide | show | clear | validate | discard | dictate | select-word | select-line
 
 
 @dataclass(frozen=True)
@@ -184,12 +332,39 @@ class Menu:
 
 
 @dataclass(frozen=True)
+class Grab:
+    """Take (True) or release (False) the exclusive grab of the gamepads."""
+    on: bool
+
+
+@dataclass(frozen=True)
+class PadButton:
+    """A button of the virtual joystick fed to a gamepad-virtual app."""
+    index: int
+    down: bool
+
+
+@dataclass(frozen=True)
+class PadAxis:
+    """A stick axis passed through to the virtual joystick (raw axis units)."""
+    code: int
+    value: int
+
+
+@dataclass(frozen=True)
+class Board:
+    """A command for the on-screen keyboard's selection 0 (green) or 1 (red)."""
+    cursor: int
+    op: str  # "up" | "down" | "left" | "right" | "press"
+
+
+@dataclass(frozen=True)
 class Note:
     """A status-only event (no output), e.g. ignored button or recovery."""
     event: str
 
 
-Action = Key | Click | Motion | Sway | Zone | Menu | Note
+Action = Key | Click | Motion | Sway | Zone | Menu | Board | Grab | PadButton | PadAxis | Note
 
 
 # --- Pointer curve -----------------------------------------------------------
@@ -218,14 +393,26 @@ class GamepadCore:
         self.held: set[int] = set()
         # gamepad button -> outputs it pressed and must release on button-up
         self.pressed_outputs: dict[int, list[Action]] = {}
-        self.zone_state = "closed"  # closed | open | delivering
+        self.zone_state = "closed"  # closed | open | hidden | delivering
         self.axes = (ABS_X, ABS_Y) if config.pointer_stick == "left" else (ABS_RX, ABS_RY)
-        self.stick = {axis: 0.0 for axis in self.axes}
+        self.stick = {axis: 0.0 for axis in (ABS_X, ABS_Y, ABS_RX, ABS_RY)}
+        # on-screen keyboard selections: per stick, the held direction and next repeat
+        self.board_sticks = {0: (ABS_X, ABS_Y), 1: (ABS_RX, ABS_RY)}
+        self.board_dir: dict[int, str | None] = {0: None, 1: None}
+        self.board_next: dict[int, float] = {0: 0.0, 1: 0.0}
         self.fraction = [0.0, 0.0]
         self.last_tick: float | None = None
         self.recovery_since: float | None = None
-        self.counters = {"ignored": 0, "recovery": 0}
+        self.counters = {"ignored": 0, "recovery": 0, "cross": 0}
+        self.raw = False  # a gamepad-raw app has the focus; the grab is released
+        self.active_keys = dict(config.keys)  # the focused app's key map (Step 9.3)
+        self.app_keys_now: dict[str, str] = {}  # the focused app's own keys only
+        self.pad: dict[str, int] | None = None  # gamepad-virtual mapping of the focused app
         self.last_action = ""
+        # whole-cross detection (Slate only)
+        self.dpad_pending: tuple[int, float] | None = None
+        self.cross_held: set[int] = set()
+        self.last_cross: float | None = None
 
     # helpers
     def _b(self, name: str) -> int:
@@ -242,13 +429,41 @@ class GamepadCore:
         a, b = self.config.recovery
         return self._b(a), self._b(b)
 
+    # focus (Step 9.3)
+    def focus(self, app_id: str | None) -> list[Action]:
+        """The focused window changed: apply its app's gamepad profile."""
+        self.app_keys_now = dict(self.config.app_keys.get(app_id or "", {}))
+        self.active_keys = {**self.config.keys, **self.app_keys_now}
+        profile = self.config.app_profiles.get(app_id or "", "keys")
+        pad = self.config.app_pad.get(app_id or "", {}) if profile == "gamepad-virtual" else None
+        if pad != self.pad:
+            released = self.release_all()  # nothing stays pressed across the switch
+            self.pad = pad
+            if pad is not None:
+                return released + [Note(f"virtual:{app_id}")]
+            return released
+        raw = profile == "gamepad-raw"
+        if raw == self.raw:
+            return []
+        if raw:
+            actions = self.release_all()  # nothing stays pressed for the app behind
+            self.raw = True
+            return actions + [Grab(False), Note(f"raw:{app_id}")]
+        self.raw = False
+        self.held.clear()  # what was held belonged to the app
+        return [Grab(True), Note("raw:off")]
+
     # events
     def button(self, code: int, pressed: bool, now: float) -> list[Action]:
+        if self.raw:
+            return self._button_raw(code, pressed, now)
+        if self.pad is not None and self.zone_state == "closed":
+            return self._button_virtual(code, pressed, now)
         if pressed:
             if code in self.held:
                 return []  # autorepeat from the device; key repeat is Wayland's job
             self.held.add(code)
-            actions = self._press(code)
+            actions = self._press(code, now)
             first, second = self._recovery_pair()
             if first in self.held and second in self.held and self.recovery_since is None:
                 self.recovery_since = now
@@ -258,9 +473,102 @@ class GamepadCore:
         self.held.discard(code)
         if code in self._recovery_pair():
             self.recovery_since = None
+        if code in self.cross_held:
+            self.cross_held.discard(code)
+            return []
+        if self.dpad_pending is not None and self.dpad_pending[0] == code:
+            # a short tap released inside the window: it was a plain arrow
+            return self._flush_pending() + self._release(code)
         return self._release(code)
 
-    def _press(self, code: int) -> list[Action]:
+    def _button_raw(self, code: int, pressed: bool, now: float) -> list[Action]:
+        """A gamepad-raw app reads the buttons itself; only FN+B and recovery are ours."""
+        first, second = self._recovery_pair()
+        if pressed:
+            self.held.add(code)
+            if first in self.held and second in self.held and self.recovery_since is None:
+                self.recovery_since = now
+            if self.fn_held and code == self._b(self.config.raw_close):
+                result: list[Action] = [Sway("kill")]
+                self._last(result)
+                return result
+            return []
+        self.held.discard(code)
+        if code in (first, second):
+            self.recovery_since = None
+        return []
+
+    def _button_virtual(self, code: int, pressed: bool, now: float) -> list[Action]:
+        """A gamepad-virtual app: mapped buttons press the virtual joystick, its own
+        keys send keys; FN+B (close) and FN+Start held (recovery) stay Wyoh's."""
+        assert self.pad is not None
+        name = BUTTON_NAMES.get(code, "")
+        first, second = self._recovery_pair()
+        if not pressed:
+            if code not in self.held:
+                return []
+            self.held.discard(code)
+            if code in (first, second):
+                self.recovery_since = None
+            return self._release(code)
+        if code in self.held:
+            return []
+        self.held.add(code)
+        if first in self.held and second in self.held and self.recovery_since is None:
+            self.recovery_since = now
+        if code == self._b(self.config.modifier):
+            return []
+        if self.fn_held:
+            if code == self._b(self.config.raw_close):
+                result: list[Action] = [Sway("kill")]
+                self._last(result)
+                return result
+            return []
+        if name in self.pad:
+            outputs: list[Action] = [PadButton(self.pad[name], True)]
+        elif name in self.app_keys_now:
+            outputs = [Key(k, True) for k in self._keys(self.app_keys_now[name])]
+        else:
+            return []
+        self.pressed_outputs[code] = outputs
+        self._last(outputs)
+        return list(outputs)
+
+    def _zone_outputs(self, code: int) -> list[Action]:
+        return [Key(k, True) for k in self._keys(self.config.zone_keys[BUTTON_NAMES[code]])]
+
+    def _flush_pending(self) -> list[Action]:
+        """Send the arrow that was waiting to see whether the whole cross was pressed."""
+        if self.dpad_pending is None:
+            return []
+        code, _ = self.dpad_pending
+        self.dpad_pending = None
+        outputs = self._zone_outputs(code)
+        self.pressed_outputs[code] = outputs
+        return list(outputs)
+
+    def _clear_cross(self) -> None:
+        self.dpad_pending = None
+        self.cross_held.clear()
+        self.last_cross = None
+        self._board_reset()
+
+    def _dpad_in_zone(self, code: int, now: float) -> list[Action]:
+        if self.cross_held:  # more contacts of the same whole-cross press
+            self.cross_held.add(code)
+            return []
+        if self.dpad_pending is not None:
+            first, _ = self.dpad_pending
+            self.dpad_pending = None
+            self.cross_held = {first, code}
+            double = self.last_cross is not None and now - self.last_cross <= self.config.cross_double_s
+            self.last_cross = None if double else now
+            self.counters["cross"] += 1
+            return [Zone("select-line" if double else "select-word")]
+        self.dpad_pending = (code, now)
+        return []
+
+    def _press(self, code: int, now: float = 0.0) -> list[Action]:
         cfg, name = self.config, BUTTON_NAMES.get(code, "")
         outputs: list[Action] = []
         result: list[Action] = []
@@ -269,7 +577,15 @@ class GamepadCore:
         if self.fn_held:
             if code == self._b(cfg.recovery[1]) or code == self._b(cfg.recovery[0]):
                 return []  # recovery is decided by the hold timer
-            if name in cfg.fn_sway and self.zone_state == "closed":
+            if self.zone_state == "open" and name in cfg.zone_fn:
+                flushed = self._flush_pending()
+                if cfg.zone_fn[name] == "validate":
+                    self.zone_state = "delivering"
+                    self._clear_cross()
+                    result = flushed + [Zone("validate")]
+                else:
+                    result = flushed + [Zone("clear")]
+            elif name in cfg.fn_sway and self.zone_state in ("closed", "hidden"):
                 result = [Sway(cfg.fn_sway[name])]
             else:
                 result = [Note(f"ignored:{name or code}")]
@@ -277,34 +593,56 @@ class GamepadCore:
             self._last(result)
             return result
         if self.zone_state == "open":
-            if code in (self._b(cfg.zone_validate), self._b(cfg.zone_validate_alt)):
+            validate = {self._b(n) for n in (cfg.zone_validate, cfg.zone_validate_alt) if n}
+            discard = {self._b(cfg.zone_discard_alt)} if cfg.zone_discard_alt else set()
+            if code in DPAD and name in cfg.zone_keys:
+                result = self._dpad_in_zone(code, now)
+                self._last(result)
+                return result
+            flushed = self._flush_pending()
+            if code in validate:
                 self.zone_state = "delivering"
-                result = [Zone("validate")]
-            elif code in (self._b(cfg.zone_toggle), self._b(cfg.zone_discard_alt)):
+                self._clear_cross()
+                result = flushed + [Zone("validate")]
+            elif code == self._b(cfg.zone_toggle):
+                self.zone_state = "hidden"
+                self._clear_cross()
+                result = flushed + [Zone("hide")]
+            elif code == self._b(cfg.zone_dictate):
+                result = flushed + [Zone("dictate")]
+            elif code in discard:
                 self.zone_state = "closed"
-                result = [Zone("discard")]
-            elif name in cfg.keys and code not in (self._b(cfg.menu), self._b(cfg.next_window)):
-                outputs = [Key(k, True) for k in self._keys(cfg.keys[name])]
+                self._clear_cross()
+                result = flushed + [Zone("discard")]
+            elif name in cfg.zone_keys:
+                outputs = self._zone_outputs(code)
+                self.pressed_outputs[code] = outputs
+                result = flushed + outputs
+                self._last(result)
+                return result
+            elif name in cfg.board_press:
+                result = flushed + [Board(cfg.board_press[name], "press")]
             elif code == self._b(cfg.click):
                 outputs = [Click(BTN_LEFT, True)]
+                result = flushed
             else:
-                result = [Note(f"ignored:{name or code}")]
+                result = flushed + [Note(f"ignored:{name or code}")]
                 self.counters["ignored"] += 1
         elif self.zone_state == "delivering":
             if name in cfg.keys or code == self._b(cfg.click):
                 result = [Note(f"busy:{name or code}")]
             else:
                 result = [Note(f"busy:{name or code}")]
-        else:  # closed
+        else:  # closed, or hidden (the Slate keeps its text out of sight)
             if code == self._b(cfg.zone_toggle):
+                result = [Zone("show" if self.zone_state == "hidden" else "open")]
                 self.zone_state = "open"
-                result = [Zone("open")]
             elif code == self._b(cfg.menu):
                 result = [Menu()]
             elif code == self._b(cfg.next_window):
                 result = [Sway("focus next")]
-            elif name in cfg.keys:
-                outputs = [Key(k, True) for k in self._keys(cfg.keys[name])]
+            elif name in self.active_keys:
+                outputs = [Key(k, True) for k in self._keys(self.active_keys[name])]
             elif code == self._b(cfg.click):
                 outputs = [Click(BTN_LEFT, True)]
             else:
@@ -312,7 +650,7 @@ class GamepadCore:
                 self.counters["ignored"] += 1
         if outputs:
             self.pressed_outputs[code] = outputs
-            result = outputs
+            result = result + outputs if self.zone_state == "open" else outputs
         self._last(result)
         return result
 
@@ -324,22 +662,74 @@ class GamepadCore:
                 released.append(Key(action.code, False))
             elif isinstance(action, Click):
                 released.append(Click(action.button, False))
+            elif isinstance(action, PadButton):
+                released.append(PadButton(action.index, False))
         return released
 
-    def axis(self, code: int, value: int) -> list[Action]:
-        if code in self.stick:
-            self.stick[code] = float(value)
-        return []  # the other stick is unassigned
+    def axis(self, code: int, value: int, now: float = 0.0) -> list[Action]:
+        if code not in self.stick or self.raw:
+            return []
+        if self.pad is not None and self.zone_state == "closed":
+            return [PadAxis(code, value)]  # both sticks go to the game as they are
+        self.stick[code] = float(value)
+        if self.zone_state != "open":
+            return []  # sticks drive the pointer (one of them) outside the Slate
+        for cursor, (ax, ay) in self.board_sticks.items():
+            if code in (ax, ay):
+                return self._board_stick(cursor, now)
+        return []
+
+    def _board_direction(self, cursor: int) -> str | None:
+        ax, ay = self.board_sticks[cursor]
+        nx, ny = self.stick[ax] / self.config.pointer.axis_max, self.stick[ay] / self.config.pointer.axis_max
+        r = math.hypot(nx, ny)
+        held = self.board_dir[cursor]
+        if r < (self.config.board_release if held else self.config.board_threshold):
+            return None
+        if r < self.config.board_threshold:
+            return held  # between release and threshold: keep the held direction
+        if abs(nx) >= abs(ny):
+            return "right" if nx > 0 else "left"
+        return "down" if ny > 0 else "up"
+
+    def _board_stick(self, cursor: int, now: float) -> list[Action]:
+        direction = self._board_direction(cursor)
+        if direction == self.board_dir[cursor]:
+            return []
+        self.board_dir[cursor] = direction
+        if direction is None:
+            return []
+        self.board_next[cursor] = now + self.config.board_delay_s
+        result = [Board(cursor, direction)]
+        self._last(result)
+        return result
+
+    def _board_reset(self) -> None:
+        self.board_dir = {0: None, 1: None}
 
     def needs_tick(self) -> bool:
         x, y = (self.stick[axis] for axis in self.axes)
-        return pointer_speed(x, y, self.config.pointer) != (0.0, 0.0) or self.recovery_since is not None
+        pointer = (self.zone_state != "open" and self.pad is None
+                   and pointer_speed(x, y, self.config.pointer) != (0.0, 0.0))
+        board = self.zone_state == "open" and any(self.board_dir.values())
+        return pointer or board or self.recovery_since is not None or self.dpad_pending is not None
 
     def tick(self, now: float) -> list[Action]:
         actions: list[Action] = []
+        if self.dpad_pending is not None and now - self.dpad_pending[1] >= self.config.cross_window_s:
+            actions += self._flush_pending()
         if self.recovery_since is not None and now - self.recovery_since >= self.config.recovery_hold_s:
             actions += self.recover()
             self.recovery_since = None
+        if self.zone_state == "open":
+            for cursor, direction in self.board_dir.items():
+                if direction and now >= self.board_next[cursor]:
+                    actions.append(Board(cursor, direction))
+                    self.board_next[cursor] = max(self.board_next[cursor] + self.config.board_repeat_s, now)
+            self.last_tick = None
+            return actions  # no pointer while the Slate is open
+        if self.pad is not None:
+            return actions  # the sticks belong to the game
         vx, vy = pointer_speed(*(self.stick[axis] for axis in self.axes), self.config.pointer)
         if (vx, vy) == (0.0, 0.0):
             self.last_tick = None
@@ -364,6 +754,10 @@ class GamepadCore:
         if self.zone_state != "closed":
             actions.append(Zone("discard"))
             self.zone_state = "closed"
+        self._clear_cross()
+        if self.raw:  # recovery always takes the gamepad back
+            self.raw = False
+            actions.append(Grab(True))
         self.counters["recovery"] += 1
         actions.append(Note("recovery"))
         self._last(actions)
@@ -372,14 +766,16 @@ class GamepadCore:
     def zone_finished(self) -> None:
         """The adapter reports the zone closed (delivered, discarded, or failed)."""
         self.zone_state = "closed"
+        self._clear_cross()
 
     def release_all(self) -> list[Action]:
         actions: list[Action] = []
         for code in list(self.pressed_outputs):
             actions += self._release(code)
         self.held.clear()
-        self.stick = {axis: 0.0 for axis in self.axes}
+        self.stick = {axis: 0.0 for axis in self.stick}
         self.recovery_since = None
+        self._clear_cross()
         return actions
 
     def _last(self, actions: list[Action]) -> None:
@@ -387,6 +783,52 @@ class GamepadCore:
             self.last_action = type(actions[0]).__name__.lower() + (
                 f":{getattr(actions[0], 'op', '') or getattr(actions[0], 'command', '') or getattr(actions[0], 'event', '')}"
             ).rstrip(":")
+
+
+# --- Dictation (Step 12): Mycroft's lines -> Slate operations -------------------
+
+
+def choose_capture(snd: Path = Path("/dev/snd"), asound: Path = Path("/proc/asound")) -> str | None:
+    """The capture device for dictation: a USB microphone when one is plugged in
+    (its card has a `usbid` file), otherwise the first capture device; None if
+    there is none. Luna's jack gave no microphone signal (user test 2026-10-11)."""
+    devices = sorted(snd.glob("pcmC*D*c"), key=lambda d: d.name)
+    def card(device: Path) -> str:
+        return device.name[4:].split("D", 1)[0]
+    usb = [d for d in devices if (asound / f"card{card(d)}" / "usbid").exists()]
+    chosen = (usb or devices or [None])[0]
+    return str(chosen) if chosen is not None else None
+
+
+def split_lines(buffer: bytes) -> tuple[list[dict[str, Any]], bytes]:
+    """Complete JSON lines from `buffer`, and the incomplete rest. Bad lines are skipped."""
+    messages: list[dict[str, Any]] = []
+    while b"\n" in buffer:
+        line, buffer = buffer.split(b"\n", 1)
+        try:
+            message = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(message, dict):
+            messages.append(message)
+    return messages, buffer
+
+
+def slate_operations(message: dict[str, Any]) -> list[dict[str, Any]]:
+    """What the Slate must do for one message of Mycroft's dictation protocol
+    (worklines/mycroft/docs/0704_01): ready -> listening; partial -> provisional
+    text; final -> insert it; error -> show it."""
+    op = message.get("op")
+    if op == "ready":
+        return [{"op": "dictation", "state": "listening"}]
+    if op == "partial":
+        return [{"op": "provisional", "text": str(message.get("text", ""))}]
+    if op == "final":
+        return [{"op": "insert", "text": str(message.get("text", ""))}]
+    if op == "error":
+        return [{"op": "provisional", "text": ""},
+                {"op": "dictation", "state": f"error: {message.get('message', 'unknown')}"[:120]}]
+    return []
 
 
 # --- Adapters ----------------------------------------------------------------
@@ -400,6 +842,7 @@ BUS_VIRTUAL, VENDOR = 0x06, 0x1209
 KEYBOARD_NAME, MOUSE_NAME = "wyoh-gamepad-keyboard", "wyoh-gamepad-mouse"
 RUNTIME_DIR = Path("/run/wyoh")
 STATUS_PATH = RUNTIME_DIR / "gamepad.json"
+SLATE_SOCKET = RUNTIME_DIR / "slate.sock"
 DESCRIPTOR = Path.home() / ".local/state/tanstfaafllm/wyoh/sway-vnc-session.json"
 
 
@@ -433,6 +876,37 @@ class UInputDevice:
     def emit(self, events: list[tuple[int, int, int]]) -> None:
         for kind, code, value in events:
             os.write(self.fd, struct.pack(EVENT_FORMAT, 0, 0, kind, code, value))
+        os.write(self.fd, struct.pack(EVENT_FORMAT, 0, 0, EV_SYN, SYN_REPORT, 0))
+
+    def close(self) -> None:
+        try:
+            fcntl.ioctl(self.fd, UI_DEV_DESTROY)
+        finally:
+            os.close(self.fd)
+
+
+UI_SET_ABSBIT, UI_ABS_SETUP = 0x40045567, 0x401C5504
+PAD_NAME = "wyoh-game-pad"
+
+
+class UInputPad:
+    """The virtual joystick for gamepad-virtual apps: buttons 0x130..0x13F
+    (SDL numbers them 0..15) and the two sticks as analog axes."""
+
+    def __init__(self, axis_max: int) -> None:
+        self.fd = os.open("/dev/uinput", os.O_WRONLY | os.O_NONBLOCK)
+        fcntl.ioctl(self.fd, UI_SET_EVBIT, EV_KEY)
+        for index in range(PAD_BUTTONS):
+            fcntl.ioctl(self.fd, UI_SET_KEYBIT, 0x130 + index)
+        fcntl.ioctl(self.fd, UI_SET_EVBIT, EV_ABS)
+        for code in (ABS_X, ABS_Y, ABS_RX, ABS_RY):
+            fcntl.ioctl(self.fd, UI_SET_ABSBIT, code)
+            fcntl.ioctl(self.fd, UI_ABS_SETUP, struct.pack("Hxx6i", code, 0, -axis_max, axis_max, 0, 0, 0))
+        fcntl.ioctl(self.fd, UI_DEV_SETUP, struct.pack("HHHH80sI", BUS_VIRTUAL, VENDOR, 0x0012, 1, PAD_NAME.encode(), 0))
+        fcntl.ioctl(self.fd, UI_DEV_CREATE)
+
+    def emit(self, kind: int, code: int, value: int) -> None:
+        os.write(self.fd, struct.pack(EVENT_FORMAT, 0, 0, kind, code, value))
         os.write(self.fd, struct.pack(EVENT_FORMAT, 0, 0, EV_SYN, SYN_REPORT, 0))
 
     def close(self) -> None:
@@ -515,12 +989,32 @@ class Daemon:
         self.core = GamepadCore(config)
         self.sway = sway or SwayClient()
         self.inputs: dict[str, int] = {}  # path -> fd
-        self.keyboard = UInputDevice(KEYBOARD_NAME, 0x0010, list(KEYS.values()), rel=False)
+        self.keyboard = UInputDevice(KEYBOARD_NAME, 0x0010, sorted({*KEYS.values(), *PHYSICAL.values()}), rel=False)
         self.mouse = UInputDevice(MOUSE_NAME, 0x0011, [BTN_LEFT, BTN_LEFT + 1], rel=True)
-        self.zone: subprocess.Popen[str] | None = None
+        # created at start, before any game opens its joysticks (they enumerate at launch)
+        self.pad = UInputPad(int(config.pointer.axis_max)) if config.app_pad else None
+        self.zone: subprocess.Popen[bytes] | None = None  # the Slate's terminal
+        self.zone_keyboard: subprocess.Popen[bytes] | None = None
+        self.zone_link: socket.socket | None = None
+        self.zone_inbox = b""
         self.zone_target: int | None = None
         self.menu: subprocess.Popen[bytes] | None = None
-        self.state = {"zone_result": "", "error": "", "deliveries": 0, "discards": 0}
+        RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+        SLATE_SOCKET.unlink(missing_ok=True)
+        self.zone_listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.zone_listener.bind(str(SLATE_SOCKET))
+        os.chmod(SLATE_SOCKET, 0o600)
+        self.zone_listener.listen(1)
+        self.state = {"zone_result": "", "error": "", "deliveries": 0, "discards": 0, "delivered_length": 0}
+        self.grabbed = config.grab
+        self.focus_events: socket.socket | None = None
+        self.dictation: subprocess.Popen[bytes] | None = None
+        self.dictation_buffer = b""
+        if config.zone_close_sway:  # a previous run may have died with the Slate open
+            try:
+                self.sway.command(config.zone_close_sway)
+            except (OSError, ConnectionError):
+                pass
 
     # devices
     def rescan(self) -> None:
@@ -529,13 +1023,74 @@ class Daemon:
                 continue
             try:
                 fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
-                if self.config.grab:
+                if self.config.grab and self.grabbed:
                     fcntl.ioctl(fd, EVIOCGRAB, 1)
                 self.inputs[path] = fd
                 self._log(f"attached {name} at {path}")
                 self.write_status()
             except OSError as error:
                 self._log(f"cannot attach {path}: {error}")
+
+    def set_grab(self, on: bool) -> None:
+        """Take or release the exclusive grab; the daemon keeps reading either way."""
+        if not self.config.grab:
+            return
+        self.grabbed = on
+        for path, fd in self.inputs.items():
+            try:
+                fcntl.ioctl(fd, EVIOCGRAB, 1 if on else 0)
+            except OSError as error:
+                self._log(f"grab {on} on {path}: {error}")
+
+    # focus events (Step 9.3)
+    def subscribe_focus(self) -> None:
+        """Follow window focus to apply per-app profiles (only if any are configured)."""
+        if not (self.config.app_profiles or self.config.app_keys or self.config.app_pad) or self.focus_events is not None:
+            return
+        try:
+            path = self.sway._socket_path()
+            if not path:
+                return
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            sock.connect(path)
+            body = json.dumps(["window"]).encode()
+            sock.sendall(SwayClient.MAGIC + struct.pack("=II", len(body), 2) + body)
+            header = SwayClient._recv(sock, len(SwayClient.MAGIC) + 8)
+            length, _ = struct.unpack("=II", header[len(SwayClient.MAGIC):])
+            SwayClient._recv(sock, length)
+            self.focus_events = sock
+            self.apply(self.core.focus(self.focused_app_id()))
+        except (OSError, ConnectionError) as error:
+            self._log(f"focus subscription: {error}")
+
+    def focused_app_id(self) -> str | None:
+        def walk(node: dict[str, Any]) -> str | None:
+            if node.get("focused") and node.get("type") in ("con", "floating_con"):
+                return node.get("app_id") or (node.get("window_properties") or {}).get("class")
+            for child in node.get("nodes", []) + node.get("floating_nodes", []):
+                found = walk(child)
+                if found is not None:
+                    return found
+            return None
+        return walk(self.sway.request(4))
+
+    def focus_event(self) -> None:
+        assert self.focus_events is not None
+        try:
+            header = SwayClient._recv(self.focus_events, len(SwayClient.MAGIC) + 8)
+            length, _ = struct.unpack("=II", header[len(SwayClient.MAGIC):])
+            event = json.loads(SwayClient._recv(self.focus_events, length))
+        except (OSError, ConnectionError, ValueError):
+            self.focus_events.close()
+            self.focus_events = None  # resubscribed at the next device scan
+            self.apply(self.core.focus(None))
+            return
+        if event.get("change") in ("focus", "close"):
+            try:
+                app_id = self.focused_app_id()
+            except (OSError, ConnectionError):
+                app_id = None
+            self.apply(self.core.focus(app_id))
 
     def detach(self, path: str) -> None:
         fd = self.inputs.pop(path)
@@ -558,7 +1113,7 @@ class Daemon:
             if kind == EV_KEY and value in (0, 1):
                 self.apply(self.core.button(code, value == 1, now))
             elif kind == EV_ABS:
-                self.apply(self.core.axis(code, value))
+                self.apply(self.core.axis(code, value, now))
 
     # actions
     def apply(self, actions: list[Action]) -> None:
@@ -570,7 +1125,7 @@ class Daemon:
                 self._log(self.state["error"])
         # Pointer motion alone is not a state change worth a status write
         # (it ran at the tick rate and cost most of the daemon's CPU).
-        if any(not isinstance(action, Motion) for action in actions):
+        if any(not isinstance(action, (Motion, PadAxis)) for action in actions):
             self.write_status()
 
     def _apply(self, action: Action) -> None:
@@ -584,8 +1139,22 @@ class Daemon:
             self.sway.command(action.command)
         elif isinstance(action, Menu):
             self.toggle_menu()
+        elif isinstance(action, Board):
+            self.tell_board(action)
+        elif isinstance(action, Grab):
+            self.set_grab(action.on)
+        elif isinstance(action, PadButton):
+            if self.pad is not None:
+                self.pad.emit(EV_KEY, 0x130 + action.index, 1 if action.down else 0)
+        elif isinstance(action, PadAxis):
+            if self.pad is not None:
+                self.pad.emit(EV_ABS, action.code, action.value)
         elif isinstance(action, Zone):
-            {"open": self.open_zone, "validate": self.validate_zone, "discard": self.discard_zone}[action.op]()
+            {"open": self.open_zone, "validate": self.validate_zone, "discard": self.discard_zone,
+             "hide": self.hide_zone, "show": self.show_zone, "clear": lambda: self.tell_zone("clear"),
+             "dictate": self.dictate_zone,
+             "select-word": lambda: self.tell_zone("select-word"),
+             "select-line": lambda: self.tell_zone("select-line")}[action.op]()
 
     def tap(self, code: int) -> None:
         self.keyboard.emit([(EV_KEY, code, 1)])
@@ -607,45 +1176,251 @@ class Daemon:
             self.menu = subprocess.Popen(self.config.menu_command, shell=True, env=self._env(),
                                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # zone
+    # zone (the Slate)
     def open_zone(self) -> None:
         if not self.config.zone_command:
-            raise subprocess.SubprocessError("no zone command configured")
+            raise subprocess.SubprocessError("no Slate command configured")
         try:
             self.zone_target = self.sway.focused_con_id()
         except (OSError, ConnectionError) as error:
             self.core.zone_finished()
             self.state["zone_result"] = "no-sway"
-            raise ConnectionError(f"zone needs Sway: {error}") from error
-        self.zone = subprocess.Popen(list(self.config.zone_command), env=self._env(), text=True,
-                                     stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+            raise ConnectionError(f"the Slate needs Sway: {error}") from error
+        command = [part.replace("{socket}", str(SLATE_SOCKET)) for part in self.config.zone_command]
+        quiet = {"stdin": subprocess.DEVNULL, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
+        try:
+            if self.config.zone_open_sway:
+                self.sway.command(self.config.zone_open_sway)
+            self.zone = subprocess.Popen(command, env=self._env(), **quiet)
+            if self.config.keyboard_command:
+                self.zone_keyboard = subprocess.Popen(list(self.config.keyboard_command), env=self._env(),
+                                                      **{**quiet, "stdin": subprocess.PIPE})
+        except (OSError, ConnectionError):
+            self.finish_zone("failed")
+            raise
         self.state["zone_result"] = "open"
 
+    def hide_zone(self) -> None:
+        """L1 while open: the Slate keeps its text in Sway's scratchpad; the keyboard hides."""
+        if self.zone is None or self.zone.poll() is not None:
+            self.finish_zone("discarded")
+            return
+        self.stop_dictation()
+        self.sway.command('[app_id="wyoh-slate"] move scratchpad')
+        if self.zone_keyboard is not None and self.zone_keyboard.poll() is None:
+            self.zone_keyboard.send_signal(signal.SIGUSR1)  # wvkbd: hide
+        if self.config.zone_close_sway:
+            self.sway.command(self.config.zone_close_sway)
+        self.state["zone_result"] = "hidden"
+
+    def show_zone(self) -> None:
+        """L1 while hidden: show the same Slate again, for the window focused now."""
+        if self.zone is None or self.zone.poll() is not None:
+            self.finish_zone("discarded")
+            self.core.zone_state = "open"
+            self.open_zone()
+            return
+        try:
+            self.zone_target = self.sway.focused_con_id()
+        except (OSError, ConnectionError):
+            self.zone_target = None
+        if self.config.zone_open_sway:
+            self.sway.command(self.config.zone_open_sway)
+        self.sway.command('[app_id="wyoh-slate"] scratchpad show')
+        if self.config.zone_ready_sway:
+            self.sway.command(self.config.zone_ready_sway)
+        if self.zone_keyboard is not None and self.zone_keyboard.poll() is None:
+            self.zone_keyboard.send_signal(signal.SIGUSR2)  # wvkbd: show
+        self.state["zone_result"] = "open"
+
+    def tell_slate(self, message: dict[str, Any]) -> None:
+        if self.zone_link is not None:
+            try:
+                self.zone_link.sendall(json.dumps(message, ensure_ascii=False).encode() + b"\n")
+            except OSError:
+                pass
+
+    def dictate_zone(self) -> None:
+        """L2 in the Slate: start Mycroft's dictation, or stop it (Step 12)."""
+        if self.dictation is not None:
+            self.stop_dictation()
+            return
+        if not self.config.dictate_command:
+            self.state["dictation"] = "not configured"
+            self.tell_slate({"op": "dictation", "state": "error: dictation not configured"})
+            return
+        command = list(self.config.dictate_command)
+        if any("{capture}" in part for part in command):
+            capture = choose_capture()
+            if capture is None:
+                self.state["dictation"] = "no microphone"
+                self.tell_slate({"op": "dictation", "state": "error: no capture device (plug in a USB microphone)"})
+                return
+            command = [part.replace("{capture}", capture) for part in command]
+            self.state["dictation_input"] = capture
+        log = (RUNTIME_DIR / "dictation.log").open("w", encoding="utf-8")
+        try:
+            self.dictation = subprocess.Popen(command, env=self._env(),
+                                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=log)
+        finally:
+            log.close()
+        assert self.dictation.stdout is not None
+        os.set_blocking(self.dictation.stdout.fileno(), False)
+        self.dictation_buffer = b""
+        self.state["dictation"] = "loading"
+        self.tell_slate({"op": "dictation", "state": "loading"})
+
+    def stop_dictation(self) -> None:
+        """Close the provider's stdin: it sends `final` and exits (the text is kept)."""
+        if self.dictation is not None and self.dictation.stdin is not None and not self.dictation.stdin.closed:
+            try:
+                self.dictation.stdin.close()
+            except OSError:
+                pass
+            self.state["dictation"] = "stopping"
+
+    def kill_dictation(self) -> None:
+        """The Slate is going away: end the provider without inserting anything."""
+        if self.dictation is None:
+            return
+        if self.dictation.poll() is None:
+            self.dictation.terminate()
+            try:
+                self.dictation.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                self.dictation.kill()
+        self.dictation = None
+        self.state["dictation"] = "off"
+
+    def dictation_readable(self) -> None:
+        assert self.dictation is not None and self.dictation.stdout is not None
+        try:
+            data = os.read(self.dictation.stdout.fileno(), 65536)
+        except BlockingIOError:
+            return
+        except OSError:
+            data = b""
+        if data:
+            messages, self.dictation_buffer = split_lines(self.dictation_buffer + data)
+            for message in messages:
+                if message.get("op") in ("ready", "error"):
+                    self.state["dictation"] = "listening" if message["op"] == "ready" else "error"
+                for operation in slate_operations(message):
+                    self.tell_slate(operation)
+            self.write_status()
+            return
+        code = self.dictation.wait()  # end of output: the provider has exited
+        self.state["dictation_exit"] = code
+        self.dictation = None
+        if self.state.get("dictation") != "error":
+            self.state["dictation"] = "off"
+            self.tell_slate({"op": "dictation", "state": ""})
+        self.write_status()
+
+    def tell_board(self, action: Board) -> None:
+        """Move or press a selection on the on-screen keyboard (wvkbd-luna --cursors)."""
+        keyboard = self.zone_keyboard
+        if keyboard is None or keyboard.stdin is None or keyboard.poll() is not None:
+            return
+        line = f"press {action.cursor}\n" if action.op == "press" else f"move {action.cursor} {action.op}\n"
+        try:
+            keyboard.stdin.write(line.encode())
+            keyboard.stdin.flush()
+        except (BrokenPipeError, OSError) as error:
+            self.state["error"] = f"keyboard: {type(error).__name__}"
+
+    def tell_zone(self, op: str) -> bool:
+        if self.zone_link is None:
+            return False
+        self.zone_link.sendall(json.dumps({"op": op}).encode() + b"\n")
+        return True
+
     def validate_zone(self) -> None:
-        if self.zone is not None and self.zone.poll() is None:
-            self.tap(KEYS["KEY_ENTER"])  # fuzzel prints the text and exits
+        if not self.tell_zone("send"):  # the Slate never connected: nothing to send
+            self.finish_zone("empty")
 
     def discard_zone(self) -> None:
-        if self.zone is not None and self.zone.poll() is None:
-            self.tap(KEYS["KEY_ESC"])
-        self.state["zone_result"] = "discarded"
+        self.tell_zone("discard")
+        self.finish_zone("discarded")
 
-    def zone_fd(self) -> int | None:
-        return self.zone.stdout.fileno() if self.zone is not None and self.zone.stdout else None
+    def zone_accept(self) -> None:
+        link, _ = self.zone_listener.accept()
+        if self.zone is None:  # not ours
+            link.close()
+            return
+        if self.zone_link is not None:
+            self.zone_link.close()
+        self.zone_link, self.zone_inbox = link, b""
+        if self.config.zone_ready_sway:
+            try:
+                self.sway.command(self.config.zone_ready_sway)
+            except (OSError, ConnectionError) as error:
+                self.state["error"] = f"place the Slate: {error}"
+        self.write_status()
 
-    def zone_exited(self) -> None:
-        """fuzzel ended: deliver its text once if it was validated, else discard."""
-        assert self.zone is not None and self.zone.stdout
-        text = self.zone.stdout.read()
-        code = self.zone.wait()
-        self.zone.stdout.close()
-        self.zone = None
-        text = text[:-1] if text.endswith("\n") else text
-        validated = code == 0 and self.core.zone_state in ("delivering", "open")
-        target, self.zone_target = self.zone_target, None
+    def zone_readable(self) -> None:
+        """A message from the Slate, or its end."""
+        assert self.zone_link is not None
+        try:
+            data = self.zone_link.recv(65536)
+        except OSError:
+            data = b""
+        if not data:  # the Slate ended without sending (FN+B, crash): discard
+            self.finish_zone("discarded" if self.core.zone_state != "closed" else self.state["zone_result"])
+            return
+        self.zone_inbox += data
+        while b"\n" in self.zone_inbox:
+            line, self.zone_inbox = self.zone_inbox.split(b"\n", 1)
+            try:
+                message = json.loads(line)
+            except ValueError:
+                continue
+            if message.get("op") == "stop-dictation":
+                self.stop_dictation()
+                continue
+            if message.get("op") == "text" and self.core.zone_state == "delivering":
+                self.deliver(str(message.get("text", "")))
+                return
+
+    def finish_zone(self, result: str) -> None:
+        """Close the Slate and its keyboard; restore the border. Idempotent."""
+        self.kill_dictation()
+        if self.zone_link is not None:
+            self.zone_link.close()
+            self.zone_link = None
+        if self.zone_keyboard is not None and self.zone_keyboard.stdin is not None:
+            try:
+                self.zone_keyboard.stdin.close()
+            except OSError:
+                pass
+        for process in (self.zone_keyboard, self.zone):
+            if process is not None and process.poll() is None:
+                process.terminate()
+        for process in (self.zone_keyboard, self.zone):
+            if process is not None:
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+        was_open = self.zone is not None
+        self.zone = self.zone_keyboard = None
+        if self.config.zone_close_sway and (was_open or result == "failed"):
+            try:
+                self.sway.command(self.config.zone_close_sway)
+            except (OSError, ConnectionError) as error:
+                self.state["error"] = f"restore border: {error}"
+        if was_open and result in ("discarded", "empty"):
+            self.state["discards"] += 1
+        self.state["zone_result"] = result
         self.core.zone_finished()
-        if not validated or not text:
-            self.state["zone_result"] = "discarded" if not validated else "empty"
+        self.write_status()
+
+    def deliver(self, text: str) -> None:
+        """Send the Slate's text once into the window that had focus."""
+        target, self.zone_target = self.zone_target, None
+        self.finish_zone("delivering")
+        if not text:
+            self.state["zone_result"] = "empty"
             self.state["discards"] += 1
             self.write_status()
             return
@@ -654,22 +1429,33 @@ class Daemon:
                 self.state["zone_result"] = "target-gone"
             else:
                 self.sway.command(f"[con_id={target}] focus")
-                subprocess.run([*self.config.deliver_command, text], env=self._env(), timeout=30, check=True,
-                               stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                events = type_events(text)
+                if events is not None:  # the daemon's own keyboard: safe for SDL2 apps
+                    for code, value in events:
+                        self.keyboard.emit([(EV_KEY, code, value)])
+                        time.sleep(self.config.deliver_key_delay_s)
+                    self.state["deliver_path"] = "uinput"
+                else:  # a character AZERTY cannot type: wtype (unsafe for SDL2 apps)
+                    subprocess.run([*self.config.deliver_command, text], env=self._env(), timeout=60, check=True,
+                                   stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    self.state["deliver_path"] = "wtype"
                 self.state["deliveries"] += 1
+                self.state["delivered_length"] = len(text)  # never the text itself
                 self.state["zone_result"] = "delivered"
         except (OSError, ConnectionError, subprocess.SubprocessError) as error:
             self.state["zone_result"] = "failed"
-            self.state["error"] = f"deliver: {error}"
+            self.state["error"] = f"deliver: {type(error).__name__}"
         self.write_status()
 
     # status
     def write_status(self) -> None:
         status = {
             "devices": sorted(self.inputs),
-            "grabbed": self.config.grab,
+            "grabbed": self.config.grab and self.grabbed,
+            "raw_app": self.core.raw,
             "zone": self.core.zone_state,
             "zone_target": self.zone_target,
+            "slate_ready": self.zone_link is not None,
             "menu_open": self.menu is not None and self.menu.poll() is None,
             "last_action": self.core.last_action,
             **self.core.counters,
@@ -705,21 +1491,36 @@ class Daemon:
             if now >= next_scan:
                 if self._input_dir_changed():
                     self.rescan()
+                self.subscribe_focus()
                 next_scan = now + 5.0  # hotplug needs no faster reaction
-            fds = list(self.inputs.values())
-            zone_fd = self.zone_fd()
-            if zone_fd is not None:
-                fds.append(zone_fd)
+            fds: list[Any] = [*self.inputs.values(), self.zone_listener]
+            if self.zone_link is not None:
+                fds.append(self.zone_link)
+            if self.focus_events is not None:
+                fds.append(self.focus_events)
+            dictation_fd = self.dictation.stdout.fileno() if self.dictation is not None and self.dictation.stdout else None
+            if dictation_fd is not None:
+                fds.append(dictation_fd)
             timeout = 1.0 / self.config.pointer.tick_hz if self.core.needs_tick() else max(0.0, next_scan - now)
-            if self.menu is not None:
-                timeout = min(timeout, 0.25)  # notice the menu closing by itself
+            if self.core.dpad_pending is not None:
+                timeout = min(timeout, self.config.cross_window_s / 2)
+            if self.menu is not None or self.zone is not None:
+                timeout = min(timeout, 0.25)  # notice the menu or the Slate closing by itself
             readable, _, _ = select.select(fds, [], [], timeout)
             now = time.monotonic()
             for path, fd in list(self.inputs.items()):
                 if fd in readable:
                     self.read(path, now)
-            if zone_fd is not None and zone_fd in readable:
-                self.zone_exited()
+            if self.focus_events is not None and self.focus_events in readable:
+                self.focus_event()
+            if dictation_fd is not None and dictation_fd in readable and self.dictation is not None:
+                self.dictation_readable()
+            if self.zone_listener in readable:
+                self.zone_accept()
+            if self.zone_link is not None and self.zone_link in readable:
+                self.zone_readable()
+            if self.zone is not None and self.zone.poll() is not None and self.zone_link is None:
+                self.finish_zone("discarded" if self.core.zone_state != "closed" else "failed")
             if self.core.needs_tick() or self.core.recovery_since is not None:
                 self.apply(self.core.tick(now))
             if self.menu is not None and self.menu.poll() is not None:
@@ -728,10 +1529,16 @@ class Daemon:
 
     def close(self) -> None:
         self.apply(self.core.release_all())
+        if self.zone is not None:
+            self.finish_zone("discarded")
+        self.zone_listener.close()
+        SLATE_SOCKET.unlink(missing_ok=True)
         for path in list(self.inputs):
             os.close(self.inputs.pop(path))
         self.keyboard.close()
         self.mouse.close()
+        if self.pad is not None:
+            self.pad.close()
 
 
 def main() -> int:

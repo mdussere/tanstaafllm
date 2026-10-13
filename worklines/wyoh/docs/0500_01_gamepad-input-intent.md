@@ -1,5 +1,7 @@
 # Wyoh gamepad input — intent
 
+> **Superseded mapping (2026-10-09):** the controls described here are out of date (left-stick pointer, L1 open/discard, L2 validate). The current reference, checked against the code by a test, is [`0512_01_luna-controls-reference.md`](0512_01_luna-controls-reference.md). This intent stays as the record of Step 5's design.
+
 **Question answered:** What exactly is built so that Luna's session is used through the device's own controls, before any code is written?<br>
 **Step:** Wyoh 5 — Device interactors<br>
 **Status:** green-lit 2026-10-07 (user: "commit the workline before starting, then work in full autonomy; use Gherkin tests and MCP to simulate the human operations"). Revised the same day: device-tree codes, button-only operation, defaults for the open points.<br>

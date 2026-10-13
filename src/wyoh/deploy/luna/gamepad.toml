@@ -9,12 +9,61 @@ grab = true
 # Start opens the application menu (Alt+d's menu in sway.conf).
 menu_command = "fuzzel --config /storage/.local/share/tanstfaafllm/wyoh/deploy/luna/fuzzel.ini"
 
-# The input zone: a one-line fuzzel prompt (no list); Return prints the text.
+# The Slate (Step 6): a multi-line editor in a floating foot window, black
+# with white text. Its font is half the size of the old fuzzel zone's: that
+# zone's capitals were 17 px high (Liberation Sans, about 25 px em), so the
+# Slate uses a 12 px em. "{socket}" is the daemon's private Slate socket.
 zone_command = [
-    "fuzzel", "--config", "/storage/.local/share/tanstfaafllm/wyoh/deploy/luna/fuzzel.ini",
-    "--dmenu", "--prompt-only", "Input: ", "--placeholder", "L2 send, L1 cancel",
-    "--width", "26",
+    "foot", "--app-id=wyoh-slate", "--title=Slate", "--window-size-pixels=716x214",
+    "-o", "font=Liberation Mono:pixelsize=12", "-o", "pad=6x4", "-o", "resize-by-cells=no",
+    "-o", "colors.background=000000", "-o", "colors.foreground=ffffff",
+    "-o", "cursor.color=000000 ffffff",
+    "/usr/bin/python3", "/storage/.local/share/tanstfaafllm/wyoh/wyoh_slate.py", "--socket", "{socket}",
 ]
+
+# The on-screen keyboard, shown whenever the Slate is open (user, 2026-10-09):
+# wvkbd 0.15 built with Luna's AZERTY letter layer (src/wyoh/wvkbd/), whose
+# second layer is wvkbd's digits and symbols. White background and black
+# keys: wvkbd's 2 px key inset shows as white outlines. The label font fits
+# ten keys across 720 px. Built with luna-cursors.patch: the daemon moves and
+# presses two selections through the keyboard's standard input.
+keyboard_command = [
+    "wvkbd-luna", "-l", "simple,special", "-H", "240",
+    # Luna's square panel makes wvkbd pick its landscape mode: same layers and height.
+    "--landscape-layers", "simple,special", "-L", "240",
+    "--bg", "ffffffff", "--fg", "000000ff", "--fg-sp", "000000ff",
+    "--press", "808080ff", "--press-sp", "808080ff",
+    "--text", "ffffffff", "--text-sp", "ffffffff",
+    "--fn", "Liberation Sans 18",
+    # Two-thumb typing (user, 2026-10-09): a pastel green selection (left stick,
+    # L3) starting on "f" and a pastel red one (right stick, R3) on "j".
+    "--cursors", "--cursor0", "b8e6b8ff", "--cursor1", "f5b5b5ff", "--cursor-text", "1e1e1eff",
+    "--home0", "0.35,0.375", "--home1", "0.65,0.375",
+]
+
+# While the Slate is open (it always has the focus), the focused border is
+# white; Sway has one colour for every focused window, so it is restored after.
+zone_open_sway = "client.focused #ffffff #000000 #ffffff #ffffff #ffffff"
+zone_close_sway = "client.focused #5294e2 #5294e2 #ffffff #5294e2 #5294e2"
+# foot sizes the Slate itself (716 x 214 + the 2 px border = 720 x 218). A Sway
+# resize raced with foot's own size and left a smaller surface centred in a
+# larger frame; Sway now only positions it, again once it has connected.
+zone_ready_sway = '[app_id="wyoh-slate"] move position 0 0'
+
+# Mycroft's dictation (Step 12): L2 in the Slate starts it, L2 again (or any
+# key) stops it. Installed on Luna by Mycroft (worklines/mycroft/docs/0704_01,
+# 0703_01); 2 threads is Mycroft's best measured setting (8.2). Expect about
+# 17 s of model loading and about 250 MiB while dictating. {capture} is chosen
+# at each start: a USB microphone if plugged in (the jack gave no signal in the
+# user's test, 2026-10-11), else the RK817 capture device.
+dictate_command = [
+    "/usr/bin/python3", "/storage/.local/share/tanstfaafllm/mycroft/mycroft_dictate.py",
+    "--input", "{capture}", "--assets", "/storage/.local/opt/mycroft", "--threads", "2",
+]
+
+# Per-app gamepad profiles (Step 9.3), generated from the apps' manifests by
+# `make wyoh-luna-apps` (wyoh_apps.py). Missing file = no profiles.
+app_profiles_file = "/storage/.local/share/tanstfaafllm/wyoh/generated/app-profiles.toml"
 
 # Paced delivery into the window that had focus (bemenu-style clients drop
 # keys typed faster than they load the keymap).

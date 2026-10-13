@@ -1,0 +1,14 @@
+# Wyoh calculator (Step 9.5): Windows 3.1 style, written by Wyoh.
+id = "calculator"
+name = "Calculator"
+comment = "A simple calculator, like the old Windows one"
+version = "1.0"
+source = "worklines/wyoh (src/wyoh/apps/calculator)"
+licence = "project"
+wayland_app_id = "wyoh-calculator"
+input = "keys"
+window = "floating"
+gpu = true  # SDL2 on Wayland always presents through EGL (Mali)
+quit = "FN+B closes it (Sway kill)"
+icon = "accessories-calculator"
+categories = ["Utility"]

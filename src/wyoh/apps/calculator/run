@@ -1,0 +1,7 @@
+#!/bin/sh
+# Launcher for the Wyoh calculator. SDL's Wayland back end takes its app_id
+# from SDL_VIDEO_WAYLAND_WMCLASS (Sway rules and gamepad profiles key on it).
+here=$(dirname "$(readlink -f "$0")")
+# MALI_WAYLAND_DMABUF_PROTOCOL: Mali hands Sway standard dmabuf buffers (Wyoh 9.1b).
+export SDL_VIDEODRIVER=wayland SDL_VIDEO_WAYLAND_WMCLASS=wyoh-calculator MALI_WAYLAND_DMABUF_PROTOCOL=1
+exec /usr/bin/python3 "$here/wyoh_calc.py" "$@"

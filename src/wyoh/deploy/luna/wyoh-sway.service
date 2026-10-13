@@ -10,6 +10,10 @@ Conflicts=sway.service essway.service
 [Service]
 Type=simple
 Environment=HOME=/storage
+# Mali GPU clients must use the standard linux-dmabuf protocol: Sway cannot import
+# buffers sent through Mali's own mali_buffer_sharing (Wyoh 9.1b, 2026-10-11).
+# Inherited by everything launched from the session (menu, bindings, Slate).
+Environment=MALI_WAYLAND_DMABUF_PROTOCOL=1
 Environment=XDG_RUNTIME_DIR=/run/wyoh
 RuntimeDirectory=wyoh
 RuntimeDirectoryMode=0700

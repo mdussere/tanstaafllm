@@ -1,0 +1,15 @@
+# Commander, ArchR's two-pane file manager (od-contrib/commander), already
+# installed at /usr/bin/commander. Wyoh only adds its menu entry and launcher.
+id = "commander"
+name = "Files"
+comment = "Two-pane file manager (Commander)"
+version = "archr-b3c008c"
+source = "https://github.com/od-contrib/commander (ArchR package commander)"
+licence = "GPL-3.0"
+wayland_app_id = "commander"
+input = "keys"
+window = "fullscreen"
+gpu = true
+quit = "FN+B closes it (Sway kill)"
+icon = "/usr/share/commander/res/folder-open.svg"  # Commander's own icon (no file-manager icon in the Papirus subset)
+categories = ["Utility", "FileManager"]
