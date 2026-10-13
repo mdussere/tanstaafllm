@@ -1,6 +1,6 @@
 ---
-**Status**: 🚧 In progress — Sherpa baseline retained; Steps 2–4 reopened for the context/composition revision
-**Date**: 2026-09-25
+**Status**: 🚧 In progress — active: Step 5 (live-microphone check), Step 7 (dictation for the Slate), Step 8 (dictation usable on Luna). Steps 2–4 are reopened for contextual ASR but not active.
+**Date**: 2026-09-25 (reordered 2026-10-11)
 **Priority**: High
 **Maintained**: Yes
 ---
@@ -118,7 +118,7 @@ TANSTAAFL applies to model weights, RAM, shared GPU memory, battery, storage, de
 - [ ] 5.6 Acceptance: microphone and replay drive the same visible composition flow; edits survive; accept emits exactly once; discard has no side effect; tests and resource evidence pass with one pinned local model.
 
 ### Step 6 — Hand off target-hardware validation
-**Status**: ⏳ Pending
+**Status**: ⏸️ Superseded (2026-10-11) — Luna has arrived. Board, firmware, memory and audio characterisation is done by the Luna workline (`worklines/luna/plan_luna.md`; the microphone is Luna Step 8). Mycroft's own on-device validation is Step 8 below. 6.3 (context biasing as a future phase) remains covered by the reopened Steps 2–4. Kept for history.
 
 - [ ] 6.1 On hardware arrival and a separate green light, measure the delivered board/firmware, baseline memory, available audio interfaces, storage, CPU behaviour, thermals, and exposed Mali APIs before installing or changing the firmware.
 - [ ] 6.2 Define the later HOLMES-36 validation matrix: microphone/jack availability, audio capture path, latency, memory, CPU, thermal behaviour, and optional GPU/Vulkan support. A GPU test is only valid if it reports total memory impact and beats or usefully complements the CPU baseline.
@@ -126,19 +126,61 @@ TANSTAAFL applies to model weights, RAM, shared GPU memory, battery, storage, de
 - [ ] 6.4 Acceptance: hardware arrival can trigger a bounded validation task rather than reopening v0 design; no target configuration, flashing, or GPU work is implied by this plan.
 
 ### Step 7 — Dictation provider for Wyoh's Slate
-**Status**: 🚧 In progress — 🟩 go 7.2–7.4 given 2026-10-09 22:40 by Professor on the user's behalf (decision D3, [`0503_01`](../professor/docs/0503_01_delegated-coordination-log-2026-10-09.md)). Limits: the `luna-pi` measurement in 7.3 waits until `luna-pi` is back on; no Luna install, no Slate code, no commit.
+**Status**: 🚧 In progress — 7.1–7.4 done; 7.5 waits for Wyoh's Step 12, for Step 8 (dictation fast enough on Luna), and for the user.
+**Green light:** 🟩 go 7.2–7.4 given 2026-10-09 22:40 by Professor on the user's behalf (decision D3, [`0503_01`](../professor/docs/0503_01_delegated-coordination-log-2026-10-09.md)).
 
-User direction: try voice input in Wyoh's Slate (dictate, correct, send). The Slate is Wyoh's; Mycroft provides the text. Proposal and open questions: [Wyoh note `0600_02`](../wyoh/docs/0600_02_note-from-mycroft-dictation-in-slate.md).
+User direction: voice input in Wyoh's Slate (dictate, correct, send). The Slate is Wyoh's; Mycroft provides the text. Proposal and Wyoh's reply: [Wyoh note `0600_02`](../wyoh/docs/0600_02_note-from-mycroft-dictation-in-slate.md).
 
 - [x] 7.1 Apply the user's display decisions in Mycroft's console: one text area (no separate hypothesis pane) and lower-case output.
 - [x] 7.2 Interface agreed with Wyoh (`0600_02` §6) and recorded: a separate process started by Wyoh's gamepad daemon; `ready`/`partial`/`final`/`error` JSON lines; stop by closing stdin; exit 0/2/3; capture device as `--input`. See `docs/0704_01_dictation-provider.md`.
-- [~] 7.3 Runtime selected by architecture: the official prebuilt `linux-aarch64-shared-cpu-lib` (checksum verified; needs glibc 2.17 and GLIBCXX 3.4.19, no compiler). **Open:** load and measure on `luna-pi` (off on 2026-10-09), then on Luna once Luna Step 8 locates the microphone.
+- [x] 7.3 Runtime chosen by architecture: the official prebuilt `linux-aarch64-shared-cpu-lib` (checksum verified; needs glibc 2.17 and GLIBCXX 3.4.19, no compiler). Confirmed loading and running on Luna by 8.1; the planned `luna-pi` measurement is dropped as superseded.
 - [x] 7.4 `scripts/mycroft_dictate.py` with a `--fake` mode for Wyoh; `test/mycroft/dictate.feature` and `test_dictate.py`. Desk host: model load 1.27 s, first partial 1.29 s after `ready`, stop→final under 10 ms, peak RSS 217.5 MiB (`results/mycroft/dictate/20261009T203427Z/`).
 - [ ] 7.5 Acceptance: dictated text appears in the Slate and can be corrected and sent there; resource cost recorded against the ledger.
 
-**Recorded for later (not authorised):**
+### Step 8 — Make dictation usable on Luna (CPU)
+**Status**: 🚧 In progress — 8.1–8.4 done. The blocker is decoding speed: RTF 1.32 at best, with 2 threads, so slower than real time. 8.5 proposed; the user reviews `0802_01` before it. 8.6 prepared, waiting for a Luna slot.
+**Green light:** 8.1 by the user, 2026-10-11. 8.2, 8.3, 8.4 and 8.6 are the user's decisions after reading 8.1's result, relayed by Professor on 2026-10-11.
+**Goal:** on Luna, dictation keeps up with speech and starts quickly enough to be started from a button. CPU only; the GPU is parked (see "Recorded for later").
+
+**Luna rules** (`worklines/luna-access.md`, Professor arbitrates): use Luna only after Professor's "Luna is yours"; install only under `/storage/.local` (no boot, card or ArchR change, no package); measure on recorded WAV files (Luna's microphone is unproven, Luna Step 8); nothing heavy beside a Wyoh process; reboot Luna before and after each test run; to release: reboot, record the state here, send Professor "Luna released".
+
+**Live test:** `test/mycroft/test_luna_footprint.py` (contract `luna_footprint.feature`), run with `MYCROFT_LUNA_LIVE=1 MYCROFT_LUNA_REBOOT=1 MYCROFT_ASSET_ROOT=…`. Evidence goes to `results/mycroft/luna-footprint/<timestamp>/`.
+
+- [x] 8.1 **First footprint on Luna** (formerly 7.3b). Installed under `/storage/.local` (167.7 MB, checked by SHA-256). Three replays of a 7.1 s public French clip, one thread: model load 17.7–20.2 s, peak RSS ~252 MiB (about 260 MiB of `MemAvailable`), decoding 2.1× slower than real time (8.2 s behind at the end), one core saturated, text identical to the desk host. Result: [`0703_01`](docs/0703_01_luna-footprint-result.md).
+- [x] 8.2 **Threads 2 and 4** (formerly 7.3c). **Result ([`0802_01`](docs/0802_01_threads-load-compiled-result.md)):** 2 threads is best: decode RTF 1.32 against 2.0 at 1 thread, and 3.6 s lag at the end of the 7.1 s clip in real-time replay. 4 threads is worse than 1 (RTF 2.1–2.5, 2.5× the CPU). Even at 2 threads, the model is slower than real time. The v0 one-thread profile is lifted; Mycroft has the cores to itself while it runs. Prepared: a `--threads` setting in the adapter, `mycroft_dictate.py` and the console (default stays 1 until this measurement sets it). On Luna: unpaced decode at 1, 2 and 4 threads, and real-time replay at 2 and 4. Desk host: 2 threads faster than 1, 4 slower than 2 (to check on Luna's four real cores).
+- [x] 8.3 **Load time: break it down, then prepare the model once** — **Result ([`0802_01`](docs/0802_01_threads-load-compiled-result.md)):** creating the ONNX Runtime session takes 16.7–16.9 s warm and 17.8 s cold, independent of threads. Reading the files takes 2.3 s cold and 0.22 s warm, the libraries 0.5 s cold. So the load is CPU work, not I/O. The pre-optimised "extended" model brings session creation down to 13.2 s, with the same text and speed (−21 %). The rest is probably int8 weight pre-packing (unverified). Background (formerly 7.3d a; Professor's note [`0703_02`](docs/0703_02_note-from-professor-onnx-load-time.md)). Prepared: `test/mycroft/sherpa_load_profile.py` times the file read (once with a dropped page cache), the library load, session creation and decoding; `scripts/preoptimise_model.py` builds pre-optimised variants. Desk host: session creation is ~1.1 s of ~1.2 s. The ONNX "extended" variant gives the same text and creates its session in ~0.94 s. The ORT-format variant makes Sherpa abort (exit 134), so it is not usable through Sherpa's C API. Open: the variant was made on x86; `0703_02` advises making it on aarch64 (`luna-pi`), and whether ONNX Runtime can save pre-packed int8 weights is unverified.
+- [x] 8.4 **Python against compiled code** (formerly 7.3e). **Result ([`0802_01`](docs/0802_01_threads-load-compiled-result.md)):** the C++ binary has the same load time (17.0 s), is no faster at decoding (RTF 1.5 at 2 threads against Python's 1.32), and uses ~15 MiB less (236 against 252 MiB). Python costs ~15 MiB and nothing measurable in speed, so staying in Python is recommended (decision in 8.7). Sherpa's prebuilt C++ streaming binary, same model, WAV and threads, against `mycroft_dictate.py`: peak RSS, CPU time, load time, real-time factor. Prepared: the binary (same libraries as those installed) and a `--raw` mode in the probe. Desk host: the binary creates its recogniser in 1.16 s (Python 1.13 s) and peaks at 203–208 MiB (Python 216–220 MiB). So the load is ONNX Runtime's, and Python costs ~15 MiB. The result decides whether Mycroft moves to compiled code.
+- [ ] ⏸️ 8.5 **int8 against fp32** — parked by the user on 2026-10-11: no more tuning of the current model for now. (proposed by Professor's note `0703_02` §5; not yet green-lit). The Cortex-A35 lacks the int8 dot-product instructions, so int8 may gain less there. One fp32 measurement, if the fp32 model fits in memory.
+- [ ] ⏸️ 8.6 **Resident provider and memory pressure; swap measured only** — parked by the user on 2026-10-11 (no more work on the current model); the probe stays ready for a lighter model. (formerly 7.3d b). Prepared: `test/mycroft/resident_probe.py`: load once, idle RSS split into anonymous and file-backed memory, decode before, during and after another process holds memory down to 150 MiB available. Plus a read-only check of Luna's swap and zram support. Enabling swap or zram is a system change outside `/storage` and is **not** authorised: measure and propose only.
+- [ ] 8.7 **Choose the Luna profile** from 8.2–8.6: thread count, prepared model or not, resident or on-demand, Python or compiled. Record the decision, and set the defaults in the code.
+- [ ] 8.8 **Acceptance:** on Luna, dictation keeps up with speech (small lag at the end of an utterance), its start time is agreed with the user, and its memory fits the ledger beside Wyoh's session.
+
+**Next Luna slot:** 8.6 (`test_luna_8_6_resident_and_swap`, about 5 minutes), and 8.5 if green-lit. Luna is rebooted before and after each run.
+
+### Step 9 — A lighter model and known words
+**Status**: 🚧 In progress — user decision 2026-10-11: no more tuning of the current model; look for a substantially lighter one (9.3 Kroko, 9.6 Parakeet Redux). 9.1 and 9.2 done (desk host, [`0901_01`](docs/0901_01_known-words-and-lighter-models.md)); 9.3–9.5 proposed, awaiting the user.
+**Why:** keeping the current model resident costs ~250 MiB, too much for Luna. The user asks whether a smaller model can do (fine-tuned on their voice, or restricted to one language), and asks to check that the model can be given a list of known words (their first name "Michael", Wyoh, Luna, Mycroft, Wolfenstein…) and recognise them without ambiguity.
+
+- [x] 9.1 **Known words (hotwords) on the current model** — user request: verify. **Result:** supported, with modified beam search plus the tokenizer vocabulary (`bpe.vocab`, from the original Apache-2.0 repository), and a list can be given per utterance. On synthetic speech (Piper) the list found 6/9 known words against 5/9 without it. Michael, Luna and Wolfenstein were already right; Mycroft was fixed once. Wyoh fails, because the list matches spelling, not sound: it needs its pronounced form plus a mapping back. Adapter options added (default unchanged). Test: `test_hotwords.py`. Read Sherpa v1.13.8's code for the conditions, then test on the desk host with and without a word list, on synthetic French speech that contains the words. No private recording.
+- [x] 9.2 **Desk review: fine-tuning, one language, smaller models** — **Result:** the current model is already French only, so there is nothing to gain there. Kroko French is ~4× smaller (70 MB fp32 encoder against 293 MB) and probably punctuated; licence to confirm (empty LICENSE file). Fine-tuning the current model is possible (checkpoints published) but doesn't make it smaller. Recommendation: 9.3 first. Background — what each would gain on Luna, with sources. Result doc.
+- [ ] 9.3 **Kroko French streaming model** — 🟩 the user, 2026-10-11 ("go and look at Kroko or another, for a substantial gain"): about 4× fewer parameters than the current model, with punctuation and lower case in its tokens. Confirm the licence, then compare quality and speed on the desk host and on Luna. Needs a 🟩 go.
+  **Desk result ([`0903_01`](docs/0903_01_lighter-candidates-desk-result.md)):** on the user's 130 s reading, Kroko has WER 0.091 against 0.134, RTF 0.035 against 0.065 (about half the CPU), peak RSS 160 against 216 MiB, and punctuation and capitals. On Common Voice clips it is less accurate (the current model was trained on them). Its load is longer: 2.9 s against 1.1 s. **`luna-pi` result ([`0903_02`](docs/0903_02_kroko-on-luna-pi.md)):** at 2 threads, Kroko has RTF 0.20 against 0.37, and 159 against 222 MiB, but loads in 11.0 s against 4.1 s. The cost is in opening the published file, not in graph optimisation. Prepared once on aarch64 ("extended"), it loads in 6.1 s (−44 %) with the same text. **Projection to Luna** (current model's measured ratio): RTF ~0.8 at 2 threads, so it would keep up with speech, but the load would be ~25 s prepared, so it still needs a resident process (~160 MiB). **Next, to decide:** measure it on Luna; licence still to confirm.
+  **User decision (2026-10-11):** no load wait is acceptable between opening the Slate and dictating (4, 10 or 15 s are all too long), so the model must be **resident**. If Kroko is real-time on Luna, saves ~40 % memory, and has **the same quality**, it is adopted. Next: the user judges quality live on termidor with the usual console, so the console and provider gain a `--model` choice (the current model stays the default until the decision).
+- [ ] 9.4 **Known words on the user's own voice** (proposed): a few consented sentences recorded by the user, kept private, to measure the real effect of the word list. Needs the recordings and a 🟩 go.
+- [x] 9.7 **Resident provider for the Slate** (the user's decision relayed by Wyoh, 2026-10-13, note [`0903_03`](docs/0903_03_note-from-wyoh-kroko-resident-in-slate.md); the user: "continue", "we switch to Kroko"). `mycroft_dictate.py --resident` loads the model once and stays idle (microphone closed). stdin `{"op": "start"}` opens capture and sends `listening`, then `partial`; `{"op": "stop"}` sends `final`, resets, and goes back to idle. Closing stdin exits. `--fake` speaks the same protocol. pytest/Gherkin evidence.
+  **Done (desk host):** `--resident` in `mycroft_dictate.py` (`start`/`listening`/`stop`, `--fake` too). A capture failure during an utterance sends `error` and keeps the model. 3 deterministic tests and Gherkin scenarios in `dictate.feature`. Found and fixed on the way: the adapter fed no silence after the last audio, so Kroko dropped its last word. `finish()` now pads 1.0 s (0.66 s was measured too short), at a cost of ~0.8 s more before `final` on Luna.
+- [ ] 9.8 **Kroko on Luna for the Slate**: use Kroko prepared once at ONNX Runtime's portable "extended" level (`0903_02`: −44 % load); install it and the current scripts under `/storage/.local`, replacing the partial `encoder.onnx`; measure the resident provider on Luna (load, idle RSS, start→listening, RTF at 2 threads). Luna through Professor; reboot before and after. Then answer Wyoh's note.
+  **Prepared on the desk host:** `sherpa-onnx-streaming-zipformer-fr-kroko-2025-08-06-ort-extended` (ONNX Runtime 1.28.0, portable "extended" level, with a README naming its CC-BY-SA source). Same transcripts as the published files on 3 clips; load 1.7 s against 3.1 s on the desk host. The `kroko-fr-2025` profile now points to it. Desk-host resident run: ready 2.3 s, idle 147 MiB, 168 MiB listening, 0 s start→listening. Luna test `test_luna_9_8_resident_kroko`: waiting for a Professor slot.
+- [ ] ⏸️ 9.5 **Fine-tuning on the user's voice** — parked by the user on 2026-10-11 (no tuning for now); a v0 non-goal in any case.
+- [ ] 9.6 **Other light candidates suggested by the user and Charlie (2026-10-11)**, same evaluation as 9.3:
+  - **Parakeet Redux** (Moondream; Parakeet TDT 0.6B v3 with ternary weights, 178 MB, CC-BY-4.0, French listed): **rejected for Luna**. Its Photon engine's kernels publish no aarch64 Linux build, so `uv pip compile` fails for aarch64; on x86 it pulls PyTorch and CUDA. See [`0903_01`](docs/0903_01_lighter-candidates-desk-result.md).
+  - **Phonon-2** (Fermion Research; compressed Parakeet v3, 164 MB download, CC-BY-4.0, English only): **rejected for Luna**, even though the user would accept English. Its Linux engine is PyTorch + Transformers, and ~600 M parameters expanded at load exceed 1 GiB (~30× Kroko's compute). See [`0903_01`](docs/0903_01_lighter-candidates-desk-result.md).
+
+### Recorded for later (not authorised)
+
 - **Re-format action:** one press finishes sentences and adds punctuation and capitals. Candidates are rules, a French punctuation model (existence unverified), or Mike.
 - **Input modes:** command line (correct before sending) versus Mike and Mannie (direct dictation, sent as it is).
+- **GPU (OpenCL on the Mali-G31), parked by the user on 2026-10-11:** only after Step 8 gives usable CPU dictation. Then look at OpenCL, because "it could be fun to drive OpenCL on the micro GPU", even for a small gain. Facts and candidate engines: [Professor's note `0703_03`](docs/0703_03_note-from-professor-opencl-parked.md).
 
 ---
 
@@ -149,9 +191,10 @@ User direction: try voice input in Wyoh's Slate (dictate, correct, send). The Sl
 - 🧪 Step 2 — Reopened for compact contextual-ASR evidence; baseline shortlist preserved.
 - 🧪 Step 3 — Reopened for the matched contextual evaluation protocol; baseline harness preserved.
 - 🧪 Step 4 — Reopened; Sherpa remains the context-free reference pending expanded evidence.
-- 🚧 Step 5 — Console test coverage comprises 20 asset-free checks plus 3 optional pinned-asset integrations, including a real-terminal scenario; live-microphone smoke and foreground resource evidence remain.
-- ⏳ Step 6 — Hand off target-hardware validation.
-- 🚧 Step 7 — Dictation provider: 7.1, 7.2, 7.4 done; 7.3 done on the desk host, `luna-pi` measurement waiting; 7.5 needs Wyoh's Step 12 and the user.
+- 🚧 Step 5 — 5.5 partial: the user found live dictation on termidor "pas mal"; key-by-key checks and live-input memory not yet recorded.
+- ⏸️ Step 6 — Superseded: the hardware has arrived; its board characterisation belongs to the Luna workline, and Mycroft's on-device validation is Step 8.
+- 🚧 Step 7 — Dictation provider for the Slate: 7.1–7.4 done; 7.5 waits for Wyoh's Step 12, Step 8, and the user.
+- 🚧 Step 8 — Dictation usable on Luna: 8.1–8.4 done. Best is 2 threads at RTF 1.32, still slower than real time. Load is ~17 s of ONNX Runtime CPU work (13 s pre-optimised). Python costs only ~15 MiB. 8.5 awaits the user's review; 8.6 ready; 8.7–8.8 follow.
 
 ---
 
@@ -180,6 +223,30 @@ date
 | 2026-10-09 | User direction: one text area and lower case (done in the console; peak RSS 218.7 MiB on x86_64), a later re-format action, per-destination input modes, and a Slate dictation trial. Proposed Step 7 and sent Wyoh note `0600_02`; no Slate code touched. |
 | 2026-10-09T22:45 | Wyoh accepted the separate dictation process (`0600_02` §6, its Step 12). Professor gave 🟩 go 7.2–7.4 on the user's behalf (D3 in `worklines/professor/docs/0503_01_delegated-coordination-log-2026-10-09.md`); desk-host work only, `luna-pi` measurement deferred while it is off, no commit. |
 | 2026-10-09T22:40–23:00 | Did 7.2–7.4 under D3: interface recorded, aarch64 runtime selected and inspected, `mycroft_dictate.py` with fake mode and tests (31 passed + 4 integration passed; default suite 292 passed). Blocked: the `luna-pi` part of 7.3 (`luna-pi` off). Stopped as instructed; no commit. |
+| 2026-10-11 | 5.5 partial: the user ran the console with the real front-panel microphone on termidor (`/dev/snd/pcmC0D0c`) and judged it "pas mal". Key-by-key observations and a foreground RSS reading on live input are not yet recorded. |
+| 2026-10-11 | User green-lit 7.3b: install on Luna and measure memory/CPU there, with priority over Wyoh; Luna access to be arranged through Professor; reboot between operations. Preparing the bundle and live test offline; waiting for access. |
+| 2026-10-11 | Professor (`tanstfaafllm-80`) set the Luna slot: after Wyoh's current app series (about 13:30 at the latest), Mycroft first in `worklines/luna-access.md`; offline preparation done, waiting for "Luna is yours". |
+| 2026-10-11T12:38 | Professor: "Luna is yours" (Wyoh released it after a reboot). Starting 7.3b: preflight, install, measure. |
+| 2026-10-11T12:50 | 7.3b done: Mycroft installed on Luna and measured (3 runs). Luna rebooted and released to Professor. |
+| 2026-10-11 | The user's decisions after `0703_01`, relayed by Professor: add 7.3c (threads 2/4), 7.3d (load-time breakdown, pre-optimised model, resident provider; swap measured only), 7.3e (Sherpa C++ binary vs Python). Preparing offline; waiting for Luna. |
+| 2026-10-11 | Plan reordered at the user's request: Step 7 keeps the Slate provider (7.1–7.5; 7.3 closed, the `luna-pi` measurement superseded by Luna); the Luna performance work becomes **Step 8** (8.1 = former 7.3b, 8.2 = 7.3c, 8.3 = 7.3d a, 8.4 = 7.3e, 8.6 = 7.3d b), with 8.5 (int8 vs fp32, proposed) from Professor's note `0703_02`, and 8.7–8.8 (profile choice, acceptance). File names are unchanged. |
+| 2026-10-11 | 🟩 go 8.2, 8.3 and 8.4 from the user, who gave Mycroft Luna directly ("tu as Luna pour toi"). Run those three, then pause for the user to review the results before 8.5. 8.6 is not in this run. |
+| 2026-10-11T13:55 | 8.2–8.4 run on Luna (extra files installed, 129.7 MB). Results in `0802_01`. Luna rebooted and released to Professor. Paused for the user's review before 8.5. |
+| 2026-10-11 | Professor paused every session (usage limit), then resumed. Mycroft state unchanged: 8.1–8.4 done (`0802_01`). **Waiting for the user:** their review of `0802_01`, a 🟩 go for 8.5 (int8 vs fp32), and whether 8.6 (resident provider) runs in the same Luna slot. Wyoh holds Luna; Mycroft asks Professor for a slot only after the user decides. Nothing started meanwhile. |
+| 2026-10-11 | User request: a lighter model and known words. Opened Step 9; 9.1 (hotwords check) and 9.2 (desk review) started on the desk host; 9.3–9.5 proposed. |
+| 2026-10-11 | 9.1 and 9.2 done on the desk host (`0901_01`). Hotwords work, but partially: spelling-based, so Wyoh needs its pronounced form. Kroko French is the candidate for a lighter model. 9.3–9.5 await the user's go. |
+| 2026-10-11 | User decision: freeze the current model (8.5, 8.6 and 9.5 parked) and look for a substantially lighter one. 9.3 (Kroko) go; 9.6 added for Parakeet Redux (user) and Phonon-2 (Charlie; rejected, English only). Desk-host evaluation first, then Luna through Professor. |
+| 2026-10-11 | 9.3 desk result: Kroko is clearly ahead of the current model on the user's voice (WER, CPU, memory, punctuation); its load is longer. 9.6: Parakeet Redux and Phonon-2 rejected for Luna (no aarch64 engine; PyTorch and ~600 M parameters). The user would accept English for an efficient model; noted, though it changes nothing here. The Kroko Luna test is ready; asking Professor for a slot. |
+| 2026-10-11T22:34 | Professor gave Luna for 9.3 (~20 min). Running `test_luna_9_3_kroko` with reboots. |
+| 2026-10-11 | The user asked to test on `luna-pi` before Luna. The Luna 9.3 run was stopped during the Kroko upload (partial `encoder.onnx` left under `/storage/.local/opt/mycroft`; no measurement). Luna was rebooted and released to Professor, who gave Mycroft `luna-pi`. |
+| 2026-10-11 | 9.3 on `luna-pi` (Cortex-A72): Kroko RTF 0.20 at 2 threads against 0.37 for the current model, 159 against 222 MiB, but a 10.9 s load against 4.1 s. Diagnosing Kroko's load there with ONNX Runtime's Python package in a venv under `~/.local/opt` (no system change). |
+| 2026-10-11 | Kroko's load diagnosed on `luna-pi`: opening the published encoder costs 5.1 s even with optimisation off. Re-saved on aarch64 at the portable "extended" level, Sherpa loads Kroko in 6.1 s instead of 11.0 s, with the same text and speed. `luna-pi` released to Professor without a reboot (the user's interactive session was open). Results in `0903_02`. |
+| 2026-10-11 | User decision: the model must be resident (no load wait at all); Kroko is adopted if it is real-time on Luna, ~40 % lighter, and of the same quality. Added `--model` to the console and provider for the user's live quality test on termidor. |
+| 2026-10-11 | User live test on termidor: Kroko's quality is "top", with fewer errors and punctuation. **Decision: Kroko is kept.** Next: measure it on Luna (`test_luna_9_3_kroko`); asking Professor for a slot. |
+| 2026-10-11 | **9.3 measured on Luna** (`results/mycroft/luna-footprint/20261011T213949Z/`, rebooted before and after, then released). As published, at 2 threads: Kroko RTF 0.76–0.79 (keeps up with speech) against 1.48–1.54 for the current model; peak RSS 167 against 236 MiB (−29 %); load 47.7 s against 17.5 s. At 1 thread Kroko is at RTF 1.14–1.20. The `luna-pi` projection held (RTF ~0.8, load ~45 s). Next: a resident provider with Kroko, loaded from the aarch64-prepared files. |
+| 2026-10-13 | Wyoh's note `0903_03` relays the user's decisions: Kroko for the Slate, kept loaded while the Slate is hidden. Added 9.7 (resident provider) and 9.8 (prepared Kroko installed and measured on Luna). The user said to continue. |
+| 2026-10-13 | 9.7 done on the desk host (resident mode, tests). The adapter's missing tail padding (Kroko dropped its last word) was fixed with 1.0 s. Prepared Kroko made and verified; the `kroko-fr-2025` profile uses it. Luna test 9.8 ready; asking Professor for a slot. |
+| 2026-10-13 | **Blocked on Luna access:** no Professor session is running, and Wyoh holds Luna (Wolfenstein controls). Mycroft added itself to the `luna-access.md` queue and asked the user. |
 
 ---
 
@@ -201,6 +268,13 @@ date
 - `worklines/mycroft/docs/0502_02_text-console-implementation.md` — v0 implementation boundary, pytest evidence, and explicit remaining live-input/resource acceptance.
 - `worklines/wyoh/docs/0600_02_note-from-mycroft-dictation-in-slate.md` — Step 7 proposal to Wyoh: dictation into the Slate, with Wyoh's reply.
 - `worklines/mycroft/docs/0704_01_dictation-provider.md` — Steps 7.2–7.4: interface, aarch64 runtime, implementation and desk-host evidence.
+- `worklines/mycroft/docs/0703_01_luna-footprint-result.md` — Step 8.1 (formerly 7.3b): first install and memory/CPU footprint on Luna.
+- `worklines/mycroft/docs/0703_02_note-from-professor-onnx-load-time.md` — Professor's note behind 8.3 and 8.5.
+- `worklines/mycroft/docs/0802_01_threads-load-compiled-result.md` — Steps 8.2–8.4: threads, load-time breakdown and pre-optimised model, Python against C++ on Luna.
+- `worklines/mycroft/docs/0901_01_known-words-and-lighter-models.md` — Steps 9.1–9.2: hotwords on the current model; one language, Kroko, and fine-tuning.
+- `worklines/mycroft/docs/0903_01_lighter-candidates-desk-result.md` — Steps 9.3 and 9.6 on the desk host: Kroko against the current model; Parakeet Redux and Phonon-2 rejected for Luna.
+- `worklines/mycroft/docs/0903_02_kroko-on-luna-pi.md` — Step 9.3 on `luna-pi`: Kroko against the current model, its load diagnosis, the aarch64-prepared files, and a projection to Luna.
+- `worklines/mycroft/docs/0703_03_note-from-professor-opencl-parked.md` — Professor's note on the parked GPU/OpenCL idea.
 
 ## Active architecture and reopened evidence — 2026-09-25
 

@@ -109,3 +109,17 @@ python3 worklines/mycroft/scripts/mycroft_dictate.py --fake "ouvre le terminal"
 The Sherpa runtime directory is chosen by architecture: the x64 no-TTS
 release on a desktop, and the official `linux-aarch64-shared-cpu-lib` release
 on Luna or `luna-pi`.
+
+## Model choice (plan step 9.3)
+
+`--model` selects the speech model in `mycroft_console.py` and `mycroft_dictate.py`:
+
+- `zipformer-fr-2023` (default): the pinned 2023 French Zipformer, int8, upper case lowered by Mycroft;
+- `kroko-fr-2025`: the Kroko French community model (fp32, ~18 M parameters), which writes its own case and punctuation.
+
+`--threads` sets Sherpa's thread count (2 is best on Luna, `0802_01`). Example of a live test on the desk host:
+
+```text
+MYCROFT_ASSET_ROOT=/path/to/assets \
+  uv run python worklines/mycroft/scripts/mycroft_console.py --input /dev/snd/pcmC0D0c --model kroko-fr-2025 --threads 2
+```

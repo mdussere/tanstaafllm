@@ -255,3 +255,16 @@ def test_runtime_directory_follows_the_machine_architecture() -> None:
     assert console.runtime_dirname("aarch64") == "sherpa-onnx-v1.13.8-linux-aarch64-shared-cpu-lib"
     with pytest.raises(console.ConsoleError, match="armv7l"):
         console.runtime_dirname("armv7l")
+
+
+def test_unknown_model_is_refused_before_any_load(tmp_path: Path) -> None:
+    with pytest.raises(console.ConsoleError, match="Unknown model"):
+        console.SherpaStreamingRecognizer(tmp_path, model="no-such-model")
+
+
+def test_each_model_profile_names_its_own_files(tmp_path: Path) -> None:
+    for name, profile in console.MODEL_PROFILES.items():
+        with pytest.raises(console.ConsoleError, match="assets are missing: encoder, decoder, joiner"):
+            console.SherpaStreamingRecognizer(tmp_path, model=name)
+    assert console.MODEL_PROFILES["zipformer-fr-2023"].lowercase is True
+    assert console.MODEL_PROFILES["kroko-fr-2025"].lowercase is False

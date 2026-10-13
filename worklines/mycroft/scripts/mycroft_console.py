@@ -37,7 +37,35 @@ RUNTIME_DIRNAMES = {
     "aarch64": "sherpa-onnx-v1.13.8-linux-aarch64-shared-cpu-lib",
 }
 MODEL_ID = "sherpa-onnx-fr-zipformer-int8 / 2023-04-14"
+
+
+@dataclass(frozen=True)
+class ModelProfile:
+    """One French streaming transducer the adapter can load (plan step 9.3)."""
+
+    label: str
+    dirname: str
+    encoder: str
+    decoder: str
+    joiner: str
+    lowercase: bool  # lower the output (the 2023 model emits upper case without punctuation)
+
+
+_INT8 = "epoch-29-avg-9-with-averaged-model.int8.onnx"
+MODEL_PROFILES = {
+    "zipformer-fr-2023": ModelProfile(MODEL_ID, MODEL_DIRNAME, f"encoder-{_INT8}", f"decoder-{_INT8}", f"joiner-{_INT8}", True),
+    # Kroko French community model (~18 M parameters); emits case and punctuation itself.
+    # The files are the published ones re-saved once by ONNX Runtime at the portable
+    # "extended" level, which halves the load (plan steps 9.3 and 9.8).
+    "kroko-fr-2025": ModelProfile("kroko-fr-community / 2025-08-06 (fp32, ORT-extended)",
+                                  "sherpa-onnx-streaming-zipformer-fr-kroko-2025-08-06-ort-extended",
+                                  "encoder.onnx", "decoder.onnx", "joiner.onnx", False),
+}
+DEFAULT_MODEL = "zipformer-fr-2023"
 CHUNK_MS = 200
+# Sherpa inference threads. Plan step 8.2 measures 2 and 4 on Luna; the default
+# follows that measurement.
+DEFAULT_THREADS = 1
 PCM_CAPTURE_PATH = re.compile(r"^/dev/snd/pcmC(?P<card>\d+)D(?P<device>\d+)c$")
 
 
@@ -386,17 +414,37 @@ class _RecognizerResult(ctypes.Structure):
 class SherpaStreamingRecognizer:
     """Pinned Sherpa C API adapter; accepts PCM chunks and emits text snapshots."""
 
-    def __init__(self, asset_root: Path) -> None:
-        model_dir = asset_root / MODEL_DIRNAME
+    def __init__(
+        self,
+        asset_root: Path,
+        num_threads: int = DEFAULT_THREADS,
+        hotwords: list[str] | None = None,
+        hotwords_score: float = 1.5,
+        beam_search: bool = False,
+        model: str = DEFAULT_MODEL,
+    ) -> None:
+        """``hotwords``: words or phrases to favour (plan step 9.1). They need
+        modified beam search and the tokenizer's vocabulary, ``bpe.vocab``,
+        beside the model; ``beam_search`` alone selects that decoder without
+        a list, to separate its effect from the list's."""
+        if num_threads < 1:
+            raise ConsoleError("The thread count must be at least 1.")
+        if model not in MODEL_PROFILES:
+            raise ConsoleError(f"Unknown model {model!r}; choose one of: {', '.join(MODEL_PROFILES)}.")
+        profile = MODEL_PROFILES[model]
+        self.profile = profile
+        model_dir = asset_root / profile.dirname
         runtime_dir = asset_root / runtime_dirname()
         lib_path = runtime_dir / "lib" / "libsherpa-onnx-c-api.so"
         required = {
-            "encoder": model_dir / "encoder-epoch-29-avg-9-with-averaged-model.int8.onnx",
-            "decoder": model_dir / "decoder-epoch-29-avg-9-with-averaged-model.int8.onnx",
-            "joiner": model_dir / "joiner-epoch-29-avg-9-with-averaged-model.int8.onnx",
+            "encoder": model_dir / profile.encoder,
+            "decoder": model_dir / profile.decoder,
+            "joiner": model_dir / profile.joiner,
             "tokens": model_dir / "tokens.txt",
             "runtime": lib_path,
         }
+        if hotwords:
+            required["bpe.vocab"] = model_dir / "bpe.vocab"
         missing = [name for name, path in required.items() if not path.is_file()]
         if missing:
             raise ConsoleError("Pinned Sherpa assets are missing: " + ", ".join(missing) + ". Set MYCROFT_ASSET_ROOT to their parent directory.")
@@ -427,9 +475,20 @@ class SherpaStreamingRecognizer:
         self._config.model_config.transducer.decoder = encode(required["decoder"])
         self._config.model_config.transducer.joiner = encode(required["joiner"])
         self._config.model_config.tokens = encode(required["tokens"])
-        self._config.model_config.num_threads = 1
+        self._config.model_config.num_threads = num_threads
         self._config.model_config.provider = b"cpu"
         self._config.decoding_method = b"greedy_search"
+        if hotwords or beam_search:
+            self._config.decoding_method = b"modified_beam_search"
+            self._config.max_active_paths = 4
+        if hotwords:
+            # The model's tokens are upper case; Sherpa splits each word with bpe.vocab.
+            self._hotwords = "\n".join(word.upper() for word in hotwords).encode("utf-8")
+            self._config.model_config.modeling_unit = b"bpe"
+            self._config.model_config.bpe_vocab = encode(required["bpe.vocab"])
+            self._config.hotwords_buf = self._hotwords
+            self._config.hotwords_buf_size = len(self._hotwords)
+            self._config.hotwords_score = hotwords_score
         self._recognizer = self._lib.SherpaOnnxCreateOnlineRecognizer(ctypes.byref(self._config))
         if not self._recognizer:
             raise ConsoleError("Pinned Sherpa rejected its recognizer configuration.")
@@ -459,9 +518,10 @@ class SherpaStreamingRecognizer:
         if not result:
             return ""
         try:
-            # The pinned model emits upper case without punctuation; lower case
-            # is the less awkward base for editing and later re-formatting.
-            return (result.contents.text or b"").decode("utf-8", "replace").lower()
+            # The 2023 model emits upper case without punctuation; lower case is the
+            # less awkward base for editing. Kroko formats its own text.
+            text = (result.contents.text or b"").decode("utf-8", "replace")
+            return text.lower() if self.profile.lowercase else text
         finally:
             self._lib.SherpaOnnxDestroyOnlineRecognizerResult(result)
 
@@ -476,8 +536,15 @@ class SherpaStreamingRecognizer:
             self._lib.SherpaOnnxDecodeOnlineStream(self._recognizer, self._stream)
         return self._result()
 
+    # Silence fed after the last audio so the streaming encoder can emit the final
+    # word(s); without it Kroko drops the last word (plan step 9.8). Sherpa's own
+    # tools pad the same way.
+    TAIL_PADDING_SECONDS = 1.0  # Kroko needs 1 s; 0.66 s lost its last word (measured)
+
     def finish(self) -> str:
         if not self._finished:
+            silence = (ctypes.c_float * int(16000 * self.TAIL_PADDING_SECONDS))()
+            self._lib.SherpaOnnxOnlineStreamAcceptWaveform(self._stream, 16000, silence, len(silence))
             self._lib.SherpaOnnxOnlineStreamInputFinished(self._stream)
             while self._lib.SherpaOnnxIsOnlineStreamReady(self._recognizer, self._stream):
                 self._lib.SherpaOnnxDecodeOnlineStream(self._recognizer, self._stream)
@@ -586,9 +653,14 @@ class KeyDecoder:
 class TerminalConsole:
     ESC_TIMEOUT = 0.05
 
-    def __init__(self, input_path: Path, asset_root: Path, output: Callable[[str], None]) -> None:
+    def __init__(
+        self, input_path: Path, asset_root: Path, output: Callable[[str], None],
+        num_threads: int = DEFAULT_THREADS, model: str = DEFAULT_MODEL,
+    ) -> None:
         self.input_path = input_path
         self.asset_root = asset_root
+        self.num_threads = num_threads
+        self.model = model
         self.controller = DraftController(output)
         self.source: ReplaySource | AlsaCaptureSource | None = None
         self.recognizer: SherpaStreamingRecognizer | None = None
@@ -610,7 +682,7 @@ class TerminalConsole:
     def load_model(self) -> None:
         """Load the one pinned model once; sessions reuse it."""
         if self.recognizer is None:
-            self.recognizer = SherpaStreamingRecognizer(self.asset_root)
+            self.recognizer = SherpaStreamingRecognizer(self.asset_root, self.num_threads, model=self.model)
 
     def _release_source(self) -> None:
         if self.source:
@@ -695,7 +767,7 @@ class TerminalConsole:
             self.redraw()
             try:
                 self.load_model()
-                self.controller.state.status = "Ready. Space starts a session. No audio is retained."
+                self.controller.state.status = f"Ready ({MODEL_PROFILES[self.model].label}, {self.num_threads} threads). Space starts a session. No audio is retained."
             except ConsoleError as exc:
                 self.controller.state.status = str(exc)
             self.redraw()
@@ -728,6 +800,8 @@ class TerminalConsole:
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Mycroft v0 offline streaming text console")
     parser.add_argument("--input", required=True, metavar="PATH", help="RIFF/WAVE replay file or /dev/snd/pcmC#D#c capture node")
+    parser.add_argument("--threads", type=int, default=DEFAULT_THREADS, help=f"Sherpa inference threads (default {DEFAULT_THREADS})")
+    parser.add_argument("--model", choices=sorted(MODEL_PROFILES), default=DEFAULT_MODEL, help=f"speech model (default {DEFAULT_MODEL})")
     return parser.parse_args(argv)
 
 
@@ -739,7 +813,7 @@ def main(argv: list[str] | None = None) -> int:
     deferred: list[str] = []
     emit = deferred.append if sys.stdout.isatty() else (lambda text: print(text, flush=True))
     try:
-        console = TerminalConsole(Path(args.input), default_asset_root(), emit)
+        console = TerminalConsole(Path(args.input), default_asset_root(), emit, args.threads, args.model)
         return console.run()
     except ConsoleError as exc:
         print(f"mycroft-console: {exc}", file=sys.stderr)

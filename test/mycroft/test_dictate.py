@@ -165,3 +165,83 @@ def _peak_rss_mib(pid: int) -> float | None:
 
 def _jsonl(provider: Provider) -> str:
     return "".join(json.dumps({"t": round(t, 3), **m}, ensure_ascii=False) + "\n" for t, m in provider.lines)
+
+
+def test_footprint_probe_reports_kernel_usage_for_a_fake_run() -> None:
+    probe = Path(__file__).with_name("luna_footprint_probe.py")
+    result = subprocess.run(
+        [sys.executable, str(probe), "--runs", "1", "--stop-after", "0.2", "--",
+         sys.executable, str(DICTATE), "--fake", "ouvre le terminal", "--fake-interval", "0.02"],
+        capture_output=True, text=True, timeout=30,
+    )
+
+    assert result.returncode == 0, result.stderr
+    run = json.loads(result.stdout)["runs"][0]
+    assert run["final_text"] == "ouvre le terminal"
+    assert run["partials"] == 3
+    assert run["exit_status"] == 0
+    assert run["peak_rss_mib"] > 0
+    assert run["ready_s"] <= run["first_partial_s"] <= run["final_s"]
+
+
+def _send(provider: Provider, op: str) -> None:
+    assert provider.process.stdin is not None
+    provider.process.stdin.write(json.dumps({"op": op}).encode() + b"\n")
+    provider.process.stdin.flush()
+
+
+def _assert_silent(provider: Provider, seconds: float) -> None:
+    ready, _, _ = select.select([provider.process.stdout], [], [], seconds)
+    assert not ready and b"\n" not in provider._buffer, "no message was expected"
+
+
+def test_resident_serves_two_utterances_with_one_load() -> None:
+    provider = Provider("--resident", "--fake", "ouvre le terminal", "--fake-interval", "0.02")
+    assert provider.next_message(5) == {"op": "ready"}
+    _assert_silent(provider, 0.2)  # idle: microphone closed, nothing sent
+    _send(provider, "stop")  # a stop while idle is ignored
+    _assert_silent(provider, 0.2)
+
+    for _ in range(2):
+        _send(provider, "start")
+        assert provider.next_message(5) == {"op": "listening"}
+        assert provider.next_message(5) == {"op": "partial", "text": "ouvre"}  # the recogniser was reset
+        provider.next_message(5)
+        assert provider.next_message(5) == {"op": "partial", "text": "ouvre le terminal"}
+        _send(provider, "start")  # a start while listening is ignored
+        _send(provider, "stop")
+        assert provider.next_message(5) == {"op": "final", "text": "ouvre le terminal"}
+        _assert_silent(provider, 0.2)  # back to idle, still running
+        assert provider.process.poll() is None
+
+    provider.close_stdin()
+    assert provider.wait(5) == 0
+
+
+def test_resident_ends_an_utterance_when_stdin_closes() -> None:
+    provider = Provider("--resident", "--fake", "bonjour luna", "--fake-interval", "0.02")
+    assert provider.next_message(5) == {"op": "ready"}
+    _send(provider, "start")
+    assert provider.next_message(5) == {"op": "listening"}
+    provider.next_message(5)
+    provider.close_stdin()
+
+    message = provider.next_message(5)
+    while message["op"] == "partial":
+        message = provider.next_message(5)
+    assert message["op"] == "final"
+    assert provider.wait(5) == 0
+
+
+def test_resident_setup_error_ends_before_ready(tmp_path: Path) -> None:
+    import wave
+    wav = tmp_path / "short.wav"
+    with wave.open(str(wav), "wb") as out:
+        out.setnchannels(1)
+        out.setsampwidth(2)
+        out.setframerate(16000)
+        out.writeframes(b"\x00\x00" * 1600)
+    provider = Provider("--resident", "--input", str(wav), "--assets", str(tmp_path))
+    message = provider.next_message(5)
+    assert message["op"] == "error"  # no model under tmp_path: the setup fails before "ready"
+    assert provider.wait(5) == 2

@@ -123,7 +123,7 @@ def _draft(app: PtyConsole) -> str:
 
 
 def _run_scenario(app: PtyConsole) -> None:
-    app.wait_for(lambda: "Ready." in app.text(), 30, "model loaded")
+    app.wait_for(lambda: "Ready (" in app.text(), 30, "model loaded")
     app.snapshot("ready")
     assert _row(app, 0) == "Mycroft v0 — idle"
     assert _row(app, 1) == "Source: not started"

@@ -78,3 +78,27 @@ def test_replay_and_console_share_the_streaming_composition_flow() -> None:
     app.action("enter")
     assert emitted == [automatic + "!"]
     assert app.controller.state.phase is console.Phase.ACCEPTED
+
+
+@pytest.mark.integration
+def test_kroko_profile_streams_punctuated_text() -> None:
+    """Step 9.3: the same adapter loads Kroko and keeps its own case and punctuation."""
+    root_text = os.environ.get("MYCROFT_ASSET_ROOT")
+    if not root_text:
+        pytest.skip("MYCROFT_ASSET_ROOT is not set; pinned assets are external to the repository")
+    root = Path(root_text)
+    profile = console.MODEL_PROFILES["kroko-fr-2025"]
+    if not (root / profile.dirname / profile.encoder).is_file():
+        pytest.skip("Kroko is not installed under MYCROFT_ASSET_ROOT")
+    wav = root / console.MODEL_DIRNAME / "test_wavs" / "common_voice_fr_19364697.wav"
+    recognizer = console.SherpaStreamingRecognizer(root, num_threads=2, model="kroko-fr-2025")
+    try:
+        with wave.open(str(wav), "rb") as source:
+            while pcm := source.readframes(3200):
+                recognizer.accept_pcm(pcm, source.getframerate())
+        recognizer.accept_pcm(b"\x00\x00" * 8000, 16000)
+        result = recognizer.finish()
+    finally:
+        recognizer.close()
+
+    assert result.startswith("Ce site contient"), result

@@ -29,3 +29,20 @@ Feature: Mycroft dictation provider protocol
     When the provider replays the same WAV and the host closes stdin after the first "partial"
     Then it sends "final" promptly and exits 0
     And model load time, first-partial latency, stop-to-final latency, and peak RSS are saved under results/mycroft/dictate/<timestamp>/
+
+  # Step 9.7: resident mode for the Slate (Wyoh's note 0903_03).
+
+  Scenario: Resident provider serves several utterances with one load (deterministic)
+    Given the provider runs with --resident and --fake "ouvre le terminal"
+    Then it sends "ready" and nothing more while idle, and ignores a "stop" while idle
+    When the host sends {"op": "start"}
+    Then it sends "listening", then one "partial" per new word
+    And a second "start" while listening is ignored
+    When the host sends {"op": "stop"}
+    Then it sends one "final", stays running and silent, and the next "start" begins from an empty text
+    When the host closes stdin
+    Then it exits with status 0, after a "final" if it was listening
+
+  Scenario: Resident setup error (deterministic)
+    Given the model files are missing
+    Then the provider's only line is an "error", and it exits with status 2
