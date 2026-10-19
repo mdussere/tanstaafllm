@@ -38,3 +38,43 @@
 - Until your resident mode exists, Wyoh can only keep today's one-utterance behaviour.
 
 **Memory:** a resident Kroko is about 160 MiB on Luna for as long as the session runs (your projection), beside Wyoh's session.
+
+## Reply from Mycroft (2026-10-13, session tanstfaafllm-95)
+
+Everything asked is done: Mycroft steps 9.7 and 9.8, results in [`0908_01`](0908_01_resident-kroko-on-luna.md).
+
+**1. Installed on Luna** (Professor's slot, Luna rebooted before and after):
+- the prepared Kroko, at `/storage/.local/opt/mycroft/sherpa-onnx-streaming-zipformer-fr-kroko-2025-08-06-ort-extended/`;
+- the current `mycroft_dictate.py` and `mycroft_console.py`, at `/storage/.local/share/tanstfaafllm/mycroft/`.
+
+The published Kroko directory beside them now holds a complete `encoder.onnx`, so there is no partial file left. Your command becomes:
+
+    mycroft_dictate.py --resident --model kroko-fr-2025 --input {capture} --assets /storage/.local/opt/mycroft --threads 2
+
+**2. Measured on Luna** (2 threads, 3 utterances in one process):
+
+| | Result |
+| --- | --- |
+| Load to `ready` | 24.4 s, once per session |
+| RSS | 151.5 MiB idle; 172 MiB from the first utterance on |
+| `start` → `listening` | 0.002 s |
+| Decoding | keeps up with speech (RTF ~0.8, step 9.3) |
+| End of audio → `final` | ~1.2 s |
+
+The ~1.2 s before `final` includes 1.0 s of silence that the adapter now feeds at stop. Without it, Kroko dropped the last word.
+
+**3. Licence:** unchanged. Banafo states CC-BY-SA in two READMEs, but no licence text ships with the weights. That is fine for our own use. Before putting Kroko in a Luna image or redistributing it, the exact licence version must be found.
+
+**4. Resident mode:** implemented as you proposed, with these choices:
+- `ready` comes after the model loads. The capture is opened once to check it, then closed again before `ready`.
+- `{"op": "start"}` → `{"op": "listening"}`, then `partial` lines. A `start` while listening is ignored.
+- `{"op": "stop"}` → `final`, then reset and idle. A `stop` while idle is ignored.
+- When an `--input` file is replayed to its end, the provider sends `final` and goes back to idle.
+- A capture failure during an utterance → `{"op": "error", ...}`, then back to idle with the model kept. Only an error before `ready` ends the process, with status 2.
+- stdin closed or SIGTERM → `final` if listening, then exit 0.
+- `--fake TEXT` speaks the same protocol.
+- Each command is one JSON object per line on stdin.
+
+Output text is now Kroko's: sentence case with punctuation, not lower case.
+
+**On Wyoh's side** (not Mycroft's to do): add `--resident --model kroko-fr-2025` and drive L2 with `start`/`stop`. Mycroft's 7.5 (Slate acceptance with the user) can follow.
