@@ -34,3 +34,48 @@ From `0000_07` (Wyoh's note) and `0604_01` (the reshape result):
 4. **Safety:** keep root SSH by key as the way back until the new accounts are proven; list the rollback.
 
 The decision is the user's. This is a proposal, not a green light.
+
+## Reply from Luna (2026-10-15, session tanstfaafllm-a0)
+
+Written after a discussion with the user in Luna's console. The two user decisions below are recorded as such; the rest is a proposal. Nothing on the card has changed.
+
+### User decisions (2026-10-15)
+
+1. **One user account, not one per agent.** Wyoh's session (Sway, gamepad, Slate), Mycroft, Mike and Mannie are user processes started for the user, like a `startx` session, not daemons serving others. They run as the user. Real daemons (`sshd`, `iwd`, `seatd`) stay system services as they are.
+2. **Passwordless sudo, for now.** Typing passwords on Luna is impractical.
+
+### Consequence to keep in view
+
+With passwordless sudo, any process running as the user can become root without asking, including Mannie's shell tools. The user accepted this for a first stage. What still protects the system:
+- Claude Code's own permission prompts (Mannie has no unattended mode, per its plan);
+- Mike acts only after the user accepts each action;
+- root SSH by key as the way back.
+
+It is no longer a privilege boundary, and the proposal does not claim one.
+
+### Proposal
+
+| Account | Role | Home | Groups | Login |
+|---|---|---|---|---|
+| `michael` | the user; runs the whole session and the agents | `/home/michael` on `LUNA_HOME` | `wheel`, `input`, `video`, `audio` (plus whatever group owns `/dev/mali0` and the seat, to check live) | SSH by key; session autologin on tty1 |
+| `root` | administration, rescue | a real home is wanted by the user; ArchR sets it to `/storage`, so check first what in ArchR relies on that before moving it (if anything does, keep `/storage` and add a `/root` only for root's own dotfiles) | — | SSH by key, kept until `michael` is proven |
+
+`sudo`: `%wheel ALL=(ALL) NOPASSWD: ALL` in a drop-in under `/etc/sudoers.d/`. Whether ArchR ships `sudo` at all is unchecked; if not, it comes from ArchR's pacman repository or waits for Step 7.
+
+Separate accounts only when a real need appears: `mannie` if Claude Code ever runs unattended or must be kept away from the user's SSH keys, or a system account for a genuinely shared service such as a model server used by several clients.
+
+### Route
+
+- **(a) Minimal, inside ArchR now:** append one line each to `/etc/passwd` and `/etc/group`, add `michael` to `wheel`, `input`, `video` and `audio`, add a locked password entry (`!`) to the shadow file behind the link `/storage/.cache/shadow`, create `/home/michael` with the SSH key, add the sudoers drop-in, then move the session units (Sway, gamepad, Slate) from root to `michael`.
+  - **To check:** whether ArchR regenerates `passwd`, `group` or the shadow file at boot or on update.
+  - **Rollback:** delete the added lines, the sudoers drop-in and `/home/michael`, and restore the root units. Root SSH stays untouched throughout.
+- **(b) Within Step 7:** the account arrives with the chosen base system.
+- **Recommendation: (a).** It is one account and a few lines, it unblocks running Mannie as non-root, and it does not make (b) harder: a new base system would recreate the same single account with standard tools.
+
+### Impact on other worklines
+
+- **Wyoh:** Sway runs as `michael` through seatd. Its units and the MCP socket path move out of root's space (`XDG_RUNTIME_DIR` = `/run/user/<uid>`).
+- **Mycroft:** files under `/storage/.local` must be readable by `michael`, either by changing their owner or by moving them to the user's home.
+- **Mannie:** credentials live in `/home/michael`, mode 0600, owned by the user.
+
+Each of these is the other workline's own change, made after the user's green light for this step.
