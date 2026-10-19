@@ -21,6 +21,7 @@ import struct
 import subprocess
 import sys
 import termios
+import threading
 import time
 
 
@@ -62,18 +63,45 @@ def _memory_kib(pid: int) -> tuple[int, int]:
     return rss, pss
 
 
-def _available_kib() -> int:
+def _meminfo_kib(*keys: str) -> dict[str, int]:
+    found = {}
     with open("/proc/meminfo", encoding="ascii") as handle:
         for line in handle:
-            if line.startswith("MemAvailable:"):
-                return int(line.split()[1])
-    return 0
+            name = line.split(":", 1)[0]
+            if name in keys:
+                found[name] = int(line.split()[1])
+    return found
+
+
+def _available_kib() -> int:
+    return _meminfo_kib("MemAvailable").get("MemAvailable", 0)
+
+
+def _system_watch() -> tuple[threading.Event, dict]:
+    """Track the lowest MemAvailable and the highest swap use until stopped."""
+    stop, seen = threading.Event(), {"min_mem_available_kib": None, "max_swap_used_kib": 0}
+
+    def watch() -> None:
+        while not stop.is_set():
+            info = _meminfo_kib("MemAvailable", "SwapTotal", "SwapFree")
+            available = info.get("MemAvailable", 0)
+            if seen["min_mem_available_kib"] is None or available < seen["min_mem_available_kib"]:
+                seen["min_mem_available_kib"] = available
+            swap = info.get("SwapTotal", 0) - info.get("SwapFree", 0)
+            seen["max_swap_used_kib"] = max(seen["max_swap_used_kib"], swap)
+            stop.wait(0.2)
+
+    threading.Thread(target=watch, daemon=True).start()
+    return stop, seen
 
 
 def run_time(command: list[str]) -> dict:
+    available_before = _available_kib()
+    stop, seen = _system_watch()
     start = time.monotonic()
     done = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True)
     wall = time.monotonic() - start
+    stop.set()
     usage = resource.getrusage(resource.RUSAGE_CHILDREN)
     return {
         "mode": "time",
@@ -83,6 +111,8 @@ def run_time(command: list[str]) -> dict:
         "user_s": round(usage.ru_utime, 3),
         "sys_s": round(usage.ru_stime, 3),
         "max_rss_kib": usage.ru_maxrss,
+        "mem_available_before_kib": available_before,
+        **seen,
         "stdout": done.stdout.decode("utf-8", "replace"),
         "stderr": done.stderr.decode("utf-8", "replace"),
     }
@@ -90,6 +120,7 @@ def run_time(command: list[str]) -> dict:
 
 def run_pty(seconds: float, command: list[str]) -> dict:
     available_before = _available_kib()
+    stop, seen = _system_watch()
     start = time.monotonic()
     pid, fd = pty.fork()
     if pid == 0:
@@ -125,6 +156,7 @@ def run_pty(seconds: float, command: list[str]) -> dict:
         if os.waitpid(pid, os.WNOHANG)[0] == 0:
             os.kill(pid, signal.SIGKILL)
             os.waitpid(pid, 0)
+    stop.set()
     usage = resource.getrusage(resource.RUSAGE_CHILDREN)
     settled = [s for s in samples if s[0] >= seconds - 5] or samples[-1:]
     return {
@@ -142,6 +174,7 @@ def run_pty(seconds: float, command: list[str]) -> dict:
         "user_s": round(usage.ru_utime, 3),
         "sys_s": round(usage.ru_stime, 3),
         "mem_available_before_kib": available_before,
+        **seen,
         "samples": [[round(s[0], 2), s[1], s[2], s[3]] for s in samples[::5]],
     }
 

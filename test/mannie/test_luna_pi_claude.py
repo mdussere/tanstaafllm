@@ -1,8 +1,9 @@
-"""Mannie Step 2: Claude Code on luna-pi (`luna_pi_claude.feature`).
+"""Mannie Step 2: Claude Code on luna-pi and Luna (`luna_pi_claude.feature`).
 
-Live only: needs MANNIE_LUNA_PI_LIVE=1. luna-pi is reserved for Mannie (user,
-2026-10-11). Writes only under michael's home there; never uses sudo; never
-reads the credential file. Intent: worklines/mannie/docs/0101_01.
+Live only: MANNIE_LUNA_PI_LIVE=1 targets luna-pi (user michael), MANNIE_LUNA_LIVE=1
+targets Luna (root, HOME=/storage, so everything lands under /storage/.local and
+/storage/.claude). Luna is taken only through worklines/luna-access.md. Never
+uses sudo; never reads the credential file. Intent: worklines/mannie/docs/0101_01.
 """
 
 from __future__ import annotations
@@ -20,14 +21,14 @@ from pathlib import Path
 import pytest
 
 
-LIVE = os.environ.get("MANNIE_LUNA_PI_LIVE") == "1"
+HOST = "luna" if os.environ.get("MANNIE_LUNA_LIVE") == "1" else "luna-pi"
+LIVE = HOST == "luna" or os.environ.get("MANNIE_LUNA_PI_LIVE") == "1"
 pytestmark = [
     pytest.mark.live,
-    pytest.mark.skipif(not LIVE, reason="set MANNIE_LUNA_PI_LIVE=1 to run on luna-pi"),
+    pytest.mark.skipif(not LIVE, reason="set MANNIE_LUNA_PI_LIVE=1 (luna-pi) or MANNIE_LUNA_LIVE=1 (Luna)"),
 ]
 
 REPO = Path(__file__).parents[2]
-HOST = "luna-pi"
 SSH_MUX = ["-o", "ControlMaster=auto", "-o", f"ControlPath={Path.home()}/.ssh/cm/%r@%h:%p", "-o", "ControlPersist=15m"]
 VERSION = "2.1.287"
 PLATFORM = "linux-arm64"
@@ -35,12 +36,14 @@ RELEASES = "https://downloads.claude.ai/claude-code-releases"
 SIGNING_KEY = "https://downloads.claude.ai/keys/claude-code.asc"
 FINGERPRINT = "31DDDE24DDFAB679F42D7BD2BAA929FF1A7ECACE"
 CACHE = Path.home() / ".cache/tanstfaafllm/mannie"
-REMOTE_CACHE = ".cache/tanstfaafllm-mannie"
+REMOTE_CACHE = ".local/share/tanstfaafllm/mannie/cache"
 REMOTE_PROBE = ".local/share/tanstfaafllm/mannie/claude_probe.py"
-REMOTE_SCRATCH = "mannie-scratch"
+REMOTE_SCRATCH = ".local/share/tanstfaafllm/mannie/scratch"
+# Luna's /tmp is a RAM tmpfs: keep the installer's temporary files on the card.
+REMOTE_TMP = f"{REMOTE_CACHE}/tmp"
 CLAUDE = "$HOME/.local/bin/claude"
 PROBE = f"python3 $HOME/{REMOTE_PROBE}"
-EVIDENCE = REPO / "results/mannie/luna-pi-claude" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+EVIDENCE = REPO / f"results/mannie/{HOST}-claude" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 # Anything that looks like a credential must never reach results/.
 SECRET = re.compile(r"sk-ant-[A-Za-z0-9_-]{8,}|\"(accessToken|refreshToken)\"\s*:|CLAUDE_CODE_OAUTH_TOKEN=\S")
 
@@ -65,7 +68,7 @@ def _save_run(name: str, result: subprocess.CompletedProcess[bytes]) -> str:
 
 
 def _probe(name: str, args: str, timeout: float = 300) -> dict:
-    result = _ssh(f"cd $HOME/{REMOTE_SCRATCH} && {PROBE} {args}", timeout=timeout)
+    result = _ssh(f"cd $HOME/{REMOTE_SCRATCH} && TMPDIR=$HOME/{REMOTE_TMP} {PROBE} {args}", timeout=timeout)
     _save_run(name, result)
     assert result.returncode == 0, result.stderr.decode("utf-8", "replace")
     return json.loads(result.stdout)
@@ -110,7 +113,7 @@ def _verified_manifest() -> dict:
 def remote_ready() -> None:
     probe = (Path(__file__).with_name("claude_probe.py")).read_bytes()
     result = _ssh(
-        f"mkdir -p $HOME/{Path(REMOTE_PROBE).parent} $HOME/{REMOTE_SCRATCH} && cat > $HOME/{REMOTE_PROBE}", stdin=probe
+        f"mkdir -p $HOME/{Path(REMOTE_PROBE).parent} $HOME/{REMOTE_SCRATCH} $HOME/{REMOTE_TMP} && cat > $HOME/{REMOTE_PROBE}", stdin=probe
     )
     assert result.returncode == 0, result.stderr
 
@@ -125,13 +128,13 @@ def test_preflight() -> None:
     text = _save_run("preflight.txt", result)
     assert result.returncode in (0, 2)  # ls of a missing install exits 2
     assert "aarch64" in text
-    glibc = re.search(r"GLIBC[^\n]*?(\d+)\.(\d+)\s*$", text, re.MULTILINE)
+    glibc = re.search(r"(?:GLIBC|GNU libc)[^\n]*?(\d+)\.(\d+)\s*$", text, re.MULTILINE)
     assert glibc and (int(glibc.group(1)), int(glibc.group(2))) >= (2, 26)
     free_kib = int([line for line in text.splitlines() if line.startswith("/dev/")][-1].split()[3])
     assert free_kib > 512 * 1024
 
 
-@pytest.mark.timeout(900)
+@pytest.mark.timeout(3600)  # Luna's 2.4 GHz Wi-Fi moved about 0.2 MB/s on 2026-10-13
 def test_install(remote_ready: None) -> None:
     manifest = _verified_manifest()
     expected = manifest["platforms"][PLATFORM]["checksum"]
@@ -140,10 +143,10 @@ def test_install(remote_ready: None) -> None:
 
     remote_binary = f"{REMOTE_CACHE}/claude-{VERSION}-{PLATFORM}"
     assert _ssh(f"mkdir -p $HOME/{REMOTE_CACHE}").returncode == 0
-    copy = subprocess.run(["scp", "-q", *SSH_MUX, str(binary), f"{HOST}:{remote_binary}"], capture_output=True, timeout=600)
+    copy = subprocess.run(["scp", "-q", *SSH_MUX, str(binary), f"{HOST}:{remote_binary}"], capture_output=True, timeout=3000)
     assert copy.returncode == 0, copy.stderr
     remote_sum = _ssh(f"chmod +x $HOME/{remote_binary} && sha256sum $HOME/{remote_binary}").stdout.decode().split()[0]
-    assert remote_sum == expected, "binary changed on its way to luna-pi"
+    assert remote_sum == expected, f"binary changed on its way to {HOST}"
 
     # Pin the measured version: background updates off, merged into any existing settings.
     settings = (
@@ -200,7 +203,7 @@ def test_interactive_start(remote_ready: None) -> None:
 @pytest.mark.timeout(240)
 def test_one_request(remote_ready: None) -> None:
     if not _logged_in():
-        pytest.skip("the user has not run /login on luna-pi yet")
+        pytest.skip(f"the user has not logged in on {HOST} yet")
     prompt = "Reply with the single word: pong"
     run = _probe("request.json", f"time {CLAUDE} -p '{prompt}' --output-format json", timeout=180)
     assert run["exit_status"] == 0, run["stderr"]
@@ -215,3 +218,39 @@ def test_one_request(remote_ready: None) -> None:
         )
         + "\n",
     )
+
+
+def _request_summary(run: dict, reply: dict) -> dict:
+    return {
+        key: run[key]
+        for key in ("wall_s", "user_s", "sys_s", "max_rss_kib", "mem_available_before_kib", "min_mem_available_kib", "max_swap_used_kib")
+    } | {key: reply.get(key) for key in ("duration_ms", "duration_api_ms", "num_turns", "usage", "modelUsage", "total_cost_usd")}
+
+
+@pytest.mark.timeout(600)
+def test_repeated_requests(remote_ready: None) -> None:
+    """Three more one-word requests: spread of latency and memory, warm cache."""
+    if not _logged_in():
+        pytest.skip(f"the user has not logged in on {HOST} yet")
+    runs = []
+    for n in (1, 2, 3):
+        run = _probe(f"request-repeat-{n}.json", f"time {CLAUDE} -p 'Reply with the single word: pong' --output-format json", timeout=180)
+        assert run["exit_status"] == 0, run["stderr"]
+        reply = json.loads(run["stdout"])
+        assert "pong" in reply.get("result", "").lower()
+        runs.append(_request_summary(run, reply))
+    _save("request-repeat-summary.json", json.dumps(runs, indent=2) + "\n")
+
+
+@pytest.mark.timeout(300)
+def test_read_tool_request(remote_ready: None) -> None:
+    """One request that uses a tool: only Read is allowed, on a file in the scratch directory."""
+    if not _logged_in():
+        pytest.skip(f"the user has not logged in on {HOST} yet")
+    assert _ssh(f"printf 'The code word is heliotrope.\\n' > $HOME/{REMOTE_SCRATCH}/note.txt").returncode == 0
+    prompt = "Read the file note.txt in the current directory and reply with only the code word it contains."
+    run = _probe("request-read.json", f"time {CLAUDE} -p '{prompt}' --allowedTools Read --output-format json", timeout=240)
+    assert run["exit_status"] == 0, run["stderr"]
+    reply = json.loads(run["stdout"])
+    assert "heliotrope" in reply.get("result", "").lower()
+    _save("request-read-summary.json", json.dumps(_request_summary(run, reply), indent=2) + "\n")
