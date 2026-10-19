@@ -1,0 +1,14 @@
+#!/bin/sh
+# Launcher for NetSurf (framebuffer front end on its SDL surface) in the Wyoh
+# session. The port's SDL 1.2 library comes first; MALI_WAYLAND_DMABUF_PROTOCOL
+# lets Sway import its frames (Wyoh 9.1b). Its cookies, cache and downloads
+# stay inside the app directory (Luna's rule: install only under /storage/.local).
+here=$(dirname "$(readlink -f "$0")")
+export HOME=/storage SDL_VIDEODRIVER=wayland MALI_WAYLAND_DMABUF_PROTOCOL=1
+export SDL_VIDEO_WAYLAND_WMCLASS=netsurf
+export LD_LIBRARY_PATH="$here/libs.aarch64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export NETSURFRES="$here/resources" NETSURF_DIR="$here/" XDG_DATA_HOME="$here/conf"
+mkdir -p "$here/conf/Hotlist" "$here/downloads"
+cd "$here" || exit 1
+[ $# -gt 0 ] || set -- https://lite.duckduckgo.com/lite/
+exec ./nsfb -fsdl -w720 -h720 "$@"

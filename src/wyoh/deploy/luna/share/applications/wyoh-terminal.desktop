@@ -3,5 +3,5 @@ Type=Application
 Name=Terminal
 Comment=Command shell
 Icon=utilities-terminal
-Exec=foot
+Exec=foot --config=/storage/.local/share/tanstfaafllm/wyoh/deploy/luna/foot.ini
 Categories=Utility;

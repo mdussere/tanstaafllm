@@ -59,6 +59,7 @@ KEYS = {
     "KEY_ESC": 1, "KEY_BACKSPACE": 14, "KEY_TAB": 15, "KEY_ENTER": 28, "KEY_LEFTCTRL": 29, "KEY_LEFTSHIFT": 42,
     "KEY_LEFTALT": 56, "KEY_SPACE": 57,
     "KEY_UP": 103, "KEY_LEFT": 105, "KEY_RIGHT": 106, "KEY_DOWN": 108, "KEY_DELETE": 111,
+    "KEY_DOT": 52,  # with Shift on Sway's AZERTY: "/"
 }
 
 # Physical key codes (US-labelled positions); Sway applies `xkb_layout fr`.
@@ -144,7 +145,11 @@ class Config:
     # FN+A sends, then clears and hides.
     zone_toggle: str = "BTN_TL"
     zone_dictate: str = "BTN_TL2"
-    zone_fn: dict[str, str] = field(default_factory=lambda: {"BTN_NORTH": "clear", "BTN_EAST": "validate"})
+    # FN in the Slate (user, 2026-10-15): B sends to Mike (reserved until Mike
+    # runs on Luna), Y sends to Mannie's window, up/down walk the history.
+    zone_fn: dict[str, str] = field(default_factory=lambda: {
+        "BTN_NORTH": "clear", "BTN_EAST": "validate", "BTN_SOUTH": "mike", "BTN_WEST": "mannie",
+        "BTN_DPAD_UP": "history-prev", "BTN_DPAD_DOWN": "history-next"})
     zone_validate: str = ""  # optional plain-button send ("" = none)
     zone_validate_alt: str = ""  # optional second validate button ("" = none)
     zone_discard_alt: str = ""   # optional second discard button ("" = none)
@@ -154,7 +159,8 @@ class Config:
         "BTN_DPAD_UP": "KEY_UP", "BTN_DPAD_DOWN": "KEY_DOWN",
         "BTN_DPAD_LEFT": "KEY_LEFT", "BTN_DPAD_RIGHT": "KEY_RIGHT",
         "BTN_EAST": "KEY_ENTER", "BTN_SOUTH": "KEY_BACKSPACE",
-        "BTN_NORTH": "KEY_DELETE", "BTN_WEST": "KEY_LEFTSHIFT",
+        # X types "/" for agents' commands (user, 2026-10-15; was Delete).
+        "BTN_NORTH": "KEY_LEFTSHIFT+KEY_DOT", "BTN_WEST": "KEY_LEFTSHIFT",
         "BTN_TR": "KEY_LEFTCTRL+KEY_RIGHT", "BTN_TR2": "KEY_LEFTCTRL+KEY_LEFT",
     })
     # The whole cross pressed at once (two directions within cross_window_s)
@@ -217,6 +223,12 @@ class Config:
     # Mycroft's dictation provider (Step 12), started by L2 in the Slate; it
     # writes ready/partial/final/error JSON lines and stops when stdin closes.
     dictate_command: tuple[str, ...] = ()
+    # Open the Slate hidden as soon as the session starts (with a resident
+    # provider, its model loads then), so the first L1 or L2 needs no wait.
+    zone_preload: bool = False
+
+
+ZONE_FN_OPS = {"clear", "validate", "mike", "mannie", "history-prev", "history-next"}
 
 
 class ConfigError(ValueError):
@@ -259,8 +271,8 @@ def _validate(config: Config) -> None:
     named = [config.click, config.zone_toggle, config.zone_dictate, *config.zone_fn, config.menu, config.next_window,
              config.modifier, *config.recovery, *config.keys, *config.zone_keys, *config.fn_sway]
     optional = [config.zone_validate, config.zone_validate_alt, config.zone_discard_alt]
-    if set(config.zone_fn.values()) - {"clear", "validate"}:
-        raise ConfigError("zone_fn values must be clear or validate")
+    if set(config.zone_fn.values()) - ZONE_FN_OPS:
+        raise ConfigError(f"zone_fn values must be among {sorted(ZONE_FN_OPS)}")
     for name in named + [name for name in optional if name] + list(config.board_press):
         if name not in BUTTONS:
             raise ConfigError(f"unknown button: {name}")
@@ -583,8 +595,8 @@ class GamepadCore:
                     self.zone_state = "delivering"
                     self._clear_cross()
                     result = flushed + [Zone("validate")]
-                else:
-                    result = flushed + [Zone("clear")]
+                else:  # mannie: the daemon decides, since only it knows whether Mannie is open
+                    result = flushed + [Zone(cfg.zone_fn[name])]
             elif name in cfg.fn_sway and self.zone_state in ("closed", "hidden"):
                 result = [Sway(cfg.fn_sway[name])]
             else:
@@ -643,6 +655,9 @@ class GamepadCore:
                 result = [Sway("focus next")]
             elif name in self.active_keys:
                 outputs = [Key(k, True) for k in self._keys(self.active_keys[name])]
+            elif code == self._b(cfg.zone_dictate):  # L2: the Slate, straight into dictation (2026-10-15)
+                result = [Zone("show" if self.zone_state == "hidden" else "open"), Zone("dictate")]
+                self.zone_state = "open"
             elif code == self._b(cfg.click):
                 outputs = [Click(BTN_LEFT, True)]
             else:
@@ -831,6 +846,147 @@ def slate_operations(message: dict[str, Any]) -> list[dict[str, Any]]:
     return []
 
 
+# --- Slate destinations and history (user, 2026-10-15) -------------------------
+
+HISTORY_PATH = Path("/storage/.local/state/tanstfaafllm/wyoh/slate-history.jsonl")
+HISTORY_LIMIT = 50
+HISTORY_SKIP_APPS = {"wyoh-wifi"}  # Wi-Fi passwords are never kept
+
+
+def find_app_con(tree: dict[str, Any], app_id: str) -> int | None:
+    """The first window with this Wayland app_id in a Sway tree."""
+    if tree.get("app_id") == app_id and tree.get("type") in ("con", "floating_con"):
+        return tree["id"]
+    for child in tree.get("nodes", []) + tree.get("floating_nodes", []):
+        found = find_app_con(child, app_id)
+        if found is not None:
+            return found
+    return None
+
+
+def con_app_id(tree: dict[str, Any], con_id: int) -> str | None:
+    if tree.get("id") == con_id:
+        return tree.get("app_id")
+    for child in tree.get("nodes", []) + tree.get("floating_nodes", []):
+        found = con_app_id(child, con_id)
+        if found is not None:
+            return found
+    return None
+
+
+def load_history(path: Path) -> list[str]:
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    items = []
+    for line in lines:
+        try:
+            item = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(item, str) and item:
+            items.append(item)
+    return items[-HISTORY_LIMIT:]
+
+
+def remember(path: Path, items: list[str], text: str, app_id: str | None) -> list[str]:
+    """Add a sent text (not a repeat of the last one, nor one sent to a skipped
+    app) and rewrite the file, mode 600, keeping the last HISTORY_LIMIT."""
+    if not text or app_id in HISTORY_SKIP_APPS or (items and items[-1] == text):
+        return items
+    items = (items + [text])[-HISTORY_LIMIT:]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(".tmp")
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        handle.writelines(json.dumps(item, ensure_ascii=False) + "\n" for item in items)
+    os.replace(temporary, path)
+    return items
+
+
+class ResidentDictation:
+    """Wyoh's side of Mycroft's resident provider (Step 12.4, Mycroft's reply in
+    worklines/mycroft/docs/0903_03): the model loads once, when the Slate first
+    opens, and stays loaded while the Slate is hidden or closed; L2 sends
+    `start` and `stop`. Pure: each call returns what to send to the provider
+    ("launch" means start its process; anything else is a stdin `op`) and the
+    operations for the Slate."""
+
+    def __init__(self) -> None:
+        self.state = "off"  # off | loading | idle | listening | stopping
+        self.pending = False  # L2 pressed while loading: start once ready
+
+    @staticmethod
+    def _show(state: str) -> dict[str, Any]:
+        return {"op": "dictation", "state": state}
+
+    def preload(self) -> tuple[list[str], list[dict[str, Any]]]:
+        """The Slate opens: load the model in the background, silently."""
+        if self.state != "off":
+            return [], []
+        self.state, self.pending = "loading", False
+        return ["launch"], []
+
+    def toggle(self) -> tuple[list[str], list[dict[str, Any]]]:
+        """L2 in the Slate."""
+        if self.state == "off":
+            self.state, self.pending = "loading", True
+            return ["launch"], [self._show("loading")]
+        if self.state == "loading":
+            self.pending = not self.pending
+            return [], [self._show("loading" if self.pending else "")]
+        if self.state == "idle":
+            self.state = "listening"
+            return ["start"], [self._show("listening")]
+        if self.state == "listening":
+            self.state = "stopping"
+            return ["stop"], [self._show("stopping")]
+        return [], []
+
+    def interrupt(self) -> tuple[list[str], list[dict[str, Any]]]:
+        """A key edits the Slate, or it is hidden or closed: end the utterance
+        (its text is still inserted), and forget a start waiting for the model."""
+        if self.state == "loading" and self.pending:
+            self.pending = False
+            return [], [self._show("")]
+        if self.state == "listening":
+            self.state = "stopping"
+            return ["stop"], [self._show("stopping")]
+        return [], []
+
+    def message(self, message: dict[str, Any]) -> tuple[list[str], list[dict[str, Any]]]:
+        """One JSON line from the provider."""
+        op = message.get("op")
+        if op == "ready":
+            self.state = "idle"
+            if self.pending:
+                self.state, self.pending = "listening", False
+                return ["start"], [self._show("listening")]
+            return [], []
+        if op == "listening":
+            return [], [self._show("listening")] if self.state == "listening" else []
+        if op == "partial" and self.state in ("listening", "stopping"):
+            return [], [{"op": "provisional", "text": str(message.get("text", ""))}]
+        if op == "final":
+            if self.state != "off":
+                self.state = "idle"
+            return [], [{"op": "insert", "text": str(message.get("text", ""))}, self._show("")]
+        if op == "error":
+            if self.state == "loading":  # before ready: the provider exits
+                self.state, self.pending = "off", False
+            elif self.state != "off":
+                self.state = "idle"  # during an utterance: the model is kept
+            return [], [{"op": "provisional", "text": ""},
+                        self._show(f"error: {message.get('message', 'unknown')}"[:120])]
+        return [], []
+
+    def exited(self) -> tuple[list[str], list[dict[str, Any]]]:
+        """The provider's process ended (crash, or an error before ready)."""
+        was, self.state, self.pending = self.state, "off", False
+        return [], [] if was == "off" else [self._show("")]
+
+
 # --- Adapters ----------------------------------------------------------------
 
 EVENT_FORMAT = "llHHi"
@@ -1010,6 +1166,12 @@ class Daemon:
         self.focus_events: socket.socket | None = None
         self.dictation: subprocess.Popen[bytes] | None = None
         self.dictation_buffer = b""
+        self.history = load_history(HISTORY_PATH)
+        self.zone_submit = False  # Mannie: one prompt, lines joined
+        self.preload_pending = config.zone_preload or "--resident" in config.dictate_command
+        self.zone_start_hidden = False
+        # Mycroft's resident mode (Step 12.4) when the command asks for it.
+        self.resident = ResidentDictation() if "--resident" in config.dictate_command else None
         if config.zone_close_sway:  # a previous run may have died with the Slate open
             try:
                 self.sway.command(config.zone_close_sway)
@@ -1153,6 +1315,10 @@ class Daemon:
             {"open": self.open_zone, "validate": self.validate_zone, "discard": self.discard_zone,
              "hide": self.hide_zone, "show": self.show_zone, "clear": lambda: self.tell_zone("clear"),
              "dictate": self.dictate_zone,
+             "mike": lambda: self.tell_slate({"op": "notice", "text": "Mike is not on Luna yet; text kept"}),
+             "mannie": self.mannie_zone,
+             "history-prev": lambda: self.tell_zone("history-prev"),
+             "history-next": lambda: self.tell_zone("history-next"),
              "select-word": lambda: self.tell_zone("select-word"),
              "select-line": lambda: self.tell_zone("select-line")}[action.op]()
 
@@ -1199,6 +1365,8 @@ class Daemon:
             self.finish_zone("failed")
             raise
         self.state["zone_result"] = "open"
+        if self.resident is not None:  # first opening: load the model now, not at the first L2
+            self.resident_do(self.resident.preload())
 
     def hide_zone(self) -> None:
         """L1 while open: the Slate keeps its text in Sway's scratchpad; the keyboard hides."""
@@ -1242,20 +1410,29 @@ class Daemon:
 
     def dictate_zone(self) -> None:
         """L2 in the Slate: start Mycroft's dictation, or stop it (Step 12)."""
+        if self.resident is not None:
+            self.resident_do(self.resident.toggle())
+            return
         if self.dictation is not None:
             self.stop_dictation()
             return
+        if self.launch_provider():
+            self.state["dictation"] = "loading"
+            self.tell_slate({"op": "dictation", "state": "loading"})
+
+    def launch_provider(self) -> bool:
+        """Start Mycroft's provider process; tell the Slate why if it cannot."""
         if not self.config.dictate_command:
             self.state["dictation"] = "not configured"
             self.tell_slate({"op": "dictation", "state": "error: dictation not configured"})
-            return
+            return False
         command = list(self.config.dictate_command)
         if any("{capture}" in part for part in command):
             capture = choose_capture()
             if capture is None:
                 self.state["dictation"] = "no microphone"
                 self.tell_slate({"op": "dictation", "state": "error: no capture device (plug in a USB microphone)"})
-                return
+                return False
             command = [part.replace("{capture}", capture) for part in command]
             self.state["dictation_input"] = capture
         log = (RUNTIME_DIR / "dictation.log").open("w", encoding="utf-8")
@@ -1267,11 +1444,37 @@ class Daemon:
         assert self.dictation.stdout is not None
         os.set_blocking(self.dictation.stdout.fileno(), False)
         self.dictation_buffer = b""
-        self.state["dictation"] = "loading"
-        self.tell_slate({"op": "dictation", "state": "loading"})
+        self.state["dictation_pid"] = self.dictation.pid
+        return True
+
+    def resident_do(self, result: tuple[list[str], list[dict[str, Any]]]) -> None:
+        """Carry out what ResidentDictation decided: provider commands, then Slate operations."""
+        provider, operations = result
+        for op in provider:
+            if op == "launch":
+                if not self.launch_provider():
+                    assert self.resident is not None
+                    self.resident.exited()
+                    operations = []  # launch_provider already told the Slate
+                    break
+            elif self.dictation is not None and self.dictation.stdin is not None:
+                try:
+                    self.dictation.stdin.write(json.dumps({"op": op}).encode() + b"\n")
+                    self.dictation.stdin.flush()
+                except OSError:
+                    pass  # it has exited: dictation_readable will see the end
+        for operation in operations:
+            self.tell_slate(operation)
+        if self.resident is not None:
+            self.state["dictation"] = self.resident.state + (" (start pending)" if self.resident.pending else "")
+        self.write_status()
 
     def stop_dictation(self) -> None:
-        """Close the provider's stdin: it sends `final` and exits (the text is kept)."""
+        """End the utterance; its text is kept. Resident: send `stop`, the model
+        stays loaded. Otherwise close the provider's stdin: it sends `final` and exits."""
+        if self.resident is not None:
+            self.resident_do(self.resident.interrupt())
+            return
         if self.dictation is not None and self.dictation.stdin is not None and not self.dictation.stdin.closed:
             try:
                 self.dictation.stdin.close()
@@ -1280,7 +1483,9 @@ class Daemon:
             self.state["dictation"] = "stopping"
 
     def kill_dictation(self) -> None:
-        """The Slate is going away: end the provider without inserting anything."""
+        """The Slate (or the daemon) is going away: end the provider without inserting anything."""
+        if self.resident is not None:
+            self.resident.exited()
         if self.dictation is None:
             return
         if self.dictation.poll() is None:
@@ -1302,6 +1507,10 @@ class Daemon:
             data = b""
         if data:
             messages, self.dictation_buffer = split_lines(self.dictation_buffer + data)
+            if self.resident is not None:
+                for message in messages:
+                    self.resident_do(self.resident.message(message))
+                return
             for message in messages:
                 if message.get("op") in ("ready", "error"):
                     self.state["dictation"] = "listening" if message["op"] == "ready" else "error"
@@ -1312,6 +1521,9 @@ class Daemon:
         code = self.dictation.wait()  # end of output: the provider has exited
         self.state["dictation_exit"] = code
         self.dictation = None
+        if self.resident is not None:
+            self.resident_do(self.resident.exited())
+            return
         if self.state.get("dictation") != "error":
             self.state["dictation"] = "off"
             self.tell_slate({"op": "dictation", "state": ""})
@@ -1339,6 +1551,21 @@ class Daemon:
         if not self.tell_zone("send"):  # the Slate never connected: nothing to send
             self.finish_zone("empty")
 
+    def mannie_zone(self) -> None:
+        """FN+Y: send the Slate's text to Mannie's window and press Return; if
+        Mannie is not open, the text stays in the Slate."""
+        try:
+            target = find_app_con(self.sway.request(4), "mannie")
+        except (OSError, ConnectionError):
+            target = None
+        if target is None:
+            self.tell_slate({"op": "notice", "text": "Mannie is not open; text kept"})
+            return
+        self.zone_target, self.zone_submit = target, True
+        self.core.zone_state = "delivering"
+        self.core._clear_cross()
+        self.validate_zone()
+
     def discard_zone(self) -> None:
         self.tell_zone("discard")
         self.finish_zone("discarded")
@@ -1351,6 +1578,15 @@ class Daemon:
         if self.zone_link is not None:
             self.zone_link.close()
         self.zone_link, self.zone_inbox = link, b""
+        self.tell_slate({"op": "history", "items": self.history})
+        if self.zone_start_hidden:  # preloaded at session start: out of sight until L1 or L2
+            self.zone_start_hidden = False
+            if self.core.zone_state == "hidden":
+                self.hide_zone()
+                self.write_status()
+                return
+        if self.resident is not None and (self.resident.pending or self.resident.state == "listening"):
+            self.tell_slate({"op": "dictation", "state": "listening" if self.resident.state == "listening" else "loading"})
         if self.config.zone_ready_sway:
             try:
                 self.sway.command(self.config.zone_ready_sway)
@@ -1383,8 +1619,12 @@ class Daemon:
                 return
 
     def finish_zone(self, result: str) -> None:
-        """Close the Slate and its keyboard; restore the border. Idempotent."""
-        self.kill_dictation()
+        """Close the Slate and its keyboard; restore the border. Idempotent.
+        A resident provider only ends its utterance: the model stays loaded."""
+        if self.resident is not None:
+            self.stop_dictation()
+        else:
+            self.kill_dictation()
         if self.zone_link is not None:
             self.zone_link.close()
             self.zone_link = None
@@ -1418,6 +1658,7 @@ class Daemon:
     def deliver(self, text: str) -> None:
         """Send the Slate's text once into the window that had focus."""
         target, self.zone_target = self.zone_target, None
+        submit, self.zone_submit = self.zone_submit, False
         self.finish_zone("delivering")
         if not text:
             self.state["zone_result"] = "empty"
@@ -1428,7 +1669,11 @@ class Daemon:
             if target is None or not self.sway.con_exists(target):
                 self.state["zone_result"] = "target-gone"
             else:
+                app_id = con_app_id(self.sway.request(4), target)
+                self.history = remember(HISTORY_PATH, self.history, text, app_id)
                 self.sway.command(f"[con_id={target}] focus")
+                if submit:  # one prompt for Mannie: lines joined
+                    text = " ".join(line.strip() for line in text.splitlines() if line.strip())
                 events = type_events(text)
                 if events is not None:  # the daemon's own keyboard: safe for SDL2 apps
                     for code, value in events:
@@ -1439,6 +1684,10 @@ class Daemon:
                     subprocess.run([*self.config.deliver_command, text], env=self._env(), timeout=60, check=True,
                                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     self.state["deliver_path"] = "wtype"
+                # Every send ends with Return (user, 2026-10-15): a terminal runs
+                # the command, Mannie answers, a password window accepts it.
+                time.sleep(0.1)
+                self.tap(KEYS["KEY_ENTER"])
                 self.state["deliveries"] += 1
                 self.state["delivered_length"] = len(text)  # never the text itself
                 self.state["zone_result"] = "delivered"
@@ -1483,6 +1732,23 @@ class Daemon:
         changed, self._input_mtime = mtime != getattr(self, "_input_mtime", None), mtime
         return changed
 
+    def preload(self) -> None:
+        """Session start: load the resident model, and open the Slate hidden.
+        Retried every scan until Sway answers."""
+        if self.resident is not None and self.resident.state == "off":
+            self.resident_do(self.resident.preload())
+        if not self.config.zone_preload or self.zone is not None or self.core.zone_state != "closed":
+            self.preload_pending = False
+            return
+        self.zone_start_hidden = True
+        try:
+            self.open_zone()
+        except (OSError, ConnectionError, subprocess.SubprocessError):
+            self.zone_start_hidden = False
+            return  # Sway not up yet: next scan
+        self.core.zone_state = "hidden"
+        self.preload_pending = False
+
     def run(self) -> None:
         next_scan = 0.0
         self.write_status()
@@ -1492,6 +1758,8 @@ class Daemon:
                 if self._input_dir_changed():
                     self.rescan()
                 self.subscribe_focus()
+                if self.preload_pending:
+                    self.preload()
                 next_scan = now + 5.0  # hotplug needs no faster reaction
             fds: list[Any] = [*self.inputs.values(), self.zone_listener]
             if self.zone_link is not None:
@@ -1531,6 +1799,7 @@ class Daemon:
         self.apply(self.core.release_all())
         if self.zone is not None:
             self.finish_zone("discarded")
+        self.kill_dictation()
         self.zone_listener.close()
         SLATE_SOCKET.unlink(missing_ok=True)
         for path in list(self.inputs):

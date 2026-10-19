@@ -153,7 +153,7 @@ def test_the_generated_menu_holds_exactly_the_intended_entries(tmp_path):
     report = a.generate(apps, menu, applications, tmp_path / "generated", [system])
     assert report["not_found_on_system"] == ["wyoh-calculator.desktop"]  # Wyoh's own, not ArchR's
     assert _menu(applications, system) == sorted(
-        ["Calculator", "Image Viewer", "Task Manager", "Terminal", "Text Editor", "VLC"])
+        ["Calculator", "Image Viewer", "Mannie", "Task Manager", "Terminal", "Text Editor", "VLC", "Wi-Fi"])
 
 
 def test_generated_profiles_reach_the_gamepad_config(tmp_path):

@@ -28,6 +28,7 @@ import signal
 import socket
 import sys
 import termios
+import time
 import tty
 import unicodedata
 from dataclasses import dataclass
@@ -99,13 +100,19 @@ class Slate:
         self.insert("\n")
 
     def insert_dictated(self, text: str) -> None:
-        """Mycroft's final text (Step 12) at the cursor, spaced from the words around it."""
+        """Mycroft's final text (Step 12) at the cursor, spaced from the words around it.
+        Right after a "/" that starts a word, it is an agent's command (user,
+        2026-10-15): "/" + "Usage." gives "/usage"."""
         text = text.strip()
         if not text:
             return
         line, col = self.cursor
         before = self.lines[line][:col]
-        if self.selection() is None and before and not before[-1].isspace():
+        if self.selection() is None and before.endswith("/") and (len(before) == 1 or before[-2].isspace()):
+            text = text.rstrip(".!?…,;:").lower()
+            if not text:
+                return
+        elif self.selection() is None and before and not before[-1].isspace():
             text = " " + text
         self.insert(text)
 
@@ -355,7 +362,8 @@ def _wrap(text: str, width: int) -> list[tuple[int, str]]:
     return [(i, text[i:i + width]) for i in range(0, len(text), width)]
 
 
-DICTATION_HINTS = {"loading": "dictation: loading… (L2 stops)", "listening": "dictation: listening (L2 stops)"}
+DICTATION_HINTS = {"loading": "dictation: loading… (L2 stops)", "listening": "dictation: listening (L2 stops)",
+                   "stopping": "dictation: finishing…"}
 
 
 def render(slate: Slate, width: int, height: int, hint: str = "FN+A send · FN+X clear · L1 hide",
@@ -426,6 +434,80 @@ def to_ansi(frame: Frame) -> str:
     return "".join(out)
 
 
+class History:
+    """FN+up / FN+down in the Slate (user, 2026-10-15): walk the texts sent
+    before, newest first, like a shell; going past the newest gives back the
+    draft that was being written."""
+
+    def __init__(self, items: list[str] | None = None) -> None:
+        self.items = list(items or [])
+        self.index: int | None = None
+        self.draft = ""
+
+    def previous(self, current: str) -> str | None:
+        if not self.items:
+            return None
+        if self.index is None:
+            self.draft, self.index = current, len(self.items) - 1
+        elif self.index > 0:
+            self.index -= 1
+        return self.items[self.index]
+
+    def next(self) -> str | None:
+        if self.index is None:
+            return None
+        self.index += 1
+        if self.index >= len(self.items):
+            self.index = None
+            return self.draft
+        return self.items[self.index]
+
+
+class KeyHold:
+    """Keys pressed while Mycroft is listening (user, 2026-10-15): the key ends
+    the dictation, and waits until the dictated text is inserted before it
+    acts, so A puts the new line after the words just spoken, not before them.
+    A key pressed while the model is still loading cancels the pending start
+    and acts at once. Held keys are released anyway after `limit` seconds."""
+
+    def __init__(self, limit: float = 3.0) -> None:
+        self.limit = limit
+        self.held: list[Event] = []
+        self.since = 0.0
+        self.send = False  # FN+A / FN+Y arrived while dictating: send once the text is in
+
+    def send_now(self, state: str, now: float) -> tuple[bool, bool]:
+        """The daemon asks for the text (FN+A, FN+Y). Returns (send now, ask to stop
+        dictation). While listening, the dictated text is inserted first."""
+        if state in ("listening", "stopping") or self.held:
+            if not self.held and not self.send:
+                self.since = now
+            self.send = True
+            return False, state == "listening"
+        return True, False
+
+    def waiting(self) -> bool:
+        return bool(self.held) or self.send
+
+    def key(self, event: Event, state: str, now: float) -> tuple[list[Event], bool]:
+        """(events to apply now, whether to ask the daemon to stop dictation)."""
+        if state in ("listening", "stopping") or self.held:
+            if not self.held:
+                self.since = now
+            self.held.append(event)
+            return [], state == "listening"
+        return [event], state == "loading"
+
+    def release(self) -> list[Event]:
+        """The dictated text is in (or dictation ended): the held keys act; a
+        waiting send is then due (see `send`)."""
+        held, self.held = self.held, []
+        return held
+
+    def expired(self, now: float) -> bool:
+        return self.waiting() and now - self.since > self.limit
+
+
 # --- Terminal adapter --------------------------------------------------------
 
 
@@ -447,29 +529,49 @@ def main() -> int:
     inbox = b""
     result = 1
     dictation = {"state": "", "provisional": "", "stop_sent": False}
+    hold = KeyHold()
+    history = History()
+
+    def send_text() -> None:
+        link.sendall(json.dumps({"op": "text", "text": slate.text()}).encode() + b"\n")
+    notice = [""]
 
     def draw() -> None:
         size = os.get_terminal_size(sys.stdout.fileno())
-        sys.stdout.write(to_ansi(render(slate, size.columns, size.lines,
-                                        provisional=dictation["provisional"], dictation=dictation["state"])))
+        frame = render(slate, size.columns, size.lines,
+                       provisional=dictation["provisional"], dictation=dictation["state"])
+        if notice[0]:
+            frame = Frame(frame.rows, frame.cursor, notice[0][:size.columns])
+        sys.stdout.write(to_ansi(frame))
         sys.stdout.flush()
 
     try:
         draw()
         while True:
             try:
-                readable, _, _ = select.select([tty_fd, link], [], [], 0.05 if decoder.pending else None)
+                readable, _, _ = select.select([tty_fd, link], [], [],
+                                               0.05 if decoder.pending else 0.2 if hold.waiting() else None)
             except InterruptedError:
                 readable = []
             changed = resized[0]
             resized[0] = False
             if not readable and decoder.pending:
                 decoder.flush()
-            if tty_fd in readable:
-                for event in decoder.feed(os.read(tty_fd, 4096)):
+            if hold.expired(time.monotonic()):  # the dictated text never came: act anyway
+                for event in hold.release():
                     apply(slate, event)
+                changed = True
+                if hold.send:
+                    send_text()
+                    return 0
+            if tty_fd in readable:
+                notice[0] = ""
+                for event in decoder.feed(os.read(tty_fd, 4096)):
+                    now_apply, stop = hold.key(event, dictation["state"], time.monotonic())
+                    for ready in now_apply:
+                        apply(slate, ready)
                     changed = True
-                    if dictation["state"] and not dictation["stop_sent"]:  # editing ends dictation
+                    if stop and not dictation["stop_sent"]:  # editing ends dictation
                         link.sendall(json.dumps({"op": "stop-dictation"}).encode() + b"\n")
                         dictation["stop_sent"] = True
             if link in readable:
@@ -483,22 +585,46 @@ def main() -> int:
                     op = message.get("op")
                     if op == "dictation":  # Mycroft's state: loading, listening, error: …, or "" (off)
                         dictation["state"] = str(message.get("state", ""))
-                        if not dictation["state"]:
+                        if dictation["state"] not in ("loading", "listening", "stopping"):  # off or error
                             dictation["provisional"], dictation["stop_sent"] = "", False
+                            for event in hold.release():
+                                apply(slate, event)
+                            if hold.send:
+                                send_text()
+                                return 0
                     elif op == "provisional":
                         dictation["provisional"] = str(message.get("text", ""))
                     elif op == "insert":
                         slate.insert_dictated(str(message.get("text", "")))
                         dictation["provisional"] = ""
+                        for event in hold.release():
+                            apply(slate, event)
+                        if hold.send:
+                            send_text()
+                            return 0
+                    elif op == "history":
+                        history = History([str(item) for item in message.get("items", [])])
+                    elif op in ("history-prev", "history-next"):
+                        text = history.previous(slate.text()) if op == "history-prev" else history.next()
+                        if text is not None:
+                            slate = Slate()
+                            slate.insert(text)
+                    elif op == "notice":
+                        notice[0] = str(message.get("text", ""))
                     elif op == "select-word":
                         slate.toggle_word()
                     elif op == "select-line":
                         slate.select_line()
                     elif op == "clear":
                         slate = Slate()
-                    elif op == "send":
-                        link.sendall(json.dumps({"op": "text", "text": slate.text()}).encode() + b"\n")
-                        return 0
+                    elif op == "send":  # FN+A / FN+Y: while dictating, the spoken text goes in first
+                        now_send, stop = hold.send_now(dictation["state"], time.monotonic())
+                        if now_send:
+                            send_text()
+                            return 0
+                        if stop and not dictation["stop_sent"]:
+                            link.sendall(json.dumps({"op": "stop-dictation"}).encode() + b"\n")
+                            dictation["stop_sent"] = True
                     elif op == "discard":
                         return 0
                     changed = True

@@ -64,7 +64,7 @@ def test_desktop_special_buttons():
     assert "`focus next`" in _row("Desktop (no Slate shown)", "`BTN_SELECT`")
     assert CONFIG.click == "BTN_THUMBR" and "click" in _row("Desktop (no Slate shown)", "`BTN_THUMBR`")
     assert CONFIG.pointer_stick == "right" and "Pointer" in _row("Desktop (no Slate shown)", "`ABS_RX`/`ABS_RY`")
-    assert "Nothing" in _row("Desktop (no Slate shown)", "`BTN_TL2`")
+    assert "`dictate`" in _row("Desktop (no Slate shown)", "`BTN_TL2`")
 
 
 @pytest.mark.parametrize("button", ["BTN_EAST", "BTN_SOUTH", "BTN_TR", "BTN_TR2"])

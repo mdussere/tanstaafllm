@@ -71,8 +71,7 @@ def test_device_autorepeat_press_is_ignored(core):
 
 def test_unassigned_buttons_are_ignored_and_counted(core):
     assert press(core, "BTN_THUMBL") == [g.Note("ignored:BTN_THUMBL")]
-    assert press(core, "BTN_TL2") == [g.Note("ignored:BTN_TL2")]  # L2 does nothing while the zone is closed
-    assert core.counters["ignored"] == 2
+    assert core.counters["ignored"] == 1
 
 
 def test_left_stick_is_unassigned(core):
@@ -167,15 +166,8 @@ def test_l1_hides_and_shows_the_slate_keeping_it(core):
     assert core.zone_state == "open"
 
 
-def test_l2_does_nothing_while_the_slate_is_closed_or_hidden(core):
-    assert press(core, "BTN_TL2") == [g.Note("ignored:BTN_TL2")]
-    release(core, "BTN_TL2")
-    press(core, "BTN_TL"); release(core, "BTN_TL"); press(core, "BTN_TL"); release(core, "BTN_TL")
-    assert press(core, "BTN_TL2") == [g.Note("ignored:BTN_TL2")]
-
-
 @pytest.mark.parametrize("button, chord", [
-    ("BTN_EAST", ["KEY_ENTER"]), ("BTN_SOUTH", ["KEY_BACKSPACE"]), ("BTN_NORTH", ["KEY_DELETE"]),
+    ("BTN_EAST", ["KEY_ENTER"]), ("BTN_SOUTH", ["KEY_BACKSPACE"]), ("BTN_NORTH", ["KEY_LEFTSHIFT", "KEY_DOT"]),
     ("BTN_WEST", ["KEY_LEFTSHIFT"]),
     ("BTN_TR", ["KEY_LEFTCTRL", "KEY_RIGHT"]), ("BTN_TR2", ["KEY_LEFTCTRL", "KEY_LEFT"]),
 ])
@@ -345,7 +337,8 @@ def test_menu_window_and_fn_actions_are_inert_while_the_zone_is_open(core):
     assert press(core, "BTN_START") == [g.Note("ignored:BTN_START")]
     assert press(core, "BTN_SELECT") == [g.Note("ignored:BTN_SELECT")]
     press(core, "BTN_MODE")
-    assert press(core, "BTN_SOUTH") == [g.Note("ignored:BTN_SOUTH")]
+    assert press(core, "BTN_TR") == [g.Note("ignored:BTN_TR")]  # no Sway workspace change in the Slate
+    assert press(core, "BTN_SOUTH") == [g.Zone("mike")]  # not Sway kill: Mike's key (2026-10-15)
     assert core.zone_state == "open"
 
 
@@ -682,3 +675,150 @@ def test_invalid_app_pad_is_refused(tmp_path):
     path.write_text('[app_pad.ecwolf]\nBTN_EAST = 16\n', encoding="utf-8")
     with pytest.raises(g.ConfigError, match="app_pad"):
         g.load_config(path)
+
+
+# --- resident dictation (Step 12.4: Mycroft's resident provider, Kroko) ------------
+
+def _show(state: str) -> dict:
+    return {"op": "dictation", "state": state}
+
+
+def test_resident_preloads_silently_once():
+    r = g.ResidentDictation()
+    assert r.preload() == (["launch"], []) and r.state == "loading"
+    assert r.preload() == ([], [])  # already loading: no second process
+    assert r.message({"op": "ready"}) == ([], []) and r.state == "idle"
+    assert r.preload() == ([], [])  # loaded: nothing to do when the Slate opens again
+
+
+def test_l2_starts_and_stops_without_reloading():
+    r = g.ResidentDictation()
+    r.preload(); r.message({"op": "ready"})
+    assert r.toggle() == (["start"], [_show("listening")])
+    assert r.message({"op": "listening"}) == ([], [_show("listening")])
+    assert r.message({"op": "partial", "text": "Bonjour"}) == ([], [{"op": "provisional", "text": "Bonjour"}])
+    assert r.toggle() == (["stop"], [_show("stopping")])
+    assert r.message({"op": "final", "text": "Bonjour Luna."}) == (
+        [], [{"op": "insert", "text": "Bonjour Luna."}, _show("")])
+    assert r.state == "idle"
+    assert r.toggle() == (["start"], [_show("listening")])  # the second utterance starts at once
+
+
+def test_l2_while_loading_starts_once_ready_and_l2_again_cancels():
+    r = g.ResidentDictation()
+    assert r.toggle() == (["launch"], [_show("loading")]) and r.pending
+    assert r.toggle() == ([], [_show("")]) and not r.pending
+    assert r.toggle() == ([], [_show("loading")]) and r.pending
+    assert r.message({"op": "ready"}) == (["start"], [_show("listening")]) and r.state == "listening"
+
+
+def test_hiding_or_a_key_ends_the_utterance_but_keeps_the_model():
+    r = g.ResidentDictation()
+    r.preload(); r.message({"op": "ready"}); r.toggle()
+    assert r.interrupt() == (["stop"], [_show("stopping")])
+    assert r.interrupt() == ([], [])  # already stopping
+    r.message({"op": "final", "text": "x"})
+    assert r.state == "idle" and r.interrupt() == ([], [])
+
+
+def test_an_interrupt_while_loading_forgets_the_pending_start():
+    r = g.ResidentDictation()
+    r.toggle()
+    assert r.interrupt() == ([], [_show("")])
+    assert r.message({"op": "ready"}) == ([], []) and r.state == "idle"
+
+
+def test_error_before_ready_ends_the_provider_and_l2_relaunches():
+    r = g.ResidentDictation()
+    r.toggle()
+    ops = r.message({"op": "error", "message": "no capture device"})[1]
+    assert ops[-1] == _show("error: no capture device") and r.state == "off"
+    assert r.exited() == ([], [])  # the error is already shown
+    assert r.toggle()[0] == ["launch"]
+
+
+def test_error_during_an_utterance_keeps_the_model():
+    r = g.ResidentDictation()
+    r.preload(); r.message({"op": "ready"}); r.toggle()
+    r.message({"op": "error", "message": "capture failed"})
+    assert r.state == "idle"
+    assert r.toggle() == (["start"], [_show("listening")])
+
+
+def test_a_crashed_provider_clears_the_slate_hint():
+    r = g.ResidentDictation()
+    r.preload(); r.message({"op": "ready"}); r.toggle()
+    assert r.exited() == ([], [_show("")]) and r.state == "off"
+
+
+def test_the_deployed_config_uses_resident_kroko():
+    command = g.load_config(ROOT / "src/wyoh/deploy/luna/gamepad.toml").dictate_command
+    assert "--resident" in command and command[command.index("--model") + 1] == "kroko-fr-2025"
+
+
+
+# --- Slate destinations and history (user, 2026-10-15) ---------------------------
+
+@pytest.mark.parametrize("button, op", [("BTN_SOUTH", "mike"), ("BTN_WEST", "mannie"),
+                                        ("BTN_DPAD_UP", "history-prev"), ("BTN_DPAD_DOWN", "history-next")])
+def test_fn_in_the_slate_reaches_mike_mannie_and_the_history(core, button, op):
+    press(core, "BTN_TL"); release(core, "BTN_TL")
+    press(core, "BTN_MODE")
+    assert press(core, button) == [g.Zone(op)]
+    assert core.zone_state == "open"  # Mannie: the daemon moves to delivering only if Mannie is open
+
+
+TREE = {"id": 1, "type": "root", "nodes": [{"id": 2, "type": "workspace", "nodes": [
+    {"id": 10, "type": "con", "app_id": "foot", "nodes": []},
+    {"id": 11, "type": "con", "app_id": "mannie", "nodes": []}],
+    "floating_nodes": [{"id": 12, "type": "floating_con", "app_id": "wyoh-slate", "nodes": []}]}]}
+
+
+def test_mannie_and_app_ids_are_found_in_the_sway_tree():
+    assert g.find_app_con(TREE, "mannie") == 11 and g.find_app_con(TREE, "mike") is None
+    assert g.con_app_id(TREE, 12) == "wyoh-slate" and g.con_app_id(TREE, 99) is None
+
+
+def test_history_keeps_sent_texts_but_never_wifi_passwords(tmp_path):
+    path = tmp_path / "state" / "slate-history.jsonl"
+    items = g.remember(path, [], "ls -l", "foot")
+    items = g.remember(path, items, "ls -l", "foot")  # a repeat is not added
+    items = g.remember(path, items, "and i wonder why", "wyoh-wifi")
+    items = g.remember(path, items, "Bonjour Mannie,\nça va ?", "mannie")
+    assert items == ["ls -l", "Bonjour Mannie,\nça va ?"] == g.load_history(path)
+    assert "wonder" not in path.read_text(encoding="utf-8")
+    assert oct(path.stat().st_mode & 0o777) == "0o600"
+
+
+def test_history_keeps_the_last_fifty(tmp_path):
+    path = tmp_path / "h.jsonl"
+    items: list[str] = []
+    for number in range(60):
+        items = g.remember(path, items, f"t{number}", None)
+    assert g.load_history(path) == [f"t{number}" for number in range(10, 60)]
+
+
+def test_a_missing_or_damaged_history_is_empty_or_skipped(tmp_path):
+    assert g.load_history(tmp_path / "none.jsonl") == []
+    (tmp_path / "bad.jsonl").write_text('"ok"\nnot json\n42\n', encoding="utf-8")
+    assert g.load_history(tmp_path / "bad.jsonl") == ["ok"]
+
+
+
+def test_l2_on_the_desktop_opens_the_slate_straight_into_dictation(core):
+    assert press(core, "BTN_TL2") == [g.Zone("open"), g.Zone("dictate")]
+    assert core.zone_state == "open"
+
+
+def test_l2_shows_a_hidden_slate_and_dictates(core):
+    press(core, "BTN_TL"); release(core, "BTN_TL")
+    press(core, "BTN_TL"); release(core, "BTN_TL")  # hidden
+    assert press(core, "BTN_TL2") == [g.Zone("show"), g.Zone("dictate")]
+
+
+def test_l2_in_a_game_never_opens_the_slate(wolf):
+    assert not any(isinstance(action, g.Zone) for action in press(wolf, "BTN_TL2"))
+
+
+def test_the_deployed_config_preloads_the_slate():
+    assert g.load_config(ROOT / "src/wyoh/deploy/luna/gamepad.toml").zone_preload

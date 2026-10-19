@@ -32,8 +32,8 @@ Codes come from Luna's device tree (Step 5.1).
 | Y | `BTN_WEST` | `KEY_BACKSPACE` | live |
 | R1 | `BTN_TR` | `KEY_TAB` (next field) | live |
 | R2 | `BTN_TR2` | `KEY_LEFTSHIFT+KEY_TAB` (previous field) | live |
-| L1 | `BTN_TL` | Slate: open, or show it again if hidden | live (open); core only (show) |
-| L2 | `BTN_TL2` | Nothing | live |
+| L1 | `BTN_TL` | Slate: open, or show it again if hidden. Since 2026-10-15 the Slate is opened hidden when the session starts (`zone_preload`), so L1 shows it and Kroko is already loading or loaded | live (open); core only (show, preload) |
+| L2 | `BTN_TL2` | Slate straight into dictation: opens it (or shows it again) and starts listening (`open`/`show`, then `dictate`). L1 opens it for the keyboard | core only (2026-10-15) |
 | Start | `BTN_START` | Application menu (fuzzel). Pressed again while the menu is open, it closes the menu | live |
 | Select | `BTN_SELECT` | Sway `focus next` (next window) | live |
 | Right stick | `ABS_RX`/`ABS_RY` | Pointer: speed grows with deflection; dead zone 0.12 | live |
@@ -60,19 +60,27 @@ Codes come from Luna's device tree (Step 5.1).
 | Whole cross, twice | the same within 0.4 s (`cross_double_s`) | Selects the line (`select-line`) | as above |
 | A | `BTN_EAST` | `KEY_ENTER`: new line | live |
 | B | `BTN_SOUTH` | `KEY_BACKSPACE` | live |
-| X | `BTN_NORTH` | `KEY_DELETE` | live |
+| X | `BTN_NORTH` | `KEY_LEFTSHIFT+KEY_DOT`: types "/" for agents' commands (was Delete until 2026-10-15). Dictation right after a word-starting "/" is joined to it, lower case, without end punctuation: "/" then "Usage." gives "/usage" | live (2026-10-15) |
 | Y, held | `BTN_WEST` | `KEY_LEFTSHIFT`: selection with the cross | live |
 | R1 | `BTN_TR` | `KEY_LEFTCTRL+KEY_RIGHT`: next word | live |
 | R2 | `BTN_TR2` | `KEY_LEFTCTRL+KEY_LEFT`: previous word | live |
 | L1 | `BTN_TL` | Hides the Slate; the text is kept (`hide`) | live |
-| L2 | `BTN_TL2` | Dictation on or off (`dictate`): Mycroft's provider starts (about 17 s of "loading…"), its text appears underlined at the cursor, and L2 again (or any key) inserts it | live with the fake provider; real voice is the user's test (12.3) |
-| FN + A | `BTN_MODE` + `BTN_EAST` | Sends the text into the window that had focus, then clears and hides the Slate (`validate`) | live |
+| L2 | `BTN_TL2` | Dictation on or off (`dictate`): Mycroft's resident Kroko, loaded once when the Slate first opens (about 24 s; L2 meanwhile shows "loading…" and starts when ready) and kept while the Slate is hidden or closed. Its text appears underlined at the cursor; L2 again (or any key) inserts it about 1.2 s later | live with the fake provider; real voice is the user's test (12.3) |
+| FN + A | `BTN_MODE` + `BTN_EAST` | Sends the text into the window that had focus and presses Return (a terminal runs it; since 2026-10-15), then clears and hides the Slate (`validate`). While dictating, the dictated text goes in first | live |
 | FN + X | `BTN_MODE` + `BTN_NORTH` | Clears the Slate (`clear`) | live |
+| FN + Y | `BTN_MODE` + `BTN_WEST` | Sends the text to Mannie's window (lines joined) and presses Return, then clears and hides the Slate (`mannie`). If Mannie is not open, the text stays and the hint says so | core only (2026-10-15) |
+| FN + B | `BTN_MODE` + `BTN_SOUTH` | Reserved for Mike (`mike`): until Mike runs on Luna, the hint says so and the text stays | core only (2026-10-15) |
+| FN + ↑ | `BTN_MODE` + `BTN_DPAD_UP` | Previous sent text (`history-prev`), newest first; the draft is kept | core only (2026-10-15) |
+| FN + ↓ | `BTN_MODE` + `BTN_DPAD_DOWN` | Next sent text (`history-next`); past the newest, the draft comes back | core only (2026-10-15) |
 | Left stick | `ABS_X`/`ABS_Y` | Moves the **green** selection on the keyboard (`move 0 …`): one push = one key, held = repeat after 0.3 s every 0.12 s | live |
 | L3 | `BTN_THUMBL` | Types the green key (`press 0`) | live |
 | Right stick | `ABS_RX`/`ABS_RY` | Moves the **red** selection (`move 1 …`); no pointer while the Slate is shown | live |
 | R3 | `BTN_THUMBR` | Types the red key (`press 1`) | live |
 | Start, Select | `BTN_START`, `BTN_SELECT` | Nothing | live |
+
+The history keeps the last 50 texts sent with FN + A or FN + Y, on the card (`/storage/.local/state/tanstfaafllm/wyoh/slate-history.jsonl`, mode 600); text sent to the Wi-Fi password window is never kept.
+
+A key pressed while dictation listens ends it and acts once the dictated text is in: A puts the new line after the spoken words (user, 2026-10-15).
 
 The keyboard is AZERTY with é è à ç; its "123" key switches to digits and symbols. The green selection starts on f and the red one on j.
 

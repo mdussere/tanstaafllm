@@ -3,5 +3,5 @@ Type=Application
 Name=Text Editor
 Comment=Edit text files (vim)
 Icon=accessories-text-editor
-Exec=foot -a wyoh-editor vim
+Exec=foot --config=/storage/.local/share/tanstfaafllm/wyoh/deploy/luna/foot.ini -a wyoh-editor vim
 Categories=Utility;

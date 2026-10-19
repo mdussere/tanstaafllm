@@ -28,7 +28,8 @@ from test_minimal_env import RENDER_TIMEOUT, Predicate, _app_windows, _tool_payl
 CONFIG = "/storage/.local/share/tanstfaafllm/wyoh/deploy/luna/gamepad.toml"
 DICTATE = "/storage/.local/share/tanstfaafllm/mycroft/mycroft_dictate.py"
 FAKE_TEXT = "bonjour luna"
-FAKE = f'dictate_command = ["/usr/bin/python3", "{DICTATE}", "--fake", "{FAKE_TEXT}", "--fake-interval", "0.6"]'
+FAKE = (f'dictate_command = ["/usr/bin/python3", "{DICTATE}", "--resident", "--fake", "{FAKE_TEXT}", '
+        '"--fake-interval", "0.6"]')
 
 
 def _use_fake_dictation() -> None:
@@ -117,14 +118,36 @@ def test_luna_dictation_into_the_slate() -> None:
                 await asyncio.sleep(0.5)
                 await observe("01-slate-echo", _slate_open)
 
+                # Resident (12.4): the provider was started when the Slate opened.
+                await until("provider loaded", lambda: dictation_is("idle"))
+                provider = (await status())["dictation_pid"]
                 await tap("BTN_TL2")  # L2: start dictation
                 await until("dictation listening", lambda: dictation_is("listening"))
                 await asyncio.sleep(1.0)  # the fake provider reveals a word every 0.6 s
                 await observe("02-listening-provisional", _slate_open)
                 await tap("BTN_TL2")  # L2 again: stop, the final text is inserted
-                await until("dictation off", lambda: dictation_is("off"))
+                await until("dictation idle", lambda: dictation_is("idle"))
                 await asyncio.sleep(0.5)
                 await observe("03-inserted", _slate_open)
+
+                # Hide and show the Slate: the same provider answers at once, no reload.
+                await tap("BTN_TL")
+                await asyncio.sleep(1.0)
+                await tap("BTN_TL")
+                await until("Slate shown again", lambda: _ready(status))
+                await tap("BTN_TL2")
+                await until("listening again", lambda: dictation_is("listening"), timeout=3)
+                await asyncio.sleep(1.0)  # let the fake reveal its words
+                assert (await status())["dictation_pid"] == provider, "the provider was restarted"
+                await tap("BTN_TL2")
+                await until("dictation idle again", lambda: dictation_is("idle"))
+                await tap("BTN_TL2")  # a third utterance on the same provider
+                await until("listening a third time", lambda: dictation_is("listening"), timeout=3)
+                await asyncio.sleep(1.0)  # let the fake reveal its words
+                await tap("BTN_TL2")
+                await until("idle a third time", lambda: dictation_is("idle"))
+                await asyncio.sleep(0.5)
+                await observe("03b-after-hide-show", _slate_open)
 
                 await call("wyoh_dev_keyboard_type", {"text": f" > {target}"})
                 await call("wyoh_dev_gamepad_buttons", {"press": ["BTN_MODE"]})
@@ -132,7 +155,7 @@ def test_luna_dictation_into_the_slate() -> None:
                 await call("wyoh_dev_gamepad_buttons", {"release": ["BTN_MODE"]})
                 await until("sent", lambda: _zone_closed(status))
                 await tap("BTN_EAST")  # Return in the terminal
-                await until(f"{target} written", lambda: _file_holds(target, FAKE_TEXT + "\n"))
+                await until(f"{target} written", lambda: _file_holds(target, " ".join([FAKE_TEXT] * 3) + "\n"))
                 await observe("04-sent")
                 await call("wyoh_dev_gamepad_buttons", {"press": ["BTN_MODE"]})
                 await tap("BTN_SOUTH")

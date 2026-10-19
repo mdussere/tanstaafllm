@@ -195,6 +195,40 @@ def test_luna_graphical_apps_from_the_menu() -> None:
                 await until("Wolfenstein closed", lambda: _gone(windows, "ecwolf"))
                 await observe("11-empty", _empty_desktop)
 
+                # Mannie (Claude Code) in foot with the larger terminal font (user, 2026-10-13).
+                await launch("mannie", "mannie", "12-mannie")
+                await asyncio.sleep(15)  # Claude Code starts slowly on Luna
+                await observe("13-mannie-open", lambda image: not _empty_desktop(image))
+                await fn("BTN_SOUTH")
+                await until("Mannie closed", lambda: _gone(windows, "mannie"))
+
+                # The Terminal, same font.
+                await launch("terminal", "foot", "14-terminal")
+                await observe("15-terminal-open", lambda image: not _empty_desktop(image))
+                await fn("BTN_SOUTH")
+                await until("Terminal closed", lambda: _gone(windows, "foot"))
+                await observe("16-empty", _empty_desktop)
+
+                # Wi-Fi (Step 7): the list, then a new network's masked password, cancelled with B.
+                await tap("BTN_START")
+                await observe("17-wifi-menu", _menu_open)
+                await call("wyoh_dev_keyboard_type", {"text": "wi-fi"})
+                await asyncio.sleep(0.5)
+                await tap("BTN_EAST")
+                await asyncio.sleep(9)  # the panel rescans before listing
+                await observe("18-wifi-list", _menu_open)
+                await tap("BTN_DPAD_DOWN")  # the strongest network after the connected one
+                await tap("BTN_EAST")
+                await until("password window", lambda: app("wyoh-wifi"), timeout=2 * RENDER_TIMEOUT)
+                await call("wyoh_dev_keyboard_type", {"text": "dummy-pass"})
+                await observe("19-wifi-password-masked", lambda image: not _empty_desktop(image))
+                await tap("BTN_SOUTH")  # B = Escape: cancel
+                await until("Wi-Fi window closed", lambda: _gone(windows, "wyoh-wifi"))
+                await observe("20-empty", _empty_desktop)
+                left = _ssh("ls /storage/.cache/iwd").stdout.split("\n")
+                assert sorted(name for name in left if name.endswith(".psk")) == [
+                    "Mick wifi home.psk", "Mick=20wifi=20home.psk"], left
+
     try:
         asyncio.run(exercise())
     finally:

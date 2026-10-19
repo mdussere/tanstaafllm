@@ -12,10 +12,11 @@ menu_command = "fuzzel --config /storage/.local/share/tanstfaafllm/wyoh/deploy/l
 # The Slate (Step 6): a multi-line editor in a floating foot window, black
 # with white text. Its font is half the size of the old fuzzel zone's: that
 # zone's capitals were 17 px high (Liberation Sans, about 25 px em), so the
-# Slate uses a 12 px em. "{socket}" is the daemon's private Slate socket.
+# Slate used a 12 px em, now 14 px (20 % larger, user, 2026-10-13).
+# "{socket}" is the daemon's private Slate socket.
 zone_command = [
     "foot", "--app-id=wyoh-slate", "--title=Slate", "--window-size-pixels=716x214",
-    "-o", "font=Liberation Mono:pixelsize=12", "-o", "pad=6x4", "-o", "resize-by-cells=no",
+    "-o", "font=Liberation Mono:pixelsize=14", "-o", "pad=6x4", "-o", "resize-by-cells=no",
     "-o", "colors.background=000000", "-o", "colors.foreground=ffffff",
     "-o", "cursor.color=000000 ffffff",
     "/usr/bin/python3", "/storage/.local/share/tanstfaafllm/wyoh/wyoh_slate.py", "--socket", "{socket}",
@@ -51,13 +52,20 @@ zone_close_sway = "client.focused #5294e2 #5294e2 #ffffff #5294e2 #5294e2"
 zone_ready_sway = '[app_id="wyoh-slate"] move position 0 0'
 
 # Mycroft's dictation (Step 12): L2 in the Slate starts it, L2 again (or any
-# key) stops it. Installed on Luna by Mycroft (worklines/mycroft/docs/0704_01,
-# 0703_01); 2 threads is Mycroft's best measured setting (8.2). Expect about
-# 17 s of model loading and about 250 MiB while dictating. {capture} is chosen
-# at each start: a USB microphone if plugged in (the jack gave no signal in the
-# user's test, 2026-10-11), else the RK817 capture device.
+# key) stops it. Resident Kroko (Step 12.4, Mycroft's 0903_03 reply and
+# 1204_01): the provider starts when the Slate first opens, loads the model
+# once (24.4 s on Luna, 2 threads; 151.5 MiB idle, 172 MiB while dictating)
+# and stays loaded while the Slate is hidden or closed; L2 sends start/stop.
+# The final text arrives ~1.2 s after stop, with capitals and punctuation.
+# {capture} is chosen when the provider starts: a USB microphone if plugged in
+# (the jack gave no signal in the user's test, 2026-10-11), else the RK817.
+# The Slate opens hidden when the session starts, so Kroko loads at once
+# (user, 2026-10-15: no wait at the first L1 or L2).
+zone_preload = true
+
 dictate_command = [
     "/usr/bin/python3", "/storage/.local/share/tanstfaafllm/mycroft/mycroft_dictate.py",
+    "--resident", "--model", "kroko-fr-2025",
     "--input", "{capture}", "--assets", "/storage/.local/opt/mycroft", "--threads", "2",
 ]
 

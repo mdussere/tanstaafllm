@@ -311,3 +311,103 @@ def test_provisional_text_inside_a_line_keeps_the_rest_after_it():
 
 def test_loading_state_hint():
     assert s.render(s.Slate(), 60, 3, dictation="loading").hint.startswith("dictation: loading")
+
+
+# --- keys during dictation (user, 2026-10-15) ----------------------------------------
+
+ENTER = s.Event("key", "enter")
+BACK = s.Event("key", "backspace")
+
+
+def test_a_key_while_listening_stops_and_waits_for_the_dictated_text():
+    hold = s.KeyHold()
+    assert hold.key(BACK, "listening", 0.0) == ([], True)
+    assert hold.key(BACK, "stopping", 0.1) == ([], False)  # stop already asked
+    slate = typed("Bonjour")
+    slate.insert_dictated("Luna.")  # the final text arrives first
+    for event in hold.release():
+        s.apply(slate, event)
+    assert slate.lines == ["Bonjour Lun"]  # Backspace erases the dictated end
+
+
+def test_return_after_dictation_goes_after_the_spoken_words():
+    hold, slate = s.KeyHold(), typed("Note :")
+    now, stop = hold.key(ENTER, "listening", 0.0)
+    assert now == [] and stop
+    slate.insert_dictated("acheter du pain.")
+    for event in hold.release():
+        s.apply(slate, event)
+    assert slate.lines == ["Note : acheter du pain.", ""] and slate.cursor == (1, 0)
+
+
+def test_a_key_while_loading_cancels_the_start_and_acts_at_once():
+    assert s.KeyHold().key(ENTER, "loading", 0.0) == ([ENTER], True)
+
+
+def test_keys_act_at_once_without_dictation_or_after_an_error():
+    hold = s.KeyHold()
+    assert hold.key(ENTER, "", 0.0) == ([ENTER], False)
+    assert hold.key(ENTER, "error: no capture device", 0.0) == ([ENTER], False)
+
+
+def test_held_keys_are_released_after_the_limit():
+    hold = s.KeyHold(limit=3.0)
+    hold.key(ENTER, "listening", 10.0)
+    assert not hold.expired(12.0) and hold.expired(13.5) and hold.release() == [ENTER] and hold.held == []
+
+
+
+# --- history (FN+up / FN+down, user 2026-10-15) ----------------------------------------
+
+def test_history_walks_back_newest_first_and_returns_to_the_draft():
+    history = s.History(["first", "second"])
+    assert history.next() is None  # nothing to go forward to yet
+    assert history.previous("my draft") == "second"
+    assert history.previous("second") == "first"
+    assert history.previous("first") == "first"  # stays on the oldest
+    assert history.next() == "second"
+    assert history.next() == "my draft"
+    assert history.next() is None
+
+
+def test_empty_history_changes_nothing():
+    assert s.History().previous("draft") is None
+
+
+
+def test_send_while_listening_stops_dictation_and_waits_for_the_text():
+    hold = s.KeyHold()
+    assert hold.send_now("listening", 0.0) == (False, True)
+    assert hold.waiting() and hold.send
+    assert not hold.expired(2.0) and hold.expired(3.5)  # sent anyway if the text never comes
+
+
+def test_send_without_dictation_goes_at_once():
+    assert s.KeyHold().send_now("", 0.0) == (True, False)
+    assert s.KeyHold().send_now("loading", 0.0) == (True, False)
+
+
+def test_return_then_send_while_listening_keep_their_order():
+    hold, slate = s.KeyHold(), typed("Note :")
+    hold.key(ENTER, "listening", 0.0)
+    assert hold.send_now("stopping", 0.5) == (False, False)
+    slate.insert_dictated("du pain.")
+    for event in hold.release():
+        s.apply(slate, event)
+    assert hold.send and slate.text() == "Note : du pain.\n"
+
+
+
+# --- "/" commands for agents (user, 2026-10-15) ------------------------------------------
+
+@pytest.mark.parametrize("before, dictated, after", [
+    ("/", "Usage.", "/usage"),
+    ("hello /", "Compact!", "hello /compact"),
+    ("/", "Clear context.", "/clear context"),
+    ("a/", "Usage.", "a/ Usage."),        # not a command: inside a word
+    ("echo", "Usage.", "echo Usage."),
+])
+def test_dictation_after_a_slash_becomes_a_command(before, dictated, after):
+    slate = typed(before)
+    slate.insert_dictated(dictated)
+    assert slate.text() == after

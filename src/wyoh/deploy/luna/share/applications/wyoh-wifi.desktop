@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Wi-Fi
+Comment=Choose and join a Wi-Fi network
+Icon=network-wireless
+Exec=/usr/bin/python3 /storage/.local/share/tanstfaafllm/wyoh/wyoh_wifi.py
+Categories=Settings;

@@ -34,3 +34,23 @@ Feature: Graphical applications from Luna's menu (Wyoh Step 9.11)
     Then the view has changed
     When the person presses FN+B
     Then Wolfenstein 3D is closed and the workspace is empty
+
+  Scenario: Mannie (Claude Code) and the Terminal, with the larger terminal font
+    When the person opens the Start menu and filters it with "mannie", then presses A
+    Then a "mannie" window has the focus and shows Claude Code in foot at 12 pt (50 % above foot's 8 pt)
+    When the person presses FN+B
+    Then Mannie is closed
+    When the person opens the Start menu and filters it with "terminal", then presses A
+    Then a "foot" window has the focus, with the same font
+    When the person presses FN+B
+    Then the workspace is empty
+
+  Scenario: The Wi-Fi panel lists networks and cancels a new password
+    When the person opens the Start menu and filters it with "wi-fi", then presses A
+    Then after a rescan the networks are listed, the connected one first with a check mark
+    When the person moves down to a new network and presses A
+    Then a "wyoh-wifi" window asks for its password
+    When the person types a password
+    Then it is shown masked
+    When the person presses B
+    Then the window closes and no profile is written for that network

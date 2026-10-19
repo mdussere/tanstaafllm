@@ -1,0 +1,17 @@
+# Template: fetch_netsurf.py turns it into the app's wyoh-app.toml (with checksums).
+# NetSurf's framebuffer front end on its SDL surface, from PortMaster's netsurf
+# port. Assembled by fetch_netsurf.py into /storage/.local/opt/netsurf/; not
+# committed. Images and JavaScript are off (Wyoh's Choices).
+id = "netsurf"
+name = "Browser"
+comment = "Very simple web browser (NetSurf), no images"
+version = "netsurf-portmaster-d36a1c2"
+source = "https://github.com/PortsMaster/PortMaster-New/tree/d36a1c2297277b7434591dd5a190751ff7424f6f/ports/netsurf"
+licence = "GPL-2.0 (NetSurf); bundled libraries under their own licences"
+wayland_app_id = "netsurf"
+input = "pointer"  # Wyoh's pointer on the right stick, R3 clicks; the cross scrolls
+window = "fullscreen"
+gpu = true
+quit = "FN+B closes it (Sway kill)"
+icon = "./resources/netsurf.png"
+categories = ["Network", "WebBrowser"]

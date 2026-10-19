@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Mannie
+Comment=Claude Code, the frontier model (needs the network)
+Icon=utilities-terminal
+Exec=foot --config=/storage/.local/share/tanstfaafllm/wyoh/deploy/luna/foot.ini -a mannie --working-directory=/storage /storage/.local/bin/claude
+Categories=Utility;
