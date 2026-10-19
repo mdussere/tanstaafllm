@@ -25,7 +25,8 @@ Done means: a measured choice of model (or a measured "not good enough"), and a 
 
 - Plan (this file): `worklines/mike/plan_mike.md`
 - Produced docs: `worklines/mike/docs/`
-- Tests and experiments: `test/mike/` (`mike_bench.py`, `test_mike_bench.py`, `test_model_smoke.py`, `model_smoke.feature`)
+- Tests and experiments: `test/mike/` (`mike_bench.py`, `test_mike_bench.py`, `test_model_smoke.py`, `model_smoke.feature`; Step 3b: `mike_server.py`, `test_server_runtime.py`, `mike_harness.py`, `test_micro_harness.py`, `mike_fake_mcp.py`)
+- Runtime and harness binaries: `/data/michael/tanstaafllm/mike-tools/` (official releases, outside the repository)
 - Results: `results/mike/<topic>/<timestamp>/` (not committed)
 - Code: `src/mike/mike_contract.py` (contract and adapter, Step 2)
 - Model files: outside the repository, never committed
@@ -44,13 +45,18 @@ Done means: a measured choice of model (or a measured "not good enough"), and a 
 - Changing the Wyoh MCP server, Mycroft, or Luna's image. Requests to them go as notes.
 - Raw Sway commands or free-text `exec` from the model.
 - Multi-step agent loops, a resident service, speech output, Mannie integration.
-- Fine-tuning in the first pass (it may become a later step if the measurements call for it).
+- **Any training: no fine-tuning, no retraining, no training dataset** (user, 2026-10-13, `docs/0700_02`). Pre-trained models only, zero-shot; a model that does not work as is gets dropped, not trained.
+- **Translation between languages** (user, 2026-10-13): the language is chosen at the input; French or English end to end.
+- GPU/OpenCL acceleration, unless there is evidence of at least 2× end to end (user, 2026-10-13: not a preferred hypothesis).
 - Renaming components in shared documents.
 
 ## Key decisions / assumptions
 
 - **Model: LFM2.5-350M** (user decision, 2026-10-11: "350 is impressive and fast"; a big difference from 230M; about 350 MiB is acceptable for now; slim down later).
 - One call per request; the user accepts every action before it runs.
+- **Mike does one action per order** (user, 2026-10-13): no autonomous planning or composition. A decider may **select a predefined plan** by case; selecting is not planning.
+- **English is allowed** if it makes Mike lighter or better and if the English speech-to-text handles the user's accent (Mycroft's evaluation). French is a bonus, not a requirement.
+- **Decision latency budget on Luna** (user, 2026-10-13): < 200 ms excellent, ≤ 500 ms acceptable, < 1 s tolerated, per decision and as a function of the number of classes. Embedding-similarity scores are not accepted as decisions; at most as a pre-filter.
 - No Adam for now (user, 2026-10-09): Mike reports to the user directly.
 - The adapter, not the model, writes Sway commands, from fixed templates with checked arguments.
 - Constrained decoding (llama.cpp grammar / JSON Schema) is the default; results without it are kept for comparison.
@@ -120,16 +126,50 @@ The user chose to start here, before Steps 1 and 2: first see which models fit t
   - By writing system: ASCII 49,945; CJK/kana 4,907; Cyrillic 4,396; accented Latin 3,298; Hangul 1,038; Arabic 779; byte pieces 755; other 418.
   - Dropping CJK, Cyrillic, Hangul and Arabic (11,120 tokens, 17 %) would save ≈ 9 MiB of file and ≈ 17 % of the output layer's work per token. Re-quantising the embedding Q6_K → Q4_K would save ≈ 16 MiB more.
   - Needs tokenizer surgery and a GGUF rebuild, then re-measurement of accuracy.
-- [ ] 3.5 **Decision for the user** (`docs/0302_03`, options): A keyword table first and the model second (fits Step 3); B LoRA fine-tuning of LFM2.5-350M (a new step, needs a green light); C two-stage call; D Mannie. Recommended: A, then B. A measured (3.6): adopt it as v0 routing, subject to the user's approval.
+- [ ] 3.5 **Decision for the user** (`docs/0302_03`, options): A keyword table first and the model second (fits Step 3); B LoRA fine-tuning of LFM2.5-350M (a new step, needs a green light); C two-stage call; D Mannie. Recommended: A, then B. A measured (3.6): adopt it as v0 routing, subject to the user's approval. **B is dropped** (user, 2026-10-13: no fine-tuning); the remaining choice is A, possibly with C or the Step 7 decider.
 - [x] 3.3 Record accuracy, prompt tokens, time to first token, total time, peak RSS, load time; compare measured RAM with the estimates (`docs/0304_01`).
 - [x] 3.4 Write the comparison and recommend one or two models (`docs/0304_01`): LFM2.5-350M (user decision), LFM2.5-230M as the fallback.
 - **Acceptance:** results under `results/mike/model-comparison/<timestamp>/` and a doc in `docs/`; no claim about Luna.
 
-### Step 3b — Lean runtime and micro-harness (proposed by the user, 2026-10-11; design only until green-lit)
-**Status**: ⏳ Pending
-- [ ] 3b.1 Leave Python: run LFM2.5-350M with llama.cpp's C++ runtime (`llama-server` with `--jinja`, or a small program linked to `libllama`), built for aarch64; measure RAM against the Python figures (`docs/0302_05`).
-- [ ] 3b.2 Survey and choose a micro-harness: keyword table → model → adapter → MCP client to Wyoh, plus a few "skills" exposed as fixed, checked tools (for example, read a file or list a folder under allowlisted roots; writes need acceptance). Candidates: our own small Go or Rust binary, MCPHost (Go, possibly archived), `mcp-cli` (Python), llama.cpp's web UI MCP host.
-- [ ] 3b.3 Write the choice and its RAM budget in `docs/`.
+### Step 3b — Lean runtime and micro-harness (proposed by the user, 2026-10-11)
+**Status**: ✅ Done on the desk host (2026-10-15), awaiting the user's choice — green-lit by the user on 2026-10-15 ("go 3b locally on termidor"): desk host Termidor (x86-64) only; no `luna-pi`, no Luna. The aarch64 build of 3b.1 waits for Step 4.
+- [x] 3b.1 Leave Python: LFM2.5-350M in `llama-server` (official release b11429, x86-64; the aarch64 build waits for Step 4). Lean peak 319 MiB (Q4_K_M) and 306 MiB (Q4_0), against 351 MiB in Python; the server re-reads the whole prompt unless the shared prefix is saved to a slot file and restored (lean 4.5 → 3.3 s median). Result `docs/03b3_01`.
+- [x] 3b.2 Survey and choose a micro-harness: keyword table → model → adapter → MCP client to Wyoh, plus a few "skills" exposed as fixed, checked tools (for example, read a file or list a folder under allowlisted roots; writes need acceptance).
+  - Candidates: our own small Go or Rust binary, MCPHost (Go, possibly archived), `mcp-cli` (Python), llama.cpp's web UI MCP host.
+  - **Added 2026-10-13 (`docs/0700_02`):** **ZeroClaw** (Rust; native llama.cpp provider; `local_small` profile; readonly/supervised/full modes), **PicoClaw** (Go, Sipeed; MCP; `SKILL.md`), NanoBot as a functional reference.
+  - **Measured 2026-10-15 (`docs/03b3_01`):** ZeroClaw 0.8.5 and PicoClaw 0.3.1 on Mike's six tools (fake MCP), four French requests: 2/4 each; about 31–37 MiB each; about 1,500–1,650 prompt tokens per request. ZeroClaw asks before running a tool, but its prompt is fixed and the model fails under it. PicoClaw's prompt can be trimmed, but it runs tools without asking. Recommendation: Mike's own thin chain; the two harnesses stay references.
+  - Not done: the `ls ~` skill (Step 7), memory across a restart, refusing a forbidden action, NanoBot, and the Zenodo preprint's protocol.
+- [x] 3b.4 Liquid AI's QAD Q4_0 build measured with the plain Q4_0: Q4_0 is the best file (main 55/81, held-out 16/31, lean 306 MiB); QAD is not better on the main set and worse held-out (12–13/31). The card makes no "near Q5_K_M" claim. Files and checksums in `mike-assets/SHA256SUMS`.
+- [x] 3b.3 Choice and RAM budget written (`docs/03b3_01`, proposal): `llama-server` Q4_0 lean with the prefix slot restored, and Mike's own chain; about 320–340 MiB on the desk host. Open for the user: adopt it; move the desktop state to the end of the prompt (to measure); Step 4 on `luna-pi`.
+
+### Step 7 — Zero-shot decider and predefined plans (from the user's discussion of 2026-10-13; design only until green-lit)
+**Status**: ⏳ Pending — source `docs/0700_01` (raw) and `docs/0700_02` (cleaned)
+
+Goal: find out whether a small pre-trained zero-shot classifier can make Mike's closed decisions faster and lighter than LFM2.5-350M, without any training:
+- the context (terminal, desktop, plain input);
+- the predefined plan (inject text, translate into a shell command, Wyoh action, ask for clarification);
+- the operation within it.
+
+LFM stays for what needs generation. Done means a measured verdict per candidate against the latency and memory budget, on the desk host first.
+
+- [ ] 7.1 Check the claims of `0700_02` against primary sources: the model cards, sizes, licences, and the ONNX / C / ARM64 runtimes.
+  - Candidates: GLiClass Edge v3.0 (32.7M), GLiClass Small/Instruct (144M) and GLiClass.c, multilingual MiniLMv2-L6 XNLI, Laya multilingual (322M) as an upper reference.
+  - Record what is verified and what is not.
+- [ ] 7.2 Write the plan catalogue and decision tree.
+  - The order of decisions: context → plan → operation. Use what Wyoh already knows (focused app, whether the Slate was opened from a terminal or from Mannie, whether the text was hand-edited) instead of asking a model.
+  - Include the terminal case: natural language → a *proposed* command (for example "ls of my home dir" → `ls ~`), typed without Enter, after confirmation.
+  - Include the Slate's two outputs, *input* and *Mike*.
+  - Design only; the Slate itself is Wyoh's.
+- [ ] 7.3 Write the decider evaluation, without using any example for training.
+  - Reuse the 81 + 31 requests, add plan-selection and terminal cases, and English versions of each.
+- [ ] 7.4 Desk-host benchmark of the shortlist as is (ONNX or C runtime; INT8 where available).
+  - Accuracy and out-of-scope refusal.
+  - Warm latency p50/p95 with 1, 3, 5, 10 and 20 classes; cold load; peak RSS.
+  - Three prompt strategies, to check whether the prompt really changes the decision.
+  - French and English.
+- [ ] 7.5 End-to-end comparison: keyword table → decider → LFM only when generation is needed, against the Step 3 hybrid (20/31 held-out). Measure how often LFM is avoided, and total RAM when the decider stays resident.
+- [ ] 7.6 Write the verdict. Then, as a separate step through Professor and `worklines/luna-access.md`, measure on `luna-pi` and Luna. The desk → Luna factor (≈ 20× for Mycroft's ASR) is a hint, not a substitute for measurement.
+- **Acceptance:** a doc with a verdict per candidate against the budget (decision ≤ 500 ms acceptable and < 200 ms excellent, on Luna, to be confirmed there; memory < 50 MiB excellent and 100–150 MiB acceptable); no training of any kind; claims marked verified or unverified.
 
 ### Step 4 — `luna-pi` measurement
 **Status**: ⏳ Pending
@@ -144,6 +184,7 @@ The user chose to start here, before Steps 1 and 2: first see which models fit t
 - [ ] 5.1 Console per the intent: request, proposed action, `Enter`/`Esc`, honest result.
 - [ ] 5.2 Gherkin scenario + pytest with the fake Wyoh (deterministic) and with the chosen model (`integration`).
 - [ ] 5.3 Live scenario against the real Wyoh MCP server on `luna-pi` over SSH, with screenshots inspected (`live`).
+- [ ] 5.4 **Wyoh's request (`docs/1204_02`, 2026-10-15, carrying a user decision: the Slate's FN+B sends text to Mike):** when Mike runs on Luna, choose and document how a request reaches Mike (for example a Unix socket, or stdin), what Mike shows while it works, and where its proposed actions appear for acceptance; answer in a reply section of that note. Nothing is due before Step 5.
 - **Acceptance:** typed request → accepted action → visible change on `luna-pi`'s desktop, with screenshots; a refused action runs nothing.
 
 ### Step 6 — Hand-offs (design only)
@@ -161,10 +202,11 @@ The user chose to start here, before Steps 1 and 2: first see which models fit t
 - 🧪 Step 1 — Intent and tool contract (1.1–1.4 done; 1.5 user approval open)
 - ✅ Step 2 — Evaluation set and harness (D13)
 - 🧪 Step 3 — Desk-host model comparison (3.0–3.2f done; 3.5 decision open)
-- ⏳ Step 3b — Lean runtime and micro-harness (proposed)
+- ✅ Step 3b — Lean runtime and micro-harness (Termidor only; choice open for the user)
 - ⏳ Step 4 — `luna-pi` measurement
 - ⏳ Step 5 — `mike-console` v0
 - ⏳ Step 6 — Hand-offs (design only)
+- ⏳ Step 7 — Zero-shot decider and predefined plans (proposed, 2026-10-13)
 
 ---
 
@@ -174,6 +216,10 @@ The user chose to start here, before Steps 1 and 2: first see which models fit t
 
 | Timestamp (`date`) | Update |
 |---|---|
+| jeu. 15 oct 2026 03:03 CEST | Wyoh's note `docs/1204_02` received (the Slate's FN+B will send text to Mike; user decision): recorded as 5.4, nothing due before Step 5. |
+| jeu. 15 oct 2026 03:01 CEST | Step 3b measured on Termidor (`docs/03b3_01`). `llama-server` lean: 319 MiB (Q4_K_M), 306 MiB (Q4_0), against 351 MiB in Python; prefix slot restore lean 4.5 → 3.3 s. Q4_0 best; QAD not better. ZeroClaw and PicoClaw: 2/4 each, about 1,500–1,650 prompt tokens; ZeroClaw asks before tools, PicoClaw does not. Recommended: Mike's own chain on `llama-server` Q4_0 lean. The Python reference run was stopped (host loaded by other sessions; the first model hit the test timeout). Open for the user: adopt 3b.3; prompt with the desktop at the end; Step 4. |
+| jeu. 15 oct 2026 01:14 CEST | User: "go 3b locally on termidor". Step 3b green-lit on the desk host only. Termidor has no cmake, Go or Rust toolchain; prebuilt release binaries are preferred, kept outside the repository with their checksums. |
+| mar. 13 oct 2026 22:47 CEST | User request: capture and clean the ChatGPT discussion <https://chatgpt.com/share/6ace95fc-0800-83eb-bd5f-9d86b7257744> and prepare a step for it. Raw export `docs/0700_01` (77 messages; the scraper now keeps the most complete version of each message, after the first run lost text). Cleaned record `docs/0700_02` (two transcription points confirmed by the user: "GF" = JEV, "en BD" = embedded). User decisions recorded: one action per order, predefined plans allowed, **no training of any kind (option B dropped)**, no translation, English allowed, OpenCL not preferred, decision latency budget. Step 7 added and Step 3b extended (ZeroClaw/PicoClaw, QAD Q4_0); design only. Notes left for Mycroft (English ASR) and Wyoh (Slate outputs). |
 | dim. 11 oct 2026 22:12 CEST | Session resumed as **Mike** after the rename (Professor D16, for the user). Checked after the swap: `uv run --group mike pytest test/mike -m "not live and not integration"` gives 55 passed; `worklines/mike/scripts/mike_chat.py --lean` loads LFM2.5-350M from `mike-assets` (295 MiB) and answers. Nothing else green-lit. Open for the user: 1.5, 3.5, 3.8, Step 3b. |
 | dim. 11 oct 2026 20:59 CEST | Professor: pause (usage limit), then resume within the existing green lights, desk host only. The user is reconsidering the Mannie/Mike naming: rename nothing until they decide. Resumed: 3.3–3.4 closed with `docs/0304_01`. **State:** Step 3 measurements are complete. Open for the user: 1.5 (contract), 3.5 (routing A, option B), 3.8 (vocabulary pruning), Step 3b (green light). Nothing else green-lit; stopped. |
 | dim. 11 oct 2026 12:33 CEST | Professor (tanstfaafllm-80) asked every session to update its row after the restarts: Mike is now tanstfaafllm-20 [5832e9] in `worklines/agents.md`. The rest of that message was for Wyoh; nothing for Mike. |
@@ -196,6 +242,11 @@ The user chose to start here, before Steps 1 and 2: first see which models fit t
 ---
 
 ## Workline artifacts
+
+- [`docs/1204_02_note-from-wyoh-slate-sends-to-mike.md`](docs/1204_02_note-from-wyoh-slate-sends-to-mike.md) — from Wyoh: FN+B in the Slate sends text to Mike; Mike's hand-off to choose at Step 5 (5.4).
+- [`docs/03b3_01_lean-runtime-and-micro-harness-result.md`](docs/03b3_01_lean-runtime-and-micro-harness-result.md) — Step 3b: `llama-server` RAM and speed, Q4_0/QAD, ZeroClaw and PicoClaw on Mike's tools; proposed runtime and budget.
+- [`docs/0700_02_harness-and-decider-discussion.md`](docs/0700_02_harness-and-decider-discussion.md) — cleaned record of the 2026-10-13 discussion: user decisions, assistant proposals, unverified claims; the source of Step 7.
+- [`docs/0700_01_harness-and-decider-discussion-raw.md`](docs/0700_01_harness-and-decider-discussion-raw.md) — raw export of that discussion (primary reference).
 
 - [`docs/0000_01_small-tool-calling-model-survey.md`](docs/0000_01_small-tool-calling-model-survey.md) — candidate models ≤ 400 MB, verified sizes, what to measure.
 - [`docs/0304_01_model-comparison.md`](docs/0304_01_model-comparison.md) — Step 3 summary: every model, RAM, accuracy, speed; recommendation.
