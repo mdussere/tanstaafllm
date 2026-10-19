@@ -11,13 +11,12 @@ Only one session uses Luna (the R36 Ultra, `ssh luna`) at a time. Luna has about
 
 | Since | Holder | Purpose | Release condition |
 |---|---|---|---|
-| 2026-10-13 22:41 | Mycroft | 9.8: install the prepared Kroko and measure the resident provider for the Slate, about 25 min, reboot before and after | "Luna released" after a reboot |
+| — | (free) | Luna released 2026-10-15 after Step 7.0 and a reboot; Wyoh's interrupted Step 7 slot can resume | — |
 
 ## Queue
 
 | Order | Session | Purpose | Granted by |
 |---|---|---|---|
-| 1 | Wyoh | Step 9 and 12.4, after Mycroft's 9.8 | Professor |
 
 ## History
 
@@ -36,6 +35,7 @@ Only one session uses Luna (the R36 Ultra, `ssh luna`) at a time. Luna has about
 | 2026-10-11 22:40 | User decision: Mycroft works on `luna-pi` instead of Luna, so the 22:34 slot was withdrawn. Wyoh holds Luna. |
 | 2026-10-13 | No session running, so the 2026-10-11 23:39 Mycroft entry is stale. The user asked the Luna session (tanstfaafllm-a0) directly to rerun the microphone tests with a USB-C headset; Luna holds Luna for 8.2e. |
 | 2026-10-13 | Luna released Luna: 8.2e done (USB-C headset microphone works), Luna rebooted, SSH answering. |
+| 2026-10-15 | No Professor session running. The user told Luna (tanstfaafllm-03) to take Luna over, interrupting Wyoh's Step 7 slot, for Luna Step 7.0 (user account), and allowed the changes to ArchR's account files. Wyoh gets Luna back after the release. |
 
 ## luna-pi
 
@@ -59,3 +59,10 @@ Waiting for `luna-pi`: Mannie (Claude Code, the 600 MiB rehearsal if green-lit).
 | 2026-10-13 | Wyoh took the free Luna for 9.8b (Wolfenstein controls) at the user's request. |
 | 2026-10-13 | Wyoh released Luna after 9.8b (rebooted). |
 | 2026-10-13 22:41 | Professor (new session tanstfaafllm-96) gave the free Luna to Mycroft for 9.8. |
+| 2026-10-13 | Mycroft released Luna: 9.8 done (`worklines/mycroft/docs/0908_01`), Luna rebooted and answering. Prepared Kroko and current scripts installed under `/storage/.local`. |
+| 2026-10-13 22:53 | Professor gave Luna to Wyoh (queue position 1) for Step 9 and 12.4. |
+| 2026-10-13 22:55 | Mannie (session tanstfaafllm-7f) reported that the user gave it Luna directly at 22:53 for 2.4. As on 2026-10-11 13:25, the user's direct grant wins: Professor gave Luna to Mannie and put Wyoh back first in the queue. |
+| 2026-10-13 | The user gave Luna directly to Wyoh ("luna est à toi") for the Mannie menu entry and larger fonts. |
+| 2026-10-15 | Wyoh released Luna: Wyoh 9.12 done, Luna rebooted. |
+| 2026-10-15 | Wyoh took the free Luna for Step 7 (Wi-Fi) at the user's request; no Professor session reachable. |
+| 2026-10-15 | Luna released Luna: `michael` account added and checked after two reboots (key login, shadow line kept), Luna rebooted, SSH answering. Wyoh can take it back. |

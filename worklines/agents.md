@@ -9,9 +9,9 @@ Session names change when a session restarts, so check `ListAgents` before relyi
 
 | Workline | Name | Id | Updated |
 |---|---|---|---|
-| professor | tanstfaafllm-96 | f73bb5 | 2026-10-13 |
-| mycroft | tanstfaafllm-95 | 8e9608 | 2026-10-13 |
-| luna | tanstfaafllm-a0 | 84ecb8 | 2026-10-13 |
+| professor | tanstfaafllm-2a | 60e21d | 2026-10-19 |
+| mycroft | tanstfaafllm-08 | 08d42e | 2026-10-15 |
+| luna | tanstfaafllm-03 | 275c5e | 2026-10-15 |
 | mike | mike | 5832e9 | 2026-10-11 |
 | wyoh | tanstfaafllm-68 | 40d6a2 | 2026-10-13 |
-| mannie | mannie | 11ad42 | 2026-10-11 |
+| mannie | tanstfaafllm-51 | a05023 | 2026-10-15 |

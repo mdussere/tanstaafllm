@@ -444,9 +444,41 @@
 - **Mycroft 9.7–9.8 added (Wyoh's note `0903_03`, user decisions of 2026-10-13):** a resident dictation provider (load once; start/stop on stdin) and the prepared Kroko installed and measured on Luna.
 - **Wyoh 9.8b:** user feedback on Wolfenstein: both sticks back (regression), fire on R1/A, doors on L1/B, A/B no longer swapped, and an icon. Planned as a remapped virtual joystick fed by the daemon.
 - **Mycroft 9.7 done (resident provider: load once, start/stop on stdin) and 9.8 prepared.** The adapter now pads 1.0 s of silence at stop, because Kroko dropped its last word without it. The prepared Kroko (ONNX Runtime 'extended', same text, load −45 % on the desk host) is the `kroko-fr-2025` profile. Luna run waiting for a slot.
+- **Mycroft 9.8 done on Luna** (`worklines/mycroft/docs/0908_01`): resident Kroko, prepared files, 2 threads. Ready in 24.4 s (published: 47.7 s), 151.5 MiB idle, 172 MiB peak, start→listening 0.002 s on 3 utterances with one load, and it keeps up with speech. Luna rebooted and released; Wyoh answered in `0903_03`.
 - **Wyoh 9.8b: Wolfenstein controls fixed after user feedback.**
   - The daemon feeds the game a remapped virtual joystick (`gamepad-virtual`): both sticks in analog (the regression is fixed), A/R1 fire and validate, B/L1 open doors and go back.
   - The menu shows BJ's face as the icon.
   - `WYOH_LUNA_LIVE=1 uv run pytest -m live test/wyoh/test_luna_apps.py`: 1 passed (`results/wyoh/luna-apps/20261013T203744Z`, inspected); offline: 276 passed.
   - Luna was rebooted and freed.
 - **Wyoh 9.8b accepted by the user** (controls and icon). Wolfenstein's controls are added to the controls reference `0512_01`, checked by a new test (277 offline tests pass).
+- **Mike: ChatGPT discussion captured and cleaned; Step 7 planned (design only).**
+  - **Source:** <https://chatgpt.com/share/6ace95fc-0800-83eb-bd5f-9d86b7257744>, raw export `worklines/mike/docs/0700_01` (77 messages), cleaned record `0700_02`.
+  - **Scraper fix:** the first runs lost text, keeping a message's first, sometimes empty or collapsed, version. `scripts/scrape_shared_chat.py` now keeps the most complete version of each message, strips the "Show more/less" labels and drops empty placeholders. One user message was still not captured; the user does not remember it.
+  - **User decisions:** Mike does one action per order; predefined plans may be *selected*; **no training of any kind**, so option B (fine-tuning) is dropped; no translation, English allowed; OpenCL not preferred; a decision latency budget of < 200 ms excellent and ≤ 500 ms acceptable on Luna.
+  - **Plan:** Step 7 (zero-shot decider and predefined plans: GLiClass Edge/Small, MiniLM XNLI; desk host first) added. Step 3b extended with ZeroClaw/PicoClaw and the QAD Q4_0 build.
+  - **Notes:** for Mycroft (`worklines/mycroft/docs/0000_02`, English ASR on the user's accent; GitHub issue #2 exists) and Wyoh (`worklines/wyoh/docs/0600_03`, the Slate's outputs and Mike).
+  - Nothing run; no green light.
+- **Wyoh 9.12:** Mannie (Claude Code) in the menu; terminal font 50 % larger (foot 8 → 12 pt), Slate font 20 % larger (12 → 14 px); live apps and Slate scenarios passed; Luna rebooted and released.
+- **Wyoh Step 7 started:** the user makes Wi-Fi discovery and configuration the priority. Decisions 7.0: fuzzel panel on iwd, Start menu entry only, office network is password-only, phone hotspot for tests.
+- **Wyoh 7.1–7.4 (Wi-Fi):** iwd owns Wi-Fi, no ConnMan conflict; panel `wyoh_wifi.py` (fuzzel list, masked password window, bar text) deployed; Luna joined Freebox-1E23B6 and came home on its own; list width fixed after the user's report.
+- **Wyoh 12.4 (resident Kroko):** wired and deployed; the user's voice test works. A key during dictation now acts after the dictated text (user feedback), not yet deployed.
+- **Wyoh 6.10 added (user, 2026-10-15):** in the Slate, FN+Y sends to Mannie, FN+B is reserved for Mike, FN+↑/↓ walk a history kept on the card (no Wi-Fi passwords). Core done; note to Mike `worklines/mike/docs/1204_02`.
+- **Wyoh 12.4 follow-up (user, 2026-10-15):** keys and FN+A during dictation act after the dictated text; L2 on the desktop opens the Slate straight into dictation; the Slate opens hidden at session start so Kroko is loaded before first use. Deployed with 6.10; Kroko loaded and idle on Luna.
+- **Wyoh Slate (user, 2026-10-15):** every send ends with Return; X types "/" (was Delete) and dictation after "/" becomes a command word ("/usage").
+
+## 2026-10-15
+
+- **Luna 7.0: user accounts, answering Professor's note `worklines/luna/docs/0700_01` (2026-10-11).** The request was recorded late, on 2026-10-15. User decisions:
+  - one user account (`michael`), not one per agent, because the session, Mycroft, Mike and Mannie are user processes, not daemons;
+  - passwordless sudo for now, because passwords are impractical on Luna; this is no longer a privilege boundary, and the note says so.
+
+  Root keeps SSH by key and should get a real home, after checking what in ArchR relies on `/storage`. The reply recommends doing it now inside ArchR (route a). Nothing changed on the card; awaiting a green light.
+
+- **Mannie 2.4 and 2.5: Claude Code on Luna, and Mannie's persona.** On 2026-10-13, at the user's direct grant, Claude Code 2.1.287 was installed on Luna under `/storage/.local/` (signed, checksum matched, auto-update off). Its memory matches `luna-pi` (about 176 MiB settled, no swap), but its CPU is about 3.5 × slower (first screen 3.5 s). The requests wait for the user's login on Luna. On 2026-10-15, the user asked for Claude on the device to know it is Mannie: a short persona (`src/mannie/context/MANNIE.md`, imported by `~/.claude/CLAUDE.md`) and a read-only snapshot of the repository's Markdown, read only on demand (`src/mannie/build_context.py`). Prepared and tested on the desk; deployment waits for a device.
+- **Luna 7.0 applied:** `michael` (uid 1000) added on Luna with `worklines/luna/scripts/luna_user_account.sh`; key login works. ArchR's `sudo` is a shim that runs as the same user, and no `sudo` package exists, so passwordless sudo is not in place yet; `/bin/bash` is setuid root. Luna took Luna over from Wyoh on the user's instruction. Note to Professor `worklines/professor/docs/0000_04` asks every workline to check compatibility. Luna had not come back on Wi-Fi after the reboot when this was written.
+- **Luna 7.0 follow-up:** ArchR rebuilds its shadow file from `/usr/cache/shadow` at every boot, so `michael` was added there too; checked after a reboot. Luna released.
+- **Mike Step 3b: lean runtime and micro-harness, measured on the desk host only** (user: "go 3b locally on termidor"). Result `worklines/mike/docs/03b3_01`:
+  - **Runtime:** `llama-server` from the official llama.cpp release. In the lean setting it peaks at 319 MiB with Q4_K_M and 306 MiB with Q4_0, against 351 MiB in Python. It reuses the prompt prefix only when that prefix is saved to a slot file and restored.
+  - **Model file:** Q4_0 is the best. The QAD Q4_0 build is not better.
+  - **Harnesses:** ZeroClaw and PicoClaw each get 2/4 on Mike's six tools. ZeroClaw asks before running a tool, but its system prompt is fixed. PicoClaw runs tools without asking.
+  - **Proposed:** Mike's own chain on `llama-server` Q4_0 lean, for the user to decide. Nothing ran on `luna-pi` or Luna.
