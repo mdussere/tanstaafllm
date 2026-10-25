@@ -185,6 +185,12 @@ Done for the first stage means a measured answer on Luna:
     - point the persona (2.5) at the clone;
     - start `claude --remote-control "Mannie from Luna"` in a `tmux` session in the clone;
     - exchange a message both ways.
+- [ ] 6.7b **Handing Luna over to Mike (proposed, user 2026-10-25; needs 🟩 go).** Today only the user, or Professor at the user's request, can stop Mannie (`mannie stop --save`), and Mike has no launcher that honours `/tmp/luna-brain.lock`. Proposal: `mannie handoff mike`, run by Mannie from Luna itself.
+  - Mannie logs its state in this plan, saves its memory, commits and pushes, and says so in its reply.
+  - It then schedules its own stop outside its process, about a minute later (`systemd-run --user --on-active=60 …`), so its turn ends cleanly first. The stop runs `mannie stop` (Escape, `/exit`), releases the lock, and starts Mike with Mike's launcher.
+  - Mike gives Luna back the same way when it escalates or finishes (`mike handoff mannie`), so the two are never in memory together.
+  - **Depends on:** Mike's launcher on Luna adopting the same lock (note to `mike`, to write when this is green-lit); the user's agreement that Mannie may stop itself. Until then, Mannie never stops or restarts itself.
+  - **Acceptance:** a handoff with `free -m` before and after, the lock held by `mike` with a live pid, and no Claude process left; then the way back to Mannie.
 - [ ] 6.7 **The departure**: the desk session hands over (plan, open items), the first session on Luna starts from the clone, reads its plan, and opens a first issue ("arrived"). Memory with Kroko resident and Claude Code together is measured (MemAvailable 629 MiB on 2026-10-25 before Claude).
 - [ ] 6.8 **The user's goal for Remote Control (2026-10-25):** talk to Mannie live from Claude Desktop, because Luna's screen is too small. The user leaves Luna and Mannie switched on at home, gives Mannie work for the day, and watches it from the office: "la machine qui s'opère toute seule". Mannie works slowly, so it should burn few tokens; how to control usage is part of the step.
   Anthropic's Remote Control: drive the Luna session from the desk or a phone, and `SendMessage` between Luna and the desk. Five tests proposed in [`docs/0606_01`](docs/0606_01_remote-sessions-study.md), to be green-lit; the memory of a resident session on Luna is the key figure.
@@ -321,7 +327,7 @@ date
 | 2026-10-25 16:56 | Mannie from Luna's review of the memory design taken into `mannie` (stale-lock handling, cleanup, `stop --save`, pinned screen texts); on demand; resume only under 60 min. Waiting for the user's go to commit and push the desk's work to `cell/mannie`. |
 | 2026-10-25 17:20 | Request from Mycroft (tanstfaafllm-e6) through Professor, at the user's request: (1) check dictation on the new Arch Linux ARM root; (2) prepare Luna for Mycroft 8.8 (MemAvailable with Wyoh and resident Kroko, one WAV-replay dictation, reboot before and after, ~15 min). Its needs note `docs/0700_02` is not on this branch. Check 1: python3 3.14.8 and arecord present; `michael` is in `audio`; resident Kroko (`mycroft_dictate.py --resident`, root, up 2 h 26, RSS 130 MiB) maps `libsherpa-onnx-c-api.so` and `libonnxruntime.so` from `/storage/.local/opt/mycroft/sherpa-onnx-v1.13.8…`, capturing from card 0 (`pcmC0D0c`, rk817). **No card 1**: only rk817 in `/proc/asound/cards`, only the root hub in `lsusb`, so the USB-C headset is not seen. 8.8 waits for the user: headset, my stop during the slot, the reboots. |
 | 2026-10-25 20:05 | User: a second Claude Code (root, `/storage/.local/bin/claude`, ~250 MiB) came from Wyoh's "Mannie" menu entry; the user closed it and asked that the entry open this session. Added `mannie open` (start if needed, then attach) to the launcher; the deployed `wyoh-mannie.desktop` now runs it as `michael` (original kept). Note to Wyoh for its repository copy: `worklines/wyoh/docs/0000_09`. The user's two new Luna rules (SSH needs Mannie's go, no reboot while Mannie runs) saved in auto memory until the desk commits them. |
-
+| 2026-10-25 21:08 | User asked how Mannie can step aside for Mike; proposal recorded as 6.7b (`mannie handoff mike`: save, then a stop scheduled outside the session, lock released, Mike started). Waiting for 🟩 go and for Mike's launcher. |
 ---
 
 ## Workline artifacts
