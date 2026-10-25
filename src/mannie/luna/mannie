@@ -1,0 +1,107 @@
+#!/bin/bash
+# Start, stop and find Mannie from Luna (plan_mannie.md 6.7a, docs/0607_01).
+#
+#   mannie start [--resume|--fresh]  start in tmux and connect Remote Control as
+#                                   "Mannie from Luna". By default it resumes the last
+#                                   conversation if it is under an hour old (the prompt
+#                                   cache), else starts fresh: memory and the plan carry
+#                                   the work over.
+#   mannie stop [--save]            Escape, then /exit, so the conversation is saved.
+#                                   --save first asks Mannie to log, save memory and
+#                                   commit (one request).
+#   mannie status                   running or not, the brain lock, the last screen line
+#   mannie attach                   open the session (tmux attach)
+#
+# Mannie and Mike are expensive and never run together: /tmp/luna-brain.lock holds
+# "<name> <pid>"; a lock whose pid is dead counts as free.
+set -u
+SESSION=mannie
+NAME="Mannie from Luna"
+CLONE=$HOME/git/tanstfaafllm
+CLAUDE=$HOME/.local/bin/claude
+HISTORY=$HOME/.claude/projects/-home-michael-git-tanstfaafllm
+LOCK=/tmp/luna-brain.lock
+RESUME_MAX_AGE_MIN=60
+# Screen texts this script waits for, checked on Claude Code 2.1.287 (auto-update is
+# off). Check them again after any upgrade.
+UI_PROMPT_READY="for agents"
+UI_RC_ACTIVE="rc active"
+UI_RC_DIALOG="This session is available"
+UI_REPLY_DONE="^● DONE"   # Claude's reply line, not the typed prompt
+
+running() { tmux has-session -t "$SESSION" 2>/dev/null; }
+screen() { tmux capture-pane -p -t "$SESSION" 2>/dev/null; }
+wait_for() {  # wait_for <text> <seconds>
+  for _ in $(seq 1 "$2"); do screen | grep -qF "$1" && return 0; sleep 1; done
+  return 1
+}
+lock_holder() {  # prints the live holder's name, or nothing
+  read -r name pid < "$LOCK" 2>/dev/null || return 0
+  [ -n "${pid:-}" ] && kill -0 "$pid" 2>/dev/null && echo "$name"
+}
+take_lock() {
+  holder=$(lock_holder)
+  if [ -n "$holder" ] && [ "$holder" != mannie ]; then
+    echo "mannie: $holder holds $LOCK; stop it first" >&2
+    return 1
+  fi
+  rm -f "$LOCK"
+  (set -o noclobber; echo "mannie $1" > "$LOCK") 2>/dev/null || { echo "mannie: could not take $LOCK" >&2; return 1; }
+}
+release_lock() { [ "$(cut -d' ' -f1 "$LOCK" 2>/dev/null)" = mannie ] && rm -f "$LOCK"; return 0; }
+fail() { echo "mannie: $1; stopped and lock released" >&2; tmux kill-session -t "$SESSION" 2>/dev/null; release_lock; return 1; }
+
+start() {
+  if running; then echo "mannie: already running (mannie attach)"; return 0; fi
+  holder=$(lock_holder)
+  if [ -n "$holder" ] && [ "$holder" != mannie ]; then echo "mannie: $holder holds $LOCK; stop it first" >&2; return 1; fi
+  mode=${1:-auto}
+  last=$(ls -t "$HISTORY"/*.jsonl 2>/dev/null | head -1)
+  if [ "$mode" = auto ]; then
+    if [ -n "$last" ] && [ -n "$(find "$last" -mmin -"$RESUME_MAX_AGE_MIN")" ]; then mode=--resume; else mode=--fresh; fi
+  fi
+  [ "$mode" = --resume ] && [ -z "$last" ] && mode=--fresh
+  if [ "$mode" = --fresh ]; then
+    tmux new-session -d -s "$SESSION" -x 120 -y 40 -c "$CLONE" "$CLAUDE --remote-control \"$NAME\""
+  else
+    tmux new-session -d -s "$SESSION" -x 120 -y 40 -c "$CLONE" "$CLAUDE --continue"
+  fi
+  take_lock "$(tmux display -p -t "$SESSION" '#{pane_pid}')" || { tmux kill-session -t "$SESSION"; return 1; }
+  wait_for "$UI_PROMPT_READY" 90 || { fail "Claude did not reach its prompt"; return 1; }
+  if [ "$mode" = --resume ]; then
+    # --remote-control is ignored on resume: reconnect from inside the session.
+    tmux send-keys -t "$SESSION" "/remote-control \"$NAME\"" Enter
+    wait_for "$UI_RC_DIALOG" 30 && tmux send-keys -t "$SESSION" Escape
+  fi
+  if wait_for "$UI_RC_ACTIVE" 30 || [ "$mode" = --resume ]; then
+    echo "mannie: started (${mode#--}), Remote Control as \"$NAME\""
+  else
+    echo "mannie: started (${mode#--}); Remote Control not confirmed (mannie attach)"
+  fi
+}
+
+stop() {
+  if running; then
+    tmux send-keys -t "$SESSION" Escape
+    if [ "${1:-}" = --save ]; then
+      tmux send-keys -t "$SESSION" "You are being stopped: add a time-log row to the plan, save durable facts to memory, commit on cell/mannie, then reply DONE." Enter
+      done_ok=1; for _ in $(seq 1 600); do screen | grep -qE "$UI_REPLY_DONE" && { done_ok=0; break; }; sleep 1; done
+      [ "$done_ok" = 0 ] || echo "mannie: no DONE after 10 min; stopping anyway" >&2
+    fi
+    sleep 1
+    tmux send-keys -t "$SESSION" "/exit" Enter
+    for _ in $(seq 1 30); do running || break; sleep 1; done
+    running && tmux kill-session -t "$SESSION"
+  fi
+  release_lock
+  echo "mannie: stopped"
+}
+
+case "${1:-status}" in
+  start) start "${2:-auto}" ;;
+  stop) stop "${2:-}" ;;
+  status) if running; then echo "mannie: running"; screen | grep -v '^\s*$' | tail -1; else echo "mannie: stopped"; fi
+          echo "brain lock: $(cat "$LOCK" 2>/dev/null || echo free)" ;;
+  attach) exec tmux attach -t "$SESSION" ;;
+  *) sed -n '2,17p' "$0"; exit 2 ;;
+esac
