@@ -39,8 +39,8 @@ Done for the first stage means a measured answer on Luna:
 
 - No local model. That is Mike's line.
 - No secret in the repository, the plan, the logs or the results. The API key or login lives only on Luna, outside Git, readable only by its owner.
-- No unattended or auto-approve mode. Every action that changes the system stays subject to the user's approval, as Claude Code normally does. Professor's Omarchy analysis (`0601_01`) already rejected copying unattended agent authority.
-- No change outside `/storage/.local/` and the user's home on Luna. No boot, card or ArchR change. Creating a Luna user account, if needed, belongs to the Luna workline.
+- No unattended or auto-approve mode. Every action that changes the system stays subject to the user's approval, as Claude Code normally does. Professor's Omarchy analysis (`0601_01`) already rejected copying unattended agent authority. *Changed for Mannie from Luna (user, 2026-10-25): it runs in Claude Code's auto mode, where a classifier lets lower-risk actions through and blocks the rest; anything destructive or hard to undo is still asked first.*
+- No change outside `/storage/.local/` and the user's home on Luna. No boot, card or ArchR change. Creating a Luna user account, if needed, belongs to the Luna workline. *Superseded for Step 6 (user, 2026-10-25): Mannie now operates Luna, starting with `pacman -S git`; boot partition and card layout changes still need the user's explicit go.*
 - No Mycroft, Wyoh or Mike code. This line uses their interfaces and leaves notes.
 
 ## Key decisions / assumptions
@@ -55,6 +55,14 @@ Done for the first stage means a measured answer on Luna:
   - **Vocabulary (question 5):** passed to Professor; the user settles it with Professor.
   - **Test machine:** `luna-pi` is reserved for Mannie's tests. Steps 1 and 2 run there. Luna is reserved for Mycroft and Wyoh for now.
 - **luna-pi facts** (`worklines/luna/docs/0101_01_luna-pi-quick-check.md`): Raspberry Pi 4, Debian 13 (trixie) arm64, about 8 GiB RAM, 2 GiB zram swap, 13.9 GiB root filesystem. SSH alias `luna-pi`, user `michael` (not root). Its memory proves nothing about a 1 GiB device; the figures there are a reference for Luna, not evidence of fit.
+- **Finding (2026-10-25): `michael` has no root access on Luna.** ArchR's `/usr/bin/sudo` is a shim that strips sudo's options and runs the command as the caller ("everything already runs as root"); there is no `sudoers`. The "passwordless sudo" recorded for Luna 7.0 does not exist. System work is done as root over SSH from the desk (`ssh luna`). A real `sudo` (or `doas`) for `michael` is needed before Mannie, running on Luna as `michael`, can do system work itself: user to decide.
+- **Account (user, 2026-10-15):** from now on Mannie works on Luna as the user `michael` (Luna 7.0: key login, passwordless sudo, home on the `LUNA_HOME` partition), not as root. On 2026-10-25 the graphical session still ran as root; moving it is Wyoh's and the Luna line's work.
+- **The move (user, 2026-10-25), Step 6:** "on envoie Mannie sur Luna". Until now the cell prepared and operated Luna from the desk host (Termidor). When Luna is ready, Mannie goes there: Claude Code and a clone of the repository in `michael`'s home, committing its own work and talking to the cell through Git and **GitHub issues** (thread and mailbox). Anthropic's Remote Control is a later test. At the end, a travel journal: how Mannie left Termidor and settled on Luna alone, the reverse of the novel, where Mannie travels from Luna to Earth.
+- **User decisions (2026-10-25):**
+  - **Mannie operates Luna from now on** and makes it grow: system work on Luna (packages, services, accounts) is part of Mannie's assignment, within the normal permission prompts. Until now it belonged to the Luna line; Professor is told.
+  - **`git` is installed with `pacman`** (an accepted change to ArchR's system).
+  - **One branch for Mannie, `cell/mannie`**, no sub-branches; work reaches `main` through pull requests. Other cell members may get their own `cell/<name>` branch later.
+  - **Messages or issues:** not decided. The user first wanted a short study of Remote Control and cross-machine `SendMessage`: [`docs/0606_01`](docs/0606_01_remote-sessions-study.md).
 - *To verify, not assumed:* that Claude Code has a Linux arm64 build that runs on Luna's glibc 2.40 and on Debian trixie; its RSS; whether it needs Node.js; how a subscription login works without a browser on the device.
 
 ## Risks / constraints
@@ -122,6 +130,136 @@ Done for the first stage means a measured answer on Luna:
 - [ ] 5.2 Note to Mike: the escalation contract (Mike's Step 6.3): what triggers it, and what the user sees and pays.
 - **Acceptance:** notes left in the receiving lines' `docs/`.
 
+### Step 6 — Mannie moves to Luna (user, 2026-10-25)
+**Status**: 🧪 6.1–6.5 in progress (🟩 user, 2026-10-25 00:28: "tu as mon feu vert")
+- [ ] 6.1 **Claude Code for `michael`**: install 2.1.287 from the binary already verified on Luna (no new download) into `/home/michael/.local`, auto-update off; the user logs in as `michael`; then the 2.4 request measurements and 2.5 (persona and snapshot) under that account.
+  - **Installed (`results/mannie/luna-michael-claude/20261024T222859Z/`, 4 tests pass):** from root's verified copy (checksum matched, no Wi-Fi copy), in 92 s (35 s user CPU); `--version` 0.08 s, `--help` 1.6 s, interactive first screen 3.3 s, settled 177 MiB RSS, with Kroko resident: lowest MemAvailable 522 MiB, 2 MiB of swap. `~/.local/bin` added to `michael`'s PATH (`~/.bashrc`, `~/.bash_profile`). The harness now targets `michael@luna` (`MANNIE_LUNA_LIVE=1`).
+  - **Open:** the user's login as `michael` (`ssh michael@luna`, then `claude auth login`).
+- [ ] 6.2 **Git on Luna**: Luna has no `git` (2026-10-25). **Decided:** `sudo pacman -S git`, done by Mannie (user, 2026-10-25).
+  - **Done (2026-10-25, user's choice "b minimal"; evidence `results/mannie/luna-git/20261025T021806Z/`):** `git` 2.56.0-1 and `zlib-ng` 2.3.3-1 from Arch Linux ARM, checked on the desk (SHA-256 equal to the index, good signatures from the Arch Linux ARM Build System key `68B3537F39A313B3E574D06777193F152BDBE6A6`, cross-checked on archlinuxarm.org), installed as root with `pacman -U --assume-installed perl,perl-error,perl-mailtools,shadow`. The original `git` package conflicts with ArchR's `/usr/share/locale` symbolic link (`--overwrite` would break it; `NoExtract` does not help), so it was **repacked** without its translations, `sysusers.d/git.conf` and `git-daemon` units; every other file is the signed original. Explanation on Luna in `/usr/bin/git.readme` (copy: `src/mannie/luna/git.readme`). Checked: `git --version`, HTTPS `ls-remote`, a local commit. **Noise:** every command prints `libpcre2-8.so.0: no version information available` (git built against pcre2 10.47 with symbol versions; ArchR's 10.45 has none); ArchR's pcre2 also serves Sway and glib, so it was not replaced (user to decide).
+  - **Earlier blocker:** ArchR's only repository (`[archr]`, 543 packages, index unchanged upstream on 2026-10-25) has no `git`, `perl` or `tmux`. Options put to the user: (a) **micromamba** (one static aarch64 binary) with conda-forge's `git` 2.56 and `tmux` 3.8 in a prefix under `~/.local`, no system change (recommended); (b) Arch Linux ARM packages with `pacman -U`, mixing a second distribution's libraries into ArchR (risky); (c) building from source (no compiler on Luna). The repository is small (16 MB of `.git`; `results/` is not tracked).
+- [ ] 6.3 **GitHub credentials on Luna** (proposal, user to decide):
+  - **Done:** key `~/.ssh/id_ed25519_github` generated on Luna (`SHA256:nZr/aYaKzZcmPieEkNCwzQYFfFVWUO0cc+PpBM2ZbnE`, comment `mannie@luna (tanstfaafllm deploy key)`), `~/.ssh/config` uses it for `github.com`; GitHub's host key taken from `api.github.com/meta` and checked against the published fingerprint (`SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU`), as Luna has no `ssh-keyscan`. **Open:** the user adds the public key as a deploy key with write access.
+  - *Git:* a **new SSH key generated on Luna** (`ed25519`, private key never leaves Luna), added to `mdussere/tanstfaafllm` as a **deploy key with write access**. It opens only this repository. The desk host's private keys are **not** copied: Luna runs an agent with shell tools and passwordless sudo, and a copied key would open every repository and server those keys reach.
+  - *Issues:* a deploy key cannot use the API. `gh` (official `linux_arm64` release, unpacked under `~/.local/bin`, no system change) with a **fine-grained token** limited to this repository, Issues read/write only, created by the user and pasted by the user into `gh auth login` on Luna. Never in the repository or the logs.
+- [ ] 6.4 **Clone and identity**: clone into `/home/michael/git/tanstfaafllm`; commit identity distinct from the desk sessions (e.g. `Mannie on Luna`, with the user's address or a no-reply one); `.claude` settings and the persona point at the clone instead of a snapshot (2.5's snapshot then becomes unnecessary or a fallback).
+- [ ] 6.5 **How Mannie's work reaches `main`**. **Decided (user, 2026-10-25):** one branch, `cell/mannie`, and pull requests; no sub-branches.
+- [ ] 6.6 **GitHub issues as the cell's mailbox** (open; study [`docs/0606_01`](docs/0606_01_remote-sessions-study.md): cross-machine `SendMessage` works when both sessions are connected to Remote Control, so issues may be only the offline mailbox): labels per workline (`to:professor`, `from:mannie`, …), one issue per request, replies as comments. This changes the `cell-coordination` rules, which are Professor's: proposal sent to Professor (recorded as `plan_professor.md` 5.5, 2026-10-25), decision with the user.
+- [ ] 6.7a **First contact, "Mannie from Luna" (user, 2026-10-25 14:56).** There will be two Mannies: **Mannie from Luna**, a Claude Code session running on Luna as `michael`, and this session, which stays on Termidor (the user may stop it later). First goal: start Mannie from Luna and check that it and the desk sessions (this one, then Professor) can talk through Claude Code's Remote Control (`docs/0606_01`). Then its memory: it resumes the same session, and keeps enough memory to go on working even after a full reset. In the end Mannie from Luna takes over this workline.
+  - **Checked 2026-10-25 14:56:**
+    - on Luna: Claude Code 2.1.287 in `michael`'s `~/.local/bin`, kept on `LUNA_HOME`, auto-update off; `tmux`, `git` and `gh` installed;
+    - Luna's GitHub key is unchanged (`SHA256:nZr/aYaK…`).
+  - **Waiting for the user:**
+    - (1) add the deploy key on GitHub (with write access); GitHub still answers "Permission denied";
+    - (2) log in to Claude as `michael` on Luna (`ssh michael@luna`, then `claude auth login`); no credential file yet;
+    - (3) ~~connect this desk session to Remote Control~~: already connected; the user was talking to it from a phone (2026-10-25). `ListAgents` shows only Termidor's sessions until one runs on Luna.
+  - **Started 2026-10-25 ~16:05:**
+    - Setup:
+      - the user added the deploy key and logged in as `michael`;
+      - the repository is cloned to `~/git/tanstfaafllm` (`main` at `ec4d26a`), on branch `cell/mannie`, with git identity "Mannie from Luna";
+      - the persona was rewritten for Mannie from Luna and deployed: it covers its clone, plan, Luna operation, auto mode and the cell channel; 2.7 KB; `test_mannie_context.py` passes;
+      - Claude Code runs in `tmux` session `mannie`: `claude --remote-control "Mannie from Luna"`;
+      - the first-run login screen was skipped by setting `hasCompletedOnboarding` in `~/.claude.json` (the existing login was reused); the clone was trusted.
+    - **Auto mode:** Claude Code now starts in auto mode by default; **the user chose to keep it** (non-goal updated).
+    - **Messaging:**
+      - `ListAgents` here shows `Mannie from Luna [c004a3] · Remote Control`;
+      - Termidor → Luna works: the message arrived;
+      - Mannie from Luna declined to answer a peer and showed the user its would-be reply instead, as `cell-coordination` requires. That shows the persona, the clone and the rules are loaded;
+      - **Luna → desk works** (Professor, 2026-10-25): Professor pinged it, and its three-line reply reached Professor over Remote Control. It is Claude Code on Luna as `michael`, in `~/git/tanstfaafllm` on `cell/mannie`, with its persona loaded through `~/.claude/CLAUDE.md`. It also reported the declined peer message. Professor registered it in `worklines/agents.md` as "mannie (on Luna) | Mannie from Luna | c004a3". **Both directions work.**
+  - **Memory (user, 2026-10-25 16:40):** Mannie and Mike are both expensive and mutually exclusive, so Mannie from Luna will often be stopped and restarted. It must find its session again and keep a memory across sessions and full resets. All exchanges with Mannie from Luna go through Professor (user).
+    - **Restart checked:** `claude --continue` resumes the conversation. `--remote-control` is ignored on resume; `/remote-control "Mannie from Luna"` inside the resumed session reconnects to the same claude.ai session and the same `ListAgents` reference.
+    - **Design:** [`docs/0607_01`](docs/0607_01_mannie-from-luna-memory.md). Three layers: the conversation, Claude Code's auto memory on `LUNA_HOME`, and the plan in Git. The habits are in the persona's new "Memory" section (3.3 KB).
+    - **Launcher:** `~/.local/bin/mannie` (`src/mannie/luna/mannie`): `start [--fresh]`, `stop`, `status`, `attach`; brain lock `/tmp/luna-brain.lock`, to be shared with Mike.
+    - **Mannie from Luna's review (through Professor), all taken into the launcher:**
+      - the name is quoted;
+      - the history check is limited to this project;
+      - the lock holds "name pid" (a dead pid counts as free) and is taken with `noclobber`;
+      - a failed start cleans up;
+      - Escape comes before `/exit`;
+      - an optional `stop --save`;
+      - the screen texts are pinned for 2.1.287.
+    - **Decisions:** on demand, not at boot. `start` resumes only a conversation under 60 min old, otherwise it starts fresh. Mannie from Luna saved `start-stop.md` in its auto memory. It has one local commit on `cell/mannie` (`a5e5a9c`, not pushed) to merge once the desk's work is pushed.
+    - Relayed through Professor for Mannie from Luna's review. **Open:** the user tests `mannie stop` and `mannie start`; whether to start at boot or on demand; a note to Mike about the lock.
+  - **Then Mannie (desk):**
+    - clone the repository to `/home/michael/git/tanstfaafllm` on Luna, branch `cell/mannie`;
+    - point the persona (2.5) at the clone;
+    - start `claude --remote-control "Mannie from Luna"` in a `tmux` session in the clone;
+    - exchange a message both ways.
+- [ ] 6.7 **The departure**: the desk session hands over (plan, open items), the first session on Luna starts from the clone, reads its plan, and opens a first issue ("arrived"). Memory with Kroko resident and Claude Code together is measured (MemAvailable 629 MiB on 2026-10-25 before Claude).
+- [ ] 6.8 **The user's goal for Remote Control (2026-10-25):** talk to Mannie live from Claude Desktop, because Luna's screen is too small. The user leaves Luna and Mannie switched on at home, gives Mannie work for the day, and watches it from the office: "la machine qui s'opère toute seule". Mannie works slowly, so it should burn few tokens; how to control usage is part of the step.
+  Anthropic's Remote Control: drive the Luna session from the desk or a phone, and `SendMessage` between Luna and the desk. Five tests proposed in [`docs/0606_01`](docs/0606_01_remote-sessions-study.md), to be green-lit; the memory of a resident session on Luna is the key figure.
+- [ ] 6.9 **Travel journal**: `docs/` page told by Mannie: leaving Termidor, settling on Luna, working with the cell from afar.
+- **Acceptance:** a Claude Code session on Luna, as `michael`, commits and pushes from its own clone, opens and answers a GitHub issue, and the desk cell receives it.
+
+### Step 7 — An Arch Linux ARM root on ArchR's boot path (proposed, user 2026-10-25)
+**Status**: 🧪 7.1 done; 🟩 7.2–7.3 (user, 2026-10-25 12:45: "je suis d'accord avec les propositions … modèle ton environnement selon tes besoins. Go"; the card work stays in this line, since Mannie now operates Luna). Backup not run yet (needs the user's `sudo`); nothing is written before it is verified. Earlier: 7.1 in progress (user, 2026-10-25 ~08:55: card in Termidor, "déjà fait le backup … télécharge Arch Linux ARM … commence à préparer l'image … travaille un peu en autonomie … demande à Professor"). Preparation only: nothing is written to the card without the user's explicit go.
+
+The user asked why Luna runs ArchR rather than Arch Linux ARM, since the cell has had to adapt nearly everything. ArchR was chosen at bring-up because it boots R36 clones: its kernel, the panel DTB from Arch R Flasher, and the `rk915` Wi-Fi driver (`docs/03`). Its userland is a gaming distribution: everything as root, home in `/storage`, a `sudo` shim, and a 543-package repository without `git`, `perl` or `tmux`. This is the Luna line's open 7.1, option 2 (recommended by Wyoh), now Mannie's to carry (user, 2026-10-25: Mannie operates Luna).
+
+- **Shape (user, 2026-10-25):** image the current card first; keep p1 `BOOT` (kernel 6.12.94, DTB, overlays, `extlinux.conf`, initramfs), `LUNA_HOME` and `STORAGE`; replace `ARCHR_ROOT`'s contents with the official `ArchLinuxARM-aarch64-latest` root, prepared offline on Termidor (chroot with aarch64 emulation, fast network); carry over ArchR's 6.12.94 modules and firmware; reconfigure Wi-Fi, SSH host keys, `michael` with a real `sudo`, and Wyoh's session. Proposed on a second disposable card, the current card kept as fallback.
+- **First compatibility check (2026-10-25, from Luna and ALARM's index):** no blocker found. glibc 2.43 needs a far older kernel; systemd 262 needs ≥ 5.10 (≥ 5.14 recommended), and Luna runs 6.12.94 with cgroup2, fanotify, namespaces, bpf and seccomp present. ArchR runs systemd 255 in hybrid cgroup mode; 262 is cgroup2 only, which the kernel has.
+- **To settle in the study:**
+  - keep ArchR's kernel: drop or ignore ALARM's `linux-aarch64` (7.3) and `mkinitcpio`;
+  - the GPU route: ArchR runs Sway on the proprietary Mali stack (`mali_kbase` + `libmali`), and `/usr/lib/modprobe.d/mali-gpu-noauto.conf` blacklists both drivers until one is chosen; the kernel has `panfrost.ko`, so ALARM's Mesa/Panfrost is the standard route, to measure with Sway and the Slate, with `libmali` as a fallback;
+  - the kernel configuration against systemd's list (Luna has no `/proc/config.gz`; read ArchR's kernel sources);
+  - the initramfs (`root=LABEL=ARCHR_ROOT`, `boot=`, `disk=` arguments) and ArchR's hardware userland (RK817 audio, `hwid_adc`, `textmode.target`, GPU selection);
+  - the work of Step 6 survives in `/home`; `git` then comes from `pacman -S`.
+- [ ] 7.1 Study (desk, read-only on Luna): what to carry over, how to build the root, the test list. Acceptance: the user approves the study.
+  - **Backup:** the user says it is done; Mannie found no image newer than `luna-archr-before-reshape_20261005_124112.img.zst` in `/data/michael/tanstaafllm/luna-images/` or the user's home. To confirm with the user before any write.
+  - **Card read (2026-10-25, read-only):**
+    - `BOOT` has `KERNEL` (uncompressed arm64 Image, md5 matches `KERNEL.md5`) with a built-in LZO initramfs, `boot.scr` (picks the DTB by ADC, then `extlinux.conf`), four DTBs, and our overlays.
+    - **ArchR's `/init`** (source `projects/ArchR/packages/sysutils/busybox/scripts/init`): resolves `LABEL=`; mounts `ARCHR_ROOT` read-write on `/sysroot`, `BOOT` read-only on `/flash` and `STORAGE` on `/storage`; moves both into the root; then `switch_root … /usr/lib/systemd/systemd`. It warns and waits 60 s when `/usr/lib/kernel-overlays/base/lib/modules/$(uname -r)/` is missing. An Arch Linux ARM root fits if it has `/flash`, `/storage`, that path (a relative link to `/usr/lib/modules`), and a `textmode.target` (on the kernel command line).
+    - **Kernel config** (ArchR commit `2d04170214`, 2026-07-08, matching the 2026-07-09 image): every option systemd requires is set (only `DMIID`, absent on ARM, and the optional `CFS_BANDWIDTH` are missing); `DRM_PANFROST=m`; modules uncompressed.
+    - **Modules and firmware** live in `/usr/lib/kernel-overlays/base/lib/{modules/6.12.94,firmware}` (LibreELEC style, linked from `/run` at boot): 317 modules including `rk915`, `mali-bifrost`, `archr-joypad`; 40 MB of firmware.
+    - **The cell's own units live in `STORAGE/.config/system.d`**, which ArchR reads: `home.mount`, iwd and sshd persistence drop-ins (`/storage/.cache/iwd`, `/storage/.cache/ssh`), and Wyoh's `wyoh-sway`, `wyoh-gamepad`, `wyoh-layout`. Arch Linux ARM will not read that directory: the first new root boots in text mode with Wi-Fi and SSH, reusing iwd's known networks and the SSH host keys in place (the private keys are root-only and are not copied); Wyoh's session is a second phase with Wyoh, after the GPU choice.
+  - **Image built (2026-10-25 09:30; study [`docs/0701_01`](docs/0701_01_alarm-root-study.md); evidence `results/mannie/alarm-root/`):** `luna-alarm-root.ext4` in `/data/michael/tanstaafllm/tmp/mannie-alarm/` (24 GiB apparent, 2.2 GB used, label `ARCHR_ROOT`, `e2fsck` clean), from the signed Arch Linux ARM tarball (2026-08-05) and ArchR's modules and firmware. `michael` uid 1000 with sudo; root locked, SSH by key with Luna's host keys on `STORAGE`; iwd with the known networks on `STORAGE`; zram as ArchR; tty1 autologin as the rescue path; `luna-firstboot` installs 21 signed packages offline with Luna's own pacman. Tests `test/mannie/test_alarm_root.py` pass (default and image). Write script `src/mannie/alarm/write-luna-root.sh` (user-run, backs up `ARCHR_ROOT` with `e2image` first) **not run**. Wyoh's session, Mycroft and audio are a second phase.
+  - **Build method (desk, no root):** `fakeroot` for ownership, `mke2fs -d` for an ext4 image labelled `ARCHR_ROOT`. No `qemu`, so packages are installed natively on Luna at first boot by `pacman`, from a cache filled on the desk (`src/mannie/alarm/fetch_packages.py`: dependency closure, SHA-256 against the database, signature from the Arch Linux ARM key).
+- [ ] 7.2 **Back up the whole card** (user, 2026-10-25: there is no backup system yet and only one card; back it up, recover what is on it to feed the next image, then rewrite the card). Script `src/mannie/luna/backup-luna-card.sh`, user-run with `sudo`, adapted from the Luna line's factory-card archive script:
+  - pins the card on its exact size (62,534,975,488 bytes) and its four filesystem UUIDs;
+  - unmounts it and sets it kernel read-only;
+  - makes the raw image (`.img.zst`), with its SHA-256 computed while reading and checked again on the decompressed image;
+  - adds `STORAGE` and `LUNA_HOME` as tar files (read-only mounts, numeric owners, ACLs and xattrs; mode 400, because they hold Luna's SSH host keys and Wi-Fi passphrases);
+  - writes everything to `/data/michael/tanstaafllm/luna-images/archr/luna-archr-before-alarm_<stamp>.*`.
+  Static safety tests: `test/mannie/test_luna_card_scripts.py` (pass). **Not run yet:** it needs the user's `sudo`.
+  - **Done 2026-10-25 13:36–13:58 (user's `sudo`):** `luna-archr-before-alarm_20261025_133603.*` in `/data/michael/tanstaafllm/luna-images/archr/`: raw image 4.85 GB compressed, which decompresses to the card's exact 62,534,975,488 bytes with the raw-card SHA-256 `b7bb0c4b…bd73`; `STORAGE` tar 652 MB and `LUNA_HOME` tar 113 MB (mode 400). Mannie re-checked every SHA-256 and `zstd -t`.
+  - 2026-10-25 12:50: the user thought the backup was done; no `luna-archr-before-alarm_*` file exists and the card was never set read-only. Still to run.
+- [ ] 7.2b **Notes from the other lines (Professor's relay, 2026-10-25), read before 7.3:**
+  - **Wyoh** [`docs/0702_01`](docs/0702_01_note-from-wyoh-session-needs-on-a-new-root.md):
+    - root packages: Sway, seatd, foot, grim, Python 3, xkeyboard-config, Liberation fonts, SDL2, ALSA libraries, NetSurf's libraries;
+    - devices for `michael`: `input`, `/dev/uinput`, `audio`, iwd's D-Bus policy and state, a seatd seat;
+    - its units in `/storage/.config/system.d` and `textmode.target`;
+    - root-and-`/storage` assumptions (`HOME=/storage`, the MCP venv built for Python 3.13).
+    - **Main risk: the GPU.** Panfrost failed on this device (black panel, 2026-10-11), so Sway needs ArchR's libmali, `/usr/lib/archr/gpudriver` and its libmali hook, with `mali_kbase`.
+  - **Mycroft** [`docs/0700_02`](docs/0700_02_note-from-mycroft-dictation-on-the-new-root.md): `/usr/bin/python3` (standard library only), `arecord` with alsa-lib's `plug` plugin, glibc and libstdc++, `audio` for `michael` if the provider stops running as root; its harness needs root SSH and reboots (kept: root logs in by key).
+  - **User decisions (2026-10-25 13:50):** complete the image first, then boot to text mode; Mannie relocates to Luna, operates it over SSH, then repairs Sway from there. **Done:** Wyoh's and Mycroft's packages are added (`packages.txt`, 125 packages, 161 MB), and ArchR's Mali stack is copied, inactive, to `/usr/local/lib/archr-mali/`. No graphical unit is enabled. First boot installs `iwd` and `sudo` first, so SSH answers within minutes. The done flag is set only if the full install succeeds. The write script makes only the disk and `ARCHR_ROOT` writable again, after the backup's kernel read-only.
+  - **Consequence:** the current image boots to text mode only, so Luna's screen session stops until a second phase. Adding Wyoh's and Mycroft's packages comes to 125 packages and 161 MB with Arch Linux ARM's Sway (wlroots 0.20, newer than ArchR's 1.11) and Mesa. ArchR's Mali stack must be carried over from the card, which is unmounted until the backup ends. Put to the user: write the text-mode root now, or extend the image first.
+- [ ] 7.3 (User, 2026-10-25: the same card, after the backup; only `ARCHR_ROOT` is replaced, and `BOOT`, `LUNA_HOME` and `STORAGE` are kept, as proposed.) Image rebuilt at 12:55 with Mannie's working set (`src/mannie/alarm/packages.txt`: 40 packages, 69 MB, including `github-cli`, `jq`, `ripgrep`, `man-db`); the signing key is now in the repository (`archlinuxarm-builder.asc`). Tests pass. Then: write it (`write-luna-root.sh`, user-run); boot; test Wi-Fi, SSH, Sway, gamepad, audio and the USB-C microphone, Kroko, Claude.
+
+  - **Written and booted (2026-10-25 14:27; user ran `write-luna-root.sh`):** Arch Linux ARM on ArchR's kernel 6.12.94. Luna kept its SSH host key; Wi-Fi was up in under 90 s. `luna-firstboot` finished in about 3 minutes (290 packages; `iwd`, `sudo`, zram 491 MiB; the two `setcap` calls failed, rc=1, not yet looked at). `michael` has a real `sudo`. No failed unit.
+- [x] 7.4 **Sway back on the new root** (user: "remets-nous une interface graphique", 2026-10-25). Done 14:35:
+  - ArchR's Mali stack was put back from the image's inactive copy (`src/mannie/luna/install-archr-mali.sh`); `mali_kbase` binds (`/dev/mali0`).
+  - Wyoh's units were linked from `/storage/.config/system.d` and enabled; the session runs as root, as on ArchR. Sway 1.12 renders on Mali, the gamepad is attached, the bar shows "Mick wifi home".
+  - After a reboot the session came back by itself in about 1 minute.
+  - Wyoh's MCP venv was rebuilt for Python 3.14. An MCP screenshot needs `HOME=/storage`, because root's home is now `/root`.
+  - Evidence: `results/mannie/luna-sway/20261025T1335Z/` (grim, after the reboot, and the MCP capture). Note to Wyoh: `worklines/wyoh/docs/1300_01`.
+  - **Memory (2026-10-25 14:43, 8 min after boot, session idle, Kroko resident, Slate and keyboard started):** 983 MiB total, 435 MiB used, **547 MiB available**, zram 491 MiB unused, memory pressure 0. PSS: Mycroft/Kroko 153 MiB, Wyoh's session 167 MiB (Sway 63, swaybg 21, gamepad 19, layout 19, Slate foot 15 + 12, swaybar 9, keyboard 8), system 97 MiB (with Mannie's SSH probe). ArchR with the same set (2026-10-25 00:05): 629 MiB available, so about **80 MiB less** on the new root, roughly from Sway 1.12/wlroots 0.20 (+13 MiB RSS), the four Python 3.14 processes (about +5 MiB each), Kroko (+9 MiB), and larger journald and resolved. Room left for Claude Code (about 180 MiB idle, 244 MiB peak per request on `luna-pi`): about 300 MiB before zram is touched.
+  - **Open:** the GLES-only SDL2 bind (Arch Linux ARM's file name differs); `wyoh-gamepad`'s focus subscription error; menu, Slate, Kroko, Wi-Fi panel and apps not yet checked; the session as `michael`; `setcap`.
+- [x] 7.5 **Keyboard rescue: Ctrl+Alt+F1 brings back the console** (user, 2026-10-25: keep michael's autologin console on tty1 and reach it with the classic keys from a USB keyboard if SSH or the desktop fail). The kernel has no SysRq (`CONFIG_MAGIC_SYSRQ` unset).
+  - Sway now runs on **tty7**, through a drop-in `/etc/systemd/system/wyoh-sway.service.d/10-luna-vt7.conf` (`chvt 7`; Wyoh's unit is unchanged); tty1 keeps michael's autologin console.
+  - `luna-vt-rescue.service` (`src/mannie/luna/luna-vt-rescue.py`, standard-library Python, about 15 MiB RSS) reads every keyboard directly, picks up new ones within 5 s, and runs `chvt N` on Ctrl+Alt+F1…F12, so it works even if Sway is stuck.
+  - Checked with a uinput virtual keyboard (`test/mannie/test_luna_vt_rescue.py` + `luna_vt_rescue.feature`): tty1, then tty7, the service's journal shows both `chvt`, and the desktop renders afterwards. After a reboot: Sway on tty7, bash on tty1, every unit active, 530 MiB available.
+- [ ] 7.6 **To test interactively with the user** (user, 2026-10-25: no long test sessions now; collect them):
+  - a real USB keyboard: Ctrl+Alt+F1 shows the console, Ctrl+Alt+F7 the desktop;
+  - the menu (Start), the apps, and the Mannie entry (it still starts root's Claude in `/storage`);
+  - the Slate (L1) and Kroko dictation, with the USB-C headset;
+  - the on-screen keyboard and the gamepad controls;
+  - the Wi-Fi panel (and the boot network: the Freebox profile is still in iwd's state);
+  - the calculator and Wolfenstein (the GLES-only SDL2 bind fails: Arch Linux ARM's file name differs);
+  - `wyoh-gamepad`'s "focus subscription" error in the journal;
+  - Wyoh's MCP harness with `HOME=/storage`;
+  - the two `setcap` calls that failed at first boot;
+  - memory trims, if wanted: `systemd-networkd` (unused), `systemd-userdbd`.
+
 ---
 
 ## Progress tracking ✅
@@ -132,6 +270,8 @@ Done for the first stage means a measured answer on Luna:
 - ⏳ Step 3 — First session on Luna
 - ⏳ Step 4 — Wyoh's MCP server as a local tool
 - ⏳ Step 5 — Hand-offs
+- 🧪 Step 6 — Mannie moves to Luna (6.1–6.2 done)
+- 📋 Step 7 — Arch Linux ARM root (proposed)
 
 ---
 
@@ -157,6 +297,27 @@ date
 | 2026-10-13 23:20 | 2.4 first series done on Luna (install, CLI and interactive start, not logged in); figures in 2.4. Two false starts first: a stalled desk download (the renamed cache; the old cached binary reused, checksum matched) and the 10-minute copy timeout. Waiting for the user's login. |
 | 2026-10-15 02:20 | User request recorded as 2.5 (persona and project snapshot on the device). Prepared and tested on the desk; deployment waits for `luna-pi` (unreachable) or a Luna slot (Luna session holds it for 7.0). |
 | 2026-10-15 02:40 | User: deploy 2.5 on Luna under the `michael` account; from now on Mannie works as the user, not root (Luna 7.0; Luna rebooted). Luna did not come back on "Mick wifi home": it seems to join the Freebox at boot (user). Note to Wyoh `worklines/wyoh/docs/0700_02`. Waiting for Luna on the home network. |
+| 2026-10-25 00:10 | Status check as `michael` (SSH `michael@luna`, key login, passwordless sudo): Luna is back on "Mick wifi home". The graphical session still runs as **root** (Sway, Wyoh's services, Mycroft's resident Kroko, about 156 MiB); `/home` is a new 7.8 GB partition and `/home/michael` holds no Claude Code yet. Root's Claude Code in `/storage` was logged in on 2026-10-14 and used (Wyoh's Mannie menu entry). MemAvailable 629 MiB with Kroko resident. Nothing changed on Luna. |
+| 2026-10-25 00:20 | User's direction recorded as Step 6, "Mannie moves to Luna": Claude Code and the repository in `michael`'s home, commits from Luna, GitHub issues as the cell's mailbox, Remote Control later, then a travel journal. Checked: no `git` or `gh` on Luna, `.git` is 16 MB. Proposals for the key, the token and the branch put to the user; the mailbox proposal goes to Professor. |
+| 2026-10-25 00:27 | User decisions: Mannie operates Luna from now on; `git` with `pacman`; one branch `cell/mannie` with pull requests. Study of Remote Control and cross-machine messages written (`docs/0606_01`, documentation only): `SendMessage` works between machines when both sessions are connected to Remote Control (Pro qualifies; Luna's 2.1.287 is recent enough). Messages or issues: the user decides after the study. |
+| 2026-10-25 00:28 | 🟩 go 6.1–6.5 (user). The user's Remote Control goal recorded in 6.8 (live talk from Claude Desktop, Mannie working alone during the day, token control). Luna taken in `luna-access.md`. |
+| 2026-10-25 00:32 | 6.1 installed for `michael` (4 live tests pass). 6.3 key generated on Luna, GitHub host key verified. 6.2 blocked: ArchR's repository has no `git`; options put to the user. Waiting for: the deploy key, the git route, the user's login. Luna still held. |
+| 2026-10-25 03:22 | 6.2 done: `git` 2.56.0 from Arch Linux ARM (signatures checked, repacked around ArchR's locale link), `zlib-ng`, `/usr/bin/git.readme`. Found: ArchR's `sudo` is a shim, `michael` has no root; install done as root over SSH. Open: deploy key (user), login as `michael` (user), pcre2 noise and a real `sudo` (user decisions). Luna still held. |
+| 2026-10-25 03:35 | Step 7 proposed after the user's question (why ArchR, not Arch Linux ARM): keep ArchR's boot path, kernel and modules, and replace its root with Arch Linux ARM's. First compatibility check found no blocker (systemd 262 ≥ 5.10, glibc fine, kernel 6.12.94); the GPU route (Mali blob versus Panfrost) is the main point to measure. |
+| 2026-10-25 09:10 | 7.1 started (user: card in Termidor, prepare the Arch Linux ARM image, work autonomously, ask Professor if needed). Card remounted read-only; boot path, initramfs, kernel config, modules and the cell's units read (findings in 7.1). Arch Linux ARM tarball downloading. |
+| 2026-10-25 09:31 | 7.1 study written (`docs/0701_01`): no compatibility blocker between Arch Linux ARM (glibc 2.43, systemd 262) and ArchR's 6.12.94 kernel and initramfs. First root image built and checked on the desk (tests pass); write script ready, not run. Waiting for the user: the backup's location, same or second card, and the go to write. |
+| 2026-10-25 12:20 | User: no backup exists yet, one card only. 7.2 backup script written and tested statically (whole-card image with verified SHA-256, plus `STORAGE` and `LUNA_HOME` tar files); waiting for the user to run it with `sudo`. |
+| 2026-10-25 12:56 | 🟩 7.2–7.3 (user). Backup not found on disk (the user thought it done): waiting for `sudo src/mannie/luna/backup-luna-card.sh /dev/sde`. Meanwhile the image was rebuilt with Mannie's working set (40 packages, `github-cli` included); tests pass. |
+| 2026-10-25 13:45 | Backup running (user's `sudo`, started 13:36). Wyoh's note `0702_01` and Mycroft's `0700_02` read (7.2b): the GPU needs ArchR's libmali stack, since Panfrost failed on Luna; the current image would leave Luna in text mode until a second phase. |
+| 2026-10-25 14:10 | Backup done and verified (7.2). Final image built (`7f079765…`, 2.3 GB used): Wyoh's and Mycroft's packages, ArchR's Mali stack kept inactive, network first at first boot. Tests pass. Waiting for the user to run `write-luna-root.sh` (7.3). |
+| 2026-10-25 14:40 | 7.3 done: the user wrote the new root; Luna boots Arch Linux ARM, first boot done in about 3 minutes, SSH as before. 7.4 done: Sway is back on ArchR's Mali stack with Wyoh's units, and survives a reboot; MCP screenshot taken after rebuilding Wyoh's venv for Python 3.14. Note to Wyoh `1300_01`. |
+| 2026-10-25 14:45 | Memory measured: 547 MiB available with Kroko and the session; about 80 MiB less than ArchR, mostly systemd 262's larger services and units ArchR lacked (`networkd`, `userdbd`, michael's user session); trims proposed. |
+| 2026-10-25 14:53 | 7.5 done: Sway on tty7, michael's console on tty1, `luna-vt-rescue` makes Ctrl+Alt+F1 work even if Sway is stuck; checked with a virtual keyboard and after a reboot. The user asked to stop long tests: the remaining checks are collected in 7.6 for an interactive session. |
+| 2026-10-25 14:56 | User: prepare the move. Mannie from Luna on Luna, this session stays on Termidor; first check Remote Control messaging, then memory across sessions and resets; then Mannie from Luna takes over the workline. Recorded as 6.7a. Waiting for the deploy key, the login as `michael`, and `/remote-control` in this session. |
+| 2026-10-25 16:08 | Mannie from Luna started (clone, `cell/mannie`, persona, `tmux`, Remote Control; auto mode kept by the user). Termidor → Luna message delivered; it declined a peer's request per `cell-coordination`. Professor asked to test Luna → desk. |
+| 2026-10-25 16:09 | Luna → desk confirmed through Professor: Remote Control messaging works both ways. Next: memory (resume the session, durable notes across resets, restart at boot), and committing the desk's work so the Luna clone has the current plan. |
+| 2026-10-25 16:54 | Memory: restart behaviour checked; design `docs/0607_01`; launcher `mannie` installed on Luna; persona gains a "Memory" section; relayed to Mannie from Luna through Professor (user's rule). |
+| 2026-10-25 16:56 | Mannie from Luna's review of the memory design taken into `mannie` (stale-lock handling, cleanup, `stop --save`, pinned screen texts); on demand; resume only under 60 min. Waiting for the user's go to commit and push the desk's work to `cell/mannie`. |
 
 ---
 
@@ -164,6 +325,9 @@ date
 
 - `worklines/mannie/plan_mannie.md` — this plan.
 - `test/mannie/luna_pi_claude.feature`, `test/mannie/test_luna_pi_claude.py`, `test/mannie/claude_probe.py` — Step 2 live harness (`MANNIE_LUNA_PI_LIVE=1` for `luna-pi`, `MANNIE_LUNA_LIVE=1` for Luna).
+- [`docs/0606_01_remote-sessions-study.md`](docs/0606_01_remote-sessions-study.md) — Remote Control and cross-machine messages, for 6.6 and 6.8.
+- [`docs/0701_01_alarm-root-study.md`](docs/0701_01_alarm-root-study.md) — Step 7: how Luna boots, kernel compatibility, the Arch Linux ARM root image, risks, how to write it.
+- `src/mannie/alarm/` (`build-luna-root.sh`, `fetch_packages.py`, `accounts.py`, `write-luna-root.sh`, `files/`, `README-luna.md`), `test/mannie/test_alarm_root.py`, `test/mannie/alarm_root.feature` — Step 7 build, write script and tests.
 - `src/mannie/context/MANNIE.md`, `src/mannie/build_context.py`, `test/mannie/test_mannie_context.py`, `test/mannie/mannie_context.feature` — 2.5 persona and project snapshot for Claude Code on the device.
 - [`docs/0101_01_mannie-on-luna-intent.md`](docs/0101_01_mannie-on-luna-intent.md) — Step 1 research and the intent for Step 2: install, login, measurements, stop conditions.
 - [`docs/0203_01_luna-pi-claude-result.md`](docs/0203_01_luna-pi-claude-result.md) — Step 2 result on `luna-pi`: memory, time, tokens, and what they mean for Luna.

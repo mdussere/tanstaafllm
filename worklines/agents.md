@@ -14,4 +14,5 @@ Session names change when a session restarts, so check `ListAgents` before relyi
 | luna | tanstfaafllm-03 | 275c5e | 2026-10-15 |
 | mike | mike | 5832e9 | 2026-10-11 |
 | wyoh | tanstfaafllm-68 | 40d6a2 | 2026-10-13 |
-| mannie | tanstfaafllm-51 | a05023 | 2026-10-15 |
+| mannie | tanstfaafllm-d3 | 1fd5d4 | 2026-10-25 |
+| mannie (on Luna) | Mannie from Luna | c004a3 | 2026-10-25 |

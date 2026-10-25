@@ -11,7 +11,7 @@ Only one session uses Luna (the R36 Ultra, `ssh luna`) at a time. Luna has about
 
 | Since | Holder | Purpose | Release condition |
 |---|---|---|---|
-| — | (free) | Luna released 2026-10-15 after Step 7.0 and a reboot; Wyoh's interrupted Step 7 slot can resume | — |
+| 2026-10-25 00:28 | Mannie (tanstfaafllm-d3, and Mannie from Luna on the device) | Mannie operates Luna (user decision, 2026-10-25): Step 7 done (Arch Linux ARM root, card back in Luna since 14:27), 7.5 keyboard rescue, 6.7a Mannie from Luna. Other lines ask Mannie, through Professor. | Mannie operates Luna; slots for other lines through Professor |
 
 ## Queue
 
@@ -66,3 +66,6 @@ Waiting for `luna-pi`: Mannie (Claude Code, the 600 MiB rehearsal if green-lit).
 | 2026-10-15 | Wyoh released Luna: Wyoh 9.12 done, Luna rebooted. |
 | 2026-10-15 | Wyoh took the free Luna for Step 7 (Wi-Fi) at the user's request; no Professor session reachable. |
 | 2026-10-15 | Luna released Luna: `michael` account added and checked after two reboots (key login, shadow line kept), Luna rebooted, SSH answering. Wyoh can take it back. |
+| 2026-10-25 00:28 | The user gave Mannie the go for 6.1–6.5; Mannie took the free Luna. |
+| 2026-10-25 09:00 | The user put Luna's card in Termidor for Mannie's Step 7 (study and preparation of an Arch Linux ARM root). Mannie remounted its four partitions read-only. |
+| 2026-10-25 14:27 | The card is back in Luna; Luna boots the Arch Linux ARM root (Mannie Step 7.3). |
