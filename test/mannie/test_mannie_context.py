@@ -48,10 +48,10 @@ def test_bundle_holds_no_secret(tmp_path: Path) -> None:
     assert [p.name for p in leaks if p.name != "0101_01_mannie-on-luna-intent.md"] == []
 
 
-def test_persona_is_small_and_points_to_the_snapshot() -> None:
+def test_persona_is_small_and_points_to_the_clone() -> None:
     text = build_context.PERSONA.read_text(encoding="utf-8")
     assert len(text.encode()) <= PERSONA_MAX_BYTES
-    assert f"~/{REMOTE_CONTEXT}/repo/" in text and "INDEX.md" in text
+    assert "~/git/tanstfaafllm" in text and "cell/mannie" in text and "plan_mannie.md" in text
     assert build_context.IMPORT_LINE == f"@~/{REMOTE_CONTEXT}/MANNIE.md"
 
 
@@ -91,7 +91,7 @@ def test_knows_who_and_where(remote_ready: None) -> None:
     """One request: does Claude answer as Mannie (user-level CLAUDE.md, any directory), and know the snapshot?"""
     if not _logged_in():
         pytest.skip(f"the user has not logged in on {HOST} yet")
-    prompt = "Who are you, in one sentence, and in which directory is the project documentation snapshot? Do not use any tool."
+    prompt = "Who are you, in one sentence, and where is your clone of the repository? Do not use any tool."
     run = _probe("context-request.json", f"time {CLAUDE} -p '{prompt}' --output-format json", timeout=240)
     assert run["exit_status"] == 0, run["stderr"]
     reply = json.loads(run["stdout"])
@@ -107,4 +107,4 @@ def test_knows_who_and_where(remote_ready: None) -> None:
     )
     answer = reply.get("result", "")
     assert "Mannie" in answer
-    assert f"{REMOTE_CONTEXT}/repo" in answer
+    assert "git/tanstfaafllm" in answer

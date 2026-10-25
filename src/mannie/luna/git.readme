@@ -1,0 +1,53 @@
+git on Luna: why it is here and how it was installed
+=====================================================
+
+Installed 2026-10-25 by Mannie (Claude Code), at the user's request, so that
+Mannie can work from its own clone of the TANSTAAFLLM repository on Luna.
+Record: worklines/mannie/plan_mannie.md, step 6.2, in that repository.
+
+Why not "pacman -S git"
+  ArchR's only package repository ([archr], 543 packages) has no git, no perl
+  and no tmux. git comes from Arch Linux ARM instead (mirror.archlinuxarm.org,
+  aarch64/extra), which is a different distribution.
+
+What was installed (pacman -U, recorded in pacman's database)
+  git      2.56.0-1, repacked (see below)
+  zlib-ng  2.3.3-1, unchanged (adds only /usr/lib/libz-ng.so*; ArchR's
+           libz.so.1 is untouched)
+  Both original packages were checked on the desk host: SHA-256 equal to the
+  Arch Linux ARM index, and good signatures from "Arch Linux ARM Build System"
+  (68B3 537F 39A3 13B3 E574 D067 7719 3F15 2BDB E6A6, as published on
+  archlinuxarm.org). ArchR's pacman keyring does not hold that key.
+
+The repack
+  The original git package refused to install: it ships a directory
+  usr/share/locale, where ArchR has a symbolic link to /storage/.config/locale.
+  "--overwrite" would have replaced ArchR's link, so it was not used. Instead
+  the package was rebuilt without:
+    - usr/share/locale (git's translations; git speaks English)
+    - usr/lib/sysusers.d/git.conf (would create a "git" system user)
+    - usr/lib/systemd/system/git-daemon* (no git server on Luna)
+  Every other file is the signed original. The repack has no signature.
+  Its description in "pacman -Qi git" says so.
+
+Dependencies declared but not installed
+  pacman was run with --assume-installed for perl, perl-error,
+  perl-mailtools and shadow. They are absent from Luna and from ArchR.
+  Without perl, a few commands do not work (git send-email, git svn,
+  git cvsserver, some "git add -i" paths). clone, commit, push, pull, rebase,
+  log and diff work.
+
+Known noise
+  Every git command prints, on stderr:
+    /usr/lib/libpcre2-8.so.0: no version information available
+  git was built against pcre2 10.47 with symbol versions; ArchR's pcre2
+  10.45 has none. It is harmless, and git works. ArchR's libpcre2 is also
+  used by Sway and glib, so it was not replaced. Some commands also print the
+  same notice for libcurl.so.4 (HTTPS only).
+
+To remove
+  pacman -R git zlib-ng
+  (then remove /usr/bin/git-shell from /etc/shells if pacman leaves it)
+
+If ArchR's repository ever ships git, prefer it: "pacman -R git", then
+"pacman -S git".

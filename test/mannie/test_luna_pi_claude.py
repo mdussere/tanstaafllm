@@ -1,8 +1,8 @@
 """Mannie Step 2: Claude Code on luna-pi and Luna (`luna_pi_claude.feature`).
 
 Live only: MANNIE_LUNA_PI_LIVE=1 targets luna-pi (user michael), MANNIE_LUNA_LIVE=1
-targets Luna (root, HOME=/storage, so everything lands under /storage/.local and
-/storage/.claude). Luna is taken only through worklines/luna-access.md. Never
+targets Luna as the user michael (HOME=/home/michael, from 2026-10-15; the 2026-10-13
+run used root, HOME=/storage). Luna is taken only through worklines/luna-access.md. Never
 uses sudo; never reads the credential file. Intent: worklines/mannie/docs/0101_01.
 """
 
@@ -21,8 +21,9 @@ from pathlib import Path
 import pytest
 
 
-HOST = "luna" if os.environ.get("MANNIE_LUNA_LIVE") == "1" else "luna-pi"
-LIVE = HOST == "luna" or os.environ.get("MANNIE_LUNA_PI_LIVE") == "1"
+HOST = "michael@luna" if os.environ.get("MANNIE_LUNA_LIVE") == "1" else "luna-pi"
+LIVE = HOST != "luna-pi" or os.environ.get("MANNIE_LUNA_PI_LIVE") == "1"
+TOPIC = {"luna-pi": "luna-pi-claude", "michael@luna": "luna-michael-claude"}[HOST]
 pytestmark = [
     pytest.mark.live,
     pytest.mark.skipif(not LIVE, reason="set MANNIE_LUNA_PI_LIVE=1 (luna-pi) or MANNIE_LUNA_LIVE=1 (Luna)"),
@@ -41,9 +42,12 @@ REMOTE_PROBE = ".local/share/tanstfaafllm/mannie/claude_probe.py"
 REMOTE_SCRATCH = ".local/share/tanstfaafllm/mannie/scratch"
 # Luna's /tmp is a RAM tmpfs: keep the installer's temporary files on the card.
 REMOTE_TMP = f"{REMOTE_CACHE}/tmp"
+# A copy of the release already on the target (root's verified 2026-10-13 install on
+# Luna), used instead of the slow Wi-Fi copy when its checksum matches the manifest.
+REMOTE_SEED = {"michael@luna": f"/storage/.local/share/claude/versions/{VERSION}"}.get(HOST)
 CLAUDE = "$HOME/.local/bin/claude"
 PROBE = f"python3 $HOME/{REMOTE_PROBE}"
-EVIDENCE = REPO / f"results/mannie/{HOST}-claude" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+EVIDENCE = REPO / f"results/mannie/{TOPIC}" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 # Anything that looks like a credential must never reach results/.
 SECRET = re.compile(r"sk-ant-[A-Za-z0-9_-]{8,}|\"(accessToken|refreshToken)\"\s*:|CLAUDE_CODE_OAUTH_TOKEN=\S")
 
@@ -143,8 +147,15 @@ def test_install(remote_ready: None) -> None:
 
     remote_binary = f"{REMOTE_CACHE}/claude-{VERSION}-{PLATFORM}"
     assert _ssh(f"mkdir -p $HOME/{REMOTE_CACHE}").returncode == 0
-    copy = subprocess.run(["scp", "-q", *SSH_MUX, str(binary), f"{HOST}:{remote_binary}"], capture_output=True, timeout=3000)
-    assert copy.returncode == 0, copy.stderr
+    seeded = False
+    if REMOTE_SEED:
+        seed = _ssh(f"sha256sum {REMOTE_SEED} 2>/dev/null").stdout.decode().split()
+        if seed and seed[0] == expected:
+            seeded = _ssh(f"cp {REMOTE_SEED} $HOME/{remote_binary}").returncode == 0
+    _save("binary-source.txt", f"{'seed ' + REMOTE_SEED if seeded else 'copied from the desk host'}\n")
+    if not seeded:
+        copy = subprocess.run(["scp", "-q", *SSH_MUX, str(binary), f"{HOST}:{remote_binary}"], capture_output=True, timeout=3000)
+        assert copy.returncode == 0, copy.stderr
     remote_sum = _ssh(f"chmod +x $HOME/{remote_binary} && sha256sum $HOME/{remote_binary}").stdout.decode().split()[0]
     assert remote_sum == expected, f"binary changed on its way to {HOST}"
 
