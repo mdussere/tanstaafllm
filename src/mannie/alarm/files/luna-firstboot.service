@@ -1,0 +1,13 @@
+[Unit]
+Description=Luna first boot: keyring, cached packages, locales, network
+ConditionPathExists=!/var/lib/luna-firstboot.done
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/luna-firstboot
+RemainAfterExit=yes
+TimeoutStartSec=60min
+
+[Install]
+WantedBy=multi-user.target

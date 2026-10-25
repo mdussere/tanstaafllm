@@ -1,0 +1,10 @@
+[Unit]
+Description=Luna: copy this boot's journal to STORAGE, readable from a card reader
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'sleep 120; journalctl -b --no-pager > /storage/.cache/luna-last-boot.journal 2>&1'
+
+[Install]
+WantedBy=multi-user.target

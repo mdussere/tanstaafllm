@@ -1,0 +1,8 @@
+# Luna's kernel command line (ArchR's BOOT/extlinux.conf) asks for textmode.target.
+# Same content as ArchR's unit, so the boot partition stays unchanged.
+[Unit]
+Description=Textmode
+Requires=multi-user.target
+After=multi-user.target
+Conflicts=rescue.target
+AllowIsolate=yes

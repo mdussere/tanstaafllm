@@ -1,0 +1,4 @@
+# Luna (Arch Linux ARM root on ArchR's boot path, plan_mannie.md Step 7).
+# ArchR's initramfs already mounts ARCHR_ROOT on /, BOOT read-only on /flash and
+# STORAGE on /storage, before systemd starts.
+LABEL=LUNA_HOME  /home  ext4  noatime,nofail,x-systemd.device-timeout=20s  0 2

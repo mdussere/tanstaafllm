@@ -1,0 +1,39 @@
+#!/bin/bash
+# Luna's first boot on the Arch Linux ARM root (plan_mannie.md Step 7).
+# Installs the packages cached on the desk host, offline, with Luna's own pacman.
+# Logs to /storage/.cache/luna-firstboot.log, readable from a card reader.
+set -u
+LOG=/storage/.cache/luna-firstboot.log
+exec >>"$LOG" 2>&1
+echo "=== $(date -Is) luna-firstboot"
+step() { echo "--- $*"; "$@"; last=$?; echo "rc=$last"; return 0; }
+# A signature "made in the future" fails: never start older than the build.
+built=$(cat /var/lib/luna-build-time 2>/dev/null || echo 0)
+[ "$(date +%s)" -lt "$built" ] && step date -s "@$built"
+step pacman-key --init
+step pacman-key --populate archlinuxarm
+C=/var/cache/luna-firstboot
+mapfile -t names < $C/luna-firstboot-packages.txt
+files=("${names[@]/#/$C/}")
+# Network first, so Luna answers SSH within minutes; the rest (about 125
+# packages on Luna's slow cores) follows.
+step pacman -U --noconfirm --needed $C/ell-[0-9]*.pkg.tar.xz $C/iwd-[0-9]*.pkg.tar.xz $C/sudo-[0-9]*.pkg.tar.xz
+step systemctl daemon-reload
+step systemctl enable --now iwd.service
+step pacman -U --noconfirm --needed "${files[@]}"
+all=$last
+step locale-gen
+# The desk build cannot keep file capabilities; restore the base's two.
+step setcap cap_setuid=ep /usr/bin/newuidmap
+step setcap cap_setgid=ep /usr/bin/newgidmap
+step systemctl daemon-reload
+step systemctl start systemd-zram-setup@zram0.service dev-zram0.swap
+step systemctl enable sshd.service
+step systemctl --no-pager status iwd.service sshd.service
+if [ "$all" = 0 ]; then
+  touch /var/lib/luna-firstboot.done
+  echo "=== done"
+else
+  echo "=== the package install failed (rc=$all): it is retried at next boot"
+fi
+journalctl -b --no-pager > /storage/.cache/luna-firstboot.journal 2>&1

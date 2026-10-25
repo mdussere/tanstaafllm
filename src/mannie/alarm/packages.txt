@@ -1,0 +1,44 @@
+# Packages installed offline at Luna's first boot (plan_mannie.md Step 7), on top of
+# the Arch Linux ARM base. Dependencies are resolved by fetch_packages.py.
+# System
+sudo
+iwd
+zram-generator
+iw
+usbutils
+# Mannie's work on Luna (Step 6: clone, commits, GitHub issues and pull requests)
+git
+github-cli
+tmux
+python
+# Everyday tools
+less
+rsync
+htop
+jq
+ripgrep
+fd
+tree
+wget
+unzip
+zip
+lsof
+strace
+bash-completion
+man-db
+man-pages
+# Wyoh's session (worklines/mannie/docs/0702_01). The GPU stays ArchR's Mali blob,
+# carried over by build-luna-root.sh; Mesa comes in as wlroots' dependency.
+sway
+swaybg
+seatd
+foot
+grim
+xkeyboard-config
+ttf-liberation
+sdl2-compat
+libjpeg-turbo
+libpng
+libglvnd
+# Mycroft's dictation (worklines/mannie/docs/0700_02): arecord and alsa-lib's plug plugin
+alsa-utils

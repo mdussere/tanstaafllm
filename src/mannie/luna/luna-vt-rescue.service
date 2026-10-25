@@ -1,0 +1,11 @@
+[Unit]
+Description=Luna: Ctrl+Alt+F1…F12 switch the virtual terminal, even when Sway is stuck
+After=systemd-udevd.service
+
+[Service]
+ExecStart=/usr/local/sbin/luna-vt-rescue
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

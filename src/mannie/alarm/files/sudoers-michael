@@ -1,0 +1,3 @@
+# Luna: the user's account administers the device (Luna 7.0, user decision
+# 2026-10-15: passwordless sudo for now). Mannie runs as michael.
+michael ALL=(ALL:ALL) NOPASSWD: ALL
