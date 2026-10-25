@@ -1,6 +1,4 @@
-<p align="center"><img src="docs/img/banner-title.jpg" alt="TANSTAAF LLM" width="100%"></p>
-
-# TANSTAAFLLM 🚀
+<p align="center"><img src="docs/img/banner-title.jpg" alt="TANSTAAFLLM" width="100%"></p>
 
 > **There Ain't No Such Thing As A Free LLM.**
 
