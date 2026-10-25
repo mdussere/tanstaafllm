@@ -11,6 +11,8 @@
 #                                   commit (one request).
 #   mannie status                   running or not, the brain lock, the last screen line
 #   mannie attach                   open the session (tmux attach)
+#   mannie open                     start if needed, then attach: Wyoh's "Mannie" menu
+#                                   entry runs this in a window named "mannie"
 #
 # Mannie and Mike are expensive and never run together: /tmp/luna-brain.lock holds
 # "<name> <pid>"; a lock whose pid is dead counts as free.
@@ -103,5 +105,7 @@ case "${1:-status}" in
   status) if running; then echo "mannie: running"; screen | grep -v '^\s*$' | tail -1; else echo "mannie: stopped"; fi
           echo "brain lock: $(cat "$LOCK" 2>/dev/null || echo free)" ;;
   attach) exec tmux attach -t "$SESSION" ;;
-  *) sed -n '2,17p' "$0"; exit 2 ;;
+  open) if ! running && ! start auto; then read -rp "mannie: not started; press Return to close "; exit 1; fi
+        exec tmux attach -t "$SESSION" ;;
+  *) sed -n '2,18p' "$0"; exit 2 ;;
 esac
