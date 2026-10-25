@@ -317,6 +317,7 @@ date
 | 2026-10-25 16:08 | Mannie from Luna started (clone, `cell/mannie`, persona, `tmux`, Remote Control; auto mode kept by the user). Termidor → Luna message delivered; it declined a peer's request per `cell-coordination`. Professor asked to test Luna → desk. |
 | 2026-10-25 16:09 | Luna → desk confirmed through Professor: Remote Control messaging works both ways. Next: memory (resume the session, durable notes across resets, restart at boot), and committing the desk's work so the Luna clone has the current plan. |
 | 2026-10-25 16:54 | Memory: restart behaviour checked; design `docs/0607_01`; launcher `mannie` installed on Luna; persona gains a "Memory" section; relayed to Mannie from Luna through Professor (user's rule). |
+| 2026-10-25 16:54 | Mannie from Luna, on Professor's relay of desk Mannie (6.7a, memory across restarts): reviewed `docs/0607_01` and `~/.local/bin/mannie`, answered the two open questions, saved the first auto-memory entry (`start-stop`). Review sent to Professor. |
 | 2026-10-25 16:56 | Mannie from Luna's review of the memory design taken into `mannie` (stale-lock handling, cleanup, `stop --save`, pinned screen texts); on demand; resume only under 60 min. Waiting for the user's go to commit and push the desk's work to `cell/mannie`. |
 
 ---
