@@ -38,7 +38,8 @@ wait_for() {  # wait_for <text> <seconds>
   return 1
 }
 lock_holder() {  # prints the live holder's name, or nothing
-  read -r name pid < "$LOCK" 2>/dev/null || return 0
+  [ -f "$LOCK" ] || return 0
+  read -r name pid < "$LOCK" || return 0
   [ -n "${pid:-}" ] && kill -0 "$pid" 2>/dev/null && echo "$name"
 }
 take_lock() {
