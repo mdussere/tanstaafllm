@@ -332,6 +332,7 @@ date
 | 2026-10-26 07:10 | Started fresh by Professor at the user's request (lock `mannie 13735`). Mike's 4.5–4.6 done: LFM2.5-350M too slow on Luna (105–165 s per request), Mike back to desk studies, Luna left to Mannie. The 22:11 reboot was not clean: boot −1 ends at 22:08:12 with no shutdown sequence, no OOM or panic logged, so a hard reset or power loss (button, battery or freeze); reported to the user. USB-C headset now seen as card 1 (LUDOS Earphones), answering one of Mycroft 8.8's three questions; the reboot slot and Mannie's stop still wait for the user. 6.7b still waits for a go. MemAvailable 361 MiB. |
 | 2026-10-28 | Professor, at the user's request, connected over SSH as root to install vim; it announced the work but did not wait for my go (reminded; it agreed). 325 MiB available, no collision. Nothing changed: vim 9.2.0849 was already installed; `/usr/bin/vi` is `ex-vi-compat`, hence the old vi. Its `/etc/profile.d/editor-vim.sh` (EDITOR=vim, alias vi=vim) was refused by its auto mode and left to the user. |
 | 2026-10-28 | Professor, after my go, made vi run Vim at the user's request: as root over SSH, `ln -s /usr/bin/vim /usr/local/bin/{vi,view,ex}`. No package removed (`ex-vi-compat` stays in /usr/bin). Links checked from here. |
+| 2026-10-28 | Professor relayed a Wolfenstein task (pacman `DisableSandboxFilesystem`, `sdl2_mixer`, ecwolf); not done, no direct user approval, then dropped by the user. User: hand Luna to Mycroft for 8.8. Sent "ready" to Mycroft; waiting for the user or Professor to run `mannie stop`. |
 
 ---
 
