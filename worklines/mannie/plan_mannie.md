@@ -260,7 +260,7 @@ The user asked why Luna runs ArchR rather than Arch Linux ARM, since the cell ha
   - the Slate (L1) and Kroko dictation, with the USB-C headset;
   - the on-screen keyboard and the gamepad controls;
   - the Wi-Fi panel (and the boot network: the Freebox profile is still in iwd's state);
-  - the calculator and Wolfenstein (the GLES-only SDL2 bind fails: Arch Linux ARM's file name differs);
+  - the calculator and Wolfenstein (Wolfenstein starts since 2026-10-29: it lacked `sdl2_mixer`; the gamepad by hand is still to try);
   - `wyoh-gamepad`'s "focus subscription" error in the journal;
   - Wyoh's MCP harness with `HOME=/storage`;
   - the two `setcap` calls that failed at first boot;
@@ -347,3 +347,4 @@ date
 - [`docs/0101_01_mannie-on-luna-intent.md`](docs/0101_01_mannie-on-luna-intent.md) — Step 1 research and the intent for Step 2: install, login, measurements, stop conditions.
 - [`docs/0203_01_luna-pi-claude-result.md`](docs/0203_01_luna-pi-claude-result.md) — Step 2 result on `luna-pi`: memory, time, tokens, and what they mean for Luna.
 - Related: `worklines/professor/docs/0503_01_delegated-coordination-log-2026-10-09.md` (D1, the vocabulary), `worklines/mike/plan_mike.md` (Step 6.3, escalation to Mannie), `worklines/mycroft/plan_mycroft.md` (input modes), `worklines/luna-access.md` (Luna slots).
+| 2026-10-29 | User asked me to fix Wolfenstein. ECWolf lacked `libSDL2_mixer-2.0.so.0`. pacman failed: the ArchR kernel has no Landlock. With the user's choice, enabled `DisableSandboxFilesystem` in `/etc/pacman.conf` (backup `pacman.conf.bak-20261029`); the 5 August databases gave 404s, so with the user's choice ran `pacman -Syu` + `sdl2_mixer` (93 packages incl. systemd 262.1, mesa 26.2.6; `linux-aarch64` stays ignored; three tries over slow Wi-Fi). Mesa could not replace `/usr/lib/libgbm.so.1.0.0`: ArchR's Mali bind mount holds it, still in place. ECWolf now runs under Sway (gamepad `wyoh-game-pad`, ALSA audio); grim shows the PC-13 screen full screen. Cosmetic: the `run` script's `--windowed` is read as a file ("Could not stat"). Not done: `/rename`, the user types it. |
