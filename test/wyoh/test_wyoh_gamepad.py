@@ -822,3 +822,10 @@ def test_l2_in_a_game_never_opens_the_slate(wolf):
 
 def test_the_deployed_config_preloads_the_slate():
     assert g.load_config(ROOT / "src/wyoh/deploy/luna/gamepad.toml").zone_preload
+
+
+
+def test_the_game_keeps_its_joystick_while_the_preloaded_slate_is_hidden(wolf):
+    wolf.zone_state = "hidden"  # zone_preload opens the Slate hidden at session start
+    assert press(wolf, "BTN_EAST") == [g.PadButton(0, True)]
+    assert wolf.axis(g.ABS_RX, 1200) == [g.PadAxis(g.ABS_RX, 1200)]

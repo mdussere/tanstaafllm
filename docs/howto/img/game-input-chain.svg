@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>How a button press reaches a game on Luna</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9fb3c8"/>
+    </marker>
+  </defs>
+  <rect width="960" height="600" fill="#0b1026"/>
+  <text x="480" y="40" fill="#e8eef6" font-size="24" text-anchor="middle" font-weight="bold">How a button press reaches a game on Luna</text>
+  <text x="480" y="66" fill="#9fb3c8" font-size="14" text-anchor="middle">Seven layers. Each one renumbers. Check them one at a time, from left to right.</text>
+
+  <g font-size="14" fill="#e8eef6">
+    <!-- 1 -->
+    <rect x="20" y="100" width="170" height="120" rx="10" fill="#1b2a4a" stroke="#5294e2"/>
+    <text x="105" y="128" text-anchor="middle" font-weight="bold">1 · Real gamepad</text>
+    <text x="105" y="152" text-anchor="middle" fill="#9fb3c8">r36s_Gamepad</text>
+    <text x="105" y="174" text-anchor="middle" fill="#9fb3c8">/dev/input/event3</text>
+    <text x="105" y="196" text-anchor="middle" fill="#9fb3c8">A = BTN_EAST</text>
+
+    <!-- 2 -->
+    <rect x="215" y="100" width="200" height="120" rx="10" fill="#1b2a4a" stroke="#5294e2"/>
+    <text x="315" y="128" text-anchor="middle" font-weight="bold">2 · wyoh-gamepad</text>
+    <text x="315" y="152" text-anchor="middle" fill="#9fb3c8">grabs the real pad,</text>
+    <text x="315" y="174" text-anchor="middle" fill="#9fb3c8">follows Sway's focus</text>
+    <text x="315" y="196" text-anchor="middle" fill="#9fb3c8">/run/wyoh/gamepad.json</text>
+
+    <!-- 3 -->
+    <rect x="440" y="100" width="230" height="120" rx="10" fill="#1b2a4a" stroke="#5294e2"/>
+    <text x="555" y="128" text-anchor="middle" font-weight="bold">3 · App profile</text>
+    <text x="555" y="152" text-anchor="middle" fill="#9fb3c8">wyoh-app.toml [pad]</text>
+    <text x="555" y="174" text-anchor="middle" fill="#9fb3c8">→ generated/app-profiles.toml</text>
+    <text x="555" y="196" text-anchor="middle" fill="#9fb3c8">BTN_EAST = 0</text>
+
+    <!-- 4 -->
+    <rect x="695" y="100" width="245" height="120" rx="10" fill="#1b2a4a" stroke="#5294e2"/>
+    <text x="817" y="128" text-anchor="middle" font-weight="bold">4 · wyoh-game-pad</text>
+    <text x="817" y="152" text-anchor="middle" fill="#9fb3c8">uinput, 1209:0012</text>
+    <text x="817" y="174" text-anchor="middle" fill="#9fb3c8">index 0 → evdev 0x130</text>
+    <text x="817" y="196" text-anchor="middle" fill="#9fb3c8">/dev/input/event6</text>
+
+    <!-- 5 -->
+    <rect x="695" y="300" width="245" height="130" rx="10" fill="#3a2a10" stroke="#e2a052"/>
+    <text x="817" y="328" text-anchor="middle" font-weight="bold" font-size="13">5 · SDL (sdl2-compat, SDL3)</text>
+    <text x="817" y="352" text-anchor="middle" fill="#f0d9b5">auto-maps the pad as a</text>
+    <text x="817" y="374" text-anchor="middle" fill="#f0d9b5">"game controller":</text>
+    <text x="817" y="396" text-anchor="middle" fill="#f0d9b5">0x130 → A, 0x133 → X …</text>
+    <text x="817" y="418" text-anchor="middle" fill="#e2a052" font-weight="bold" font-size="13">changed on 2026-10-25</text>
+
+    <!-- 6 -->
+    <rect x="420" y="300" width="250" height="130" rx="10" fill="#1b2a4a" stroke="#5294e2"/>
+    <text x="545" y="328" text-anchor="middle" font-weight="bold">6 · Game bindings</text>
+    <text x="545" y="352" text-anchor="middle" fill="#9fb3c8">ecwolf.cfg</text>
+    <text x="545" y="374" text-anchor="middle" fill="#9fb3c8">Joystick_Attack = 0;</text>
+    <text x="545" y="396" text-anchor="middle" fill="#9fb3c8">Joystick_Turn_Left = 38;</text>
+    <text x="545" y="418" text-anchor="middle" fill="#9fb3c8">rewritten when the game exits</text>
+
+    <!-- 7 -->
+    <rect x="145" y="300" width="250" height="130" rx="10" fill="#14361f" stroke="#52e28a"/>
+    <text x="270" y="328" text-anchor="middle" font-weight="bold">7 · What you see</text>
+    <text x="270" y="352" text-anchor="middle" fill="#bfe8cc">the gun fires,</text>
+    <text x="270" y="374" text-anchor="middle" fill="#bfe8cc">the view turns,</text>
+    <text x="270" y="396" text-anchor="middle" fill="#bfe8cc">the weapon changes</text>
+    <text x="270" y="418" text-anchor="middle" fill="#52e28a" font-weight="bold">the only proof that counts</text>
+  </g>
+
+  <g stroke="#9fb3c8" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <line x1="190" y1="160" x2="213" y2="160"/>
+    <line x1="415" y1="160" x2="438" y2="160"/>
+    <line x1="670" y1="160" x2="693" y2="160"/>
+    <line x1="817" y1="220" x2="817" y2="298"/>
+    <line x1="695" y1="365" x2="672" y2="365"/>
+    <line x1="420" y1="365" x2="397" y2="365"/>
+  </g>
+
+  <g font-size="13" fill="#9fb3c8">
+    <text x="20" y="480" font-weight="bold" fill="#e8eef6">How to look at each layer</text>
+    <text x="20" y="504">1–2 · journalctl -u wyoh-gamepad · /proc/bus/input/devices · gamepad.json (zone, last_action)</text>
+    <text x="20" y="526">3 · the [pad] table in /storage/.local/opt/&lt;app&gt;/wyoh-app.toml, then generated/app-profiles.toml</text>
+    <text x="20" y="548">4 · read /dev/input/event6 while you tap · ls -l /proc/$(pidof ecwolf)/fd shows the game has it open</text>
+    <text x="20" y="570">5 · test/wyoh/luna_game_pad_probe.py prints index → controller button / axis · 6–7 · grim screenshots in game</text>
+  </g>
+</svg>

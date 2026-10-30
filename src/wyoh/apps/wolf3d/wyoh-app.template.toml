@@ -17,18 +17,23 @@ icon = "./wolf3d-icon.png"  # BJ's face, made by fetch_wolf3d.py (a bare name wo
 categories = ["Game", "ActionGame"]
 
 # The virtual joystick (user, 2026-10-13): fire with the right hand (R1) or A,
-# open doors with the left hand (L1) or B. ECWolf's default bindings match:
-# Attack 0, Use 1, Run 2, Strafe 3, Next_Weapon 4, Prev_Weapon 5. In its menus
-# button 0 validates and button 1 goes back, so A validates and B says no.
+# open doors with the left hand (L1) or B; Y runs, X strafes, L2/R2 change weapon.
+# Values are wyoh-game-pad indexes (evdev 0x130 + index). ECWolf reads it through
+# SDL's GameController API; on Arch Linux ARM (sdl2-compat on SDL3, 2026-10-30)
+# SDL maps index 0 → A (0), 1 → B (1), 3 → X (2), 4 → Y (3), 6 → left shoulder
+# (9), 7 → right shoulder (10); 2 and 5 reach nothing (measured by Mannie from
+# Luna). ecwolf.default.cfg binds Attack 0, Use 1, Run 2, Strafe 3, Next 9, Prev 10,
+# and turning to axis 38/39 (the right stick's X in ECWolf's numbering; 36/37 is its Y,
+# measured by Wyoh on Luna 2026-10-30).
 [pad]
 BTN_EAST = 0      # A: fire, validate
 BTN_TR = 0        # R1: fire
 BTN_SOUTH = 1     # B: open doors, back
 BTN_TL = 1        # L1: open doors
-BTN_WEST = 2      # Y held: run
-BTN_NORTH = 3     # X held: strafe with the left stick
-BTN_TL2 = 4       # L2: next weapon
-BTN_TR2 = 5       # R2: previous weapon
+BTN_WEST = 3      # Y held: run (controller X = 2)
+BTN_NORTH = 4     # X held: strafe with the left stick (controller Y = 3)
+BTN_TL2 = 6       # L2: next weapon (left shoulder = 9)
+BTN_TR2 = 7       # R2: previous weapon (right shoulder = 10)
 
 # Keys still sent while it has the focus: the cross for the menus, Start for
 # the game's own menu.

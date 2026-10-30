@@ -103,7 +103,7 @@ An app whose manifest says `input = "gamepad-virtual"` gets the daemon's uinput 
 
 ### Wolfenstein 3D (ECWolf)
 
-Source: `src/wyoh/apps/wolf3d/wyoh-app.template.toml`. Live, and accepted by the user on 2026-10-13 (Step 9.8b).
+Source: `src/wyoh/apps/wolf3d/wyoh-app.template.toml`. Live, and accepted by the user on 2026-10-13 (Step 9.8b). Button numbers are wyoh-game-pad indexes; on Arch Linux ARM's SDL3 they reach ECWolf as controller buttons, so Y, X, L2 and R2 moved on 2026-10-30 (Step 13.0b).
 
 | Control | evdev | Effect | State |
 | --- | --- | --- | --- |
@@ -111,10 +111,10 @@ Source: `src/wyoh/apps/wolf3d/wyoh-app.template.toml`. Live, and accepted by the
 | R1 | `BTN_TR` | Joystick button 0: fire | live |
 | B | `BTN_SOUTH` | Joystick button 1: open doors; back ("no") in the menus | live |
 | L1 | `BTN_TL` | Joystick button 1: open doors | live |
-| Y, held | `BTN_WEST` | Joystick button 2: run | live |
-| X, held | `BTN_NORTH` | Joystick button 3: strafe with the left stick | live |
-| L2 | `BTN_TL2` | Joystick button 4: next weapon | live |
-| R2 | `BTN_TR2` | Joystick button 5: previous weapon | live |
+| Y, held | `BTN_WEST` | Joystick button 3 (SDL controller X): run | live |
+| X, held | `BTN_NORTH` | Joystick button 4 (SDL controller Y): strafe with the left stick | live |
+| L2 | `BTN_TL2` | Joystick button 6 (SDL left shoulder): next weapon | live |
+| R2 | `BTN_TR2` | Joystick button 7 (SDL right shoulder): previous weapon | live |
 | Left stick | `ABS_X`/`ABS_Y` | Move forward, back (and strafe with X) | live |
 | Right stick | `ABS_RX`/`ABS_RY` | Turn | live |
 | Cross | `BTN_DPAD_*` | Arrow keys, for the menus | live |
