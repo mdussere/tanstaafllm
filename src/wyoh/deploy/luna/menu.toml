@@ -11,4 +11,9 @@ hide = [
     "gmu.desktop",       # Gmu Music Player (/usr/local/share/applications on Luna)
     "mupen64plus.desktop",  # N64 emulator: of no use without games in the desktop menu
     "wyoh-calculator.desktop",  # Wyoh's old bc calculator, replaced by the calculator app
+    # Arrived with the new Arch root (Mannie, 2026-10-30): duplicates of Wyoh's entries.
+    "foot.desktop",         # Foot: duplicate of Terminal
+    "footclient.desktop",   # Foot Client: needs a foot server, duplicate of Terminal
+    "foot-server.desktop",  # Foot Server: a background daemon, not an app
+    "vim.desktop",          # Vim: duplicate of Text Editor
 ]
