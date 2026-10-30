@@ -469,7 +469,9 @@ class GamepadCore:
     def button(self, code: int, pressed: bool, now: float) -> list[Action]:
         if self.raw:
             return self._button_raw(code, pressed, now)
-        if self.pad is not None and self.zone_state == "closed":
+        # The Slate is hidden, not closed, from session start (zone_preload): the
+        # game keeps its joystick unless the Slate is actually on screen.
+        if self.pad is not None and self.zone_state in ("closed", "hidden"):
             return self._button_virtual(code, pressed, now)
         if pressed:
             if code in self.held:
@@ -684,7 +686,7 @@ class GamepadCore:
     def axis(self, code: int, value: int, now: float = 0.0) -> list[Action]:
         if code not in self.stick or self.raw:
             return []
-        if self.pad is not None and self.zone_state == "closed":
+        if self.pad is not None and self.zone_state in ("closed", "hidden"):
             return [PadAxis(code, value)]  # both sticks go to the game as they are
         self.stick[code] = float(value)
         if self.zone_state != "open":
