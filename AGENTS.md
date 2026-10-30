@@ -23,7 +23,7 @@ The first repository-mandatory skill is **`workplan`**.
 
 Use it whenever work involves a workline, plan, roadmap, multi-step effort, or a new tracked discovery/implementation stream. Read its `SKILL.md` before acting. It defines the canonical workline layout, plan template, green-light protocol, artifact naming, and logbook requirement.
 
-The second mandatory skill is **`cell-coordination`** (`skills/cell-coordination/SKILL.md`). Read it before sending or answering any cross-session message, or before writing a note for another workline. In short, Professor coordinates the cell. Other sessions message only Professor and never each other; between worklines they leave notes. Every request goes into the receiving plan, and a blocked session records its state in its plan and asks the user in its own console. `worklines/agents.md` lists the running sessions.
+The second mandatory skill is **`cell-coordination`** (`skills/cell-coordination/SKILL.md`). Read it before sending or answering any cross-session message, or before writing a note for another workline. In short, Professor coordinates the cell, and since 2026-10-30 any session may message any other directly; a request that changes the receiver's work still lands in its plan. Mannie on Luna is Luna's operator: no session uses SSH on Luna without Mannie's agreement, and nobody reboots Luna while Mannie runs there. A blocked session records its state in its plan and asks the user in its own console. `worklines/agents.md` lists the running sessions.
 
 No other skill is mandatory solely because of this repository. Use other available skills only when the user request or task clearly requires them.
 
@@ -43,9 +43,9 @@ The current active worklines are:
 | `professor` | `worklines/professor/plan_professor.md` | Project framing, decision ledger, and coordination/isolation of specialist worklines; it does not implement their subsystems. |
 | `mycroft` | `worklines/mycroft/plan_mycroft.md` | Input/composition architecture and its pre-hardware ASR baseline; no ungreen-lit context feed, command routing, target-device audio work, or implementation. |
 | `wyoh` | `worklines/wyoh/plan_wyoh.md` | Desktop/WM observability and interface design; no premature compositor fork or target-hardware implementation. |
-| `luna` | `worklines/luna/plan_luna.md` | `luna-pi` reference setup and physical-Luna characterisation, imaging, and boot/network bring-up on disposable cards; no Mycroft/Wyoh/Mike implementation outside a green-lit step. |
+| `luna` | `worklines/luna/plan_luna.md` | `luna-pi` reference setup and physical-Luna characterisation (hardware, audio, boot facts); no Mycroft/Wyoh/Mike implementation outside a green-lit step. Since 2026-10-25, system work on Luna (packages, services, accounts, the root image) belongs to Mannie. |
 | `mike` | `worklines/mike/plan_mike.md` | Mike, the local brain: the small local model that proposes Wyoh actions through MCP. Desk host and `luna-pi` first; every action runs only after the user accepts it. |
-| `mannie` | `worklines/mannie/plan_mannie.md` | Mannie, the frontier-model capability: Claude Code on Luna, measured on `luna-pi` first. No secrets in the repository and no unattended mode. |
+| `mannie` | `worklines/mannie/plan_mannie.md` | Mannie, the frontier-model capability: Claude Code on Luna, and Luna's operator since 2026-10-25 (packages, services, accounts, the root image; boot partition and card layout need the user's go). Works on branch `cell/mannie`, merged through pull requests. No secrets in the repository and no unattended mode. |
 
 ## Tests and experiments
 

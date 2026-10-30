@@ -43,7 +43,7 @@ These rules are in the skills, committed in `skills/` and referenced from `AGENT
 - **`workplan`** is how plans, steps and docs are written.
 - **`cell-coordination`**:
   - The user talks to each agent in its own console.
-  - Agents never message each other. They leave notes in each other's `docs/`, or ask Professor.
+  - Agents message each other directly when the work needs it (since 2026-10-30), and leave notes in each other's `docs/` for anything durable.
   - A blocked agent stops, writes its state in its plan, and asks the user.
 - **Shared devices:** one session at a time on Luna and on `luna-pi`, through Professor's token in `worklines/luna-access.md`.
 - **Language:** everything is written in English, and the agents talk to the user in French.
