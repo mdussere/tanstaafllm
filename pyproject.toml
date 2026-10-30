@@ -31,9 +31,17 @@ scrape = [
 mike = [
     "llama-cpp-python==0.3.36",
 ]
+# Professor video: soundtrack synthesis, audio analysis, SVG rendering
+# (`worklines/professor/video/`).
+video = [
+    "cairosvg>=2.9.1",
+    "numpy>=2.5.3",
+    "scipy>=1.18.1",
+    "soundfile>=0.14.0",
+]
 
 [tool.uv]
 # The repository is a collection of scripts, tests, and workline evidence, not
 # an installable package.
 package = false
-default-groups = ["dev", "wyoh", "scrape"]
+default-groups = ["dev", "wyoh", "scrape", "video"]

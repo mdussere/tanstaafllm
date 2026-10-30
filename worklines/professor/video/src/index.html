@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TANSTAAFLLM 60s</title>
+<style>
+  @font-face { font-family: 'PS2P'; src: url('fonts/pressstart2p_PressStart2P-Regular.ttf'); }
+  @font-face { font-family: 'VT'; src: url('fonts/vt323_VT323-Regular.ttf'); }
+  html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+// TANSTAAFLLM video. Every frame is a pure function of time t (seconds).
+// renderFrame(t) is called by capture.py for each frame; open this file in a browser
+// and add ?t=12.5 to look at one moment, or ?play to watch it loop without sound.
+'use strict';
+const W = 1920, H = 1080, M = 120;          // canvas size and safe margin
+const BPM = 120, BEAT = 60 / BPM;           // 0.5 s per beat, 2 s per bar
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+const C = {
+  ink: '#05060f', navy: '#070b24', navy2: '#0f1645', violet: '#2b1660', violet2: '#4a2a8c',
+  amber: '#ffb43c', amber2: '#ff8a1e', cyan: '#3ee8ff', chrome: '#eef3ff', dim: '#8e97cc',
+  red: '#ff4d5e', green: '#57ff8f', moon: '#a9b3d8', shadow: '#0a0420'
+};
+
+// ---------- tiny utilities ----------
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const easeOut = p => 1 - Math.pow(1 - p, 3);
+const easeIn = p => p * p * p;
+const easeBack = p => { const s = 1.7; p -= 1; return p * p * ((s + 1) * p + s) + 1; };
+const lerp = (a, b, p) => a + (b - a) * p;
+function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const beatPulse = t => Math.pow(1 - ((t / BEAT) % 1), 4);   // 1 on each beat, decays
+
+// Reading holds (timing.py writes holds.json): at each [source time, seconds], the
+// choreography freezes so the last text stays on screen long enough to be read.
+// TA is the ambient (output) time: stars, grid and blinks keep moving during a hold.
+let HOLDS = [], TA = 0, DURATION = 60;
+function sourceTime(T) {
+  let acc = 0;
+  for (const [s, d] of HOLDS) {
+    if (T < s + acc) break;
+    if (T < s + acc + d) return s;
+    acc += d;
+  }
+  return T - acc;
+}
+
+const NOLIG = '0.1px';
+// Text with a hard pixel drop shadow. font: 'P' (Press Start 2P) or 'V' (VT323).
+function txt(s, x, y, size, color, o = {}) {
+  const fam = (o.font || 'P') === 'P' ? 'PS2P' : 'VT';
+  ctx.save();
+  ctx.font = `${size}px ${fam}`;
+  ctx.letterSpacing = NOLIG;            // non-zero spacing switches off the fonts' fi/fl ligatures
+  ctx.textAlign = o.align || 'left';
+  ctx.textBaseline = o.base || 'alphabetic';
+  let sc = 1;
+  const maxW = o.maxW || (W - 2 * M);
+  const w = ctx.measureText(s).width;
+  if (w > maxW) sc = maxW / w;
+  ctx.globalAlpha = o.alpha === undefined ? 1 : clamp(o.alpha);
+  ctx.translate(x, y);
+  if (o.rot) ctx.rotate(o.rot);
+  if (o.scale) ctx.scale(o.scale, o.scale);
+  ctx.scale(sc, 1);
+  const sh = o.shadow === undefined ? Math.max(2, Math.round(size / 8)) : o.shadow;
+  if (sh) { ctx.fillStyle = o.shadowColor || C.shadow; ctx.fillText(s, sh, sh); }
+  ctx.fillStyle = color;
+  ctx.fillText(s, 0, 0);
+  ctx.restore();
+  return w * sc;
+}
+function measure(s, size, font = 'P') { ctx.save(); ctx.font = `${size}px ${font === 'P' ? 'PS2P' : 'VT'}`; ctx.letterSpacing = NOLIG; const w = ctx.measureText(s).width; ctx.restore(); return w; }
+// A line made of coloured runs: [[text, color], ...], centred or left-aligned.
+function runs(parts, x, y, size, o = {}) {
+  const full = parts.map(p => p[0]).join('');
+  let w = measure(full, size, o.font || 'P');
+  let sz = size;
+  const maxW = o.maxW || (W - 2 * M);
+  if (w > maxW) { sz = Math.floor(size * maxW / w); w = measure(full, sz, o.font || 'P'); }
+  let cx = o.align === 'center' ? x - w / 2 : x;
+  for (const [s, col] of parts) { txt(s, cx, y, sz, col, Object.assign({}, o, { align: 'left', maxW: 99999 })); cx += measure(s, sz, o.font || 'P'); }
+  return w;
+}
+function rect(x, y, w, h, c, a = 1) { ctx.globalAlpha = a; ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); ctx.globalAlpha = 1; }
+// Pixel-art frame (box with double border, RPG style).
+function box(x, y, w, h, o = {}) {
+  const b = o.px || 6;
+  rect(x, y, w, h, o.fill || C.navy, o.alpha === undefined ? 0.92 : o.alpha);
+  rect(x, y, w, b, o.edge || C.chrome); rect(x, y + h - b, w, b, o.edge || C.chrome);
+  rect(x, y, b, h, o.edge || C.chrome); rect(x + w - b, y, b, h, o.edge || C.chrome);
+  rect(x + 2 * b, y + 2 * b, w - 4 * b, b / 2, o.inner || C.violet2);
+  rect(x + 2 * b, y + h - 2.5 * b, w - 4 * b, b / 2, o.inner || C.violet2);
+}
+function flash(t, t0, up, down, color = '#fff') {
+  let a = 0;
+  if (t >= t0 - up && t < t0) a = seg(t, t0 - up, t0);
+  else if (t >= t0 && t < t0 + down) a = 1 - seg(t, t0, t0 + down);
+  if (a > 0) rect(0, 0, W, H, color, a);
+}
+// Blocky dissolve: squares of 60 px switch to colour in a pseudo-random order.
+function dissolve(p, color = '#000', seed = 7) {
+  if (p <= 0) return;
+  const r = rng(seed), s = 60;
+  ctx.fillStyle = color;
+  for (let y = 0; y < H; y += s) for (let x = 0; x < W; x += s) if (r() < p) ctx.fillRect(x, y, s, s);
+}
+// Hand-drawn check mark and cross (the pixel fonts have no such glyphs).
+function check(x, y, s, c) { ctx.save(); ctx.strokeStyle = c; ctx.lineWidth = s / 5; ctx.lineCap = 'square'; ctx.beginPath(); ctx.moveTo(x, y + s * .55); ctx.lineTo(x + s * .38, y + s * .9); ctx.lineTo(x + s, y + s * .1); ctx.stroke(); ctx.restore(); }
+
+// ---------- backgrounds ----------
+const STARS = (() => { const r = rng(42), a = []; for (let i = 0; i < 260; i++) a.push({ x: r() * W, y: r() * H, z: 0.2 + r() * 0.8, p: r() * 6.28 }); return a; })();
+function stars(t, speed = 30, alpha = 1) {
+  for (const s of STARS) {
+    const x = ((s.x - TA * speed * s.z) % W + W) % W;   // ambient time: keeps moving during holds
+    const tw = 0.55 + 0.45 * Math.sin(TA * 3 + s.p);
+    const sz = s.z > 0.85 ? 6 : (s.z > 0.5 ? 4 : 3);
+    rect(x, s.y, sz, sz, s.z > 0.9 ? C.amber : C.chrome, alpha * tw * (0.35 + 0.65 * s.z));
+  }
+}
+function sky(top = C.navy, bottom = C.violet) {
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, top); g.addColorStop(1, bottom);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+// Synthwave-ish pixel grid floor.
+function grid(t, y0 = 760, color = C.violet2, alpha = 0.8) {
+  ctx.save(); ctx.globalAlpha = alpha; ctx.strokeStyle = color; ctx.lineWidth = 3;
+  const hy = y0, vx = W / 2;
+  for (let i = -14; i <= 14; i++) { ctx.beginPath(); ctx.moveTo(vx + i * 30, hy); ctx.lineTo(vx + i * 260, H); ctx.stroke(); }
+  const off = (TA * 1.2) % 1;
+  for (let k = 0; k < 12; k++) { const p = Math.pow((k + off) / 12, 2.2); const y = hy + p * (H - hy); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  ctx.restore();
+}
+// Pixel moon, drawn once at low resolution and scaled with nearest-neighbour.
+const MOON = (() => {
+  const n = 96, c = document.createElement('canvas'); c.width = c.height = n; const g = c.getContext('2d');
+  const r = rng(9), crat = []; for (let i = 0; i < 16; i++) crat.push([r() * n, r() * n, 2 + r() * 8]);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const dx = x + .5 - n / 2, dy = y + .5 - n / 2, d = Math.hypot(dx, dy);
+    if (d > n / 2 - 1) continue;
+    let l = 0.95 - (dx + dy) / (n * 1.6);
+    for (const [cx, cy, cr] of crat) { const e = Math.hypot(x - cx, y - cy); if (e < cr) l -= 0.18; if (e > cr - 1.2 && e < cr && x < cx) l += 0.1; }
+    const dither = ((x + y) % 2) * 0.04;
+    l = clamp(l + dither, 0.15, 1);
+    const k = Math.round(l * 5) / 5;
+    g.fillStyle = `rgb(${Math.round(60 + 120 * k)},${Math.round(70 + 125 * k)},${Math.round(120 + 110 * k)})`;
+    g.fillRect(x, y, 1, 1);
+  }
+  return c;
+})();
+function moon(x, y, size, alpha = 1) { ctx.save(); ctx.globalAlpha = alpha; ctx.imageSmoothingEnabled = false; ctx.drawImage(MOON, x - size / 2, y - size / 2, size, size); ctx.restore(); }
+
+// ---------- key art ----------
+const ART = new Image(); ART.src = 'art/wallpaper.png';
+const FACE = {               // crops in the 1254 x 1254 key art
+  mannie: [70, 420, 300, 300], wyoh: [330, 540, 320, 320], mike: [620, 450, 330, 330], prof: [900, 610, 320, 320]
+};
+function face(name, x, y, s, alpha = 1, gray = 0) {
+  const [sx, sy, sw, sh] = FACE[name];
+  ctx.save(); ctx.globalAlpha = alpha; ctx.imageSmoothingEnabled = true;
+  if (gray) ctx.filter = `grayscale(${gray}) brightness(${1 - gray * 0.5})`;
+  ctx.drawImage(ART, sx, sy, sw, sh, x, y, s, s); ctx.restore();
+}
+// Draw the key art covering the frame, with an optional mosaic (block size in px).
+const MOS = document.createElement('canvas');
+function artCover(srcY, zoom, block = 1, alpha = 1) {
+  const sc = (W / 1254) * zoom, sw = W / sc, sh = H / sc, sx = (1254 - sw) / 2;
+  ctx.save(); ctx.globalAlpha = alpha;
+  if (block > 1) {
+    MOS.width = Math.ceil(W / block); MOS.height = Math.ceil(H / block);
+    const g = MOS.getContext('2d'); g.imageSmoothingEnabled = true;
+    g.drawImage(ART, sx, srcY, sw, sh, 0, 0, MOS.width, MOS.height);
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(MOS, 0, 0, W, H);
+  } else { ctx.imageSmoothingEnabled = true; ctx.drawImage(ART, sx, srcY, sw, sh, 0, 0, W, H); }
+  ctx.restore();
+}
+const LOGO = document.createElement('canvas');
+function titleLogo(cx, cy, w, alpha = 1) {   // the chrome title from the key art
+  const sx = 40, sy = 118, sw = 1190, sh = 290, h = w * sh / sw;
+  LOGO.width = Math.ceil(w); LOGO.height = Math.ceil(h);
+  const g = LOGO.getContext('2d'); g.globalCompositeOperation = 'source-over'; g.imageSmoothingEnabled = true;
+  g.drawImage(ART, sx, sy, sw, sh, 0, 0, w, h);
+  g.globalCompositeOperation = 'destination-in';
+  const gh = g.createLinearGradient(0, 0, w, 0); gh.addColorStop(0, 'rgba(0,0,0,0)'); gh.addColorStop(0.05, '#000'); gh.addColorStop(0.95, '#000'); gh.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gh; g.fillRect(0, 0, w, h);
+  const gv = g.createLinearGradient(0, 0, 0, h); gv.addColorStop(0, 'rgba(0,0,0,0)'); gv.addColorStop(0.12, '#000'); gv.addColorStop(0.85, '#000'); gv.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gv; g.fillRect(0, 0, w, h);
+  ctx.save(); ctx.globalAlpha = alpha; ctx.drawImage(LOGO, cx - w / 2, cy - h / 2); ctx.restore();
+  return h;
+}
+
+// ---------- pixel sprites ----------
+function pgrid(ox, oy, s) {   // returns helpers drawing on an s-pixel grid
+  return {
+    r(x, y, w, h, c, a = 1) { rect(ox + x * s, oy + y * s, w * s, h * s, c, a); },
+    circ(cx, cy, rad, c) { for (let y = Math.floor(cy - rad); y <= cy + rad; y++) for (let x = Math.floor(cx - rad); x <= cx + rad; x++) if ((x + .5 - cx) ** 2 + (y + .5 - cy) ** 2 <= rad * rad) rect(ox + x * s, oy + y * s, s, s, c); }
+  };
+}
+// Luna, the R36 Ultra-style handheld: 80 x 112 cells. Screen content is animated.
+function device(ox, oy, s, t, screen = 'moon') {
+  const g = pgrid(ox, oy, s);
+  g.r(5, -3, 16, 4, '#2a2e55'); g.r(59, -3, 16, 4, '#2a2e55');
+  g.r(2, 0, 76, 112, '#14173a'); g.r(0, 2, 80, 108, '#14173a');
+  g.r(3, 1, 74, 110, '#3b4178'); g.r(1, 3, 78, 106, '#3b4178');
+  g.r(3, 2, 72, 2, '#5c64a8'); g.r(2, 4, 2, 100, '#5c64a8');
+  g.r(9, 6, 62, 62, '#0b0d22');                                  // bezel
+  const sx = 13, sy = 10, sw = 54, sh = 54;                      // square screen
+  g.r(sx, sy, sw, sh, '#0c1440');
+  // screen content
+  if (screen === 'moon') {
+    const r = rng(3); for (let i = 0; i < 18; i++) { const x = Math.floor(r() * sw), y = Math.floor(r() * sh); if ((Math.floor(TA * 4) + i) % 5) g.r(sx + x, sy + y, 1, 1, i % 4 ? '#c8d0ff' : C.amber); }
+    ctx.save(); ctx.beginPath(); ctx.rect(ox + sx * s, oy + sy * s, sw * s, sh * s); ctx.clip();
+    moon(ox + (sx + 27) * s, oy + (sy + 27) * s, 34 * s, 1);
+    ctx.restore();
+    if (Math.floor(TA * 2) % 2 === 0) g.r(sx + 4, sy + sh - 7, 3, 4, C.green);
+  } else if (screen === 'term') {
+    g.r(sx + 3, sy + 4, 18, 2, C.green); g.r(sx + 3, sy + 9, 30, 2, '#9aa3d8'); g.r(sx + 3, sy + 14, 24, 2, '#9aa3d8');
+    if (Math.floor(TA * 2) % 2 === 0) g.r(sx + 3, sy + 19, 3, 3, C.green);
+  }
+  g.r(30, 70, 20, 2, '#5c64a8');                                 // brand strip
+  // d-pad
+  g.r(11, 78, 6, 18, '#111329'); g.r(5, 84, 18, 6, '#111329'); g.r(12, 79, 4, 16, '#272b52'); g.r(6, 85, 16, 4, '#272b52');
+  // ABXY
+  g.circ(64, 80, 3.5, '#ffd34d'); g.circ(64, 94, 3.5, '#57ff8f'); g.circ(57, 87, 3.5, '#3ee8ff'); g.circ(71, 87, 3.5, '#ff4d5e');
+  // select / start / fn
+  g.r(31, 76, 6, 2, '#111329'); g.r(43, 76, 6, 2, '#111329'); g.r(37, 81, 6, 2, '#111329');
+  // sticks
+  g.circ(30, 100, 6, '#111329'); g.circ(30, 100, 4, '#2a2e55'); g.circ(50, 100, 6, '#111329'); g.circ(50, 100, 4, '#2a2e55');
+}
+// Microphone icon on a 16 x 16 grid (Mycroft).
+function mic(ox, oy, s, t) {
+  const g = pgrid(ox, oy, s);
+  g.r(6, 1, 4, 1, '#cfd6ff'); g.r(5, 2, 6, 7, '#cfd6ff'); g.r(6, 2, 2, 7, '#ffffff');
+  g.r(3, 6, 1, 4, C.dim); g.r(12, 6, 1, 4, C.dim); g.r(4, 10, 8, 1, C.dim); g.r(7, 11, 2, 2, C.dim); g.r(5, 13, 6, 1, C.dim);
+  for (let i = 0; i < 3; i++) { const a = 0.4 + 0.6 * Math.abs(Math.sin(t * 6 + i)); g.r(14 + i * 1.6, 5 - i, 0.8, 4 + 2 * i, C.cyan, a); g.r(1.2 - i * 1.6, 5 - i, 0.8, 4 + 2 * i, C.cyan, a); }
+}
+function coin(cx, cy, s, t) {   // spinning pixel coin
+  const w = Math.max(0.15, Math.abs(Math.cos(t * 9)));
+  ctx.save(); ctx.translate(cx, cy); ctx.scale(w, 1);
+  const g = pgrid(-8 * s, -8 * s, s);
+  g.circ(8, 8, 8, '#a35d00'); g.circ(8, 8, 7, C.amber); g.circ(8, 8, 5, '#ffd27a'); g.r(7, 4, 2, 8, '#a35d00');
+  ctx.restore();
+}
+
+// ---------- scenes ----------
+// Scene 1 (0-4 s): insert coin, then the free-lunch line gets corrected.
+const L1 = "THERE AIN'T NO SUCH THING", L2a = "AS A FREE ", L2b = "LUNCH", L2c = ".";
+const TYPE0 = 1.15, TYPE_CPS = 30;
+function scene1(t) {
+  rect(0, 0, W, H, C.ink);
+  stars(t, 20, seg(t, 0, 1.2) * 0.9);
+  if (t < 1.0) {
+    if (Math.floor(TA * 4) % 2 === 0) txt('INSERT COIN', W / 2, 560, 64, C.amber, { align: 'center' });
+    coin(W / 2, 380 - (1 - easeIn(seg(t, 0.2, 1.0))) * 40 + easeIn(seg(t, 0.6, 1.0)) * 140, 8, t);
+    return;
+  }
+  txt('CREDIT 01', W - M, H - 90, 24, C.amber, { align: 'right', alpha: seg(t, 1.0, 1.05) });
+  const n = Math.floor((t - TYPE0) * TYPE_CPS);
+  const full = L1.length + L2a.length + L2b.length + L2c.length;
+  const sz = 56;
+  const s1 = L1.slice(0, clamp(n, 0, L1.length));
+  txt(s1, W / 2 - measure(L1, sz) / 2, 440, sz, C.chrome);
+  let k = n - L1.length;
+  const line2 = L2a + L2b + L2c, x2 = W / 2 - measure(line2, sz) / 2;
+  if (k > 0) {
+    const shown = line2.slice(0, k);
+    txt(shown, x2, 560, sz, C.chrome);
+    if (k > L2a.length + L2b.length) {
+      // strike LUNCH
+      const lx = x2 + measure(L2a, sz), lw = measure(L2b, sz);
+      const p = easeOut(seg(t, 2.55, 2.75));
+      if (p > 0) rect(lx - 8, 560 - sz * 0.45, (lw + 16) * p, 10, C.red);
+      // stamp LLM
+      const q = seg(t, 2.95, 3.12);
+      if (q > 0) {
+        const sc = lerp(2.4, 1, easeOut(q));
+        const shake = t < 3.35 ? Math.sin(t * 90) * 10 * (1 - seg(t, 3.0, 3.35)) : 0;
+        txt('LLM', lx + lw / 2 + shake, 730, 120, C.cyan, { align: 'center', rot: -0.06, scale: sc, alpha: q * 3 });
+      }
+    }
+  }
+  if (n < full && Math.floor(TA * 8) % 2 === 0) {
+    // blinking block cursor while typing
+    const done = n <= L1.length;
+    const cx = done ? W / 2 - measure(L1, sz) / 2 + measure(s1, sz) : x2 + measure(line2.slice(0, Math.max(0, k)), sz);
+    rect(cx + 6, (done ? 440 : 560) - sz, sz * 0.8, sz, C.amber);
+  }
+  txt('after Robert A. Heinlein, The Moon Is a Harsh Mistress', W / 2, 880, 40, C.dim, { font: 'V', align: 'center', alpha: seg(t, 3.25, 3.5), shadow: 2 });
+  flash(t, 4.0, 0.25, 0);
+}
+
+// Scene 2 (4-8 s): the key art resolves from big pixels, with the manifesto line.
+function scene2(t) {
+  const p = seg(t, 4, 8);
+  const block = Math.max(1, Math.round(64 * Math.pow(1 - seg(t, 4.0, 4.7), 2)));
+  artCover(lerp(20, 75, easeOut(p)), lerp(1.0, 1.04, p), block);
+  const g = ctx.createLinearGradient(0, 640, 0, H); g.addColorStop(0, 'rgba(5,6,15,0)'); g.addColorStop(0.45, 'rgba(5,6,15,0.88)'); g.addColorStop(1, 'rgba(5,6,15,0.96)');
+  ctx.fillStyle = g; ctx.fillRect(0, 640, W, H - 640);
+  const a1 = seg(t, 4.9, 5.1), a2 = seg(t, 5.5, 5.7), a3 = seg(t, 6.3, 6.6);
+  txt('A CONSPIRACY TO TURN A TINY, STUBBORN COMPUTER', W / 2, 860, 32, C.chrome, { align: 'center', alpha: a1 });
+  runs([['INTO A MACHINE THAT ', C.chrome], ['RUNS ITSELF.', C.amber]], W / 2, 920, 32, { align: 'center', alpha: a2 });
+  txt('...without pretending that any intelligence is free.', W / 2, 990, 44, C.cyan, { font: 'V', align: 'center', alpha: a3, shadow: 3 });
+  flash(t, 4.0, 0, 0.35);
+  dissolve(seg(t, 7.75, 8.0), C.ink, 11);
+}
+
+// Scene 3 (8-16 s): player select, Luna's stats.
+const STATS = [
+  ['CPU', '4 × CORTEX-A35'], ['RAM', '983 MiB'], ['SCREEN', '720 × 720'],
+  ['INPUT', '17 BUTTONS, 2 STICKS'], ['NETWORK', '2.4 GHz WI-FI'], ['PRICE', '≈ 30 €']
+];
+function scene3(t) {
+  sky(C.navy, '#1a0f45'); stars(t, 25, 0.8);
+  const bob = Math.round(Math.sin(t * Math.PI * 2 * 0.5) * 2) * 6;
+  const din = easeBack(seg(t, 8.0, 8.5));
+  device(160, lerp(1200, 170, din) + bob, 7, t, 'moon');
+  // header
+  const hp = easeOut(seg(t, 8.1, 8.45));
+  txt('PLAYER 1', 820 + (1 - hp) * 300, 170, 32, C.amber, { alpha: hp });
+  txt('LUNA', 820 + (1 - hp) * 500, 268, 88, C.chrome, { alpha: hp, scale: 1 + 0.03 * beatPulse(t) });
+  STATS.forEach(([k, v], i) => {
+    const t0 = 8.5 + i * 0.5, a = seg(t, t0, t0 + 0.12);
+    if (a <= 0) return;
+    const y = 360 + i * 72;
+    rect(820, y - 44, 980, 60, i % 2 ? C.navy2 : C.violet, 0.55 * a);
+    txt(k, 840, y, 24, C.dim, { alpha: a });
+    const hl = (k === 'RAM' || k === 'PRICE');
+    txt(v, 1080, y, 32, hl ? C.amber : C.chrome, { alpha: a, maxW: 700, scale: 1 + 0.25 * (1 - seg(t, t0, t0 + 0.2)) });
+  });
+  // mission dialogue
+  if (t >= 12.0) {
+    const op = easeOut(seg(t, 12.0, 12.2));
+    box(820, 800, 980, lerp(10, 210, op), {});
+    if (op >= 1) {
+      const m1 = 'MISSION: MAKE IT AUTONOMOUS.';
+      txt(m1.slice(0, Math.floor((t - 12.2) * 40)), 860, 868, 32, C.amber);
+      txt('It listens, acts on its own desktop, maintains itself.', 860, 930, 44, C.chrome, { font: 'V', alpha: seg(t, 13.0, 13.2), maxW: 900, shadow: 3 });
+      txt('A lot to ask of a 30-euro console. That is the point.', 860, 978, 44, C.cyan, { font: 'V', alpha: seg(t, 14.0, 14.2), maxW: 900, shadow: 3 });
+    }
+  }
+  flash(t, 8.0, 0, 0.25, C.ink);
+  dissolve(seg(t, 15.8, 16.0), '#fff', 5);
+}
+
+// Scene 4 (16-24 s): the price list, and the price of "pong".
+function scene4(t) {
+  if (t < 20) {
+    sky('#12062e', '#2d0b3e'); stars(t, 60, 0.6); grid(t, 780, '#6a2a9c', 0.6);
+    const lines = [
+      [['EVERY TOKEN COSTS ', C.chrome], ['TIME AND MONEY.', C.amber]],
+      [['EVERY MODEL COSTS ', C.chrome], ['MEMORY.', C.amber]],
+      [['EVERY DAEMON COSTS ', C.chrome], ['BATTERY.', C.amber]]
+    ];
+    lines.forEach((ln, i) => {
+      const t0 = 16.0 + i, p = seg(t, t0, t0 + 0.15);
+      if (p <= 0) return;
+      const sc = lerp(1.6, 1, easeOut(p));
+      ctx.save(); ctx.translate(W / 2, 330 + i * 130); ctx.scale(sc, sc);
+      runs(ln, 0, 0, 48, { align: 'center', alpha: p * 2 });
+      ctx.restore();
+    });
+    txt('ON LUNA, NOTHING HIDES THOSE PRICES.', W / 2, 760, 32, C.cyan, { align: 'center', alpha: seg(t, 19.0, 19.15) });
+    flash(t, 16.0, 0, 0.3);
+    flash(t, 20.0, 0.12, 0, C.ink);
+    return;
+  }
+  // "pong"
+  rect(0, 0, W, H, C.ink); stars(t, 15, 0.5);
+  txt('ONE WORD TO CLAUDE CODE:', W / 2, 200, 36, C.dim, { align: 'center' });
+  box(460, 250, 1000, 200, { fill: '#05081a', edge: C.dim, inner: '#1d2350' });
+  const word = '> pong';
+  const n = Math.floor((t - 20.2) * 16);
+  txt(word.slice(0, clamp(n, 0, word.length)), 520, 385, 96, C.green, { font: 'V', shadow: 0 });
+  if (n < word.length + 6 && Math.floor(TA * 6) % 2 === 0) rect(520 + measure(word.slice(0, clamp(n, 0, 6)), 96, 'V') + 8, 318, 36, 70, C.green);
+  const cp = easeOut(seg(t, 20.75, 21.9));
+  if (t >= 20.75) {
+    const v = Math.round(17700 * cp / 10) * 10;
+    const s = (cp >= 1 ? '≈' : '') + v.toLocaleString('en-US');
+    txt(s, W / 2, 680, 128, C.amber, { align: 'center', scale: 1 + 0.08 * (cp >= 1 ? 1 - seg(t, 21.9, 22.2) : 0) });
+    txt('INPUT TOKENS', W / 2, 760, 36, C.chrome, { align: 'center' });
+    txt("almost all of it Claude Code's own prompt and tools  (measured on luna-pi)", W / 2, 830, 40, C.dim, { font: 'V', align: 'center', alpha: seg(t, 22.0, 22.2), shadow: 2 });
+  }
+  const sp = seg(t, 22.6, 22.75);
+  if (sp > 0) {
+    txt('NO FREE LLM.', W / 2, 965, 64, C.red, { align: 'center', rot: -0.03, scale: lerp(2, 1, easeOut(sp)), alpha: sp * 2 });
+  }
+  flash(t, 20.0, 0, 0.12, C.ink);
+  dissolve(seg(t, 23.8, 24.0), C.ink, 3);
+}
+
+// Scene 5 (24-34 s): select your intelligence, cheapest first.
+const CARDS = [
+  { name: 'BUTTONS', role: "Wyoh's gamepad daemon", lines: ['No model at all', '17.5 MiB, no CPU at rest', 'Live on Luna'], cost: 0, pic: 'pad' },
+  { name: 'MYCROFT', role: 'The voice', lines: ['Speech to text, offline', 'You fix the text first', 'Kroko ≈ 160 MiB (luna-pi)'], cost: 1, pic: 'mic' },
+  { name: 'MIKE', role: 'The local brain', lines: ['LFM2.5-350M, no network', 'One request, one action', 'You accept or refuse'], cost: 2, pic: 'mike' },
+  { name: 'MANNIE', role: 'The frontier brain', lines: ['Claude Code, via the Tunnel', 'Builds, repairs, operates', 'Cost shown first'], cost: 4, pic: 'mannie' }
+];
+const SEL = [24.5, 26.0, 27.5, 29.0];
+function scene5(t) {
+  sky(C.navy, '#160c3c'); stars(t, 30, 0.7);
+  txt('SELECT YOUR INTELLIGENCE', W / 2, 150, 56, C.chrome, { align: 'center', alpha: seg(t, 24.0, 24.1) });
+  txt('CHEAPEST FIRST', W / 2, 215, 28, C.amber, { align: 'center', alpha: seg(t, 24.15, 24.25) });
+  let sel = -1; SEL.forEach((s, i) => { if (t >= s) sel = i; });
+  const banner = t >= 31.0;
+  const cw = 380, gap = 40, x0 = (W - (4 * cw + 3 * gap)) / 2, y0 = 270, ch = 650;
+  CARDS.forEach((c, i) => {
+    const p = easeBack(seg(t, 24.0 + i * 0.1, 24.4 + i * 0.1));
+    const x = x0 + i * (cw + gap), y = lerp(H + 50, y0, p);
+    const on = i === sel && !banner;
+    const dimmed = banner ? 0.35 : (sel >= 0 && !on ? 0.55 : 1);
+    ctx.save(); ctx.globalAlpha = dimmed;
+    box(x, y, cw, ch, { fill: on ? '#1b1460' : C.navy, edge: on ? C.amber : C.dim, inner: on ? C.amber2 : C.violet2, alpha: 0.95 });
+    // portrait
+    const px = x + 40, py = y + 40, ps = cw - 80;
+    rect(px, py, ps, ps * 0.78, '#0a0d2a');
+    ctx.save(); ctx.beginPath(); ctx.rect(px, py, ps, ps * 0.78); ctx.clip();
+    if (c.pic === 'mike') face('mike', px, py - 20, ps, dimmed);
+    else if (c.pic === 'mannie') face('mannie', px, py - 10, ps, dimmed);
+    else if (c.pic === 'mic') { mic(px + ps / 2 - 96, py + 20, 12, t); }
+    else if (c.pic === 'pad') { device(px + ps / 2 - 80, py + 8, 2, t, 'term'); }
+    ctx.restore();
+    txt(c.name, x + cw / 2, y + 340, 36, on ? C.amber : C.chrome, { align: 'center', maxW: cw - 40 });
+    txt(c.role, x + cw / 2, y + 390, 38, C.cyan, { font: 'V', align: 'center', maxW: cw - 40, shadow: 2 });
+    c.lines.forEach((l, j) => txt(l, x + cw / 2, y + 450 + j * 44, 36, C.chrome, { font: 'V', align: 'center', maxW: cw - 50, shadow: 2 }));
+    // price pips
+    txt('PRICE', x + 40, y + ch - 50, 20, C.dim);
+    for (let k = 0; k < 4; k++) rect(x + 170 + k * 46, y + ch - 72, 34, 26, k < c.cost ? (c.cost >= 4 ? C.red : C.amber) : '#262c5a');
+    ctx.restore();
+    if (on) { // blinking cursor arrow above the card
+      if (Math.floor(TA * 6) % 2 === 0) { const g = pgrid(x + cw / 2 - 24, y - 54, 6); g.r(0, 0, 8, 2, C.amber); g.r(1, 2, 6, 2, C.amber); g.r(2, 4, 4, 2, C.amber); g.r(3, 6, 2, 1, C.amber); }
+    }
+  });
+  if (banner) {
+    const p = easeOut(seg(t, 31.0, 31.2));
+    rect(0, 440, W, 300 * p, '#05060f', 0.97); if (p >= 1) { rect(0, 440, W, 6, C.amber); rect(0, 734, W, 6, C.amber); }
+    if (p >= 1) {
+      runs([['THE ', C.chrome], ['LEAST SUFFICIENT', C.amber], [' INTELLIGENCE WINS.', C.chrome]], W / 2, 545, 48, { align: 'center', scale: 1 });
+      txt('A rule beats a model. A small model beats a big one.', W / 2, 620, 48, C.cyan, { font: 'V', align: 'center', alpha: seg(t, 31.8, 32.0), shadow: 3 });
+      txt('The frontier is called when it is worth its price.', W / 2, 680, 48, C.chrome, { font: 'V', align: 'center', alpha: seg(t, 32.6, 32.8), shadow: 3 });
+    }
+  }
+  flash(t, 24.0, 0, 0.15, C.ink);
+  dissolve(seg(t, 33.8, 34.0), C.ink, 21);
+}
+
+// Scene 6 (34-40 s): the 1-GiB wall.
+function scene6(t) {
+  sky('#0a0620', '#2a0a26'); stars(t, 10, 0.5);
+  if (t < 35.5) {
+    const a = easeOut(seg(t, 34.0, 34.2)), b = easeOut(seg(t, 34.6, 34.8));
+    txt('BOSS FIGHT', W / 2, 200, 40, C.red, { align: 'center', alpha: Math.floor(TA * 6) % 2 ? 1 : 0.6 });
+    txt('CLAUDE CODE: DOCUMENTED MINIMUM', 480, 420, 24, C.dim, { align: 'center', alpha: a, maxW: 700 });
+    txt('4 GB', 480, 580, 96, C.red, { align: 'center', alpha: a, scale: lerp(1.5, 1, a) });
+    txt('VS', W / 2, 540, 48, C.amber, { align: 'center', alpha: b });
+    txt("LUNA'S RAM", 1440, 420, 24, C.dim, { align: 'center', alpha: b });
+    txt('983 MiB', 1440, 580, 96, C.cyan, { align: 'center', alpha: b, scale: lerp(1.5, 1, b) });
+    txt('Running there is outside what is supported. We measure anyway.', W / 2, 800, 44, C.chrome, { font: 'V', align: 'center', alpha: seg(t, 35.0, 35.15), shadow: 3 });
+    flash(t, 34.0, 0, 0.2, C.ink);
+    return;
+  }
+  txt('PRESSURE: WHERE 983 MiB GO', W / 2, 180, 40, C.chrome, { align: 'center' });
+  const bx = 160, bw = 1600, by = 470, bh = 110, px = bw / 983;
+  // bar frame
+  rect(bx - 12, by - 12, bw + 24, bh + 24, C.chrome); rect(bx - 6, by - 6, bw + 12, bh + 12, C.ink);
+  const used = 983 - 547;
+  const pU = easeOut(seg(t, 36.0, 36.4)), pC = easeOut(seg(t, 37.0, 37.3)), pM = easeOut(seg(t, 38.0, 38.3));
+  // free blocks (segmented)
+  for (let x = 0; x < bw; x += 20) rect(bx + x, by, 16, bh, '#123a4a');
+  const seg1 = used * px * pU, seg2 = 244 * px * pC, seg3 = 306 * px * pM;
+  const over = t >= 38.3;
+  const blink = over && Math.floor(TA * 8) % 2 === 0;
+  function blocks(x0, w, col) { for (let x = 0; x < w; x += 20) rect(bx + x0 + x, by, Math.min(16, w - x), bh, col); }
+  blocks(0, seg1, C.violet2);
+  blocks(used * px, seg2, C.amber);
+  blocks((used + 244) * px, Math.min(seg3, bw - (used + 244) * px), blink ? C.red : C.cyan);
+  if (over) { const ox = bx + bw; rect(ox + 6, by - 6, 16, bh + 12, C.red); }
+  // labels
+  if (t < 36.0) txt('983 MiB OF RAM, ALL OF IT', W / 2, 700, 32, C.cyan, { align: 'center' });
+  if (pU > 0) {
+    txt('SYSTEM + DESKTOP + RESIDENT DICTATION', bx, 650, 24, C.dim, { alpha: pU, maxW: 700 });
+    txt('547 MiB LEFT', bx + used * px + 10, 650, 32, C.green, { alpha: seg(t, 36.4, 36.5) * (t < 37.0 ? 1 : 0.8) });
+    txt('Luna, Arch Linux ARM', bx + used * px + 10, 700, 36, C.dim, { font: 'V', alpha: seg(t, 36.4, 36.5), shadow: 2 });
+  }
+  if (pC > 0) {
+    txt('CLAUDE CODE PEAK: 244 MiB', bx + used * px, 430, 24, C.amber, { alpha: pC });
+    txt('luna-pi', bx + used * px + 615, 430, 36, C.dim, { font: 'V', alpha: pC, shadow: 2 });
+    if (t > 37.3 && t < 38.0) { check(bx + used * px + 760, 380, 48, C.green); txt('FITS', bx + used * px + 830, 425, 32, C.green); }
+  }
+  if (pM > 0) {
+    txt('+ MIKE ≈ 306 MiB', bx + bw, 760, 32, C.cyan, { align: 'right', alpha: pM });
+    txt('lean, desk host', bx + bw, 805, 36, C.dim, { font: 'V', align: 'right', alpha: pM, shadow: 2 });
+  }
+  if (over) {
+    const p = seg(t, 38.4, 38.55);
+    txt('RIGHT AT THE LIMIT', W / 2, 330, 48, C.red, { align: 'center', alpha: p, scale: lerp(1.5, 1, easeOut(p)) });
+    txt('That trade-off, not raw speed, shapes the next decisions.', W / 2, 920, 48, C.chrome, { font: 'V', align: 'center', alpha: seg(t, 39.0, 39.2), shadow: 3 });
+  }
+  flash(t, 35.5, 0, 0.15, '#ffffff');
+  dissolve(seg(t, 39.8, 40.0), C.ink, 13);
+}
+
+// Scene 7 (40-48 s): the cell.
+const CELL = [
+  { n: 'PROFESSOR', j: 'Coordinates the cell,', j2: 'records the decisions', pic: 'prof' },
+  { n: 'WYOH', j: 'The desktop, the buttons,', j2: 'the apps', pic: 'wyoh' },
+  { n: 'MYCROFT', j: 'The voice:', j2: 'speech to text', pic: 'mic' },
+  { n: 'MIKE', j: 'The local brain:', j2: 'small, accepted actions', pic: 'mike' },
+  { n: 'MANNIE', j: 'Claude Code', j2: 'on the device', pic: 'mannie' },
+  { n: 'LUNA', j: 'The device: cards,', j2: 'boot, Wi-Fi, audio', pic: 'luna' }
+];
+const RULES = [
+  [['PLANS FIRST.', C.chrome]],
+  [['NOTHING IS BUILT UNTIL THE ', C.chrome], ['HUMAN SAYS GO.', C.green]],
+  [['EVERY CLAIM ', C.chrome], ['MEASURED', C.amber], [' ON THE MACHINE.', C.chrome]],
+  [['NOTES, NOT CHATTER.', C.chrome]],
+  [['EVERYTHING IS ', C.chrome], ['WRITTEN DOWN.', C.cyan]]
+];
+function scene7(t) {
+  sky(C.navy, '#120a33'); stars(t, 35, 0.6);
+  txt('THE CELL', W / 2, 140, 64, C.chrome, { align: 'center', scale: 1 + 0.03 * beatPulse(t) });
+  txt('Luna is built by a cell of AI coding agents: one Claude Code session per part.', W / 2, 205, 44, C.cyan, { font: 'V', align: 'center', alpha: seg(t, 40.2, 40.4), shadow: 3 });
+  const tw = 500, th = 230, gx = 30, gy = 30, x0 = (W - (3 * tw + 2 * gx)) / 2, y0 = 260;
+  CELL.forEach((c, i) => {
+    const t0 = 40.0 + i * 0.5, p = easeBack(seg(t, t0, t0 + 0.25));
+    if (p <= 0) return;
+    const x = x0 + (i % 3) * (tw + gx), y = y0 + Math.floor(i / 3) * (th + gy);
+    ctx.save(); ctx.translate(x + tw / 2, y + th / 2); ctx.scale(p, p); ctx.translate(-(x + tw / 2), -(y + th / 2));
+    box(x, y, tw, th, { fill: '#0d1238', edge: i === 0 ? C.amber : C.dim, px: 5 });
+    const ps = 170, px = x + 28, py = y + 30;
+    rect(px, py, ps, ps, '#0a0d2a');
+    ctx.save(); ctx.beginPath(); ctx.rect(px, py, ps, ps); ctx.clip();
+    if (c.pic === 'mic') mic(px + 13, py + 13, 9, t);
+    else if (c.pic === 'luna') device(px + 45, py + 3, 1.5, t, 'moon');
+    else face(c.pic, px, py, ps);
+    ctx.restore();
+    txt(c.n, x + 225, y + 85, 30, i === 0 ? C.amber : C.chrome, { maxW: 250 });
+    txt(c.j, x + 225, y + 140, 34, C.chrome, { font: 'V', maxW: 255, shadow: 2 });
+    txt(c.j2, x + 225, y + 178, 34, C.chrome, { font: 'V', maxW: 255, shadow: 2 });
+    ctx.restore();
+  });
+  // rules ticker
+  if (t >= 43.0) {
+    const i = Math.min(4, Math.floor(t - 43.0)), t0 = 43.0 + i, p = seg(t, t0, t0 + 0.12);
+    rect(0, 800, W, 190, C.ink, 0.85);
+    txt('THE RULES', M, 850, 24, C.dim);
+    for (let k = 0; k < 5; k++) rect(W - M - (5 - k) * 34, 830, 24, 24, k <= i ? C.amber : '#262c5a');
+    ctx.save(); ctx.translate(W / 2, 940); ctx.scale(lerp(1.4, 1, easeOut(p)), lerp(1.4, 1, easeOut(p)));
+    runs(RULES[i], 0, 0, 44, { align: 'center', alpha: p * 2 });
+    ctx.restore();
+  }
+  flash(t, 40.0, 0, 0.15, C.ink);
+  dissolve(seg(t, 47.8, 48.0), C.ink, 17);
+}
+
+// Scene 8 (48-54 s): bring-up speedrun.
+const STAGES = [
+  ['FIRST BACKUP: A 62-BYTE FILE', 'RETRY. VERIFIED BYTE FOR BYTE.'],
+  ['ARCHR BOOTS TO A BLACK SCREEN', 'RIGHT PANEL DESCRIPTION. IT LIVES.'],
+  ['THE WI-FI CHIP IS INVISIBLE', '3 HARDWARE PATCHES. wlan0 APPEARS.'],
+  ['THE ROUTER REFUSES TO TALK', 'CHANNEL AUTO → 11. CONNECTED.'],
+  ['TYPING ON A MATCHBOX SCREEN', '$ ssh luna'],
+  ['A GAMING SYSTEM, ALL ROOT', 'NEW ROOT: ARCH LINUX ARM.']
+];
+function scene8(t) {
+  const i = Math.min(5, Math.floor(t - 48)), t0 = 48 + i, lt = t - t0;
+  sky('#060a22', '#0f2a3a'); stars(t, 220, 0.7);
+  txt('SPEEDRUN: BRINGING UP THE HANDHELD', W / 2, 150, 40, C.chrome, { align: 'center' });
+  txt('SEPT - OCT 2026, CARD BY CARD', W / 2, 205, 24, C.dim, { align: 'center' });
+  txt(`STAGE 1-${i + 1}`, W / 2, 330, 32, C.amber, { align: 'center' });
+  const [a, b] = STAGES[i];
+  const pa = seg(lt, 0, 0.08), pb = seg(lt, 0.4, 0.48);
+  txt(a, W / 2, 450, 48, C.chrome, { align: 'center', alpha: pa });
+  if (pb > 0) txt(b, W / 2, 560, 48, i === 4 ? C.green : C.cyan, { align: 'center', alpha: pb, scale: lerp(1.3, 1, easeOut(pb)), font: 'P' });
+  if (lt > 0.7) txt('CLEAR!', W / 2, 660, 32, C.green, { align: 'center' });
+  // ground and running device
+  const gy = 920;
+  for (let x = 0; x < W; x += 40) { rect(x - ((t * 400) % 40), gy, 36, 18, '#2a3e6a'); }
+  rect(0, gy + 18, W, H - gy - 18, '#0a1530');
+  const prog = seg(t, 48, 54);
+  const dx = lerp(M + 40, W - M - 160, prog), hop = Math.sin(clamp(lt / 0.5) * Math.PI) * 70;
+  device(dx, gy - 168 - hop, 1.5, t, 'term');
+  // pips
+  for (let k = 0; k < 6; k++) rect(W / 2 - 3 * 60 + k * 60 + 10, 740, 40, 24, k <= i ? C.green : '#262c5a');
+  flash(t, t0, 0, 0.12, '#ffffff');
+}
+
+// Scene 9 (54-60 s): doctrine, then the end card.
+function scene9(t) {
+  if (t < 57) {
+    artCover(lerp(330, 290, seg(t, 54, 57)), 1.08, 1);
+    rect(0, 0, W, H, C.ink, 0.62);
+    const L = [['NO FREE LLMS.', C.amber], ['NO INVISIBLE MASTERS.', C.chrome], ['NO SURRENDER TO THE DESKTOP.', C.cyan]];
+    L.forEach(([s, c], i) => {
+      const t0 = 54.0 + i * 0.75, p = seg(t, t0, t0 + 0.12);
+      if (p <= 0) return;
+      txt(s, W / 2, 420 + i * 150, 64, c, { align: 'center', alpha: p * 2, scale: lerp(1.5, 1, easeOut(p)) });
+    });
+    flash(t, 54.0, 0, 0.3);
+    return;
+  }
+  rect(0, 0, W, H, C.ink); stars(t, 15, 0.8);
+  moon(W / 2, 1080 + 200, 1100, 0.35);
+  const p = easeOut(seg(t, 57.0, 57.4));
+  titleLogo(W / 2, 330, lerp(1700, 1500, p), 1);
+  txt('There Ain\'t No Such Thing As A Free LLM.', W / 2, 600, 48, C.chrome, { font: 'V', align: 'center', alpha: seg(t, 57.3, 57.5), shadow: 3 });
+  txt('github.com/mdussere/tanstaafllm', W / 2, 700, 36, C.cyan, { align: 'center', alpha: seg(t, 57.6, 57.8) });
+  txt('A personal engineering project by Michael Dussere', W / 2, 790, 48, C.chrome, { font: 'V', align: 'center', alpha: seg(t, 57.9, 58.1), shadow: 3 });
+  if (t > 58.4 && Math.floor(TA * 3) % 2 === 0) txt('PRESS START', W / 2, 930, 28, C.amber, { align: 'center' });
+  flash(t, 57.0, 0, 0.5);
+  if (t > 59.55) rect(0, 0, W, H, '#000', seg(t, 59.55, 60.0));
+}
+
+// ---------- post: scanlines + vignette ----------
+const POST = (() => {
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  g.fillStyle = 'rgba(0,0,0,0.10)'; for (let y = 0; y < H; y += 4) g.fillRect(0, y + 2, W, 2);
+  const v = g.createRadialGradient(W / 2, H / 2, H * 0.45, W / 2, H / 2, H * 1.05);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.55)'); g.fillStyle = v; g.fillRect(0, 0, W, H);
+  return c;
+})();
+
+function renderFrame(T) {
+  TA = T;
+  const t = sourceTime(T);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none';
+  if (t < 4) scene1(t);
+  else if (t < 8) scene2(t);
+  else if (t < 16) scene3(t);
+  else if (t < 24) scene4(t);
+  else if (t < 34) scene5(t);
+  else if (t < 40) scene6(t);
+  else if (t < 48) scene7(t);
+  else if (t < 54) scene8(t);
+  else scene9(t);
+  ctx.globalAlpha = 1; ctx.drawImage(POST, 0, 0);
+}
+window.renderFrame = renderFrame;
+const loadHolds = fetch('holds.json').then(r => r.json()).then(j => {
+  HOLDS = j.holds.slice().sort((a, b) => a[0] - b[0]);
+  DURATION = 60 + HOLDS.reduce((a, h) => a + h[1], 0);
+}).catch(() => {});   // opened as a file: no holds, the original 60 s
+window.ready = Promise.all([
+  document.fonts.load('32px PS2P'), document.fonts.load('32px VT'),
+  new Promise(r => { if (ART.complete) r(); else ART.onload = r; }), loadHolds
+]).then(() => document.fonts.ready).then(() => { window.DURATION = DURATION; });
+
+window.ready.then(() => {
+  const q = new URLSearchParams(location.search);
+  if (q.has('play')) { const t0 = performance.now(); const loop = () => { renderFrame(((performance.now() - t0) / 1000) % DURATION); requestAnimationFrame(loop); }; loop(); }
+  else renderFrame(parseFloat(q.get('t') || '0'));
+});
+</script>
+</body>
+</html>
