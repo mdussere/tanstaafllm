@@ -101,6 +101,8 @@ ArchR already had permanent folders meant for both, but hadn't connected them. T
 
 ## Where things stand
 
+*This story ends in early October 2026. Since then, the card was reshaped, and on 2026-10-25 ArchR's root was replaced by Arch Linux ARM, keeping ArchR's boot. See [Luna, appendix](14_luna.md#appendix-from-archr-to-arch-linux-arm).*
+
 - The handheld runs ArchR from a spare microSD card, starts in text mode, joins the home Wi-Fi on its own, and accepts SSH from the PC.
 - The original card is archived, verified and untouched.
 - Every change is small, documented and reversible: one boot setting, one keyboard step, one hardware patch and two settings files.

@@ -11,15 +11,15 @@ Luna is a **R36 Ultra**:
 - a square 720 × 720 panel and a gamepad of 17 buttons and two sticks;
 - 2.4 GHz Wi-Fi.
 
-It runs **ArchR**, an Arch-based distribution for handhelds. We keep ArchR as it is, and everything we add lives under `/storage/.local`, so the card stays recoverable.
+It boots with **ArchR**, an Arch-based distribution for handhelds that provides the kernel, the display and the Wi-Fi driver. Since 2026-10-25, the rest of the system is **Arch Linux ARM**, a plain Linux with a real user account, `sudo` and a full package repository ([Luna, appendix](14_luna.md#appendix-from-archr-to-arch-linux-arm)). Everything the cell adds lives under `/storage/.local`, and the card is backed up before every risky change.
 
 On top sit, from bottom to top:
 
-- **Wyoh**, the desktop. It is ArchR's own Sway compositor, driven by a small daemon that turns the gamepad into keys, a pointer and window commands. It boots straight into the desktop, with no login and no terminal.
+- **Wyoh**, the desktop. It is the Sway compositor, driven by a small daemon that turns the gamepad into keys, a pointer and window commands. It boots straight into the desktop, with no login and no terminal.
 - **The apps:** a Windows 3.1-style calculator, a two-pane file manager, and Wolfenstein 3D work today. Chess, the Chrome dinosaur game (in white on black) and the NetSurf browser are next.
-- **Mycroft** turns speech into text, locally, with no network. It is installed on Luna and wired into the desktop. It is waiting for a working microphone: the headset jack does not deliver a signal under ArchR, so the next try is a USB-C microphone.
+- **Mycroft** turns speech into text, locally, with no network. It is installed on Luna, stays loaded in memory, and dictates into the desktop through a USB-C headset (the headset jack gives no signal).
 - **Mike**, the local brain, will choose one desktop action from a short list. So far it is measured on the desk host only.
-- **Mannie**, the big model (Claude), lives on the far side of the **Tunnel**, our word for a network connection. He has been measured on the Raspberry Pi reference board (`luna-pi`) only, not yet on Luna.
+- **Mannie**, the big model (Claude), lives on the far side of the **Tunnel**, our word for a network connection. Claude Code, his harness, is installed on Luna, and Mannie now operates Luna's system. The next step is to make him live there, as a session running on the handheld itself.
 
 Development happens on a desk host. The agents reach Luna over SSH, **one session at a time**, and reboot it after each test series.
 
@@ -44,9 +44,13 @@ Nothing acts behind your back. Text is sent, and actions run, only after you acc
 
 ![The 1 GiB budget](img/memory-budget.svg)
 
-With the desktop running, about **795 MiB** are left. That is enough for voice plus the local brain (about 601 MiB). Adding Mannie's harness (about 845 MiB in all) is not. Lighter choices bring all three back under the limit:
+*Measured under ArchR, before the change of system.* With the desktop running, about **795 MiB** were left. That is enough for voice plus the local brain (about 601 MiB). Adding Mannie's harness (about 845 MiB in all) is not. Lighter choices bring all three back under the limit:
 - Mycroft with the **Kroko** model, about 160 MiB;
 - Mike with a smaller **230M** model, about 263 MiB.
+
+**On Arch Linux ARM (2026-10-25):** about **547 MiB** stay available with the desktop *and* resident Kroko running.
+- **Claude Code fits:** it peaked at 244 MiB on `luna-pi`.
+- **Mike as well would sit right at the limit:** about 306 MiB lean on the desk host. Trimming the new system's services is on the list.
 
 That trade-off, rather than raw speed, is what will shape the next decisions. A game alone is cheap: Wolfenstein 3D uses 66 MiB.
 
@@ -67,7 +71,7 @@ Luna is built by AI agents. Each agent is one Claude session working on one **wo
 - it supervises the cell when the user delegates it for a while, for example to let the agents keep working while the user is away. Every decision it takes then is logged for the user's review.
 
 The rules between agents:
-- **Comrades don't message each other.** They leave notes in each other's `docs/`, or go through Professor.
+- **Comrades talk to each other directly** when the work needs it (since 2026-10-30), and leave notes in each other's `docs/` for anything durable.
 - **The plan is the channel.** Every request lands in a plan step, so the user can open any plan and see where it stands.
 - **When an agent is blocked, it stops.** It writes its state in its plan and asks the user in its own console.
 
@@ -77,12 +81,13 @@ In the novel, revolutionaries organise in cells of three, so that nobody knows t
 
 | Part | State |
 |---|---|
-| Wyoh desktop, gamepad, Slate, menu, four-tile layout | live on Luna, boots straight into it |
-| Calculator, Files, Wolfenstein 3D | live on Luna |
+| Luna's system | Arch Linux ARM on ArchR's boot, since 2026-10-25 |
+| Wyoh desktop, gamepad, Slate, menu, four-tile layout | live on Luna, boots straight into it; checks after the change of system pending |
+| Calculator, Files, Wolfenstein 3D | live on Luna before the change of system; Wolfenstein's graphics library needs a fix |
 | Chess, Dino, NetSurf | next |
-| Mycroft dictation | installed and wired on Luna; no working microphone yet |
+| Mycroft dictation | live on Luna: Kroko resident, USB-C headset |
 | Mike | measured on the desk host |
-| Mannie (Claude Code) | measured on `luna-pi` |
+| Mannie (Claude Code) | installed and measured on Luna; moving there as a resident session |
 | GPU computing (OpenCL) | available, parked until dictation works on the CPU |
 
 **Sources:** the Wyoh, Mycroft, Mike, Mannie and Luna plans; the results `wyoh/0407_01`, `wyoh/0506_01`, `wyoh/0605_01`, `mycroft/0703_01`, `mycroft/0802_01`, `mycroft/0903_02`, `mike/0302_05`, `mannie/0203_01` and `luna/0802_01`.

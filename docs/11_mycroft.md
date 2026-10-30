@@ -46,7 +46,7 @@ Mycroft turns French speech into editable text, locally and with no network, and
   - the console works on the desk host, and the user judged live dictation there "pas mal";
   - the provider is installed on Luna and wired into the Slate, and is tested with a fake provider.
 - **Blocking:** no microphone on Luna yet.
-  - The headset jack gives no signal under ArchR, even with the factory codec values.
+  - The headset jack gives no signal, even with the factory codec values.
   - A passive USB-C adapter is not a sound card.
   - The next try is a USB sound card or a USB microphone.
 - **Open:**

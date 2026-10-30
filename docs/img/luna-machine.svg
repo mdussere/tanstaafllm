@@ -26,15 +26,15 @@
   <circle cx="885" cy="25" r="10" fill="#1f2846" opacity="0.7"/>
 
   <text x="30" y="46" class="title">LUNA · THE WHOLE MACHINE</text>
-  <text x="30" y="68" class="sub">R36 Ultra handheld · what runs where, 2026-10-11</text>
+  <text x="30" y="68" class="sub">R36 Ultra handheld · what runs where, 2026-10-25</text>
 
   <!-- ===== left column: the device, bottom-up ===== -->
   <!-- brains -->
   <rect x="30" y="88" width="300" height="92" class="frame" shape-rendering="crispEdges"/>
   <text x="44" y="112" class="h">MYCROFT · voice → text</text>
   <text x="44" y="134" class="t">Speech recognition (Sherpa-ONNX).</text>
-  <text x="44" y="152" class="t">Installed on Luna; wired into the Slate.</text>
-  <rect x="44" y="162" width="9" height="9" fill="#ffb347"/><text x="59" y="171" class="s">no working microphone yet</text>
+  <text x="44" y="152" class="t">Resident on Luna; dictates into the Slate.</text>
+  <rect x="44" y="162" width="9" height="9" fill="#ffb347"/><text x="59" y="171" class="s">microphone: a USB-C headset</text>
 
   <rect x="350" y="88" width="300" height="92" class="frame" shape-rendering="crispEdges"/>
   <text x="364" y="112" class="h">MIKE · local brain</text>
@@ -58,7 +58,7 @@
   <rect x="30" y="296" width="620" height="128" class="hot" shape-rendering="crispEdges"/>
   <text x="44" y="320" class="h">WYOH · the desktop that agents and buttons can drive</text>
   <g shape-rendering="crispEdges">
-    <rect x="44" y="334" width="120" height="30" fill="#0f2a33" stroke="#3ee6e0" stroke-width="2"/><text x="104" y="354" class="chip" text-anchor="middle">Sway 1.11</text>
+    <rect x="44" y="334" width="120" height="30" fill="#0f2a33" stroke="#3ee6e0" stroke-width="2"/><text x="104" y="354" class="chip" text-anchor="middle">Sway 1.12</text>
     <rect x="172" y="334" width="150" height="30" fill="#0f2a33" stroke="#3ee6e0" stroke-width="2"/><text x="247" y="354" class="chip" text-anchor="middle">gamepad daemon</text>
     <rect x="330" y="334" width="170" height="30" fill="#0f2a33" stroke="#3ee6e0" stroke-width="2"/><text x="415" y="354" class="chip" text-anchor="middle">Slate + keyboard</text>
     <rect x="508" y="334" width="128" height="30" fill="#0f2a33" stroke="#3ee6e0" stroke-width="2"/><text x="572" y="354" class="chip" text-anchor="middle">menu (fuzzel)</text>
@@ -70,7 +70,7 @@
   <!-- system -->
   <rect x="30" y="440" width="620" height="70" class="frame" shape-rendering="crispEdges"/>
   <text x="44" y="464" class="h">SYSTEM</text>
-  <text x="44" y="486" class="t">ArchR (an Arch-based handheld distribution), kernel 6.12, systemd.</text>
+  <text x="44" y="486" class="t">Arch Linux ARM, on ArchR's boot and kernel 6.12 (since 2026-10-25), systemd.</text>
   <text x="44" y="503" class="t">ARM's Mali driver: OpenCL yes, Vulkan no. Everything of ours lives in /storage/.local.</text>
 
   <!-- hardware -->
@@ -78,7 +78,7 @@
   <text x="44" y="550" class="h">HARDWARE</text>
   <text x="44" y="572" class="t">Rockchip RK3326: 4 × Cortex-A35 · Mali-G31 MP2 GPU · 983 MiB RAM</text>
   <text x="44" y="590" class="t">720 × 720 panel · gamepad (17 buttons, 2 sticks) · Wi-Fi 2.4 GHz</text>
-  <text x="44" y="607" class="t">Speaker and headset jack (its microphone is not working yet)</text>
+  <text x="44" y="607" class="t">Speaker and headset jack (the jack's microphone gives no signal)</text>
 
   <!-- ===== right column: the world around Luna ===== -->
   <rect x="690" y="88" width="240" height="132" fill="#1b1446" stroke="#7a5cd6" stroke-width="3" stroke-dasharray="8 4" shape-rendering="crispEdges"/>
@@ -86,7 +86,7 @@
   <text x="704" y="134" class="t">Frontier model (Claude),</text>
   <text x="704" y="152" class="t">reached through the Tunnel.</text>
   <text x="704" y="174" class="t">Costly; used deliberately.</text>
-  <rect x="704" y="190" width="9" height="9" fill="#ffb347"/><text x="719" y="199" class="s">measured on luna-pi only</text>
+  <rect x="704" y="190" width="9" height="9" fill="#ffb347"/><text x="719" y="199" class="s">installed on Luna; moving there</text>
 
   <rect x="690" y="296" width="240" height="104" class="frame" shape-rendering="crispEdges"/>
   <text x="704" y="320" class="h">DESK HOST</text>
