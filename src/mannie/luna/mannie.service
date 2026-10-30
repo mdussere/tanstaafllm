@@ -1,0 +1,29 @@
+# Starts Mannie from Luna at boot (user decision, 2026-10-30; it replaces "on demand,
+# not at boot" in worklines/mannie/docs/0607_01). It runs the same launcher as the
+# user: `mannie start` resumes a conversation under an hour old, else starts fresh,
+# takes the brain lock and joins Remote Control. Install:
+#   sudo install -m 0644 mannie.service /etc/systemd/system/ && sudo systemctl enable mannie
+# `systemctl disable mannie` goes back to on-demand starts.
+[Unit]
+Description=Mannie from Luna: Claude Code in tmux, joined to Remote Control
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=michael
+Group=michael
+Environment=HOME=/home/michael
+Environment=PATH=/home/michael/.local/bin:/usr/local/bin:/usr/bin
+WorkingDirectory=/home/michael
+# Wi-Fi comes up late on Luna: wait (up to 3 min) until claude.ai resolves.
+ExecStartPre=/bin/sh -c 'for i in $(seq 60); do getent hosts claude.ai >/dev/null && exit 0; sleep 3; done; exit 1'
+ExecStart=/home/michael/.local/bin/mannie start
+# At shutdown: /exit, then kill after 30 s, and release the lock.
+ExecStop=/home/michael/.local/bin/mannie stop
+TimeoutStartSec=300
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target
