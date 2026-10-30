@@ -116,18 +116,28 @@ class Server:
 
 
 def run_server_eval(model_path: str, config: str, sets: dict[str, Path], run_dir: Path,
-                    max_tokens: int = 64) -> dict[str, Any]:
-    """Prompt v4, constrained, every set, one server process; memory read from the server."""
+                    max_tokens: int = 64, server_factory=None, slot_dir: str | None = None,
+                    pick: dict[str, list[int]] | None = None, on_request=None) -> dict[str, Any]:
+    """Prompt v4, constrained, every set, one server process; memory read from the server.
+
+    ``server_factory(extra, log_path)`` returns a server context manager (default: a local
+    `Server`); ``slot_dir`` is where that server saves slots; ``pick`` keeps only the given
+    case indices per set; ``on_request(case, answer)`` is called after each request.
+    """
     name = Path(model_path).name
     run_dir.mkdir(parents=True, exist_ok=True)
     fmt = bench.format_for(name)
     grammar = bench.grammar_for(fmt, contract.APP_IDS, contract.PLACES)
     extra = list(CONFIGS[config])
     if config in SLOT_STATE:
-        slots = run_dir / "slots"
-        slots.mkdir(exist_ok=True)
-        extra += ["--slot-save-path", str(slots)]
-    with Server(model_path, extra, run_dir / f"{name}.{config}.server.log") as server:
+        if slot_dir is None:
+            (run_dir / "slots").mkdir(exist_ok=True)
+            slot_dir = str(run_dir / "slots")
+        extra += ["--slot-save-path", slot_dir]
+    factory = server_factory or (lambda args, log: Server(model_path, args, log))
+    chosen = {n: [c for i, c in enumerate(ev.load_cases(p)) if pick is None or i in pick.get(n, [])]
+              for n, p in sets.items()}
+    with factory(extra, run_dir / f"{name}.{config}.server.log") as server:
         props = server.get("/props")
         template = props["chat_template"]
         bos, eos = props.get("bos_token", ""), props.get("eos_token", "")
@@ -141,19 +151,21 @@ def run_server_eval(model_path: str, config: str, sets: dict[str, Path], run_dir
         prefix_report = None
         if config in SLOT_STATE:
             # The prefix shared by every case, evaluated once and saved to a slot file.
-            everything = [c for path in sets.values() for c in ev.load_cases(path)]
+            everything = [c for path in sets.values() for c in ev.load_cases(path)]  # all cases, as on the desk
             first = tokens_for(everything[0])
             prefix = first[:min(bench.common_prefix(first, tokens_for(c)) for c in everything[1:])]
             t0 = time.perf_counter()
             server.post("/completion", {"prompt": prefix, "n_predict": 0, "cache_prompt": True})
             server.post("/slots/0?action=save", {"filename": "prefix.bin"})
             prefix_report = {"tokens": len(prefix), "eval_and_save_s": round(time.perf_counter() - t0, 3),
-                             "file_bytes": (run_dir / "slots/prefix.bin").stat().st_size}
+                             "file_bytes": (Path(slot_dir) / "prefix.bin").stat().st_size
+                             if (Path(slot_dir) / "prefix.bin").exists() else None}
         report: dict[str, Any] = {"model": name, "config": config, "argv": server.argv, "prompt": "v4",
                                   "mode": "constrained", "ready_s": round(server.ready_s, 3),
                                   "status_loaded_kib": loaded, "prefix": prefix_report, "sets": {}}
-        for set_name, path in sets.items():
-            group = ev.load_cases(path)
+        for set_name, group in chosen.items():
+            if not group:
+                continue  # `ev.evaluate` would take an empty list as "the whole main set"
             timings: list[float] = []
             extra: dict[str, dict[str, Any]] = {}
 
@@ -173,6 +185,8 @@ def run_server_eval(model_path: str, config: str, sets: dict[str, Path], run_dir
                                        "prompt_n": timing.get("prompt_n"), "prompt_ms": timing.get("prompt_ms"),
                                        "predicted_n": timing.get("predicted_n"),
                                        "predicted_ms": timing.get("predicted_ms")}
+                if on_request:
+                    on_request(case, answer)
                 parsed = bench.parse_call(fmt, fmt.opener + raw + fmt.closer[1:])
                 return contract.Call(parsed.tool, parsed.args) if parsed else None
 
