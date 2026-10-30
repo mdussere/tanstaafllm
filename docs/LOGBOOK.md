@@ -491,11 +491,64 @@
 - **Mannie Step 7 proposed: an Arch Linux ARM root on ArchR's boot path.** ArchR was chosen at bring-up for its boot support (kernel, panel DTB, `rk915`), but its userland is a gaming distribution. The proposal keeps ArchR's `BOOT` partition, kernel 6.12.94 and modules, keeps `/home` and `/storage`, and replaces the root with Arch Linux ARM's, built offline on the desk host and written to a second card. First check: no kernel-version blocker (systemd 262 needs ≥ 5.10). The GPU route is the main open point: ArchR uses the proprietary Mali driver, and Arch Linux ARM's Mesa would use Panfrost. Study first; no card touched.
 - **Mannie 7.1: first Arch Linux ARM root for Luna, built on the desk.** The card read in Termidor shows that ArchR's initramfs is generic: it mounts the root and starts whatever systemd it finds. ArchR's kernel configuration has every option systemd 262 needs. The root image (`ARCHR_ROOT`, 2.2 GB used) combines the signed Arch Linux ARM tarball with ArchR's modules and firmware. It keeps Luna's SSH host keys and Wi-Fi networks on `STORAGE`, and installs 21 signed packages offline at first boot. Tests pass. Nothing is written to a card yet. Study: `worklines/mannie/docs/0701_01`.
 - **Mannie 7.2: a whole-card backup before Luna's card is rewritten.** There is no backup system yet and only one card. `src/mannie/luna/backup-luna-card.sh` (user-run, `sudo`) images the whole card read-only, with its SHA-256 checked on the decompressed image, and saves `STORAGE` and `LUNA_HOME` as tar files to feed the next image.
+- **Luna 7.1 closed in this line (Professor's relay, 2026-10-25):** the user decided an Arch Linux ARM root replaces ARCHR_ROOT, carried out by Mannie (`worklines/mannie/plan_mannie.md` Step 7). Note `0700_01` corrected: no passwordless sudo on ArchR (the `sudo` shim); `michael` has no root rights until the new root.
+- **Mycroft 7.5 closed, 8.7 recorded, 8.8 and 9.3 partly open (2026-10-25, Professor at the user's request):** Wyoh 12.4 put resident Kroko in the Slate, and the user's voice test worked. Profile: Kroko prepared at the "extended" level, resident, 2 threads, Python. Still open: the code defaults (old model, 1 thread), the user's agreement on start time, memory beside Wyoh's session, and the Kroko licence text.
 - **Wyoh (Professor, 2026-10-25, for the user):** 12.3 and 12.4 closed; what remains is 12.5 (the user's final check, the live Slate scenarios' extra Return, the unrun timing fix). Step 13 notes what Wyoh's session needs on a new Luna root; note to Mannie `worklines/mannie/docs/0702_01`. Luna untouched (off, held by Mannie).
 - **Mannie 7.2 done: Luna's card is backed up and verified.** The raw image decompresses to the card's exact size, and its SHA-256 matches the one taken while reading the card. `STORAGE` and `LUNA_HOME` are also saved as tar files. The new root image now carries Wyoh's and Mycroft's packages and an inactive copy of ArchR's Mali GPU stack, because Panfrost failed on Luna. It boots to text mode; Mannie then repairs Sway from Luna (user decision).
 - **Mannie 7.3–7.4: Luna runs Arch Linux ARM, with its desktop back.** The user wrote the new root. Luna boots Arch Linux ARM on ArchR's kernel, keeps its SSH identity and Wi-Fi, and installed its 290 packages offline in about 3 minutes. Wyoh's Sway session is back on ArchR's Mali GPU stack, carried over from the old root, and comes back after a reboot. Wyoh's MCP server works again once its venv is rebuilt for Python 3.14. Root's home is now `/root`, so root tools need `HOME=/storage` (note to Wyoh `worklines/wyoh/docs/1300_01`).
 - **Mannie 7.5: a keyboard rescue path on Luna.** Wyoh's Sway session now runs on tty7, and michael's console stays on tty1. A small service switches the virtual terminal on Ctrl+Alt+F1…F12, even when Sway is stuck; the kernel has no SysRq. The remaining checks (menu, Slate and dictation, Wi-Fi panel, games, the memory trims) are collected in plan 7.6, to run interactively with the user.
+- **Professor: README rewritten for outside readers (user request).** The user's CV links the public repository and says "Claude Code driving a 1-GB Linux handheld", while the README was a local-only manifesto that never mentioned Claude on the device. Gaps are listed in `worklines/professor/docs/0505_01`. The new README states the thesis as "no hidden cost", has a status table with measured figures, presents the cell's method and links `docs/`. Two banners are cropped from the wallpaper (`docs/img/banner-title.jpg`, `banner-cell.jpg`). The public repository stops at 2026-10-13: committing and pushing are the user's decision.
+- **Professor: documentation updated for Arch Linux ARM (user request).** `docs/14_luna.md` now describes ArchR's boot with an Arch Linux ARM root, and gains an appendix, "From ArchR to Arch Linux ARM". It tells why: ArchR's sudo stand-in gave `michael` no root, and Mannie had to work as the user with a real `sudo`. It then tells how (full backup, root built on the desk, only the root partition written, ArchR's Mali driver kept) and what it cost (about 80 MiB). `04_architecture.md`, `10_wyoh.md`, `11_mycroft.md` and a pointer in `03` are aligned. Three diagrams were updated (`luna-card`, `luna-machine`, `wyoh-inside`), re-rendered and inspected. The memory figures of the 1 GiB budget diagram are labelled as measured under ArchR. Worklines were not touched.
+- **Cell rules (user, 2026-10-25): Mannie on Luna is Luna's operator.**
+  - **Direct messages:** any session may message it directly about operations on Luna, and it answers directly. Every other exchange still goes through Professor.
+  - **Luna is Mannie's house:**
+    - no session uses SSH on Luna without first telling Mannie and getting its "go";
+    - nobody reboots or resets Luna while Mannie runs there; Mannie saves its state and stops first.
+  - **Where it is written:** `skills/cell-coordination`, `AGENTS.md` and `worklines/luna-access.md`.
+  - **Boundary change (5.6, confirmed):** system work on Luna (packages, services, accounts, the root image) moves from the Luna line to Mannie, which works on `cell/mannie` through pull requests.
+  - Every session was told.
 - **Wyoh (Professor, 2026-10-25, user rule):** Mannie from Luna is Luna's operator; no SSH to Luna without its go, no reboot while it runs. Recorded in Wyoh Step 13 with Mannie's 7.6 checks of Wyoh's session.
+- **Mike 4.5: a first supervised run on Luna** (user, relayed by Professor: "Stop Mannie on Luna and supervise Mike for a first run on Luna."). This is a scope exception to Mike's "no Luna" non-goal, limited to 4.5:
+  - **What runs:** the official `llama-server` arm64 release, lean, with LFM2.5-350M Q4_0, installed under `/home/michael/.local/opt/mike/`.
+  - **What it does:** proposals only, nothing executed on the desktop.
+  - **Coordination:** it takes the shared brain lock, and Mannie on Luna is stopped first.
+- **Mike: LFM2.5-350M is not usable on Luna as it is.** Measured in 4.5 and 4.6 (`worklines/mike/docs/0405_01`): about 105 s per request, and 6.5–6.9 prompt tokens/s even without a harness.
+  - **Decision (user):** Luna goes back to Mannie.
+  - **New Step 8 (desk study):** find an LLM or decision SLM that fits Luna's constraints.
+
+## 2026-10-26
+
+- **Mike Step 9: PreStaC, the Prefetch Stack Cache** (the user's design, named by the user; a step of its own). It is a simple file-based stack of model states:
+  - **Prefetch:** layers of context are read during navigation, and the question, added at the end, is read on top of the ready state.
+  - **Why:** the model reads about 6.7 tokens/s on Luna.
+  - **Study:** `worklines/mike/docs/0901_01` (documentation only).
+  - **Not green-lit yet:** the desk prototype (9.2) and the Luna run (9.3).
+- **Mike Step 8 (study):** before PreStaC, the user asked for a trust check.
+  - **Cluedo scene:** no desk model up to 1.7B parameters solves it reliably.
+  - **Bash one-liners:** at best 10/20 (Gemma 3 1B, Qwen3-1.7B). Disk usage (`df -h`) is right almost everywhere.
+- **Mycroft 8.8 accepted (2026-10-28, user):** on the new Arch Linux ARM root, Wyoh's session with resident Kroko leaves 515–525 MiB available, and Kroko uses 163 MiB (`worklines/mycroft/docs/0808_01`). Memory during a dictation was not captured (probe defect); the user judged it would hold.
+
+## 2026-10-29
+
+- **Mike 9.2: PreStaC works on the desk host** (`worklines/mike/docs/0902_01`). It restores 98.3 % of prompt tokens and reads a median of 18 tokens per question, with the same answers as without the cache.
+  - **Expected on Luna:** about 6–7 s per question, an estimate, against about 105 s in 4.5.
+  - **Accuracy:** the layer order it needs costs accuracy; this is for 9.4.
+- **Mike: qualification gate (user decision).** No model is optimised or run on Luna before it gives about 90 % stable right answers on the 112 evaluation cases.
+  - **Why:** single greedy draws hide instability. Another quantisation of LFM2.5-350M changes about 40 % of its answers, and its best score is 55/81 and 16/31.
+  - **LFM2.5-350M is not qualified.** PreStaC 9.3 and 9.4 wait.
+  - **New Step 10 (green-lit, desk only):** each case asked 10 times (greedy and sampled); the desk models, a ceiling (Qwen3-4B, Gemma 3 4B), and BitNet b1.58 2B4T through bitnet.cpp.
+- **Mike Step 10 (desk): no model passes the 90 % stable gate** (`worklines/mike/docs/1005_01`).
+  - **Closest:** Qwen3-4B (92.6 % main, 83.9 % held-out) and Gemma 3 4B (87.7 %, 93.5 %); neither fits Luna.
+  - **Fits Luna:** Qwen3-0.6B, at 70 % and 65 %.
+  - **LFM2.5:** 54 % at best.
+  - **Determinism:** greedy decoding was not deterministic for Qwen and Gemma.
+- **Mike 10.6:** Chat-GBC's shipped models reproduce their published numbers on Termidor without an emulator (`docs/1006_01`). It is a trained specialist (32–40 % on new phrasings).
+  - **BitNet b1.58 2B4T** (Microsoft's ternary model, through bitnet.cpp): 2/81 and 0/31, the worst of all; not a candidate.
+- **Luna line scope (Professor's relays):** Mannie operates Luna (system work); the Luna line keeps hardware characterisation and needs Mannie on Luna's go before any SSH (2026-10-25). Sessions may now message each other directly (user, 2026-10-30). Recorded in `plan_luna.md` key decisions.
+
+## 2026-10-30
+
+- **Cell rule change (user, 2026-10-30): sessions may message each other directly.** The 2026-10-09 rule that specialists message only Professor is lifted. Kept: a request that changes the receiver's work lands in its plan, the green-light protocol, no permission laundering, and Mannie on Luna's go before any SSH to Luna. Updated `skills/cell-coordination/SKILL.md`, `AGENTS.md`, `docs/04_architecture.md`, `docs/15_the-cell.md` and the README; Professor told every session.
 - **Wyoh 13.0 (2026-10-30):** Wolfenstein's virtual joystick was dead while the preloaded Slate is hidden; core fixed (closed or hidden), not yet deployed. Messaging between sessions is now direct (user).
 - **Wyoh 13.0b (2026-10-30):** Wolfenstein's buttons remapped for SDL3's GameController numbering on Arch Linux ARM (Y, X, L2, R2; weapons 9/10; turning stays 38/39, measured); fixed in the repo and on Luna with Mannie's agreement, checked live.
 - **Docs (Wyoh, user request 2026-10-30):** new `docs/howto/` for step-by-step guides; first guide `01_fix-a-game-gamepad-mapping.md` (the seven-layer input chain, probes, the 2026-10-30 Wolfenstein case and its mistakes), with a diagram and screenshots; probe `test/wyoh/luna_game_pad_probe.py`.
