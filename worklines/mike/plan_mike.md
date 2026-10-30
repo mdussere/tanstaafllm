@@ -41,7 +41,7 @@ Done means: a measured choice of model (or a measured "not good enough"), and a 
 
 ## Non-goals ❌
 
-- Any work on Luna (the R36 Ultra): no SSH, no deployment, no measurement. `luna-pi` is the furthest target.
+- Any work on Luna (the R36 Ultra): no SSH, no deployment, no measurement. `luna-pi` is the furthest target. **Exception:** the supervised first run of 4.5 (user, 2026-10-25), within its scope.
 - Changing the Wyoh MCP server, Mycroft, or Luna's image. Requests to them go as notes.
 - Raw Sway commands or free-text `exec` from the model.
 - Multi-step agent loops, a resident service, speech output, Mannie integration.
@@ -52,7 +52,9 @@ Done means: a measured choice of model (or a measured "not good enough"), and a 
 
 ## Key decisions / assumptions
 
-- **Model: LFM2.5-350M** (user decision, 2026-10-11: "350 is impressive and fast"; a big difference from 230M; about 350 MiB is acceptable for now; slim down later).
+- **Qualification gate (user, 2026-10-29): no model is used, optimised or run on Luna before it is qualified.** "Before we even think about optimisation, I need a stable performance of something like 90 % on our cases, which are very simple, to think of using Mike." LFM2.5-350M is **not qualified** (best 55/81 main and 16/31 held-out, one draw, unstable: another quantisation changes about 40 % of its answers). Qualifying a model is the priority (Step 10); PreStaC 9.3 and 9.4 wait.
+- **LFM2.5-350M is not usable on Luna as it is** (user, 2026-10-25, after 4.5 and 4.6: about 105 s per request; 6.5–6.9 prompt tokens/s). Luna is left to Mannie; Mike goes back to desk studies (Step 8).
+- **Model (desk host): LFM2.5-350M** (user decision, 2026-10-11: "350 is impressive and fast"; a big difference from 230M; about 350 MiB is acceptable for now; slim down later).
 - One call per request; the user accepts every action before it runs.
 - **Mike does one action per order** (user, 2026-10-13): no autonomous planning or composition. A decider may **select a predefined plan** by case; selecting is not planning.
 - **English is allowed** if it makes Mike lighter or better and if the English speech-to-text handles the user's accent (Mycroft's evaluation). French is a bonus, not a requirement.
@@ -171,6 +173,87 @@ LFM stays for what needs generation. Done means a measured verdict per candidate
 - [ ] 7.6 Write the verdict. Then, as a separate step through Professor and `worklines/luna-access.md`, measure on `luna-pi` and Luna. The desk → Luna factor (≈ 20× for Mycroft's ASR) is a hint, not a substitute for measurement.
 - **Acceptance:** a doc with a verdict per candidate against the budget (decision ≤ 500 ms acceptable and < 200 ms excellent, on Luna, to be confirmed there; memory < 50 MiB excellent and 100–150 MiB acceptable); no training of any kind; claims marked verified or unverified.
 
+### Step 8 — Find a model that fits Luna (user, 2026-10-25; desk study first)
+**Status**: 🧪 Study in progress (desk research and documentation only; any download or measurement needs a green light)
+
+User, 2026-10-25: "As it stands, this model is not usable. We leave Luna for now, to Mannie. And we go back to studies, to try to find an LLM or a decision model (SLM) that lets us do something within Luna's constraints."
+
+- [x] 8.0 **Trust check first (user, 2026-10-25):** "on the Cluedo case I expect a relevant result; if we do not even get a relevant result for that, it is unusable. So first we redo the test locally: do we get the Cluedo answer, on Termidor?" Expected answer: professeur Violet, la corde, la bibliothèque. Models already on the desk (LFM2.5-350M Q4_K_M, Q4_0, QAD Q4_0; LFM2.5-230M), through the model's own chat template; French and English; a short answer, and about 100 tokens of reasoning then the answer; greedy and Liquid AI's recommended sampling. Test `test/mike/test_cluedo.py` (`integration`).
+  - **Result (`results/mike/cluedo/20261025T213010Z/`): 0 of 32 answers right** (four LFM files × French/English × short/reasoning × two samplings). The murderer is named in 6 (all English short answers: "Professor Plum", without weapon or room); the rope in 3; the library in 3. Typical answers: "le colonel Moutarde, le chandelier, et le hall"; "Colonel Mustard, cigar, library"; the question's own words repeated. The test is fair (one consistent answer); the models do not reason over a 1,000-token scene. Next, with a green light for downloads: calibrate with larger models on the desk to find the size where the answer becomes right.
+- [x] 8.0b **Calibration with larger models (user, 2026-10-25: "tests a bit with larger models")**, on the desk only: the same Cluedo test with Qwen3-0.6B, LFM2-700M, Gemma 3 1B, LFM2.5-1.2B-Instruct and Qwen3-1.7B (Q4_K_M GGUF, about 3.5 GB in all, under `mike-assets/`, checksums recorded). Qwen3's thinking mode is turned off, so that every model gets the same token budget.
+  - **Result (`results/mike/cluedo/20261025T214118Z/`):** right (murderer, weapon and room) **1 of 40**: LFM2.5-1.2B-Instruct, French, reasoning, sampled.
+    - **LFM2-700M** names the murderer 8 of 8 times, but never the weapon.
+    - **Gemma 3 1B** gets the room 8 of 8 times, but names the victim as the murderer.
+    - **Qwen3-1.7B** gets the room 7/8 and the murderer 4/8; the weapon only once.
+    - **Qwen3-0.6B** never names the murderer.
+    - **The weapon is the hard part:** the curtain cord has to be read as the rope.
+    - Up to 1.7B parameters, no model is reliable on this scene. A 4B reference would show whether the scene itself is too hard.
+- [x] 8.0c **One-liner test (user, 2026-10-25):** "generate a bash one-liner to find the disk usage", plus four similar everyday commands, each with its accepted answers; French and English; the nine desk models; greedy and Liquid AI's sampling. Test `test/mike/test_oneliner.py` (`integration`).
+  - **Result (`results/mike/oneliner/20261025T215449Z/`, `rescored.json` after fixing the scoring both ways): disk usage is answered right (`df -h`) by almost every model; the other four tasks mostly fail.**
+    - **Totals out of 20:** Gemma 3 1B and Qwen3-1.7B 10; LFM2-700M 8; LFM2.5-1.2B 7; Qwen3-0.6B 5; LFM2.5-350M 2–4; LFM2.5-230M 3.
+    - **Typical misses:**
+      - `ls -S` without the home directory;
+      - `find … -mtime +1` (the wrong direction);
+      - `ps aux | grep mem` instead of a sort;
+      - for "count the lines of notes.txt", answers such as `trace` (LFM2.5-350M).
+    - **Reading:** common commands seen often in training are recalled; anything that combines two details is unreliable below about 1B parameters, and only half right at 1–1.7B.
+- [x] 8.1 Write Luna's measured budget for a model (`docs/0801_01`): speed per parameter and per token on the A35 (from 4.5 and 4.6), memory, and what a 1-second, 5-second or 10-second decision allows. Done: about 1.9 × 10⁹ parameter-tokens/s for reading and 0.8 GB/s of weights for writing; a 1-second decision allows about 25–30M working parameters with only the request read.
+- [ ] 8.2 Survey candidates against that budget, without training (non-goal kept): small decision or classifier models (Step 7's list and others), small generative models under about 150M parameters, and the prompt shapes that keep new tokens per request very small.
+  - **bitnet.cpp (user's question, 2026-10-29; desk reading of the repository and model cards, nothing run):** Microsoft's runtime for ternary (1.58-bit) models, built on llama.cpp.
+    - **Kernels:** its ARM kernels (I2_S with a NEON path without dot-product, TL1 with table lookups) should run on the A35 (to check).
+    - **Claimed speed-up:** 1.37–5.07× on ARM, measured on Apple M2, larger models gaining more; not measured on an A35.
+    - **The models do not fit Luna:**
+      - BitNet b1.58 2B4T (2.4B parameters): GGUF 1.19 GB, against about 977 MiB of RAM;
+      - Falcon3-1B-Instruct-1.58bit: 1.36 GB of safetensors, with a 131,072-token vocabulary whose untied embedding and output matrices are not ternary;
+      - the smaller ternary models are base models (bitnet_b1_58-large, 0.7B) or embedding models (embeddings are not accepted as deciders).
+    - **Verdict:** not usable now; to revisit if a ternary instruct model under about 500M parameters appears. Also noted: VibeASR.cpp (BitNet ASR, 2026-07), possibly of interest to Mycroft.
+- [ ] 8.3 Shortlist and propose desk measurements (Step 7.4 for deciders; the same raw-speed test as 4.6 for generative models), then a Luna run through Professor and Mannie.
+- **Acceptance:** a budget doc and a survey doc with a shortlist, every claim marked verified or unverified; no download without a green light.
+
+### Step 9 — PreStaC, the Prefetch Stack Cache (user, 2026-10-26)
+**Status**: 🧪 9.2 done on the desk host (green-lit by the user on 2026-10-29); **9.3 and 9.4 wait for a qualified model** (Step 10, user decision 2026-10-29)
+
+User, 2026-10-26: "the context is almost built during navigation, and Mycroft adds the star at the top of the tree: the question. A very simple file-based cache organised as a stack: when navigating, push and pop context, prefetching the load layer by layer." No Redis or server-class cache (too heavy). "We prepare PreStaC first; we will optimise the layers afterwards." "PreStaC is a step of its own."
+
+Why: on Luna the model reads about 6.7 tokens/s (`docs/0405_01`), so Mike is fast only if almost all of the prompt is restored from saved state; the question itself is 2–14 tokens (median 6).
+
+- [x] 9.1 **In-depth study** (`docs/0901_01`, documentation only; user request, 2026-10-26): the basic primitives; how PreStaC fits with Mike's other layers and with Wyoh, Mycroft, Mannie and Luna; who calls whom; asynchrony (prefetch, cancellation, the question arriving early, sharing the CPU with Kroko); file layout, keys and eviction; failure modes; what to measure.
+- [x] 9.2 Desk prototype on `llama-server`'s slot save/restore, with a simulated navigation path (green-lit 2026-10-29, desk only).
+  - Library `src/mike/prestac.py`: store, engine and stack (`docs/0901_01` § 5); reads are chunked so that a stale prefetch stops between chunks instead of relying on the server's cancellation.
+  - Layers for the prototype: L0 = the fixed instructions with the tool JSON (the chat template's own order), then the desktop, then an app layer when there is one; the question last. This already moves the desktop after the tool JSON (a 9.4 change, needed to measure).
+  - Default-suite tests with a fake engine; an `integration` test against `llama-server`: (1) the same answers as without the cache, (2) the share of tokens restored and the time from question to answer on a simulated navigation path, (3) state file size against tokens.
+  - **Result (`docs/0902_01`, `results/mike/prestac-desk/20261029T073748Z/`):**
+    - **Restored:** 98.3 % of all prompt tokens over 117 questions, at least 97.1 % per question; a median of 18 tokens read per question.
+    - **Answers:** identical with and without the cache (28/28).
+    - **Time:** 0.32 s median per question on the desk.
+    - **Frame size:** about 12.4 KB per token, 13 MB for L0.
+    - **But:** the desktop placed after the tool JSON lowers the scores (adapter 45/81 and 15/31, against 55/81 and 16/31 with prompt v4) — for 9.4.
+- [ ] 9.3 Short Luna run through Professor and Mannie (needs a green light and a slot).
+- [ ] 9.4 Layer optimisation afterwards (order, the tool JSON, compact rules), measured on the 112 requests.
+- **Acceptance:** the study doc (9.1); then a desk prototype that restores at least 95 % of the prompt tokens on a simulated navigation path, with the time from question to answer measured (9.2).
+
+### Step 10 — Qualify a model: 90 % stable on the evaluation cases (user, 2026-10-29)
+**Status**: 🧪 green-lit by the user on 2026-10-29 ("go, do it; the priority is to qualify the model"); desk host Termidor only
+
+User, 2026-10-29: answers are not stable ("ask the same question ten times… you will not get ten times the same answer"); single-draw scores do not account for it. Then: "I need a stable performance of something like 90 % on our cases… the base model, not even optimised, is not qualified." And: "at the same time, test Microsoft's ternary model; we need a viable candidate."
+
+- **Gate (proposed definition, the user may change it):** on the 112 cases (81 main, 31 held-out), each case is asked **10 times**: once greedy and 9 times sampled (temperature 0.5, top-p 0.95, seeds 1–9). A case is **stable-right** when at least 9 of its 10 answers are right (the adapter's final call). A model is **qualified** when at least 90 % of the cases are stable-right on the main set **and** on the held-out set. Mean and greedy accuracy are reported too.
+- **Same prompt for every model:** prompt v4's instructions and examples, the desktop line, and the tool list as text in the system turn, rendered with the model's own chat template; the answer is constrained by the contract grammar to the examples' form `name(arg="…")`. LFM models also run in their native tool format (v4), for continuity with 3b. Thinking modes are off.
+- [x] 10.1 Harness `test/mike/test_qualify.py` (`integration`, `qualify.feature`), any GGUF on `llama-server`; a determinism check (greedy asked twice per case); results under `results/mike/qualify/<timestamp>/`.
+- [x] 10.2 The models already on the desk: LFM2.5-350M (reference), LFM2.5-230M, Qwen3-0.6B, LFM2-700M, Gemma 3 1B, LFM2.5-1.2B, Qwen3-1.7B.
+- [x] 10.3 **Ceiling:** larger models on Termidor, with no regard for Luna, to learn whether the cases are solvable at 90 % at all: Qwen3-4B and Gemma 3 4B (Q4_K_M, about 2.5 GB each). Termidor has 7.6 GiB of RAM with little free, so 8B models are left out unless the user frees memory. If even the ceiling misses the gate, the cases, the contract or the scoring are examined (failures listed for the user; expected answers are not changed without the user).
+- [x] 10.4 **BitNet b1.58 2B4T** (Microsoft, ternary) through bitnet.cpp, built under the user's directories; the same gate. It does not fit Luna's RAM (1.19 GB GGUF, `docs/` 8.2 note); it is measured as a candidate family.
+  - **Measured 2026-10-29 (`docs/1005_01`):** 2/81 main and 0/31 held-out stable-right, the worst of all; mostly answers about "dino". The GGUF needed two fixes (chat template, pre-tokenizer). Not a candidate.
+- **Measured 2026-10-29 (`docs/1005_01`), 10.1–10.3:** no model is qualified.
+  - **Closest:** Qwen3-4B (92.6 % main, 83.9 % held-out) and Gemma 3 4B (87.7 %, 93.5 %).
+  - **Smaller:** Qwen3-1.7B 86 % and 81 %; Qwen3-0.6B 70 % and 65 %; the LFM models 36–54 % (native format) and 3–20 % (plain).
+  - **Greedy is not deterministic** for Qwen and Gemma (2–14 cases changed between two identical requests).
+  - **Arguable expected answers** in the ceiling's failures (Spotify and YouTube → browser; « mets-moi la calculatrice ») are listed for the user.
+- [x] 10.6 **Chat-GBC (user, 2026-10-29: "look at it and try to reproduce it on Termidor, not in an emulator"):** github.com/rudydel/Chat-GBC (commit `db83f9b`), a 2-layer transformer of 21k–138k parameters with int7 weights that runs on a 1989 Game Boy. Reproduce on the desk host only, with its shipped checkpoints (`tiny`, `micro`): its own evaluation (`llm.evaluate`, float and the bit-exact integer simulator; claimed 100 % of training questions, 32 % and 40 % of held-out phrasings, 73 % and 80 % of off-topic questions declined) and a few chat questions, timed. Installed under `mike-tools/chat-gbc/` (clone and a private venv with CPU PyTorch). **Not done:** its training (`make train`, `make finetune`), because Mike's non-goal excludes training; the ROM and the emulator.
+  - **Done (`docs/1006_01`):** its evaluation reproduces its training logs exactly (4 of 4 runs: tiny and micro, float and integer): 100 % of training questions, 32 % (tiny) and 40 % (micro) of held-out phrasings, 73 % and 80 % of off-topic questions declined. Mike's requests get "sorry, i only know about the game boy". It is a trained specialist: useful to Mike only if the user lifts the no-training non-goal, and still far from the 90 % gate on new phrasings.
+- [ ] 10.5 Result doc: the smallest qualified model, if any, set against Luna's budget (`docs/0801_01`).
+- **Acceptance:** every model above measured with the gate, or its failure to run recorded; a result doc with per-case stability and the failures listed.
+
 ### Step 4 — `luna-pi` measurement
 **Status**: ⏳ Pending
 - [ ] 4.1 Install the runtime and the shortlisted models on `luna-pi` in a user directory, removable.
@@ -178,6 +261,17 @@ LFM stays for what needs generation. Done means a measured verdict per candidate
 - [ ] 4.3 Test prompt caching of the fixed tool list.
 - [ ] 4.4 Record figures and their limits (A72 ≠ A35).
 - **Acceptance:** `luna-pi` figures recorded with the evidence path; model decision written (`docs/`), or "not good enough" with what would be needed.
+- [x] 4.5 **First run on Luna** (user, 2026-10-25, relayed by Professor tanstfaafllm-2a: "Stop Mannie on Luna and supervise Mike for a first run on Luna."; Professor supervises). Evidence for the 3b choice, which the user has not formally made.
+  - Runtime: official llama.cpp b11429 `llama-server` arm64 release, lean (`--no-repack -b 16 -ub 16`), LFM2.5-350M Q4_0, checksums recorded; prefix slot saved and restored.
+  - Install as `michael` under `/home/michael/.local/opt/mike/` only: no packages, no services, nothing in the system.
+  - Measure load time, server RSS and `MemAvailable` before, during and after (Wyoh's session and resident Kroko left as they are), time per request, and a handful of evaluation requests through the thin chain. Proposals only: nothing is executed on the desktop.
+  - Order: wait for Professor's "go" (Mannie on Luna saves and stops first); take `/tmp/luna-brain.lock` (`mike <pid>`, noclobber; stop if held by a live pid); no reboot; stop at < 150 MiB available, OOM or a hang. At the end: stop the server, remove the lock, leave Luna as found, tell Professor "done".
+  - Results `results/mike/luna-first-run/<timestamp>/` and a short doc in `docs/`.
+  - **Done 2026-10-25 (`docs/0405_01`), stopped after three requests (user: "one question is enough"):** load 3.5 s; RSS about 300–307 MiB; MemAvailable lowest 562 MiB; **about 105 s per request** (about 682 prompt tokens read at 6.7 tokens/s); 2 of 3 right after the adapter. Luna left clean (no server, no lock; files kept under `~/.local/opt/mike/`).
+- [x] 4.6 **Raw model speed on Luna, without any harness** (user, 2026-10-25: "a prompt of similar size, about a thousand tokens, a little Cluedo-like game scene, asking for an answer of a few tokens: who is the murderer, or in which room; to see the model's base speed"). `llama-completion` alone, LFM2.5-350M Q4_0, 4 threads, greedy, on a fixed French Cluedo prompt (`test/mike/cluedo_prompt.txt`), with weight repacking off (as in lean) and on. Same desk-host run for comparison. Under the brain lock; Luna free and Mannie on Luna stopped (`luna-access.md`), at the user's direct request.
+  - **Done (`docs/0405_01` § 4.6):** Luna reads 6.5 tokens/s (lean) or 6.9 (repack) and generates 3.6 or 2.8 tokens/s; 1,056 + 23 tokens take about 160–170 s. Termidor: 174–348 and 59–67 tokens/s. The harness adds nothing measurable; repacking barely helps on the A35.
+- **Luna target (Professor relay of Luna's note `worklines/professor/docs/0000_04`, 2026-10-25):** Luna has a new user `michael`, and the user decided on 2026-10-25 to replace ArchR's root with Arch Linux ARM (`plan_mannie.md` Step 7; `/storage` and `/home` kept). When Mike reaches Luna (after Step 4, at Step 5), it runs as `michael` on the new root. Nothing of Mike is on Luna today.
+- **Luna operation rules (user rule of 2026-10-25, relayed by Professor; in `skills/cell-coordination`, `AGENTS.md` and `worklines/luna-access.md`):** Mannie runs on Luna as its operator ("Mannie from Luna"); Mike may message it directly about Luna operations. No SSH to Luna without Mannie's "go", and no reboot while Mannie runs there. **Mannie and Mike never run together on Luna:** the launcher takes the shared lock `/tmp/luna-brain.lock` (content `name pid`); Mike's Step 5 launcher must take and honour it. Applies to Steps 4 (any Luna step after `luna-pi`) and 5.
 
 ### Step 5 — `mike-console` v0
 **Status**: ⏳ Pending
@@ -207,6 +301,9 @@ LFM stays for what needs generation. Done means a measured verdict per candidate
 - ⏳ Step 5 — `mike-console` v0
 - ⏳ Step 6 — Hand-offs (design only)
 - ⏳ Step 7 — Zero-shot decider and predefined plans (proposed, 2026-10-13)
+- 🧪 Step 8 — Find a model that fits Luna (study, 2026-10-25)
+- 🧪 Step 9 — PreStaC, the Prefetch Stack Cache (9.2 done; 9.3–9.4 wait for Step 10)
+- 🧪 Step 10 — Qualify a model: 90 % stable (green-lit 2026-10-29; priority)
 
 ---
 
@@ -216,6 +313,32 @@ LFM stays for what needs generation. Done means a measured verdict per candidate
 
 | Timestamp (`date`) | Update |
 |---|---|
+| ven. 30 oct 2026 22:10 CET | Professor (user request): commit everything, coordinated; Mike first. Mike's own files only (no LOGBOOK, agents.md, pyproject, uv.lock), no push. Script `tmp/commit_mike.sh` (5 commits) waits for the user's go. |
+| jeu. 29 oct 2026 21:26 CET | 10.4 done: BitNet b1.58 2B4T 2/81 and 0/31 stable-right; not a candidate. |
+| jeu. 29 oct 2026 20:38 CET | 10.1–10.3 done (`docs/1005_01`): no model qualified; Qwen3-4B 92.6/83.9 %, Gemma 3 4B 87.7/93.5 %, Qwen3-1.7B 86/81 %, Qwen3-0.6B 70/65 %, LFM 36–54 %. BitNet run started. |
+| jeu. 29 oct 2026 14:35 CET | 10.6 done (`docs/1006_01`): Chat-GBC's evaluation reproduces its logs exactly on Termidor (no emulator); 32–40 % of held-out phrasings; a trained specialist, so outside Mike's no-training scope. |
+| jeu. 29 oct 2026 14:16 CET | User: look at Chat-GBC and reproduce it on Termidor, not in an emulator. Recorded as 10.6 (shipped checkpoints only; training excluded). BitNet 2B4T smoke: template and pre-tokenizer fixed; still answers "dino" on 4/4 cases. |
+| jeu. 29 oct 2026 12:49 CET | User: answers are unstable and single draws do not show it; a model needs about 90 % stable on the cases before any optimisation; LFM2.5-350M not qualified. "Go": Step 10 (qualification, priority) with BitNet b1.58 2B4T; 9.3–9.4 wait. |
+| jeu. 29 oct 2026 08:43 CET | 9.2 done (`docs/0902_01`): 98.3 % of prompt tokens restored, median 18 read per question, answers identical with and without the cache; 0.32 s per question on the desk; frames 13 MB; the desktop-after-tools order loses 10 main-set answers (for 9.4). |
+| jeu. 29 oct 2026 08:34 CET | User: "Go" for 9.2 (desk prototype of PreStaC). Started. |
+| jeu. 29 oct 2026 08:28 CET | User asked about bitnet.cpp: desk reading only; runs on ARMv8.0 (to check), up to 5× claimed, but its models (2.4B, 1B) do not fit Luna's RAM. Recorded under 8.2. |
+| lun. 26 oct 2026 08:26 CET | 9.1 written (`docs/0901_01`): three levels of primitives, the Wyoh–Mike–PreStaC–llama-server chain, one coalesced worker, dictation pause, files keyed by token ids, seven open questions for 9.2. |
+| lun. 26 oct 2026 08:24 CET | User: name the cache PreStaC (Prefetch Stack Cache); prepare it first and optimise the layers afterwards; asked for an in-depth study (primitives, integration, who calls whom, asynchrony). 8.4 restructured into 8.4.1–8.4.4; study under way. Then the user: "PreStaC is a step of its own": moved to Step 9 (9.1–9.4); study doc `docs/0901_01`. |
+| lun. 26 oct 2026 08:02 CET | User: context caching is the way; Anthropic gives 80–90 % cached at work; for Mike the key is prefetch: a simple file-based stack of context layers, built during navigation, the question added on top by Mycroft. Recorded as 8.4 (design; prototype needs a green light). |
+| dim. 25 oct 2026 22:59 CET | 8.0c: one-liners on nine desk models: disk usage right almost everywhere; overall 2–4/20 for LFM2.5-350M, 10/20 at best (Gemma 3 1B, Qwen3-1.7B). |
+| dim. 25 oct 2026 22:54 CET | User: try a one-liner task (disk usage). Recorded as 8.0c. |
+| dim. 25 oct 2026 22:46 CET | 8.0b: five larger models (0.6–1.7B) on the Cluedo: 1/40 fully right; LFM2-700M always finds the murderer; the weapon (cord → rope) is the hard part. |
+| dim. 25 oct 2026 22:33 CET | User: "tests a bit with larger models". Recorded as 8.0b; five GGUF downloads to `mike-assets/`. |
+| dim. 25 oct 2026 22:31 CET | 8.0 on Termidor: 0/32 right for LFM2.5-350M (three files) and 230M, French and English, short and reasoning, two samplings. Not usable for this kind of decision. |
+| dim. 25 oct 2026 22:29 CET | User: trust problem; the Cluedo answer must be relevant, or the model is unusable; redo it on Termidor first. Recorded as 8.0. |
+| dim. 25 oct 2026 22:20 CET | User: LFM2.5-350M not usable on Luna as it is; Luna left to Mannie; back to studies for an LLM or decision SLM within Luna's constraints. Step 8 added (desk study). Professor informed. |
+| dim. 25 oct 2026 22:18 CET | 4.6 done: Luna 6.5–6.9 prompt tokens/s, 2.8–3.6 generated tokens/s, without any harness; the model, not the harness, sets Mike's speed. Luna rebooted at 22:11 (not by Mike) between the desk and Luna runs; the run took the brain lock and freed it. |
+| dim. 25 oct 2026 22:08 CET | User: measure the model's base speed without the harness (a ~1,000-token Cluedo scene, a few-token answer). Recorded as 4.6; run on Luna (free, Mannie on Luna stopped) at the user's direct request, repack off and on. |
+| dim. 25 oct 2026 21:43 CET | 4.5 done (`docs/0405_01`): it runs on Luna, about 300 MiB, but about 105 s per request. Three test-script failures fixed on the way; a server left by an interrupted command found and stopped; Luna clean. User: "one question is enough; then we move to the harness". Reported to Professor. |
+| dim. 25 oct 2026 21:21 CET | Professor: "go for 4.5 as planned"; Mannie on Luna stopped (17:40), lock free, MemAvailable 654 MiB; Mike named holder in `luna-access.md`; SSH as `michael` covered by the user's instruction. Adjustments: if slow at `-t 4`, rerun one request at `-t 2`; sample MemAvailable before start, after load, at each request's peak and after stop. 4.5 started. |
+| dim. 25 oct 2026 21:20 CET | Professor relayed the user: "Stop Mannie on Luna and supervise Mike for a first run on Luna." Recorded as 4.5 (scope, order and stop conditions as sent by Professor); the Luna non-goal gets a 4.5 exception. Waiting for Professor's "go" after Mannie stops. |
+| dim. 25 oct 2026 13:45 CET | Professor relayed the user's rule of 2026-10-25: Mannie is Luna's operator; Mike may message it about Luna operations; no SSH to Luna without its "go", no reboot while it runs; Mannie and Mike never run together (shared lock `/tmp/luna-brain.lock`). Recorded under Step 4 for Steps 4 and 5; no reply needed. |
+| dim. 25 oct 2026 13:41 CET | Professor (tanstfaafllm-2a) asked for this session's workline: replied `mike`, row updated in `worklines/agents.md` (tanstfaafllm-02 [effb91]). Professor relayed Luna's change (user decision, 2026-10-25: user `michael`, ArchR root replaced by Arch Linux ARM): noted under Step 4 for when Mike reaches Luna; no reply needed. 3b's choice stays with the user. |
 | jeu. 15 oct 2026 03:03 CEST | Wyoh's note `docs/1204_02` received (the Slate's FN+B will send text to Mike; user decision): recorded as 5.4, nothing due before Step 5. |
 | jeu. 15 oct 2026 03:01 CEST | Step 3b measured on Termidor (`docs/03b3_01`). `llama-server` lean: 319 MiB (Q4_K_M), 306 MiB (Q4_0), against 351 MiB in Python; prefix slot restore lean 4.5 → 3.3 s. Q4_0 best; QAD not better. ZeroClaw and PicoClaw: 2/4 each, about 1,500–1,650 prompt tokens; ZeroClaw asks before tools, PicoClaw does not. Recommended: Mike's own chain on `llama-server` Q4_0 lean. The Python reference run was stopped (host loaded by other sessions; the first model hit the test timeout). Open for the user: adopt 3b.3; prompt with the desktop at the end; Step 4. |
 | jeu. 15 oct 2026 01:14 CEST | User: "go 3b locally on termidor". Step 3b green-lit on the desk host only. Termidor has no cmake, Go or Rust toolchain; prebuilt release binaries are preferred, kept outside the repository with their checksums. |
@@ -243,6 +366,12 @@ LFM stays for what needs generation. Done means a measured verdict per candidate
 
 ## Workline artifacts
 
+- [`docs/1005_01_qualification-result.md`](docs/1005_01_qualification-result.md) — Step 10: the 90 % stable gate on 13 model–format pairs; none qualified, the 4B models come close; the ceiling's failures listed.
+- [`docs/1006_01_chat-gbc-on-the-desk.md`](docs/1006_01_chat-gbc-on-the-desk.md) — 10.6: Chat-GBC's shipped models reproduce their own numbers on Termidor; a trained specialist that generalises to 32–40 % of new phrasings.
+- [`docs/0902_01_prestac-desk-result.md`](docs/0902_01_prestac-desk-result.md) — Step 9.2: PreStaC on the desk: 98.3 % restored, 18 tokens read per question, same answers; the layer order costs accuracy.
+- [`docs/0901_01_prestac-study.md`](docs/0901_01_prestac-study.md) — Step 9.1: PreStaC study: primitives (engine, store, stack), who calls whom, asynchrony, files, failure modes, open questions.
+- [`docs/0801_01_luna-model-budget.md`](docs/0801_01_luna-model-budget.md) — 8.1: what Luna allows a model (parameters, tokens, file size) for a 1 s, 5 s or 10 s decision.
+- [`docs/0405_01_first-run-on-luna.md`](docs/0405_01_first-run-on-luna.md) — 4.5: first run on Luna: 3.5 s load, about 300 MiB, about 105 s per request; what would cut it.
 - [`docs/1204_02_note-from-wyoh-slate-sends-to-mike.md`](docs/1204_02_note-from-wyoh-slate-sends-to-mike.md) — from Wyoh: FN+B in the Slate sends text to Mike; Mike's hand-off to choose at Step 5 (5.4).
 - [`docs/03b3_01_lean-runtime-and-micro-harness-result.md`](docs/03b3_01_lean-runtime-and-micro-harness-result.md) — Step 3b: `llama-server` RAM and speed, Q4_0/QAD, ZeroClaw and PicoClaw on Mike's tools; proposed runtime and budget.
 - [`docs/0700_02_harness-and-decider-discussion.md`](docs/0700_02_harness-and-decider-discussion.md) — cleaned record of the 2026-10-13 discussion: user decisions, assistant proposals, unverified claims; the source of Step 7.
