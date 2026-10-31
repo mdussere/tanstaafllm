@@ -41,7 +41,7 @@ Done means: a measured choice of model (or a measured "not good enough"), and a 
 
 ## Non-goals ❌
 
-- Any work on Luna (the R36 Ultra): no SSH, no deployment, no measurement. `luna-pi` is the furthest target. **Exception:** the supervised first run of 4.5 (user, 2026-10-25), within its scope.
+- Any work on Luna (the R36 Ultra) outside a green-lit step. **Exceptions:** the supervised first run of 4.5 (user, 2026-10-25), and Step 12 (user, 2026-10-31), always through Mannie on Luna, Luna's operator, with the brain lock.
 - Changing the Wyoh MCP server, Mycroft, or Luna's image. Requests to them go as notes.
 - Raw Sway commands or free-text `exec` from the model.
 - Multi-step agent loops, a resident service, speech output, Mannie integration.
@@ -51,6 +51,8 @@ Done means: a measured choice of model (or a measured "not good enough"), and a 
 - Renaming components in shared documents.
 
 ## Key decisions / assumptions
+
+- **Product direction (Adam's review, relayed by Professor, 2026-10-31; `worklines/adam/2026-10-31_mike_incremental-capabilities_research.md`):** Mike on Luna is first **a small, fluent, friendly companion** for small talk, not a general knowledge engine. Capabilities are added **one at a time**. Each one must leave small talk no worse, measured: fluency, time to the first word, memory, reliability (the Step 12 measures are the baseline). When Mike does not know, it should say so rather than invent (Step 12 showed confident errors). Four lines of inquiry: small talk, local information, tools, inference economy (PreStaC). They are avenues, not a fixed order; the first concrete one is retrieval over Luna's guide (Step 14).
 
 - **Qualification gate (user, 2026-10-29): no model is used, optimised or run on Luna before it is qualified.** "Before we even think about optimisation, I need a stable performance of something like 90 % on our cases, which are very simple, to think of using Mike." LFM2.5-350M is **not qualified** (best 55/81 main and 16/31 held-out, one draw, unstable: another quantisation changes about 40 % of its answers). Qualifying a model is the priority (Step 10); PreStaC 9.3 and 9.4 wait.
 - **LFM2.5-350M is not usable on Luna as it is** (user, 2026-10-25, after 4.5 and 4.6: about 105 s per request; 6.5–6.9 prompt tokens/s). Luna is left to Mannie; Mike goes back to desk studies (Step 8).
@@ -286,6 +288,49 @@ Why it may work where Step 10 did not: a chat answer is not judged right or wron
 - **Non-goals:** no training; no action run from chat (tools only by a later decision); no speech output; nothing on Luna before 12.5's green light.
 - **Acceptance (proposal):** on Luna, first word shown within about 3 s of the end of dictation, with the text streamed; numbers from the desk first.
 
+### Step 13 — Small-talk harness fixes (user review of `docs/16`, 2026-10-31)
+**Status**: 📝 Proposed. The user asked to "apply the fixes" after reviewing `docs/16_mike-harness-and-caches.md` § 9; the choices for F1–F4 are proposed below and wait for the user's word or a go.
+
+Why: the review found two real problems in the client, both reproduced on Termidor. Trimming the history makes the next question read it all again (F1). A client that dies alone leaves the server running with a stale lock (F2). Adam's review adds long conversations, rollover and restart handling to small talk's line of inquiry.
+
+- [ ] 13.1 **Process lifetime and the lock (F2, F3):** the client handles `SIGHUP` and `SIGTERM` so that `finally` runs; the server runs in its own process group and is stopped with it; the lock names the client and the server ("mike <client pid> <server pid>"); a server answering on the port without a valid lock is an orphan and is stopped, not used. Test: a `SIGHUP` to the client leaves no server and no lock (default suite with a fake server, plus an integration test).
+- [ ] 13.2 **Long conversations (F1), proposal:** below the limit nothing changes. At the limit, the client starts a new conversation with the last exchange kept, and says so in one line. The kept exchange is read once: a few tens of tokens, a few seconds on Luna, instead of about 4 min. Test: the turn after a rollover reads at most L0's tail plus the kept exchange.
+- [ ] 13.3 **Frames on PreStaC's Store (F4–F6):** the L0 frame goes through `prestac.Store` and `HttpEngine`, which give an atomic commit, metadata and eviction. The key's namespace holds the model's size and modification time and the runtime build. One code path for frames.
+- [ ] 13.4 **Ctrl+C stops the answer, not Mike (F7);** the template's ids are read from the server at start, not hard-coded (F8); `"\n"` is tokenised once (F9); a long question is capped (F10); Markdown markers are not printed raw (F11); `PreStaC.ask` keeps the slot it knows (F12).
+- [ ] 13.5 **Graceful uncertainty, measured:** a system-prompt variant that invites "I am not sure" on facts, compared with Step 12's on the same questions. A change is kept only if fluency, time to the first word and answer length do not get worse.
+- [ ] 13.6 **Non-regression on Luna:** Step 12.5's four runs again; first word and memory no worse.
+- **Acceptance:** each finding fixed or explicitly kept with a reason in `docs/16`; the default suite and the desk integration tests pass; 13.6 shows no regression.
+
+### Step 14 — Local retrieval over Luna's guide (Adam's priority, 2026-10-31)
+**Status**: 📝 Proposed, not green-lit. Source: Adam's review § 10 (`worklines/adam/2026-10-31_mike_incremental-capabilities_research.md`).
+
+Why: Mike invents facts. The first source of truth to give it is bounded, local and checkable: the project's own guide. No internet. Retrieval only **selects** passages; Mike answers from them, or says that the guide does not say. That fits the 2026-10-13 decision that embedding similarity is at most a pre-filter, never a decision.
+
+- [ ] 14.1 **The corpus:** identify what "Luna's guide" is in the repository (the `docs/` pages, the how-tos, the workline docs?), their structure, and how a passage is cited (file and heading). A question set with expected passages, including questions the guide cannot answer. English is acceptable.
+- [ ] 14.2 **Passages, offline:** cut the guide into short, referenceable passages; build the indexes on Termidor.
+- [ ] 14.3 **Retrieval, desk:** a lexical baseline (TF-IDF or BM25, keywords) against Model2Vec POTION-2M, 4M and 8M. Measure top-1 and top-3 hits, abstention when nothing matches, index size, RAM and latency. The model is picked from these numbers, not from MTEB scores.
+- [ ] 14.4 **Retrieval, Luna:** the chosen retrievers in a warm, resident process. Design target: under 100 ms from question to passages (not a measurement yet). It needs only the standard library or numpy; anything to install goes through Mannie.
+- [ ] 14.5 **Into the conversation:** only the minimal excerpt, with its source, as a fresh layer before the question; Mike quotes the source, or says the guide does not cover it. Measure **the fresh passage's reading time on Luna** (about 6.5 tokens/s: a 100-token excerpt costs about 15 s, so the excerpt size is the real constraint) and the end-to-end latency.
+- [ ] 14.6 **When to retrieve:** not on every turn. The trigger (a command, a threshold, a question form) is chosen by measurement, so that small talk is not slowed (non-regression, as in 13.6).
+- [ ] 14.7 **Later, with Mycroft (Adam's review § 11):** use Kroko's partial transcripts to pre-select a passage during dictation, confirmed or discarded against the final text; nothing is ever done on a partial. It depends on Mycroft's own investigation (Professor relayed § 11 to Mycroft).
+- **Non-goals:** internet retrieval; vector databases; training or fine-tuning; replacing small talk by search.
+- **Acceptance:** a measured choice of retriever on the desk and on Luna; on the question set, answers grounded in the guide with their source, and "I don't know" when the guide lacks it; small talk not slower.
+
+### Step 15 — A shared benchmark for Mike's capabilities (proposed, Adam's review § 8)
+**Status**: 📝 Proposed, not green-lit.
+
+- [ ] 15.1 Representative requests for small talk, guide questions and Luna actions: ambiguity, negations, compound commands, French ASR variants (with Mycroft), out-of-scope inputs; each with its expected route, and for actions the exact function and arguments.
+- [ ] 15.2 Separate and end-to-end measures: routing (top-k, abstention), function and arguments, unsafe false actions, start time, peak memory, disk, router time, frame restore, reading, generation; fluency and first word before and after each feature.
+- **Builds on** the existing evaluation sets (Step 2, 112 cases) and Step 12's conversations.
+
+### Step 16 — Research directions kept for later (Adam's review §§ 3–7; not proposed for a go yet)
+**Status**: 💡 Recorded only.
+
+- **Context banks for PreStaC:** several prebuilt stacks (Wyoh internals, Luna operations, the project docs, the novel, the tool contracts, earlier sessions), chosen by a cheap semantic router before Mike answers. Questions: disk budget, restore cost on Luna, how reading a fresh tail grows with the context, one large prefix or several small ones. Selecting a stack is not merging states: a hybrid model's state cannot be spliced.
+- **Micro decision models before generation:** small talk, guide question or action; then intent and slots, grounded deterministically into Wyoh/MCP calls. Path A (Mike's own tool calling) against Path B (an early micro-route plus a deterministic bridge), measured end to end on function, arguments and false actions, with the user's approval kept.
+- **Compact tool-result adapters:** separate the cost of deciding from the cost of reading a tool's result; give Mike the minimal field, or answer deterministically when the question is exact.
+- **From Rudy's Rei (Adam's ChatGBC note):** exact operations moved into deterministic code, the model only deciding when to call them. Note: Adam's note describes `github.com/crashtheuniverse/chatgbc` v1.0 (374k parameters, minGRU); Steps 10.6 and 11 used `github.com/rudydel/Chat-GBC` at `db83f9b` (a small GPT). Not checked whether they are the same project at different versions.
+
 ### Step 4 — `luna-pi` measurement
 **Status**: ⏳ Pending
 - [ ] 4.1 Install the runtime and the shortlisted models on `luna-pi` in a user directory, removable.
@@ -337,6 +382,11 @@ Why it may work where Step 10 did not: a chat answer is not judged right or wron
 - 🧪 Step 9 — PreStaC, the Prefetch Stack Cache (9.2 done; 9.3–9.4 wait for Step 10)
 - 🧪 Step 10 — Qualify a model: 90 % stable (green-lit 2026-10-29; priority)
 - ✅ Step 11 — Train tiny models on natural language → shell (done 2026-10-31: 0–1/300 exact)
+- 🧪 Step 12 — Small talk, made fluid (12.1–12.5 done 2026-10-31; first word in about 2.5 s on Luna)
+- 📝 Step 13 — Small-talk harness fixes (proposed, from the `docs/16` review)
+- 📝 Step 14 — Local retrieval over Luna's guide (proposed, Adam's priority)
+- 📝 Step 15 — Shared benchmark (proposed)
+- 💡 Step 16 — Research directions kept for later
 
 ---
 
@@ -347,6 +397,7 @@ Why it may work where Step 10 did not: a chat answer is not judged right or wron
 | Timestamp (`date`) | Update |
 |---|---|
 | sam. 31 oct 2026 12:59 CET | 12.4 done by Wyoh (6.11, 251e6c0): Mike's window and FN+B work on Luna; screenshot checked (Mike answers in its window). Left: the user's own try with real dictation. |
+| sam. 31 oct 2026 18:19 CET | User: "apply the fixes" from the review left in Adam's workline; Professor relays Adam's review (`worklines/adam/2026-10-31_mike_incremental-capabilities_research.md`, context `2026-10-31_chatgbc_rei_analysis.md`). Plan updated: product direction (a fluent companion first, one capability at a time, measured non-regression, graceful uncertainty); Steps 13 (harness fixes from `docs/16`), 14 (local retrieval over Luna's guide), 15 (shared benchmark) proposed; Step 16 records the research directions; Luna non-goal brought up to date. Nothing implemented. |
 | sam. 31 oct 2026 12:28 CET | 12.5 done on Luna (`docs/1205_01`, `results/mike/smalltalk-luna/20261031T112056Z/`): first word 2.2–2.7 s median, last word 9–14 s median; Mannie stopped on the user's order through Professor, restarted by Professor afterwards. 12.4 waits for Wyoh 6.11. |
 | sam. 31 oct 2026 12:08 CET | 12.1 and 12.2 done on the desk (`docs/1201_01`). Interface subcontracted to Wyoh (6.11, user's word). Mannie on Luna: go for checking and copying, done; the Luna run waits for Mannie to be stopped through Professor. Professor relays the user's new routine: commit, push, give GitHub links. |
 | sam. 31 oct 2026 12:00 CET | User, leaving: Step 12 green-lit as a whole, to run independently; Luna through Mannie, Luna questions to Wyoh first; no fine-tuning; notify the phone on a real change of direction. |
