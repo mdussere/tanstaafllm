@@ -869,6 +869,7 @@ def find_app_con(tree: dict[str, Any], app_id: str) -> int | None:
 # Mike's chat window (Wyoh 6.11): launcher, and the titles its client sets (OSC 2).
 MIKE_RUN = "/storage/.local/opt/wyoh-mike/run"
 MIKE_WAIT_S = 90.0
+MIKE_SWITCH_WAIT_S = 900.0  # Mike asked to stop Mannie, which saves first (1-10 min)
 
 
 def find_app_title(tree: dict[str, Any], app_id: str) -> tuple[int, str] | None:
@@ -883,7 +884,8 @@ def find_app_title(tree: dict[str, Any], app_id: str) -> tuple[int, str] | None:
 
 
 def mike_step(window: tuple[int, str] | None) -> str:
-    """What FN+B does with Mike's window: start it, wait, deliver, or report busy.
+    """What FN+B does with Mike's window: start it, wait, deliver, report busy, or
+    let the user answer Mike's question (stop Mannie?) and wait for Mannie's save.
     A question typed while Mike thinks waits in its terminal, so it is delivered."""
     if window is None:
         return "start"
@@ -892,6 +894,10 @@ def mike_step(window: tuple[int, str] | None) -> str:
         return "deliver"
     if title.startswith("Mike — busy"):
         return "busy"
+    if title.startswith("Mike — asks"):
+        return "asks"
+    if title.startswith("Mike — waiting"):
+        return "waiting"
     return "wait"
 
 
@@ -1200,6 +1206,7 @@ class Daemon:
         self.history = load_history(HISTORY_PATH)
         self.zone_submit = False  # Mannie: one prompt, lines joined
         self.mike_deadline: float | None = None  # FN+B waits for Mike's window
+        self.mike_hid_slate = False  # the Slate was hidden so that A/B answer Mike
         self.preload_pending = config.zone_preload or "--resident" in config.dictate_command
         self.zone_start_hidden = False
         # Mycroft's resident mode (Step 12.4) when the command asks for it.
@@ -1607,7 +1614,7 @@ class Daemon:
             window = None
         step = mike_step(window)
         if step == "deliver" and window is not None:
-            self.mike_deadline = None
+            self.mike_deadline, self.mike_hid_slate = None, False
             self.zone_target, self.zone_submit = window[0], True
             self.core.zone_state = "delivering"
             self.core._clear_cross()
@@ -1615,6 +1622,17 @@ class Daemon:
         elif step == "busy":
             self.mike_deadline = None
             self.tell_slate({"op": "notice", "text": "Mike cannot start while Mannie runs; text kept"})
+        elif step in ("asks", "waiting") and window is not None:
+            # Mike asks to stop Mannie (A = Return = yes, B = Escape = no): the Slate
+            # hides with its text, so the buttons reach Mike's window (6.12).
+            if not self.mike_hid_slate and self.core.zone_state == "open":
+                self.core.zone_state = "hidden"
+                self.core._clear_cross()
+                self.hide_zone()
+                self.mike_hid_slate = True
+            if step == "asks":
+                self.sway.command(f"[con_id={window[0]}] focus")
+            self.mike_deadline = time.monotonic() + MIKE_SWITCH_WAIT_S
         elif self.mike_deadline is None:  # start, or already starting
             if step == "start":
                 try:
@@ -1629,18 +1647,27 @@ class Daemon:
         """Called from the loop while FN+B waits: deliver once Mike is ready."""
         if self.mike_deadline is None:
             return
-        if self.core.zone_state != "open":  # the Slate was closed or sent elsewhere
-            self.mike_deadline = None
+        hidden_by_us = self.mike_hid_slate and self.core.zone_state == "hidden"
+        if self.core.zone_state != "open" and not hidden_by_us:  # closed or sent elsewhere
+            self.mike_deadline, self.mike_hid_slate = None, False
             return
         if now >= self.mike_deadline:
-            self.mike_deadline = None
+            self.mike_deadline, self.mike_hid_slate = None, False
             self.tell_slate({"op": "notice", "text": "Mike did not get ready; text kept"})
             return
         try:
             window = find_app_title(self.sway.request(4), "mike")
         except (OSError, ConnectionError):
             return
-        if mike_step(window) != "wait" and not (window is None):
+        step = mike_step(window)
+        if window is None and self.mike_hid_slate:  # the answer was no: the text stays in the hidden Slate
+            self.mike_deadline, self.mike_hid_slate = None, False
+        elif step == "deliver" and hidden_by_us:
+            self.mike_deadline, self.mike_hid_slate = None, False
+            self.core.zone_state = "open"
+            self.show_zone()
+            self.mike_zone()
+        elif step in ("deliver", "busy") or (step in ("asks", "waiting") and not self.mike_hid_slate):
             self.mike_deadline = None
             self.mike_zone()
 

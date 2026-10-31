@@ -11,6 +11,8 @@ import math
 import sys
 from pathlib import Path
 
+import time
+
 import pytest
 
 ROOT = Path(__file__).parents[2]
@@ -789,7 +791,8 @@ def _mike_tree(title):
 
 @pytest.mark.parametrize("title, step", [(None, "start"), ("Mike — starting", "wait"), ("foot", "wait"),
                                          ("Mike — ready", "deliver"), ("Mike — thinking", "deliver"),
-                                         ("Mike — busy", "busy")])
+                                         ("Mike — busy", "busy"), ("Mike — asks: stop Mannie?", "asks"),
+                                         ("Mike — waiting for Mannie", "waiting")])
 def test_fn_b_starts_waits_for_or_delivers_to_mike(title, step):
     window = g.find_app_title(_mike_tree(title), "mike")
     assert window == (None if title is None else (13, title))
@@ -803,8 +806,9 @@ class _MikeDaemon:
 
     def __init__(self, title):
         self.title, self.commands, self.notices, self.sent = title, [], [], 0
-        self.mike_deadline = None
+        self.mike_deadline, self.mike_hid_slate = None, False
         self.zone_target, self.zone_submit = None, False
+        self.hidden = self.shown = 0
         self.core = type("Core", (), {"zone_state": "open", "_clear_cross": lambda self: None})()
         self.sway = self
 
@@ -819,6 +823,37 @@ class _MikeDaemon:
 
     def validate_zone(self):
         self.sent += 1
+
+    def hide_zone(self):
+        self.hidden += 1
+
+    def show_zone(self):
+        self.shown += 1
+
+
+def test_fn_b_lets_mike_ask_to_stop_mannie_then_sends_after_the_save():
+    d = _MikeDaemon(None)
+    d.mike_zone()  # Mike starts, finds Mannie, and asks
+    d.title = "Mike — asks: stop Mannie?"
+    d.mike_wait(d.mike_deadline - 80)
+    assert d.hidden == 1 and d.core.zone_state == "hidden" and d.commands[-1] == "[con_id=13] focus"
+    assert d.mike_deadline - time.monotonic() > 800  # long enough for Mannie's save
+    d.title = "Mike — waiting for Mannie"  # the user pressed A
+    d.mike_wait(time.monotonic())
+    assert d.hidden == 1 and d.sent == 0
+    d.title = "Mike — ready"
+    d.mike_wait(time.monotonic())
+    assert d.shown == 1 and d.sent == 1 and d.zone_target == 13 and d.mike_deadline is None
+
+
+def test_fn_b_keeps_the_text_hidden_when_the_user_says_no_to_stopping_mannie():
+    d = _MikeDaemon("Mike — asks: stop Mannie?")
+    d.mike_zone()
+    assert d.hidden == 1 and d.mike_hid_slate
+    d.title = None  # B: Mike's window closes
+    d.mike_wait(time.monotonic())
+    assert d.sent == 0 and d.shown == 0 and d.mike_deadline is None and not d.mike_hid_slate
+    assert d.core.zone_state == "hidden"  # L1 brings the text back
 
 
 def test_fn_b_starts_mike_then_sends_once_it_is_ready():
