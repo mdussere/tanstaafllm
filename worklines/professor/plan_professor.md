@@ -199,6 +199,8 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 
 - [ ] 11.1 Agree on a common format (length, opening and closing cards, captions readable on a phone, sound) once the trailer and the first story video exist.
 - [ ] 11.2 One video per story, each committed with its sources.
+  - *2026-10-31, the user via Mike:* first story video: the bring-up, from the box to the first `ssh luna` (`docs/03`). Handed to a sub-agent with a short brief (`/data/michael/tanstaafllm/video/bringup-pkg/BRIEF.md`, output `bringup-v1/`), 60–90 s, same pipeline and NES-chip sound as the trailer.
+- [ ] 11.3 A private screening page on claude.ai for the user's phone: https://claude.ai/artifact/Wqpg9wD9Ew5MunsYFhxqLn (trailer online 2026-10-31; add each story video as it is done). A public page later, by Hazel.
 
 ### Step 12 — Move the cell out of Termidor, into an isolated place
 **Status**: 📝 Proposed, to discuss and decide with the user (user, 2026-10-31).
