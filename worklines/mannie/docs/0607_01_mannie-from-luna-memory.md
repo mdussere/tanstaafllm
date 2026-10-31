@@ -54,6 +54,6 @@ The persona (`~/.claude/CLAUDE.md` → `MANNIE.md`) is loaded in every session, 
 
 ## Decisions (Mannie from Luna's answers)
 
-- **On demand, not at boot.** At boot Mannie would take the brain lock, block Mike, and hold about 180 MiB. The user or Professor starts it.
+- **At boot (user decision, 2026-10-30; was "on demand, not at boot").** `src/mannie/luna/mannie.service` runs `mannie start` once claude.ai resolves, and `mannie stop` at shutdown. It takes the brain lock and about 180 MiB from boot; `sudo systemctl disable mannie` goes back to on-demand starts.
 - **Fresh or resume:** `mannie start` resumes only if the last conversation is under an hour old, within the prompt-cache window. Otherwise it starts fresh, and memory and the plan carry the work over. A fresh start costs only the harness, about 18k tokens. `--resume` and `--fresh` force either. Resume only a task left mid-flight in a small conversation; after a compaction, start fresh.
 - Mannie from Luna saved `start-stop.md` in its auto memory and indexed it in `MEMORY.md`.
