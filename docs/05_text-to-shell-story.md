@@ -20,9 +20,13 @@ There were good reasons to think it could work:
 
 - **The data already exist.** MIT's NL2SH-ALFA dataset holds about 41,000 sentence → bash pairs, plus a hand-checked test set of 300 requests with two accepted commands each.
 - **Others have tried it.** Small models trained on this data improve a lot. A 0.5-billion model goes from 10 % to 27 %, a 1-billion one to 37 % (MIT, judging by running the commands).
-- **Someone we know had just shown how small "small" can be.** Rudy, a colleague, wrote **Chat-GBC**: a language model that runs on a 1989 Game Boy.
+- **Someone we know had just shown how small "small" can be.** Rudy, a colleague, wrote **[Chat-GBC](https://github.com/rudydel/Chat-GBC)**: a language model that runs on a 1989 Game Boy.
 
 ## The Game Boy detour
+
+<p align="center"><a href="https://github.com/rudydel/Chat-GBC"><img src="https://raw.githubusercontent.com/rudydel/Chat-GBC/main/chatGBC_thumbnail.jpg" alt="Chat-GBC's title screen: a pixel cat seen from behind, whose rear looks a lot like Claude's asterisk logo" width="256"></a></p>
+
+<p align="center"><em>Chat-GBC's title screen, from <a href="https://github.com/rudydel/Chat-GBC">rudydel/Chat-GBC</a> (shown from Rudy's repository, not copied). Yes, that is a cat's rear end, and yes, it looks like Claude's logo.</em></p>
 
 Chat-GBC is charming. A transformer of 62,000 to 136,000 parameters, trained from scratch, its weights squeezed to 7 bits so each matrix fits one cartridge bank. It answers questions about the Game Boy, about one character per second, and politely declines everything else: "sorry, i only know about the game boy".
 
