@@ -32,10 +32,17 @@ LUNA_READ, LUNA_WRITE = 6.5, 3.6  # tokens/s, docs/0405_01 and 0801_01
 SAMPLING = {"temperature": 0.1, "top_k": 50, "repeat_penalty": 1.05, "seed": 0}  # model card
 MAX_TOKENS = 120
 
-SYSTEM = {
-    "fr": "Tu es Mike, un petit assistant qui bavarde. Réponds en français, en deux ou trois phrases courtes.",
-    "en": "You are Mike, a small assistant for casual chat. Answer in English, in two or three short sentences.",
+PROMPTS = {
+    "three": {
+        "fr": "Tu es Mike, un petit assistant qui bavarde. Réponds en français, en deux ou trois phrases courtes.",
+        "en": "You are Mike, a small assistant for casual chat. Answer in English, in two or three short sentences.",
+    },
+    "one": {
+        "fr": "Tu es Mike, un petit assistant qui bavarde. Réponds en français, en une seule phrase courte.",
+        "en": "You are Mike, a small assistant for casual chat. Answer in English, in one short sentence.",
+    },
 }
+SYSTEM = PROMPTS["three"]
 
 CONVERSATIONS = [
     ("fr", ["Bonjour Mike, comment vas-tu ?",
@@ -69,17 +76,17 @@ def test_luna_estimate():
 
 @pytest.mark.integration
 @pytest.mark.timeout(3600)
-@pytest.mark.parametrize("config", ["lean", "lean-ckpt"])
-def test_chat_baseline(config):
+@pytest.mark.parametrize("config,prompt", [("lean", "three"), ("lean-ckpt", "three"), ("lean", "one")])
+def test_chat_baseline(config, prompt):
     if not MODEL.is_file():
         pytest.skip("model missing")
-    out = RUN_DIR / config
+    out = RUN_DIR / (config if prompt == "three" else f"{config}-{prompt}")
     out.mkdir(parents=True, exist_ok=True)
     turns = []
     with ms.Server(str(MODEL), ms.CONFIGS[config], out / "llama-server.log") as server, \
             (out / "turns.jsonl").open("w") as f:
         for c, (lang, questions) in enumerate(CONVERSATIONS):
-            messages = [{"role": "system", "content": SYSTEM[lang]}]
+            messages = [{"role": "system", "content": PROMPTS[prompt][lang]}]
             for t, question in enumerate(questions):
                 messages.append({"role": "user", "content": question})
                 started = time.perf_counter()
@@ -106,7 +113,7 @@ def test_chat_baseline(config):
         return xs[len(xs) // 2] if xs else None
 
     first, follow = [r for r in turns if r["turn"] == 0], [r for r in turns if r["turn"] > 0]
-    result = {"config": config, "model": MODEL.name, "turns": len(turns), "max_tokens": MAX_TOKENS,
+    result = {"config": config, "prompt": PROMPTS[prompt], "model": MODEL.name, "turns": len(turns), "max_tokens": MAX_TOKENS,
               "sampling": SAMPLING, "rss_kib": rss,
               "first_turn": {"prompt_n_median": median([r["prompt_n"] for r in first])},
               "follow_up": {"prompt_tokens_median": median([r["prompt_tokens"] for r in follow]),
