@@ -45,7 +45,7 @@ Done means: a measured choice of model (or a measured "not good enough"), and a 
 - Changing the Wyoh MCP server, Mycroft, or Luna's image. Requests to them go as notes.
 - Raw Sway commands or free-text `exec` from the model.
 - Multi-step agent loops, a resident service, speech output, Mannie integration.
-- **Any training: no fine-tuning, no retraining, no training dataset** (user, 2026-10-13, `docs/0700_02`). Pre-trained models only, zero-shot; a model that does not work as is gets dropped, not trained.
+- **Any training: no fine-tuning, no retraining, no training dataset** (user, 2026-10-13, `docs/0700_02`). Pre-trained models only, zero-shot; a model that does not work as is gets dropped, not trained. **Lifted for Step 11 only** (user, 2026-10-30: "do the experiment anyway"): training experiments on the desk host; nothing trained goes to Luna without a new decision.
 - **Translation between languages** (user, 2026-10-13): the language is chosen at the input; French or English end to end.
 - GPU/OpenCL acceleration, unless there is evidence of at least 2× end to end (user, 2026-10-13: not a preferred hypothesis).
 - Renaming components in shared documents.
@@ -254,6 +254,38 @@ User, 2026-10-29: answers are not stable ("ask the same question ten times… yo
 - [ ] 10.5 Result doc: the smallest qualified model, if any, set against Luna's budget (`docs/0801_01`).
 - **Acceptance:** every model above measured with the gate, or its failure to run recorded; a result doc with per-case stability and the failures listed.
 
+### Step 11 — Train tiny models on natural language → shell (user, 2026-10-30)
+**Status**: ✅ Done 2026-10-31 (`docs/1101_01`): 0/300 (tiny) and 1/300 (micro) exact; LFM2.5-350M untrained 6/300. Green-lit 2026-10-30 ("do the experiment anyway"). **Line closed by the user, 2026-10-31:** text to shell needs exact commands, which neither micro-models nor pre-trained models of Luna's size give; no follow-up step (story: `docs/05_text-to-shell-story.md`).
+
+Why: general small models stay below the gate (Step 10). The user asks whether ridiculously small trained models give something "not delirious" on commands; if so, several of them could be combined (a decision model routing to one model per command or class of commands). Training lifts the non-goal for this step only, on Termidor (`docs/1007_01`).
+
+- [x] 11.1 Data: NL2SH-ALFA (MIT ALFA, NAACL 2025; 40,939 training pairs, 300 test requests with two accepted commands each (the paper counts 600 pairs)), downloaded outside the repository; pairs too long for the model's context dropped and counted.
+- [x] 11.2 Rudy's Chat-GBC models (`db83f9b`), modified for shell: the base vocabulary extended to every printable ASCII character and case kept (his tokenizer lower-cases and drops `| * ~ $ > < = _ [ ] { } +`); the patch kept in the repository; trained from scratch with his recipe (pre-train then fine-tune, his augmentation) on the NL2SH training pairs; tiny and micro configurations, CPU only.
+- [x] 11.3 Measure on the NL2SH test set (300 requests): exact match against either accepted command (greedy), character error rate, a few samples read by hand; training time recorded.
+  - **Baseline (user, 2026-10-31: "compute LFM2.5's accuracy on NL2SH's test set"):** LFM2.5-350M Q4_0, untrained, greedy, a one-line system prompt (`test/mike/test_nl2sh_baseline.py`, `results/mike/nl2sh-baseline/`): **6/300 exact** (all at difficulty 0), 22/300 with the right first command; it puts `sudo` in front of 158 answers; without that `sudo`, 11/300 exact and 83/300 right first command. 203 s for 300 requests on 2 threads.
+  - **Tiny, trained (`results/mike/chat-gbc-nl2sh/20261030T223755Z/tiny/`):** 66k parameters, about 33 min of training on 2 threads; **0/300 exact**, 106/300 right first command, mostly by answering `find` (119 times; `find` is the expected command of 109 requests); final losses about 2.0 (pre-training) and 2.0 (fine-tuning) against Rudy's 0.2 on the Game Boy facts.
+  - **Micro, trained:** 136,640 parameters, 57 min on 2 threads; **1/300 exact**, 104/300 right first command (`find` 115 times); losses about 1.7.
+- [x] 11.4 Result doc: what such a model gets right, and whether the idea (tiny models per command class, man pages as training text, a light FR→EN translator before the model) is worth a next step. Those three ideas are recorded here only; not green-lit.
+- **Non-goals:** nothing deployed to Luna; no GPU required; no model weights or datasets in the repository.
+- **Acceptance:** both configurations trained and measured on the 300 test requests, with the patch, the command lines and complete logs kept.
+
+### Step 12 — Small talk with the untrained model, made fluid (user, 2026-10-31)
+**Status**: 🟩 Green-lit as a whole by the user, 2026-10-31 12:00, before going out: "work independently, manage; Luna is yours; delegate if needed". Mike leads this phase and holds the plan. Conditions from the user: Luna operations go through Mannie on Luna, who works there; questions about operating Luna (MCP and the rest) go to Wyoh first, who did most of the work there; sessions may talk and help each other; Python first, nothing ruled out afterwards; installing dependencies on Termidor or Luna is allowed; **no fine-tuning**; any real change of direction is notified to the user's phone. Step 12.4 builds on the Slate: FN+B already sends its text to Mike (`docs/1204_02`), and the Slate already dictates with Kroko.
+
+User, 2026-10-31: no training from scratch (that is Rudy's size, far too small) and no fine-tuning, even of a 300 MB model. Keep Mike's chosen model, LFM2.5-350M, raw. Take the favourable, non-committing case: **chat, no action**. "I take Luna out of my pocket, press a button, small talk, ask about a subject I know is in its training corpus, and see what it gives." The goal is an experience acceptable to a human, above all in speed. Work on PreStaC first, then possibly the whole harness: much of the problem was the thousand prompt tokens read before every answer. A few tools may come later; chat first.
+
+Why it may work where Step 10 did not: a chat answer is not judged right or wrong like a tool call, so the 90 % gate does not apply (nothing runs). What remains is time. On Luna the model reads about 6.5 tokens/s and writes about 3.6 tokens/s (`docs/0405_01`, `0801_01`):
+- **Before the first word:** with the prompt restored from PreStaC, only the new turn is read (about 16–20 tokens, `docs/0902_01`), so about 3 s (estimate, not measured).
+- **While it writes:** 3.6 tokens/s is about 2.5 words/s, close to a slow reading pace, if the text is shown as it comes (streaming). A 60-token answer takes about 17 s to finish, so answers must stay short.
+
+- [x] 12.1 **Desk baseline** (done 2026-10-31, `docs/1201_01`; follow-ups read 14–26 tokens except one re-tokenisation miss at 59; the model is fluent and often wrong on facts): LFM2.5-350M Q4_0 raw, a short chat system prompt (tens of tokens, not the 1,053 of Mike's tool prompt), French and English; a dozen questions on general subjects, answers read by the user. Measure time to first token, tokens/s written, answer length; streaming through `llama-server`.
+- [x] 12.2 **The conversation as a PreStaC stack** (done 2026-10-31, `src/mike/smalltalk.py`, `docs/1201_01`: history kept as token ids, so no follow-up reads more than 26 tokens; L0 restored from its frame after a restart, so the first question reads 14–20): L0 = the chat system prompt; each finished turn pushed as a frame, so the next question reads only itself; prefetch while the user speaks is paused (Kroko shares the CPU, `docs/0901_01` § 7). Compare with `llama-server`'s own prompt cache, which already keeps the slot's last conversation; PreStaC's value is restart, switching topics and returning to an earlier conversation.
+- [ ] 12.3 **Harness trimmed for chat:** what else sits between the question and the first word (Python start-up, template, sampling settings, answer length limits).
+- [ ] 12.4 **A small chat interface with push-to-talk** (subcontracted to Wyoh, user 2026-10-31: Wyoh plan 6.11, waiting for Wyoh's green light; app id "mike", title "Mike — ready", FN+B types the Slate text into the window; MIKE_HOME `/home/michael/.local/opt/mike`): a button starts Mycroft's dictation, the text goes to Mike, the answer is shown as it comes. **Ownership to settle with the user:** the button and the dictation belong to Wyoh (gamepad daemon) and Mycroft; Mike would own the chat loop. Desk first.
+- [ ] 12.5 **Luna run** through Mannie (Luna's operator), measured from the button press to the first word and to the last. Mannie on Luna (12:05): files still in `/home/michael/.local/opt/mike/` (model SHA-256 checked); `smalltalk.py` copied (go for read and copy). The run itself needs Mannie stopped (`mannie stop --save`, Professor's or the user's call) and the brain lock free; test `test/mike/test_smalltalk_luna.py` (`live`), four runs of the 12.1 questions (French cold, English cold, French warm, French with repacked weights), about 15–20 min.
+- **Non-goals:** no training; no action run from chat (tools only by a later decision); no speech output; nothing on Luna before 12.5's green light.
+- **Acceptance (proposal):** on Luna, first word shown within about 3 s of the end of dictation, with the text streamed; numbers from the desk first.
+
 ### Step 4 — `luna-pi` measurement
 **Status**: ⏳ Pending
 - [ ] 4.1 Install the runtime and the shortlisted models on `luna-pi` in a user directory, removable.
@@ -304,6 +336,7 @@ User, 2026-10-29: answers are not stable ("ask the same question ten times… yo
 - 🧪 Step 8 — Find a model that fits Luna (study, 2026-10-25)
 - 🧪 Step 9 — PreStaC, the Prefetch Stack Cache (9.2 done; 9.3–9.4 wait for Step 10)
 - 🧪 Step 10 — Qualify a model: 90 % stable (green-lit 2026-10-29; priority)
+- ✅ Step 11 — Train tiny models on natural language → shell (done 2026-10-31: 0–1/300 exact)
 
 ---
 
@@ -313,6 +346,14 @@ User, 2026-10-29: answers are not stable ("ask the same question ten times… yo
 
 | Timestamp (`date`) | Update |
 |---|---|
+| sam. 31 oct 2026 12:08 CET | 12.1 and 12.2 done on the desk (`docs/1201_01`). Interface subcontracted to Wyoh (6.11, user's word). Mannie on Luna: go for checking and copying, done; the Luna run waits for Mannie to be stopped through Professor. Professor relays the user's new routine: commit, push, give GitHub links. |
+| sam. 31 oct 2026 12:00 CET | User, leaving: Step 12 green-lit as a whole, to run independently; Luna through Mannie, Luna questions to Wyoh first; no fine-tuning; notify the phone on a real change of direction. |
+| sam. 31 oct 2026 11:54 CET | User: next, a use case that fits: small talk with LFM2.5-350M raw (no training, no fine-tuning), push-to-talk through Mycroft, made fluid with PreStaC and then a trimmed harness. Step 12 proposed, not green-lit; the qualification gate does not apply to chat, where nothing runs. |
+| sam. 31 oct 2026 11:45 CET | User: the text-to-shell line stops here. A command must be exact to be useful; micro-models only recall their corpus, and pre-trained models, even beyond Luna's size, are not precise enough. Story written (`docs/05_text-to-shell-story.md`). The router, man-page and translator ideas are not pursued. |
+| sam. 31 oct 2026 06:05 CET | Step 11 done (`docs/1101_01`): micro 1/300 exact (finished about 01:10), tiny 0/300, LFM2.5-350M untrained 6/300; the tiny models answer `find` by habit. |
+| sam. 31 oct 2026 00:37 CET | 11.3 so far: tiny trained 0/300 exact (106 right first command, mostly `find`); micro running. User: compute LFM2.5-350M's accuracy on the NL2SH test set: 6/300 exact untrained (11 without its `sudo`). Termidor's GPU (GTX 760, Kepler, nouveau driver) cannot train; CPU-only estimate for a LoRA pass of LFM2.5-350M on 40k pairs: 6–10 h. |
+| ven. 30 oct 2026 23:28 CET | User: "do the experiment anyway" with Rudy's models (Chat-GBC, the user's colleague) and the NL2SH training data, vocabulary extended. Step 11 added and green-lit; the no-training non-goal lifted for Step 11 only. Ideas recorded, not green-lit: one tiny model per command class behind a router, man pages as training text, a light FR→EN translator. |
+| ven. 30 oct 2026 22:40 CET | User: general models will not do; asks whether a model can be retrained on bash one-liners (requests described → command), narrowing the use case, and asks for an existing "speech to command line" project. Survey written (`docs/1007_01`). Training stays a non-goal until the user decides explicitly. |
 | ven. 30 oct 2026 22:10 CET | Professor (user request): commit everything, coordinated; Mike first. Mike's own files only (no LOGBOOK, agents.md, pyproject, uv.lock), no push. Script `tmp/commit_mike.sh` (5 commits) waits for the user's go. |
 | jeu. 29 oct 2026 21:26 CET | 10.4 done: BitNet b1.58 2B4T 2/81 and 0/31 stable-right; not a candidate. |
 | jeu. 29 oct 2026 20:38 CET | 10.1–10.3 done (`docs/1005_01`): no model qualified; Qwen3-4B 92.6/83.9 %, Gemma 3 4B 87.7/93.5 %, Qwen3-1.7B 86/81 %, Qwen3-0.6B 70/65 %, LFM 36–54 %. BitNet run started. |
@@ -367,6 +408,9 @@ User, 2026-10-29: answers are not stable ("ask the same question ten times… yo
 ## Workline artifacts
 
 - [`docs/1005_01_qualification-result.md`](docs/1005_01_qualification-result.md) — Step 10: the 90 % stable gate on 13 model–format pairs; none qualified, the 4B models come close; the ceiling's failures listed.
+- [`docs/1101_01_tiny-shell-models.md`](docs/1101_01_tiny-shell-models.md) — Step 11: Rudy's tiny and micro trained on NL2SH: 0 and 1 exact of 300; LFM2.5-350M untrained 6.
+- [`docs/1201_01_smalltalk-desk-result.md`](docs/1201_01_smalltalk-desk-result.md) — Step 12.1–12.2: small talk on the desk; history kept as tokens, 14–26 tokens read per question; Luna estimate 2–4 s before the first word.
+- [`docs/1007_01_speech-to-command-line-survey.md`](docs/1007_01_speech-to-command-line-survey.md) — speech/NL to command line: existing projects (Vox, NL2Shell, BashGemma), the MIT NL2SH data and results; training helps small models but open bash stays far from 90 %.
 - [`docs/1006_01_chat-gbc-on-the-desk.md`](docs/1006_01_chat-gbc-on-the-desk.md) — 10.6: Chat-GBC's shipped models reproduce their own numbers on Termidor; a trained specialist that generalises to 32–40 % of new phrasings.
 - [`docs/0902_01_prestac-desk-result.md`](docs/0902_01_prestac-desk-result.md) — Step 9.2: PreStaC on the desk: 98.3 % restored, 18 tokens read per question, same answers; the layer order costs accuracy.
 - [`docs/0901_01_prestac-study.md`](docs/0901_01_prestac-study.md) — Step 9.1: PreStaC study: primitives (engine, store, stack), who calls whom, asynchrony, files, failure modes, open questions.

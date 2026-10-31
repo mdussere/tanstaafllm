@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 656" width="960" height="656" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Small talk on Luna, estimated</title>
+  <defs><pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse"><rect width="120" height="120" fill="#0b1026"/><rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/><rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/><rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/></pattern></defs>
+  <style>.title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; } .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; } .q { font: 12px 'DejaVu Sans', sans-serif; fill: #d5deec; } .s { font: 11px 'DejaVu Sans', sans-serif; fill: #9fb3c8; } .axis { font: 11px 'DejaVu Sans Mono', monospace; fill: #6f7fa8; } .key { font: 12px 'DejaVu Sans', sans-serif; fill: #d5deec; } .v { font: bold 11px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; }</style>
+  <rect width="960" height="656" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">SMALL TALK ON LUNA · ESTIMATED</text>
+  <text x="30" y="68" class="sub">each question of Step 12.1, timed from token counts at Luna's speeds (6.5 read, 3.6 written per s)</text>
+  <rect x="30" y="86" width="14" height="10" fill="#ffb347"/><text x="50" y="96" class="key">waiting: tokens read before the first word</text>
+  <rect x="360" y="86" width="14" height="10" fill="#3ee6e0"/><text x="380" y="96" class="key">writing: the answer appears word by word</text>
+  <rect x="680" y="86" width="14" height="10" fill="none" stroke="#ff6b6b" stroke-width="2"/><text x="700" y="96" class="key">waiting, history sent as text</text>
+<line x1="300" y1="120" x2="300" y2="536" stroke="#1d2a4f"/><text x="300" y="552" class="axis" text-anchor="middle">0 s</text>
+<line x1="410" y1="120" x2="410" y2="536" stroke="#1d2a4f"/><text x="410" y="552" class="axis" text-anchor="middle">5 s</text>
+<line x1="520" y1="120" x2="520" y2="536" stroke="#1d2a4f"/><text x="520" y="552" class="axis" text-anchor="middle">10 s</text>
+<line x1="630" y1="120" x2="630" y2="536" stroke="#1d2a4f"/><text x="630" y="552" class="axis" text-anchor="middle">15 s</text>
+<line x1="740" y1="120" x2="740" y2="536" stroke="#1d2a4f"/><text x="740" y="552" class="axis" text-anchor="middle">20 s</text>
+<line x1="850" y1="120" x2="850" y2="536" stroke="#1d2a4f"/><text x="850" y="552" class="axis" text-anchor="middle">25 s</text>
+<text x="290" y="135" class="q" text-anchor="end">Bonjour Mike, comment vas-tu ?</text>
+<rect x="300" y="124" width="58" height="16" fill="#ffb347"/>
+<rect x="358" y="124" width="183" height="16" fill="#3ee6e0"/>
+<rect x="300" y="123" width="166" height="18" fill="none" stroke="#ff6b6b" stroke-width="2"/>
+<text x="549" y="136" class="v">2.6 + 8.3 s</text>
+<text x="290" y="161" class="q" text-anchor="end">Qu'est-ce que la photosynthèse ?</text>
+<rect x="300" y="150" width="64" height="16" fill="#ffb347"/>
+<rect x="364" y="150" width="226" height="16" fill="#3ee6e0"/>
+<text x="598" y="162" class="v">2.9 + 10.3 s</text>
+<text x="290" y="187" class="q" text-anchor="end">Et pourquoi les feuilles changent-elles…</text>
+<rect x="300" y="176" width="85" height="16" fill="#ffb347"/>
+<rect x="385" y="176" width="238" height="16" fill="#3ee6e0"/>
+<text x="631" y="188" class="v">3.8 + 10.8 s</text>
+<text x="290" y="213" class="q" text-anchor="end">Qui était Marie Curie ?</text>
+<rect x="300" y="202" width="47" height="16" fill="#ffb347"/>
+<rect x="347" y="202" width="275" height="16" fill="#3ee6e0"/>
+<text x="630" y="214" class="v">2.2 + 12.5 s</text>
+<text x="290" y="239" class="q" text-anchor="end">Qu'a-t-elle découvert ?</text>
+<rect x="300" y="228" width="54" height="16" fill="#ffb347"/>
+<rect x="354" y="228" width="159" height="16" fill="#3ee6e0"/>
+<text x="521" y="240" class="v">2.5 + 7.2 s</text>
+<text x="290" y="265" class="q" text-anchor="end">Merci, une dernière chose : elle a eu c…</text>
+<rect x="300" y="254" width="88" height="16" fill="#ffb347"/>
+<rect x="388" y="254" width="342" height="16" fill="#3ee6e0"/>
+<text x="738" y="266" class="v">4.0 + 15.6 s</text>
+<text x="290" y="291" class="q" text-anchor="end">Who wrote The Moon Is a Harsh Mistress?</text>
+<rect x="300" y="280" width="64" height="16" fill="#ffb347"/>
+<rect x="364" y="280" width="208" height="16" fill="#3ee6e0"/>
+<rect x="300" y="279" width="159" height="18" fill="none" stroke="#ff6b6b" stroke-width="2"/>
+<text x="580" y="292" class="v">2.9 + 9.4 s</text>
+<text x="290" y="317" class="q" text-anchor="end">What is the book about?</text>
+<rect x="300" y="306" width="54" height="16" fill="#ffb347"/>
+<rect x="354" y="306" width="202" height="16" fill="#3ee6e0"/>
+<text x="564" y="318" class="v">2.5 + 9.2 s</text>
+<text x="290" y="343" class="q" text-anchor="end">Who is Mike in that book?</text>
+<rect x="300" y="332" width="58" height="16" fill="#ffb347"/>
+<rect x="358" y="332" width="98" height="16" fill="#3ee6e0"/>
+<text x="463" y="344" class="v">2.6 + 4.4 s</text>
+<text x="290" y="369" class="q" text-anchor="end">Tell me about the Apollo 11 mission.</text>
+<rect x="300" y="358" width="58" height="16" fill="#ffb347"/>
+<rect x="358" y="358" width="324" height="16" fill="#3ee6e0"/>
+<text x="689" y="370" class="v">2.6 + 14.7 s</text>
+<text x="290" y="395" class="q" text-anchor="end">Who stayed in orbit?</text>
+<rect x="300" y="384" width="51" height="16" fill="#ffb347"/>
+<rect x="351" y="384" width="141" height="16" fill="#3ee6e0"/>
+<rect x="300" y="383" width="200" height="18" fill="none" stroke="#ff6b6b" stroke-width="2"/>
+<text x="499" y="396" class="v">2.3 + 6.4 s</text>
+<text x="290" y="421" class="q" text-anchor="end">How long did they stay on the Moon?</text>
+<rect x="300" y="410" width="64" height="16" fill="#ffb347"/>
+<rect x="364" y="410" width="141" height="16" fill="#3ee6e0"/>
+<text x="513" y="422" class="v">2.9 + 6.4 s</text>
+<text x="290" y="447" class="q" text-anchor="end">Explique-moi ce qu'est un Raspberry Pi.</text>
+<rect x="300" y="436" width="68" height="16" fill="#ffb347"/>
+<rect x="368" y="436" width="422" height="16" fill="#3ee6e0"/>
+<rect x="300" y="435" width="176" height="18" fill="none" stroke="#ff6b6b" stroke-width="2"/>
+<text x="797" y="448" class="v">3.1 + 19.2 s</text>
+<text x="290" y="473" class="q" text-anchor="end">Et Linux, c'est quoi ?</text>
+<rect x="300" y="462" width="58" height="16" fill="#ffb347"/>
+<rect x="358" y="462" width="471" height="16" fill="#3ee6e0"/>
+<text x="836" y="474" class="v">2.6 + 21.4 s</text>
+<text x="290" y="499" class="q" text-anchor="end">What is the capital of Australia?</text>
+<rect x="300" y="488" width="51" height="16" fill="#ffb347"/>
+<rect x="351" y="488" width="55" height="16" fill="#3ee6e0"/>
+<rect x="300" y="487" width="146" height="18" fill="none" stroke="#ff6b6b" stroke-width="2"/>
+<text x="414" y="500" class="v">2.3 + 2.5 s</text>
+<text x="290" y="525" class="q" text-anchor="end">Why not Sydney?</text>
+<rect x="300" y="514" width="47" height="16" fill="#ffb347"/>
+<rect x="347" y="514" width="348" height="16" fill="#3ee6e0"/>
+<text x="704" y="526" class="v">2.2 + 15.8 s</text>
+<text x="30" y="576" class="s">Waiting stays at 2–4 s because Mike keeps the conversation as tokens and the system prompt as a saved frame: only the new question is read.</text>
+<text x="30" y="592" class="s">Writing is the long part: 9–77 tokens at 3.6 per second. Desk measurement, Luna not measured yet. Source: results/mike/smalltalk-desk/, chat-baseline/.</text>
+</svg>
