@@ -76,8 +76,12 @@ Done means: the trailer and the first story videos are published, they read as o
 - [ ] 2.3 Thumbnails from the renderer: a `thumbnail` scene in each video's `index.html`, to replace Professor's Pillow thumbnails (2026-10-31) once the user agrees.
 
 ### Step 3 — The next episodes
-**Status**: ⏳ Pending
+**Status**: 🧪 In progress (3.2 Wyoh green-lit by the user, 2026-10-31)
 - [ ] 3.1 Text-to-shell (`docs/05`), the cell at work (Professor's Step 10 log), the principles.
+- [ ] 3.2 **Story 2, Wyoh: touching the desktop without screenshots** (user, 2026-10-31: "c'est ton premier travail"). The story: Wyoh's goal from the start is to interact with the desktop natively, not through screenshots; to take hold of it directly and get feedback. First version, then the user judges.
+  - [x] 3.2a Build the story with Wyoh (session `tanstfaafllm-8e`): ask for the arc, the turning points and the facts. Wyoh answered with seven beats, sources and a must-not-say list: `docs/0302_02_note-from-wyoh-story.md`. Sentence to remember: "Don't look at the desktop, ask it: the compositor already knows what a screenshot can only guess."
+  - [ ] 3.2b Write the episode brief (series template, Story 2 frame) and have it composed, by a sub-agent with the brief and the project texts (as for Story 1) or by Hazel. Brief: `docs/0302_01_wyoh-story-brief.md` ("ASK THE DESKTOP", seven stages, ≤ 90 s). A sub-agent composes it in `/data/michael/tanstaafllm/video/story2-wyoh/`, starting from Story 1's sources.
+  - [ ] 3.2c Review against the template and the reading audit; check each fact against its source (and with Wyoh); render; deliver `~/Videos/TANSTAAFLLM/tanstaafllm-story2-<slug>.mp4`; sources in `worklines/hazel/video/story2-<slug>/`; tell Professor for the private page; commit and push.
 
 ### Step 4 — A public page
 **Status**: ⏳ Pending
@@ -100,6 +104,8 @@ Done means: the trailer and the first story videos are published, they read as o
 | sam. 31 oct 2026 18:18:14 CET | Session opened by the user (`tanstfaafllm-29` [2a2a0c]); row added to `worklines/agents.md`; Professor asked how the cell works and about Steps 1.2 (trailer move), the trailer's state and the bring-up cut. |
 | sam. 31 oct 2026 18:28:02 CET | Professor: `🟩 go Step 1` on the user's mandate. Trailer moved with `git mv`, paths fixed, control render started; series template drafted. Professor relayed the user's review of Story 1 with `🟩 go Step 2`, then asked to hold until the user reviews Story 1 with Hazel; fixes A and B recorded as pending. |
 | sam. 31 oct 2026 18:53:33 CET | Step 2 on the user's go (via Professor): Story 1 sources brought into Git, fixes A and B, score refitted (global 6 s offset after the new stage), reading audit +0.0 s, rendered 94.0 s / −15.7 LUFS / −0.9 dBTP; stage-1 text moved up after a CLEAR! overlap seen in the contact sheet; delivered to `~/Videos/TANSTAAFLLM/`. YouTube links of the trailer and the first Story 1 cut recorded. Plan aligned with the `workplan` template (step statuses, risks). |
+| sam. 31 oct 2026 19:54:55 CET | User: `🟩 go` for a Wyoh episode (Step 3.2): work Wyoh's story with her into a video, first version. Step 3.2 added. |
+| sam. 31 oct 2026 19:57:16 CET | Wyoh's story note received (3.2a done); brief written (`docs/0302_01`); composition handed to a sub-agent in `/data/michael/tanstaafllm/video/story2-wyoh/`. |
 
 ## Workline artifacts
 
@@ -109,5 +115,6 @@ Done means: the trailer and the first story videos are published, they read as o
 - Private phone page (Professor's): https://claude.ai/artifact/Wqpg9wD9Ew5MunsYFhxqLn, links both videos.
 - `worklines/hazel/video/trailer/` — the trailer's sources (moved from Professor, 2026-10-31).
 - `docs/0103_01_series-template.md` — the series template (draft).
+- `docs/0302_01_wyoh-story-brief.md` — Story 2 brief; `docs/0302_02_note-from-wyoh-story.md` — Wyoh's story (from Wyoh).
 - `worklines/hazel/video/story1-hello-luna/` — Story 1 "Hello, Luna" sources (from the sub-agent's `bringup-v1`, revised 2026-10-31).
 - `/data/michael/tanstaafllm/video/` — packages, briefs and renders of the sub-agents (music A, story A/B, bring-up).
