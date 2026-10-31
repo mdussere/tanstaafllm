@@ -8,7 +8,7 @@ As of 2026-10-04, Luna boots the disposable ArchR card, rejoins Wi-Fi by itself,
 |---|---|
 | RK915 firmware | `download firmware success` |
 | iwd state directory | `STATE_DIRECTORY=/storage/.cache/iwd` |
-| Association | `Connected to fc:34:97:d6:0c:c0`, SSID "Mick wifi home", 2462 MHz |
+| Association | `Connected to fc:34:97:d6:0c:c0`, SSID "Home network", 2462 MHz |
 | SSH | reachable about 60 s after boot |
 | Host key | ED25519 `SHA256:tKesK+3T9te7a1ER0ZP4WY2kbRqrxwcpt/l0TrBIGgE`, accepted with `StrictHostKeyChecking=yes` |
 
@@ -54,7 +54,7 @@ ArchR mounts `/var` as tmpfs. It recreates selected persistent locations as link
 
 | Service | Runtime path | Effect before the fix |
 |---|---|---|
-| iwd | `STATE_DIRECTORY=/var/lib/iwd` | the saved network (`Mick wifi home.psk`) vanished at every boot, and with it Wi-Fi and SSH |
+| iwd | `STATE_DIRECTORY=/var/lib/iwd` | the saved network (`Home network.psk`) vanished at every boot, and with it Wi-Fi and SSH |
 | sshd | `/var/lib/sshd` (the image's link to `/storage/.cache/ssh` is hidden by the tmpfs) | `ssh-keygen -A` generated **new host keys at every boot**; the first reboot produced `REMOTE HOST IDENTIFICATION HAS CHANGED` |
 
 ArchR already creates `/storage/.cache/iwd` and `/storage/.cache/ssh` (`z_03_iwd.conf`, `z_04_openssh.conf`), so the intended persistent locations exist; they just weren't wired up.
@@ -93,6 +93,6 @@ After the first reboot (before the `sshd` fix), Termidor's `known_hosts` held th
 
 ## Notes and limits
 
-- A second, oddly named profile `Mick=20wifi=20home.psk` (passphrase only) exists alongside `Mick wifi home.psk`, probably written by ArchR's settings UI. iwd ignores it and it was left untouched. It contains the passphrase and stays only on the disposable card.
+- A second, oddly named profile `Home=20network.psk` (passphrase only) exists alongside `Home network.psk`, probably written by ArchR's settings UI. iwd ignores it and it was left untouched. It contains the passphrase and stays only on the disposable card.
 - The card still boots into the tty1 text shell (`systemd.unit=textmode.target`). `systemctl isolate archr.target` switches to the graphical UI until the next reboot.
 - Credentials (Wi-Fi passphrase) exist only on the card; nothing secret is in the repository or logbook.

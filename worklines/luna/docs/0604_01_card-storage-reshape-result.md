@@ -27,7 +27,7 @@ Rollback, if ever needed: `zstd -dc <checkpoint>.img.zst | sudo dd of=/dev/sdX b
 | `/home` | 7.8 GiB ext4, mounted from `LUNA_HOME` |
 | `/storage` | 26 GiB, 278 MB used, contents restored; `/var/log` still bound to it |
 | Boot partition | `mipi-panel.dtbo` and `wifi-rk915.dtbo` hashes unchanged (`62449b4b…`, `423feb4e…`); `extlinux.conf` unchanged; display works |
-| Wi-Fi | rejoined "Mick wifi home" without the console (saved profile restored with STORAGE) |
+| Wi-Fi | rejoined "Home network" without the console (saved profile restored with STORAGE) |
 | SSH | strict host-key check passed with the same ED25519 key `SHA256:tKesK+3T9te7a1ER0ZP4WY2kbRqrxwcpt/l0TrBIGgE` |
 | Boot time | 13.3 s (4.9 s kernel + 8.4 s userspace) after the fix below |
 

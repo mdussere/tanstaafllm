@@ -15,7 +15,7 @@ def test_darkos_configuration_script_parses() -> None:
 def test_darkos_configuration_script_does_not_embed_a_wifi_secret() -> None:
     script = SCRIPT.read_text(encoding="utf-8")
 
-    assert "Mick wifi home" not in script
+    assert "Home network" not in script
     assert "psk=" not in script
     assert "/run/NetworkManager/system-connections" in script
     assert "interface-name=/d" in script

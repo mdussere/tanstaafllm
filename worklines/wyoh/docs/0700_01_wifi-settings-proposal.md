@@ -15,7 +15,7 @@
 | ArchR manages Wi-Fi with **iwd**. Luna joined the home network with `iwctl`. | Luna 5.8g |
 | iwd's saved networks persist in `/storage/.cache/iwd` (drop-in `iwd.service.d/10-persistent-state.conf`). | Luna 5.8i, `0508_05` |
 | **ConnMan is also active**. In an earlier observation it saw only `lo`. Which one hands out addresses today is not recorded. | Luna 5.8a |
-| A second profile file, `Mick=20wifi=20home.psk`, probably written by ArchR's settings UI, sits next to the one iwd uses. | `0508_05` |
+| A second profile file, `Home=20network.psk`, probably written by ArchR's settings UI, sits next to the one iwd uses. | `0508_05` |
 | The home router needs a fixed 2.4 GHz channel (otherwise Linux 6.7+ refuses authentication with "AP is in CSA process"). Other access points may hit the same problem. | Luna 5.8f/g |
 
 ## 2. Ownership (cross-workline boundary)
@@ -42,7 +42,7 @@ If the read-only inventory (7.1) shows that iwd and ConnMan conflict, or that a 
 
 - **The list** is a fuzzel menu, using the same look and the same buttons as the Start menu.
   - It's opened from the Start menu entry "Wi-Fi" (or FN+Select, to be decided).
-  - Each line shows a mark for the current network, the SSID, the security type and the signal as bars: `✓ Mick wifi home  WPA2  ████`.
+  - Each line shows a mark for the current network, the SSID, the security type and the signal as bars: `✓ Home network  WPA2  ████`.
   - Below the networks: "Rescan", "Forget a network…" and "Disconnect".
 - **Talking to iwd:** standard-library Python calls `busctl --json=short` (systemd's D-Bus tool, part of the base system) on `net.connman.iwd`: `Station.Scan`, `GetOrderedNetworks`, `Network.Connect`, `KnownNetwork.Forget`. No new Python dependency, no parsing of coloured text.
 - **Known network:** `Connect` directly.

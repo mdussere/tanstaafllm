@@ -460,7 +460,7 @@
   - Nothing run; no green light.
 - **Wyoh 9.12:** Mannie (Claude Code) in the menu; terminal font 50 % larger (foot 8 → 12 pt), Slate font 20 % larger (12 → 14 px); live apps and Slate scenarios passed; Luna rebooted and released.
 - **Wyoh Step 7 started:** the user makes Wi-Fi discovery and configuration the priority. Decisions 7.0: fuzzel panel on iwd, Start menu entry only, office network is password-only, phone hotspot for tests.
-- **Wyoh 7.1–7.4 (Wi-Fi):** iwd owns Wi-Fi, no ConnMan conflict; panel `wyoh_wifi.py` (fuzzel list, masked password window, bar text) deployed; Luna joined Freebox-1E23B6 and came home on its own; list width fixed after the user's report.
+- **Wyoh 7.1–7.4 (Wi-Fi):** iwd owns Wi-Fi, no ConnMan conflict; panel `wyoh_wifi.py` (fuzzel list, masked password window, bar text) deployed; Luna joined Neighbour-AP and came home on its own; list width fixed after the user's report.
 - **Wyoh 12.4 (resident Kroko):** wired and deployed; the user's voice test works. A key during dictation now acts after the dictated text (user feedback), not yet deployed.
 - **Wyoh 6.10 added (user, 2026-10-15):** in the Slate, FN+Y sends to Mannie, FN+B is reserved for Mike, FN+↑/↓ walk a history kept on the card (no Wi-Fi passwords). Core done; note to Mike `worklines/mike/docs/1204_02`.
 - **Wyoh 12.4 follow-up (user, 2026-10-15):** keys and FN+A during dictation act after the dictated text; L2 on the desktop opens the Slate straight into dictation; the Slate opens hidden at session start so Kroko is loaded before first use. Deployed with 6.10; Kroko loaded and idle on Luna.

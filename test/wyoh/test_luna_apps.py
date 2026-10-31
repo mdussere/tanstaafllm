@@ -227,7 +227,7 @@ def test_luna_graphical_apps_from_the_menu() -> None:
                 await observe("20-empty", _empty_desktop)
                 left = _ssh("ls /storage/.cache/iwd").stdout.split("\n")
                 assert sorted(name for name in left if name.endswith(".psk")) == [
-                    "Mick wifi home.psk", "Mick=20wifi=20home.psk"], left
+                    "Home network.psk", "Home=20network.psk"], left
 
     try:
         asyncio.run(exercise())
