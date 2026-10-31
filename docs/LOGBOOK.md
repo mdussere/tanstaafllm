@@ -561,3 +561,4 @@
 ## 2026-10-31
 
 - **Universe reference (user, 2026-10-31):** new `docs/00_the-moon-is-a-harsh-mistress.md`: the novel's world, story and iconic moments, every main character, the ideas (TANSTAAFL, the brass cannon, rational anarchism), the author, a short note on its politics, and how the project borrows its names. Images: the Free Luna flag drawn from the novel's description (`img/free-luna-flag.svg`) and a public-domain portrait of Heinlein (Wikimedia Commons). Linked from `docs/README.md` and `AGENTS.md`.
+- **Commit routine (user, 2026-10-31):** finished work is committed by the session that owns it, pushed to `origin main`, and reported with direct GitHub links, because the user often follows from a phone. Written into `skills/commit-prep/SKILL.md` and `AGENTS.md` (Wyoh's suggestion).

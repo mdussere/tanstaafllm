@@ -65,7 +65,7 @@ Read [docs/02_testing.md](docs/02_testing.md) before creating or running a test 
 - `worklines/professor/docs/0001_01_initial_discussion.md` is the complete initial discussion transcript. Treat it as source evidence, not as verified technical documentation.
 - A workline plan is the operational source of truth for that workline’s current scope and progress.
 
-Documentation, plans, workline artifacts, and reusable scripts are intended to be committed. Do not commit secrets, `.env` files, virtual environments, caches, generated builds, downloaded model weights, or private recordings.
+Documentation, plans, workline artifacts, and reusable scripts are intended to be committed. **Routine (user, 2026-10-31):** when a session finishes a piece of its own work, it commits its own files, pushes to `origin main`, and gives the user direct GitHub links; the `commit-prep` skill has the details. Do not commit secrets, `.env` files, virtual environments, caches, generated builds, downloaded model weights, or private recordings.
 
 ## Working safely
 
