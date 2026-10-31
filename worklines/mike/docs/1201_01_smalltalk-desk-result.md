@@ -33,7 +33,7 @@ A chat client usually sends the whole history as text each turn. The server then
 
 ## Asking for one sentence instead of two or three
 
-Same questions, system prompt "answer in one short sentence" (`results/mike/chat-baseline/20261031T112441Z/lean-one/`):
+Same questions, system prompt "answer in one short sentence" (`results/mike/chat-baseline/20261031T111000Z/lean-one/`):
 
 - **Answers get shorter:** a median of 22 tokens instead of 37, at most 66 instead of 77. On Luna, the last word would come at a median of 11.6 s instead of 13.8 s, and at worst after 17.6 s instead of 26.6 s (estimate).
 - **They are not more reliable.** It now says Sydney is the capital of Australia, which it had right before, and that Armstrong and Aldrin "stayed in orbit". One draw per question, so this is noise as much as a trend.
