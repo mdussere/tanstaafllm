@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mike's small-talk client (Step 12): one question per line, the answer streamed.
+"""Mike's client (Step 12 onwards; small talk first): one question per line, the answer streamed.
 
 Runs on Luna in a terminal window (app_id "mike"), and on the desk host.
 Standard library only, so Luna's system Python is enough; `prestac.py` must

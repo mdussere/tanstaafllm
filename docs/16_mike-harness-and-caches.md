@@ -2,7 +2,7 @@
 
 > For a code review. This page describes the code that runs Mike's small talk on Luna (Step 12) and every cache it relies on: what each piece does, who calls whom, with links to the lines. It ends with the review's findings and what Step 13 changed for each (§ 9).
 
-**State described:** after Step 13's fixes (2026-10-31). The first edition described commit `bb53c0c`; § 9 keeps its findings. Mike's side is [`src/mike/smalltalk.py`](../src/mike/smalltalk.py) (484 lines, standard library only, imports `prestac.py` from its own directory) and [`src/mike/prestac.py`](../src/mike/prestac.py) (336 lines). Wyoh's side is the launcher [`src/wyoh/apps/mike/run`](../src/wyoh/apps/mike/run) and FN+B in [`src/wyoh/wyoh_gamepad.py`](../src/wyoh/wyoh_gamepad.py#L885-L895). The model is LFM2.5-350M Q4_0 in llama.cpp's `llama-server` b11429.
+**State described:** after Step 13's fixes (2026-10-31). The first edition described commit `bb53c0c`; § 9 keeps its findings. Mike's side is [`src/mike/mike.py`](../src/mike/mike.py) (called `smalltalk.py` until 2026-10-31; 484 lines, standard library only, imports `prestac.py` from its own directory) and [`src/mike/prestac.py`](../src/mike/prestac.py) (336 lines). Wyoh's side is the launcher [`src/wyoh/apps/mike/run`](../src/wyoh/apps/mike/run) and FN+B in [`src/wyoh/wyoh_gamepad.py`](../src/wyoh/wyoh_gamepad.py#L885-L895). The model is LFM2.5-350M Q4_0 in llama.cpp's `llama-server` b11429.
 
 **Measured so far:**
 - Desk: [`worklines/mike/docs/1201_01`](../worklines/mike/docs/1201_01_smalltalk-desk-result.md).
@@ -18,27 +18,27 @@
 | Piece | Owner | Where | Role |
 | --- | --- | --- | --- |
 | Slate + FN+B | Wyoh | [`wyoh_gamepad.py` `mike_zone`](../src/wyoh/wyoh_gamepad.py#L1601-L1626), [`mike_wait`](../src/wyoh/wyoh_gamepad.py#L1628-L1646), [`mike_step`](../src/wyoh/wyoh_gamepad.py#L885-L895) | Starts Mike's window if absent, waits for the title "Mike — ready" (polls the Sway tree every 0.5 s, 90 s at most), then types the dictated text and Return. "Mike — busy" gives the notice "Mike cannot start while Mannie runs". |
-| Window | Wyoh | [`apps/mike/run`](../src/wyoh/apps/mike/run), [`wyoh-app.toml`](../src/wyoh/apps/mike/wyoh-app.toml) | `foot -a mike`, then `runuser -l michael` and `python3 $MIKE_HOME/smalltalk.py`. Tiled, not fullscreen (the floating Slate must stay visible). |
-| Client | Mike | [`smalltalk.py`](../src/mike/smalltalk.py) | The loop, the conversation as token ids, the L0 frame, the brain lock, the titles, the log. |
-| Model server | llama.cpp | `~/.local/opt/mike/llama-b11429/llama-server` | One slot, context 2,048. Spawned by the client in its own process group, and dies with it ([`Server`](../src/mike/smalltalk.py#L235-L334)). |
+| Window | Wyoh | [`apps/mike/run`](../src/wyoh/apps/mike/run), [`wyoh-app.toml`](../src/wyoh/apps/mike/wyoh-app.toml) | `foot -a mike`, then `runuser -l michael` and `python3 $MIKE_HOME/smalltalk.py`, which on Luna is now a link to `mike.py` until Wyoh's launcher names `mike.py`. Tiled, not fullscreen (the floating Slate must stay visible). |
+| Client | Mike | [`mike.py`](../src/mike/mike.py) | The loop, the conversation as token ids, the L0 frame, the brain lock, the titles, the log. |
+| Model server | llama.cpp | `~/.local/opt/mike/llama-b11429/llama-server` | One slot, context 2,048. Spawned by the client in its own process group, and dies with it ([`Server`](../src/mike/mike.py#L235-L334)). |
 | PreStaC library | Mike | [`prestac.py`](../src/mike/prestac.py) | Stack of frames with prefetch (desk prototype of Step 9.2). The chat client uses its `Store`, `HttpEngine` and `frame_keys` for the L0 frame (§ 6). |
 
 ### What the client contains
 
 | Function or class | Lines | Does |
 | --- | --- | --- |
-| [`Template`](../src/mike/smalltalk.py#L74-L80) | 74–80 | The template's special ids, read from the server at start (`/props`): BOS, end of turn, `\n`. |
-| [`Conversation`](../src/mike/smalltalk.py#L83-L124) | 83–124 | The token tape: `l0`, `ids`, `turns`; `prompt_for()` (question capped at 600 characters), `finish()` (rolls over past `KEEP_CTX`), `reset()`. |
-| [`sse_events`](../src/mike/smalltalk.py#L127-L132) | 127–132 | Parses the server-sent-events stream of `/completion`. |
-| [`take_lock`, `name_server_in_lock`, `release_lock`](../src/mike/smalltalk.py#L169-L206) | 169–206 | `/tmp/luna-brain.lock` holds "mike <client pid> <server pid>". The client refuses while a live client holds it; a stale Mike lock has its orphan server stopped. |
-| [`orphan_servers`, `stop_pid`, `_die_with_parent`](../src/mike/smalltalk.py#L209-L231) | 153–231 | Finds a `llama-server` on Mike's port; stops a process group; makes the server receive SIGTERM when the client dies (`PR_SET_PDEATHSIG`). |
-| [`Server`](../src/mike/smalltalk.py#L235-L334) | 235–334 | Starts and owns `llama-server`, stops it. Also `post`, `get`, `tokenize`, `template`, `namespace`, `stream` and `rss_kib`. |
-| [`L0Frame`](../src/mike/smalltalk.py#L337-L363) | 337–363 | Layer L0 as a frame in PreStaC's `Store`: `put_back()` restores it, or reads L0 and saves it. |
-| [`set_title`, `plain`](../src/mike/smalltalk.py#L366-L373) | 366–373 | OSC 2 title for Sway; drops the model's `**` emphasis while printing. |
-| [`answer`](../src/mike/smalltalk.py#L376-L408) | 376–408 | One turn: stream, print, `finish`, and the turn's record. Ctrl+C stops the answer and keeps what was written. |
-| [`main`](../src/mike/smalltalk.py#L411-L480) | 411–480 | Arguments, `SIGHUP`/`SIGTERM` handlers, start, the L0 frame, the input loop, `/new`, `/quit`, rollover, the log. |
+| [`Template`](../src/mike/mike.py#L74-L80) | 74–80 | The template's special ids, read from the server at start (`/props`): BOS, end of turn, `\n`. |
+| [`Conversation`](../src/mike/mike.py#L83-L124) | 83–124 | The token tape: `l0`, `ids`, `turns`; `prompt_for()` (question capped at 600 characters), `finish()` (rolls over past `KEEP_CTX`), `reset()`. |
+| [`sse_events`](../src/mike/mike.py#L127-L132) | 127–132 | Parses the server-sent-events stream of `/completion`. |
+| [`take_lock`, `name_server_in_lock`, `release_lock`](../src/mike/mike.py#L169-L206) | 169–206 | `/tmp/luna-brain.lock` holds "mike <client pid> <server pid>". The client refuses while a live client holds it; a stale Mike lock has its orphan server stopped. |
+| [`orphan_servers`, `stop_pid`, `_die_with_parent`](../src/mike/mike.py#L209-L231) | 153–231 | Finds a `llama-server` on Mike's port; stops a process group; makes the server receive SIGTERM when the client dies (`PR_SET_PDEATHSIG`). |
+| [`Server`](../src/mike/mike.py#L235-L334) | 235–334 | Starts and owns `llama-server`, stops it. Also `post`, `get`, `tokenize`, `template`, `namespace`, `stream` and `rss_kib`. |
+| [`L0Frame`](../src/mike/mike.py#L337-L363) | 337–363 | Layer L0 as a frame in PreStaC's `Store`: `put_back()` restores it, or reads L0 and saves it. |
+| [`set_title`, `plain`](../src/mike/mike.py#L366-L373) | 366–373 | OSC 2 title for Sway; drops the model's `**` emphasis while printing. |
+| [`answer`](../src/mike/mike.py#L376-L408) | 376–408 | One turn: stream, print, `finish`, and the turn's record. Ctrl+C stops the answer and keeps what was written. |
+| [`main`](../src/mike/mike.py#L411-L480) | 411–480 | Arguments, `SIGHUP`/`SIGTERM` handlers, start, the L0 frame, the input loop, `/new`, `/quit`, rollover, the log. |
 
-**Settings** ([lines 56–71](../src/mike/smalltalk.py#L56-L71)):
+**Settings** ([lines 56–71](../src/mike/mike.py#L56-L71)):
 - system prompt in French or English ("two or three short sentences");
 - sampling from the model card: temperature 0.1, top-k 50, repeat penalty 1.05, no seed;
 - `MAX_TOKENS` 120;
@@ -57,12 +57,12 @@ sequenceDiagram
     autonumber
     participant W as Wyoh (FN+B)
     participant F as foot "mike"
-    participant C as smalltalk.py main()
+    participant C as mike.py main()
     participant L as /tmp/luna-brain.lock
     participant S as llama-server
     participant D as slots/ (disk)
     W->>F: swaymsg exec apps/mike/run (if no "mike" window)
-    F->>C: runuser -l michael python3 smalltalk.py
+    F->>C: runuser -l michael python3 mike.py
     C->>F: title "Mike — starting"
     C->>L: take_lock(): O_EXCL create "mike <client pid>"
     alt another live client holds it (Mannie, another Mike)
@@ -106,7 +106,7 @@ Wyoh measured FN+B with Mike closed: the question was delivered at 6.5 s and ans
 sequenceDiagram
     autonumber
     participant U as user (stdin)
-    participant C as smalltalk.py
+    participant C as mike.py
     participant S as llama-server slot 0
     participant J as chat.jsonl
     U->>C: input() → "Qui était Marie Curie ?"
@@ -129,7 +129,7 @@ sequenceDiagram
     C->>C: title "Mike — ready"
 ```
 
-**Code path:** [`main` loop](../src/mike/smalltalk.py#L454-L475) → [`answer`](../src/mike/smalltalk.py#L376-L408) → [`Conversation.prompt_for`](../src/mike/smalltalk.py#L102-L105) → [`Server.stream`](../src/mike/smalltalk.py#L329-L334) → [`sse_events`](../src/mike/smalltalk.py#L127-L132) → [`Conversation.finish`](../src/mike/smalltalk.py#L107-L124).
+**Code path:** [`main` loop](../src/mike/mike.py#L454-L475) → [`answer`](../src/mike/mike.py#L376-L408) → [`Conversation.prompt_for`](../src/mike/mike.py#L102-L105) → [`Server.stream`](../src/mike/mike.py#L329-L334) → [`sse_events`](../src/mike/mike.py#L127-L132) → [`Conversation.finish`](../src/mike/mike.py#L107-L124).
 
 **Each line of `chat.jsonl`** holds:
 - the question and the answer;
@@ -145,13 +145,13 @@ sequenceDiagram
 
 The cache works only if what the client sends starts with **exactly** the tokens the slot holds. So the client never re-renders the history as text. It keeps the ids:
 
-- **L0** ([line 95](../src/mike/smalltalk.py#L95)) is `BOS` (id 1, read from the server) plus the tokenised system turn: 28–35 tokens.
-- **The question** ([lines 104–105](../src/mike/smalltalk.py#L104-L105), capped at 600 characters) is the user turn wrapped in LFM2's template, tokenised by the server with `parse_special`, so that `<|im_start|>` and `<|im_end|>` become single ids.
-- **The answer** ([lines 113–117](../src/mike/smalltalk.py#L113-L117)) is the ids exactly as generated. They end with `<|im_end|>` (id 7) when the model stops by itself; the client adds that id when the answer was cut at 120 tokens or stopped with Ctrl+C. Then comes `\n`, tokenised once at start.
+- **L0** ([line 95](../src/mike/mike.py#L95)) is `BOS` (id 1, read from the server) plus the tokenised system turn: 28–35 tokens.
+- **The question** ([lines 104–105](../src/mike/mike.py#L104-L105), capped at 600 characters) is the user turn wrapped in LFM2's template, tokenised by the server with `parse_special`, so that `<|im_start|>` and `<|im_end|>` become single ids.
+- **The answer** ([lines 113–117](../src/mike/mike.py#L113-L117)) is the ids exactly as generated. They end with `<|im_end|>` (id 7) when the model stops by itself; the client adds that id when the answer was cut at 120 tokens or stopped with Ctrl+C. Then comes `\n`, tokenised once at start.
 - **The last generated token is not yet in the slot:** the model sampled it but never read it back. The next request therefore reads it, which is why a follow-up reads "the question + 2–3".
 - **Why ids and not text:** in Step 12.1, sending the history as text once made the server read 59 tokens instead of about 16. A past answer, turned back into tokens, did not match the ids the model had generated.
-- **LFM2 is a hybrid model** (attention plus convolution state). Its state can be extended, or replaced by a restore, but not cut back to an arbitrary earlier token. `/new` and a rollover therefore restore the L0 frame from disk ([lines 465 and 471](../src/mike/smalltalk.py#L465-L471)) instead of asking the server to forget the turns.
-- **Rollover** ([lines 118–124](../src/mike/smalltalk.py#L118-L124)): past `KEEP_CTX`, only L0 and the last exchange are kept. Measured on the desk with the limit lowered to 260: the next question read 58 tokens (the kept exchange and itself), against 240 before the fix.
+- **LFM2 is a hybrid model** (attention plus convolution state). Its state can be extended, or replaced by a restore, but not cut back to an arbitrary earlier token. `/new` and a rollover therefore restore the L0 frame from disk ([lines 465 and 471](../src/mike/mike.py#L465-L471)) instead of asking the server to forget the turns.
+- **Rollover** ([lines 118–124](../src/mike/mike.py#L118-L124)): past `KEEP_CTX`, only L0 and the last exchange are kept. Measured on the desk with the limit lowered to 260: the next question read 58 tokens (the kept exchange and itself), against 240 before the fix.
 - **After Ctrl+C**, the server may have written a token or two that the client never received. The next prompt then differs from the slot's content near its end, and the hybrid model may read more than the question (not measured).
 
 ---
@@ -162,15 +162,15 @@ The cache works only if what the client sends starts with **exactly** the tokens
 
 ### 5.1 The slot (prompt cache)
 
-- **Turned on per request** with `"cache_prompt": true` ([line 332](../src/mike/smalltalk.py#L332)). The server compares the new prompt with what the slot holds, keeps the common prefix and reads the rest. `timings.prompt_n` says how many tokens it read.
+- **Turned on per request** with `"cache_prompt": true` ([line 332](../src/mike/mike.py#L332)). The server compares the new prompt with what the slot holds, keeps the common prefix and reads the rest. `timings.prompt_n` says how many tokens it read.
 - **One slot** (`-np 1`) and `--cache-ram 0`: no host-RAM cache of other prompts. Memory is the constraint on Luna.
 - **For the hybrid model**, reuse works here because the client only ever extends the slot. The desk setting `lean-ckpt` (context checkpoints) gave the same results as `lean` in 12.1 (`results/mike/chat-baseline/20261031T110034Z/`), so the client does not use checkpoints.
 
 ### 5.2 Frames: the slot saved to a file
 
-- **Saving and restoring:** [`L0Frame.put_back`](../src/mike/smalltalk.py#L349-L363) uses `POST /slots/0?action=save|restore` with a file name. The server writes under `--slot-save-path` (`~/.local/state/mike/slots/`).
+- **Saving and restoring:** [`L0Frame.put_back`](../src/mike/mike.py#L349-L363) uses `POST /slots/0?action=save|restore` with a file name. The server writes under `--slot-save-path` (`~/.local/state/mike/slots/`).
 - **Size:** about 12.4 KB per token (`0902_01`). The chat L0 frame is 0.4–0.5 MB (`results/mike/smalltalk-desk/…/slots/`); the 1,053-token tool prompt of Step 9 made 13 MB.
-- **The client saves one frame only, L0,** in PreStaC's `Store` ([`L0Frame`](../src/mike/smalltalk.py#L337-L347)): key = `frame_keys(namespace, [L0])`, where the namespace is the model file's name, size and modification time plus the server's `build_info` ([`Server.namespace`](../src/mike/smalltalk.py#L323-L327)). Commit is atomic (the server writes `tmp-<key>.bin`, renamed after the save returns), with a `.json` beside it, and eviction keeps 20 MB at most. The first client's `l0-*.bin` files are removed at start.
+- **The client saves one frame only, L0,** in PreStaC's `Store` ([`L0Frame`](../src/mike/mike.py#L337-L347)): key = `frame_keys(namespace, [L0])`, where the namespace is the model file's name, size and modification time plus the server's `build_info` ([`Server.namespace`](../src/mike/mike.py#L323-L327)). Commit is atomic (the server writes `tmp-<key>.bin`, renamed after the save returns), with a `.json` beside it, and eviction keeps 20 MB at most. The first client's `l0-*.bin` files are removed at start.
 
 ### 5.3 PreStaC (the library)
 
@@ -183,7 +183,7 @@ See § 6. The chat client does not use it.
 
 ### 5.5 `llama-server` flags used by the client
 
-From [`Server.__init__`](../src/mike/smalltalk.py#L238-L250):
+From [`Server.__init__`](../src/mike/mike.py#L238-L250):
 
 | Flag | Value | Why |
 | --- | --- | --- |
@@ -264,13 +264,13 @@ classDiagram
 ## 7. Process lifetime and the brain lock
 
 - **Luna runs one brain at a time** (user's rule): Mike's server and Mannie's Claude process need about 300 MiB each. About 400 MiB is available once Kroko and the desktop are loaded.
-- **The lock holds "mike <client pid> <server pid>".** The client creates it with its own pid before spawning the server ([`take_lock`](../src/mike/smalltalk.py#L169-L192)), then adds the server's pid ([`name_server_in_lock`](../src/mike/smalltalk.py#L195-L198)). It removes the lock in [`Server.stop`](../src/mike/smalltalk.py#L278-L287), which `main`'s `finally` calls ([line 479](../src/mike/smalltalk.py#L479)).
+- **The lock holds "mike <client pid> <server pid>".** The client creates it with its own pid before spawning the server ([`take_lock`](../src/mike/mike.py#L169-L192)), then adds the server's pid ([`name_server_in_lock`](../src/mike/mike.py#L195-L198)). It removes the lock in [`Server.stop`](../src/mike/mike.py#L278-L287), which `main`'s `finally` calls ([line 479](../src/mike/mike.py#L479)).
 - **The server dies with the client:**
-  - `SIGHUP` (the window closing) and `SIGTERM` raise `SystemExit` in the client, so `finally` runs ([lines 425–428](../src/mike/smalltalk.py#L425-L428));
-  - the server runs in its own process group and is stopped as a group ([`stop_pid`](../src/mike/smalltalk.py#L153-L166));
-  - even after a `SIGKILL` of the client, the kernel sends `SIGTERM` to the server ([`_die_with_parent`](../src/mike/smalltalk.py#L225-L231), `PR_SET_PDEATHSIG`).
+  - `SIGHUP` (the window closing) and `SIGTERM` raise `SystemExit` in the client, so `finally` runs ([lines 425–428](../src/mike/mike.py#L425-L428));
+  - the server runs in its own process group and is stopped as a group ([`stop_pid`](../src/mike/mike.py#L153-L166));
+  - even after a `SIGKILL` of the client, the kernel sends `SIGTERM` to the server ([`_die_with_parent`](../src/mike/mike.py#L225-L231), `PR_SET_PDEATHSIG`).
   - Measured on the desk: after `SIGHUP`, `SIGTERM` or `SIGKILL` to the client, no server is left. After `SIGHUP` and `SIGTERM` the lock is gone too. After `SIGKILL` the lock stays, stale, and the next start removes it.
-- **The client never adopts a running server:** a stale Mike lock has its orphan server stopped, and any `llama-server` still on Mike's port is stopped before the client spawns its own ([lines 261–263](../src/mike/smalltalk.py#L261-L263)).
+- **The client never adopts a running server:** a stale Mike lock has its orphan server stopped, and any `llama-server` still on Mike's port is stopped before the client spawns its own ([lines 261–263](../src/mike/mike.py#L261-L263)).
 
 ---
 
@@ -278,11 +278,11 @@ classDiagram
 
 | Test | Kind | What it checks |
 | --- | --- | --- |
-| [`test_smalltalk.py`](../test/mike/test_smalltalk.py) | default | The tape (`prompt_for` and `finish`, the cut answer closed, the rollover, the capped question), SSE parsing, the brain lock with its orphan server, Ctrl+C during an answer, Markdown emphasis |
+| [`test_mike_client.py`](../test/mike/test_mike_client.py) | default | The tape (`prompt_for` and `finish`, the cut answer closed, the rollover, the capped question), SSE parsing, the brain lock with its orphan server, Ctrl+C during an answer, Markdown emphasis |
 | same, `test_smalltalk_desk` | integration | 12.1's conversations through the client against a real server, cold then warm. Follow-ups read at most 40 tokens; after a restart, L0 is restored. |
 | same, `test_client_signal_leaves_no_server_and_no_lock` | integration | `SIGHUP`, `SIGTERM`, `SIGKILL` to the client process: no server survives |
 | same, `test_rollover_reads_only_the_kept_exchange` | integration | With `KEEP_CTX` at 260, the question after the rollover reads the kept exchange and itself |
-| [`test_smalltalk_luna.py`](../test/mike/test_smalltalk_luna.py) | live | Four runs on Luna; timings and memory from `chat.jsonl` |
+| [`test_mike_client_luna.py`](../test/mike/test_mike_client_luna.py) | live | Four runs on Luna; timings and memory from `chat.jsonl` |
 | [`test_chat_baseline.py`](../test/mike/test_chat_baseline.py) | integration | The OpenAI chat endpoint with the history as text (the comparison), and the answer length |
 | [`test_prestac.py`](../test/mike/test_prestac.py), [`test_prestac_desk.py`](../test/mike/test_prestac_desk.py) | default, integration | The library with a fake engine and against `llama-server` |
 
@@ -294,15 +294,15 @@ The findings of the first edition (commit `bb53c0c`), ordered by impact. **Measu
 
 | # | Finding | Evidence | Effect | Options |
 | --- | --- | --- | --- | --- |
-| **F1** | **Dropping the oldest turn breaks the cache.** [`finish`](../src/mike/smalltalk.py#L87-L90) cuts a turn out of the middle of the tape, so the next request matches only up to L0 and reads everything after it again. | **Measured:** with `KEEP_CTX` lowered to 260, the turn after the trim read 240 of 267 tokens. | At the real limit of 1,600 tokens: about 1,500 tokens read, **about 4 min on Luna** for one question, after 30–40 turns. | (a) At the limit, start a new conversation with a notice. (b) Keep the last turn or two and read them once, a few hundred tokens: about 30–60 s, announced. (c) A one-sentence summary as a new layer. (d) A larger context, at a memory cost. |
+| **F1** | **Dropping the oldest turn breaks the cache.** [`finish`](../src/mike/mike.py#L87-L90) cuts a turn out of the middle of the tape, so the next request matches only up to L0 and reads everything after it again. | **Measured:** with `KEEP_CTX` lowered to 260, the turn after the trim read 240 of 267 tokens. | At the real limit of 1,600 tokens: about 1,500 tokens read, **about 4 min on Luna** for one question, after 30–40 turns. | (a) At the limit, start a new conversation with a notice. (b) Keep the last turn or two and read them once, a few hundred tokens: about 30–60 s, announced. (c) A one-sentence summary as a new layer. (d) A larger context, at a memory cost. |
 | **F2** | **The lock names the client, not the server.** If the client dies without running `finally`, the server keeps running and keeps its 300 MiB, while the lock points to a dead pid. The next lock check then treats the lock as stale. | **Measured:** a `SIGHUP` sent to the client alone left `llama-server` running, reparented, with the lock holding the dead client pid. On Luna, closing the window happened to stop both. | Mannie could start beside an orphan server: out of memory. A new client finds the orphan through `/health` and uses it with no lock. | Handle `SIGHUP` and `SIGTERM` in the client so that `finally` runs. Start the server in its own process group and stop the group. Write the server's pid into the lock. At start, treat a server that answers without a lock as an orphan and stop it. |
-| **F3** | **A server found running is trusted blindly** ([line 124](../src/mike/smalltalk.py#L124)): no lock, no ownership, and nobody stops it. | Code | Works with F2's orphans; two clients could share one slot and overwrite each other's state. | Refuse, or adopt the server only through the lock. |
-| **F4** | **Two implementations of frames.** The client's [`restore_or_save`](../src/mike/smalltalk.py#L178-L188) does not use `prestac.Store`. | Code | The client has no atomic save, no metadata, no eviction (one stale file per edited prompt), and keys the frame on the model's **file name** (F5). | Move the L0 frame onto `prestac.Store` + `HttpEngine`, which are stdlib-only and fit Luna. Or keep it tiny on purpose and say so. |
+| **F3** | **A server found running is trusted blindly** ([line 124](../src/mike/mike.py#L124)): no lock, no ownership, and nobody stops it. | Code | Works with F2's orphans; two clients could share one slot and overwrite each other's state. | Refuse, or adopt the server only through the lock. |
+| **F4** | **Two implementations of frames.** The client's [`restore_or_save`](../src/mike/mike.py#L178-L188) does not use `prestac.Store`. | Code | The client has no atomic save, no metadata, no eviction (one stale file per edited prompt), and keys the frame on the model's **file name** (F5). | Move the L0 frame onto `prestac.Store` + `HttpEngine`, which are stdlib-only and fit Luna. Or keep it tiny on purpose and say so. |
 | **F5** | **The frame key ignores the model's content and the runtime build.** | Code | A model file replaced under the same name, or a new `llama-server`, could restore an incompatible state. Whether llama.cpp detects this is not checked. | Put the model's size and modification time (or its SHA-256, once) and the build number into the key, as PreStaC's namespace does. |
 | **F6** | **The save is not atomic** (written straight to the final name). | Code | A crash during the save leaves a truncated file. The next restore probably fails with an HTTP error (not checked) and falls back to reading L0 again and overwriting the file. | `Store.commit`'s temporary name, then a rename. |
 | **F7** | **Ctrl+C quits Mike entirely**, even in the middle of an answer. | Code | No way to stop a long answer and keep talking. | Catch the interrupt inside `answer`, close the stream, keep the ids generated so far (as for a cut answer). |
-| **F8** | **The template is hard-coded for LFM2** (`BOS` 1, `IM_END` 7, the `<|im_start|>` strings). | [Lines 46, 68, 77](../src/mike/smalltalk.py#L46) | Changing the model means changing the code. | Read the BOS from `/props` and tokenise `<|im_end|>` once at start. |
-| **F9** | **Two `/tokenize` calls per turn**, one of them for the constant `"\n"`. | [Line 85](../src/mike/smalltalk.py#L85) | Negligible (local HTTP). | Tokenise `"\n"` once at start. |
+| **F8** | **The template is hard-coded for LFM2** (`BOS` 1, `IM_END` 7, the `<|im_start|>` strings). | [Lines 46, 68, 77](../src/mike/mike.py#L46) | Changing the model means changing the code. | Read the BOS from `/props` and tokenise `<|im_end|>` once at start. |
+| **F9** | **Two `/tokenize` calls per turn**, one of them for the constant `"\n"`. | [Line 85](../src/mike/mike.py#L85) | Negligible (local HTTP). | Tokenise `"\n"` once at start. |
 | **F10** | **No guard on a long question.** 1,600 + a 300-token dictation + 120 tokens of answer comes close to 2,048. | Code | Rare; the server would refuse or cut. | Cap the question, or trim before it is added. |
 | **F11** | **The model's Markdown is printed raw** (`**deux**`). | 12.1 answers | Cosmetic, in a terminal. | Strip `**` and `#` while printing, or ask for plain text in the prompt. |
 | **F12** | **`PreStaC.ask` forgets the slot after answering** ([line 329](../src/mike/prestac.py#L329)). The next prefetch always restores a frame, even when the slot already holds the prefix. | Code | One avoidable restore per question in the tool harness. | Keep `slot_tokens` = the prompt sent (without the answer) when it is useful. |
@@ -326,6 +326,6 @@ The findings of the first edition (commit `bb53c0c`), ordered by impact. **Measu
 
 **Still to do in Step 13:**
 - 13.5: a system-prompt variant inviting "I am not sure", measured against Step 12's on the same questions.
-- 13.6: Step 12.5's runs again on Luna, with Mannie stopped, to check that nothing got slower or bigger. `prestac.py` must now sit next to `smalltalk.py` in `MIKE_HOME`.
+- 13.6: Step 12.5's runs again on Luna, with Mannie stopped, to check that nothing got slower or bigger. `prestac.py` must now sit next to `mike.py` in `MIKE_HOME`.
 
 *Written by Mike, 2026-10-31, for the user's code review; updated the same day after Step 13's fixes.*

@@ -1,7 +1,7 @@
-"""Mike Step 12: the small-talk client (`src/mike/smalltalk.py`, `smalltalk.feature`).
+"""Mike Step 12: the small-talk client (`src/mike/mike.py`, `mike_client.feature`).
 
-    uv run pytest test/mike/test_smalltalk.py                    # deterministic
-    uv run pytest test/mike/test_smalltalk.py -m integration -s  # real llama-server, desk
+    uv run pytest test/mike/test_mike_client.py                    # deterministic
+    uv run pytest test/mike/test_mike_client.py -m integration -s  # real llama-server, desk
 
 The deterministic tests check that the conversation is kept as the exact
 token ids sent and generated. The integration test plays Step 12.1's
@@ -24,13 +24,13 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parents[2] / "src" / "mike"))
-import smalltalk as st  # noqa: E402
+import mike as st  # noqa: E402
 
 import mike_eval as ev  # noqa: E402
 import mike_server as ms  # noqa: E402
 from test_chat_baseline import CONVERSATIONS  # noqa: E402
 
-RUN_DIR = ev.REPO / "results/mike/smalltalk-desk" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+RUN_DIR = ev.REPO / "results/mike/client-desk" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 MODEL = Path(os.environ.get("MIKE_ASSET_ROOT", "/data/michael/tanstaafllm/mike-assets")) / "LFM2.5-350M-Q4_0.gguf"
 
 

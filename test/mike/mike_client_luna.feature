@@ -1,10 +1,10 @@
 Feature: Mike 12.5, small talk on Luna
-  The client src/mike/smalltalk.py on Luna (R36 Ultra), as michael, with
+  The client src/mike/mike.py on Luna (R36 Ultra), as michael, with
   LFM2.5-350M Q4_0 and llama-server b11429 arm64 in ~/.local/opt/mike.
   Only while Mannie on Luna is stopped and the brain lock is free; Kroko,
   Sway and the Wyoh services keep running. Executed by
-  test/mike/test_smalltalk_luna.py (marker live). Evidence:
-  results/mike/smalltalk-luna/<timestamp>/ (chat.jsonl, each run's output and
+  test/mike/test_mike_client_luna.py (marker live). Evidence:
+  results/mike/client-luna/<timestamp>/ (chat.jsonl, each run's output and
   server log, summary.json).
 
   Scenario: Four runs of Step 12.1's questions on stdin

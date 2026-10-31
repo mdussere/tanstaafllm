@@ -24,7 +24,7 @@
   <text x="30" y="46" class="title">MIKE'S FOUR CACHES</text>
   <text x="30" y="68" class="sub">from the fastest and most fragile to the slowest and most durable</text>
 
-  <text x="690" y="96" class="s">SMALLTALK.PY</text>
+  <text x="690" y="96" class="s">MIKE.PY</text>
   <text x="810" y="96" class="s">PRESTAC.PY</text>
 
   <!-- 1 -->
@@ -53,8 +53,8 @@
   <text x="90" y="356" class="h">PreStaC: a stack of frames, prefetched</text>
   <text x="90" y="376" class="t">Store keyed by the hash of the token ids, LRU within 200 MB, atomic commit;</text>
   <text x="90" y="394" class="t">a worker reads the wanted stack in 64-token chunks while the user navigates.</text>
-  <text x="90" y="414" class="c">Store · HttpEngine · PreStaC.step / ask · desk prototype only (Step 9.2)</text>
-  <text x="690" y="376" class="no">not used</text>
+  <text x="90" y="414" class="c">Store · HttpEngine · PreStaC.step / ask · stepping and prefetch: desk prototype (Step 9.2)</text>
+  <text x="690" y="376" class="yes">Store, for L0</text>
   <text x="810" y="376" class="yes">all of it</text>
 
   <!-- 4 -->
@@ -67,5 +67,5 @@
   <text x="690" y="488" class="s">implicit</text>
   <text x="810" y="488" class="s">implicit</text>
 
-  <text x="30" y="572" class="s">Sources: src/mike/smalltalk.py, src/mike/prestac.py, worklines/mike/docs/0902_01 (frame sizes), 1205_01 (start times on Luna).</text>
+  <text x="30" y="572" class="s">Sources: src/mike/mike.py, src/mike/prestac.py, worklines/mike/docs/0902_01 (frame sizes), 1205_01 (start times on Luna).</text>
 </svg>

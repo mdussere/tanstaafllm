@@ -1,10 +1,10 @@
-"""Mike Step 12.5: the small-talk client on Luna (`smalltalk_luna.feature`).
+"""Mike Step 12.5: the small-talk client on Luna (`mike_client_luna.feature`).
 
-    uv run pytest test/mike/test_smalltalk_luna.py -m live -s
+    uv run pytest test/mike/test_mike_client_luna.py -m live -s
 
 Only with Mannie on Luna stopped (`mannie stop --save`) and the brain lock
 free: the client itself refuses to start otherwise. Over SSH as michael, the
-client (`src/mike/smalltalk.py` with `prestac.py`, copied and checked by SHA-256) is fed
+client (`src/mike/mike.py` with `prestac.py`, copied and checked by SHA-256) is fed
 Step 12.1's questions on stdin, one run per setting, sharing one state
 directory so that the third run finds layer L0 saved:
 
@@ -32,10 +32,10 @@ import mike_eval as ev
 import mike_luna as ml
 from test_chat_baseline import CONVERSATIONS
 
-CLIENT = ev.REPO / "src/mike/smalltalk.py"
+CLIENT = ev.REPO / "src/mike/mike.py"
 PRESTAC = ev.REPO / "src/mike/prestac.py"
 STAMP = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-RUN_DIR = ev.REPO / "results/mike/smalltalk-luna" / STAMP
+RUN_DIR = ev.REPO / "results/mike/client-luna" / STAMP
 STATE = f"/home/michael/.local/state/mike-run-{STAMP}"
 RUNS = [("1-fr-cold", "fr", ""), ("2-en-cold", "en", ""), ("3-fr-warm", "fr", ""), ("4-fr-repack", "fr", "MIKE_REPACK=1")]
 
@@ -70,7 +70,7 @@ def test_smalltalk_on_luna():
     (RUN_DIR / "luna.txt").write_text(env)
     for name, lang, extra in RUNS:
         before = ml.mem_available_kib()
-        out = ml.ssh(f"cd {ml.REMOTE_DIR} && XDG_STATE_HOME={STATE} {extra} python3 smalltalk.py --lang {lang} "
+        out = ml.ssh(f"cd {ml.REMOTE_DIR} && XDG_STATE_HOME={STATE} {extra} python3 mike.py --lang {lang} "
                      f"<<'EOF'\n{stdin_for(lang)}EOF\n", timeout=1800)
         (RUN_DIR / f"{name}.out").write_text(out)
         (RUN_DIR / f"{name}.server.log").write_text(ml.ssh(f"cat {STATE}/mike/llama-server.log"))

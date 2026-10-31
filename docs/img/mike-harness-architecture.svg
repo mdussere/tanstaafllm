@@ -29,7 +29,7 @@
   </style>
   <rect width="960" height="640" fill="url(#stars)"/>
   <text x="30" y="46" class="title">MIKE'S CHAT HARNESS ON LUNA</text>
-  <text x="30" y="68" class="sub">who calls whom, which process holds what · Step 12</text>
+  <text x="30" y="68" class="sub">who calls whom, which process holds what · after Step 13</text>
 
   <!-- Wyoh -->
   <rect x="30" y="96" width="250" height="150" class="box"/>
@@ -53,7 +53,7 @@
   <!-- smalltalk.py -->
   <rect x="320" y="96" width="300" height="300" class="mike"/>
   <text x="334" y="118" class="own">MIKE</text>
-  <text x="334" y="140" class="h">smalltalk.py (stdlib only)</text>
+  <text x="334" y="140" class="h">mike.py (stdlib only)</text>
   <text x="334" y="166" class="c">main()</text>
   <text x="440" y="166" class="t">loop: input() → answer()</text>
   <text x="334" y="188" class="c">Conversation</text>
@@ -62,8 +62,8 @@
   <text x="440" y="210" class="t">stream, print, finish()</text>
   <text x="334" y="232" class="c">Server</text>
   <text x="440" y="232" class="t">owns llama-server, HTTP</text>
-  <text x="334" y="254" class="c">restore_or_save()</text>
-  <text x="486" y="254" class="t">the L0 frame</text>
+  <text x="334" y="254" class="c">L0Frame</text>
+  <text x="440" y="254" class="t">L0 in PreStaC's Store</text>
   <text x="334" y="276" class="c">take_lock()</text>
   <text x="440" y="276" class="t">one brain on Luna</text>
   <text x="334" y="298" class="c">set_title()</text>
@@ -103,21 +103,21 @@
   <text x="30" y="440" class="own">FILES ON LUNA</text>
   <rect x="30" y="452" width="290" height="110" class="file"/>
   <text x="44" y="474" class="c">~/.local/opt/mike/</text>
-  <text x="44" y="494" class="t">smalltalk.py</text>
+  <text x="44" y="494" class="t">mike.py, prestac.py</text>
   <text x="44" y="512" class="t">LFM2.5-350M-Q4_0.gguf (219 MB)</text>
   <text x="44" y="530" class="t">llama-b11429/llama-server</text>
   <text x="44" y="550" class="s">MIKE_HOME, read only at run time</text>
 
   <rect x="340" y="452" width="300" height="110" class="file"/>
   <text x="354" y="474" class="c">~/.local/state/mike/</text>
-  <text x="354" y="494" class="t">slots/l0-&lt;hash&gt;.bin  (the L0 frames)</text>
+  <text x="354" y="494" class="t">slots/  (L0 frames + .json, LRU)</text>
   <text x="354" y="512" class="t">chat.jsonl  (every start and turn)</text>
   <text x="354" y="530" class="t">llama-server.log  (last run only)</text>
   <text x="354" y="550" class="s">XDG_STATE_HOME</text>
 
   <rect x="660" y="452" width="270" height="110" class="file"/>
   <text x="674" y="474" class="c">/tmp/luna-brain.lock</text>
-  <text x="674" y="494" class="t">"mike &lt;client pid&gt;"</text>
+  <text x="674" y="494" class="t">"mike &lt;client&gt; &lt;server&gt;"</text>
   <text x="674" y="512" class="t">or "mannie &lt;pid&gt;": one brain</text>
   <text x="674" y="530" class="t">at a time (≈300 MiB each)</text>
   <text x="674" y="550" class="s">taken before spawning the server</text>
@@ -127,5 +127,5 @@
   <text x="560" y="424" class="s">slot files written and read by the server</text>
 
   <text x="30" y="600" class="s">Solid arrows: calls and data. Dashed: the window title Wyoh reads, the server spawn, files. Orange = Wyoh owns it, cyan = Mike owns it.</text>
-  <text x="30" y="616" class="s">Code: src/mike/smalltalk.py, src/wyoh/apps/mike/run, src/wyoh/wyoh_gamepad.py (mike_zone, mike_wait, mike_step).</text>
+  <text x="30" y="616" class="s">Code: src/mike/mike.py, src/wyoh/apps/mike/run, src/wyoh/wyoh_gamepad.py (mike_zone, mike_wait, mike_step).</text>
 </svg>

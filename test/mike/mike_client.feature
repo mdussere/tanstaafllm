@@ -1,10 +1,10 @@
 Feature: Mike 12.2, the small-talk client keeps the conversation as tokens
-  src/mike/smalltalk.py, Mike's chat client: one question per line, the
+  src/mike/mike.py, Mike's chat client: one question per line, the
   answer streamed. The conversation is kept as the exact token ids the server
   read and generated; the system prompt (layer L0) is a PreStaC frame saved
-  with the server's slot save. Executed by test/mike/test_smalltalk.py
+  with the server's slot save. Executed by test/mike/test_mike_client.py
   (deterministic tests, and marker integration against llama-server).
-  Evidence: results/mike/smalltalk-desk/<timestamp>/ (turns.jsonl,
+  Evidence: results/mike/client-desk/<timestamp>/ (turns.jsonl,
   summary.json, server logs).
 
   Scenario: Follow-up turns read only themselves
