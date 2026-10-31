@@ -6,5 +6,5 @@
 exec foot --config=/storage/.local/share/tanstfaafllm/wyoh/deploy/luna/foot.ini \
     -a mike -T "Mike — starting" \
     runuser -l michael -c 'export MIKE_HOME=$HOME/.local/opt/mike
-printf "\033[2mL2 dictate in the Slate, FN+B send to Mike · /new forgets · /quit leaves\033[0m\n\n"
+printf "\033[2mL2 dictate · FN+B send · /new forget · /quit\033[0m\n\n"
 exec python3 "$MIKE_HOME/smalltalk.py"'
