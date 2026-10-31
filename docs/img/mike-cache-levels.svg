@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Mike's four caches</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .n { font: bold 28px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .h { font: bold 15px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; }
+    .t { font: 12px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .c { font: 11.5px 'DejaVu Sans Mono', monospace; fill: #3ee6e0; }
+    .s { font: 11px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .yes { font: bold 11px 'DejaVu Sans Mono', monospace; fill: #3ee6e0; }
+    .no { font: bold 11px 'DejaVu Sans Mono', monospace; fill: #ff6b6b; }
+    .row { fill: #10233a; stroke: #3b4a7a; stroke-width: 2; }
+  </style>
+  <rect width="960" height="600" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">MIKE'S FOUR CACHES</text>
+  <text x="30" y="68" class="sub">from the fastest and most fragile to the slowest and most durable</text>
+
+  <text x="690" y="96" class="s">SMALLTALK.PY</text>
+  <text x="810" y="96" class="s">PRESTAC.PY</text>
+
+  <!-- 1 -->
+  <rect x="30" y="106" width="900" height="100" class="row"/>
+  <text x="48" y="146" class="n">1</text>
+  <text x="90" y="132" class="h">The slot itself (prompt cache)</text>
+  <text x="90" y="152" class="t">llama-server keeps the state after the last tokens it read. A request</text>
+  <text x="90" y="170" class="t">whose ids start with those tokens reads only the rest.</text>
+  <text x="90" y="190" class="c">"cache_prompt": true · lost when the server stops · --cache-ram 0: no second copy</text>
+  <text x="690" y="152" class="yes">every turn</text>
+  <text x="810" y="152" class="yes">extend, ask</text>
+
+  <!-- 2 -->
+  <rect x="30" y="218" width="900" height="100" class="row"/>
+  <text x="48" y="258" class="n">2</text>
+  <text x="90" y="244" class="h">Frames: the slot saved to a file</text>
+  <text x="90" y="264" class="t">/slots/0?action=save writes the state; restore puts it back, with no</text>
+  <text x="90" y="282" class="t">token read again. The file grows with the tokens it holds.</text>
+  <text x="90" y="302" class="c">--slot-save-path · survives a restart · 0.4–0.5 MB for the chat L0, 13 MB for the tool L0</text>
+  <text x="690" y="264" class="yes">L0 only</text>
+  <text x="810" y="264" class="yes">every layer</text>
+
+  <!-- 3 -->
+  <rect x="30" y="330" width="900" height="100" class="row"/>
+  <text x="48" y="370" class="n">3</text>
+  <text x="90" y="356" class="h">PreStaC: a stack of frames, prefetched</text>
+  <text x="90" y="376" class="t">Store keyed by the hash of the token ids, LRU within 200 MB, atomic commit;</text>
+  <text x="90" y="394" class="t">a worker reads the wanted stack in 64-token chunks while the user navigates.</text>
+  <text x="90" y="414" class="c">Store · HttpEngine · PreStaC.step / ask · desk prototype only (Step 9.2)</text>
+  <text x="690" y="376" class="no">not used</text>
+  <text x="810" y="376" class="yes">all of it</text>
+
+  <!-- 4 -->
+  <rect x="30" y="442" width="900" height="100" class="row"/>
+  <text x="48" y="482" class="n">4</text>
+  <text x="90" y="468" class="h">The operating system's page cache</text>
+  <text x="90" y="488" class="t">The 219 MB model file is mapped, not copied. Once read, it stays in RAM while</text>
+  <text x="90" y="506" class="t">memory allows. On Luna: first start 11.0 s, the next 8.1 s (both reading L0).</text>
+  <text x="90" y="526" class="c">mmap · nobody controls it · after a reboot: slower start, not measured</text>
+  <text x="690" y="488" class="s">implicit</text>
+  <text x="810" y="488" class="s">implicit</text>
+
+  <text x="30" y="572" class="s">Sources: src/mike/smalltalk.py, src/mike/prestac.py, worklines/mike/docs/0902_01 (frame sizes), 1205_01 (start times on Luna).</text>
+</svg>

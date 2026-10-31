@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" width="960" height="640" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Mike's chat harness on Luna</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ffb347"/>
+    </marker>
+    <marker id="arrc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3ee6e0"/>
+    </marker>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .own { font: bold 12px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .h { font: bold 14px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; }
+    .t { font: 12px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .c { font: 11.5px 'DejaVu Sans Mono', monospace; fill: #3ee6e0; }
+    .s { font: 11px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .lbl { font: 11px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .box { fill: #10233a; stroke: #3b4a7a; stroke-width: 2; }
+    .mike { fill: #10233a; stroke: #3ee6e0; stroke-width: 2; }
+    .file { fill: #141a33; stroke: #6f7fa8; stroke-width: 1.5; stroke-dasharray: 5 3; }
+  </style>
+  <rect width="960" height="640" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">MIKE'S CHAT HARNESS ON LUNA</text>
+  <text x="30" y="68" class="sub">who calls whom, which process holds what · Step 12</text>
+
+  <!-- Wyoh -->
+  <rect x="30" y="96" width="250" height="150" class="box"/>
+  <text x="44" y="118" class="own">WYOH</text>
+  <text x="44" y="140" class="h">Slate + gamepad daemon</text>
+  <text x="44" y="160" class="c">wyoh_gamepad.py</text>
+  <text x="44" y="178" class="t">L2: dictate with Kroko (Mycroft)</text>
+  <text x="44" y="196" class="t">FN+B: mike_zone() → mike_step()</text>
+  <text x="44" y="214" class="t">start / wait for the title / deliver</text>
+  <text x="44" y="234" class="s">reads the Sway tree every 0.5 s</text>
+
+  <rect x="30" y="270" width="250" height="96" class="box"/>
+  <text x="44" y="292" class="own">WYOH</text>
+  <text x="44" y="312" class="h">foot window, app_id "mike"</text>
+  <text x="44" y="332" class="c">apps/mike/run</text>
+  <text x="44" y="352" class="t">runuser -l michael → python3</text>
+
+  <path d="M155,246 L155,268" stroke="#ffb347" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+  <text x="164" y="262" class="lbl">exec · types + Return</text>
+
+  <!-- smalltalk.py -->
+  <rect x="320" y="96" width="300" height="300" class="mike"/>
+  <text x="334" y="118" class="own">MIKE</text>
+  <text x="334" y="140" class="h">smalltalk.py (stdlib only)</text>
+  <text x="334" y="166" class="c">main()</text>
+  <text x="440" y="166" class="t">loop: input() → answer()</text>
+  <text x="334" y="188" class="c">Conversation</text>
+  <text x="440" y="188" class="t">the token tape: l0, ids, turns</text>
+  <text x="334" y="210" class="c">answer()</text>
+  <text x="440" y="210" class="t">stream, print, finish()</text>
+  <text x="334" y="232" class="c">Server</text>
+  <text x="440" y="232" class="t">owns llama-server, HTTP</text>
+  <text x="334" y="254" class="c">restore_or_save()</text>
+  <text x="486" y="254" class="t">the L0 frame</text>
+  <text x="334" y="276" class="c">take_lock()</text>
+  <text x="440" y="276" class="t">one brain on Luna</text>
+  <text x="334" y="298" class="c">set_title()</text>
+  <text x="440" y="298" class="t">OSC 2: starting → ready</text>
+  <line x1="334" y1="316" x2="606" y2="316" stroke="#3b4a7a"/>
+  <text x="334" y="338" class="s">stdin: one question per line · stdout: the answer</text>
+  <text x="334" y="356" class="s">as it streams · /new, /quit</text>
+  <text x="334" y="380" class="s">titles: Mike — starting / ready / thinking / busy</text>
+
+  <path d="M280,318 L318,318" stroke="#ffb347" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+  <path d="M318,150 L282,150" stroke="#ffb347" stroke-width="2" fill="none" marker-end="url(#arr)" stroke-dasharray="4 3"/>
+  
+
+  <!-- llama-server -->
+  <rect x="660" y="96" width="270" height="300" class="box"/>
+  <text x="674" y="118" class="own">LLAMA.CPP b11429</text>
+  <text x="674" y="140" class="h">llama-server, one slot</text>
+  <text x="674" y="162" class="s">127.0.0.1:8091 · ctx 2,048 · 4 threads</text>
+  <text x="674" y="178" class="s">lean: --no-repack -b 16 -ub 16</text>
+  <rect x="674" y="190" width="242" height="70" fill="#0b1026" stroke="#3ee6e0" stroke-width="1"/>
+  <text x="686" y="210" class="t">slot 0: the model's state after</text>
+  <text x="686" y="228" class="t">exactly the tokens it has read</text>
+  <text x="686" y="248" class="s">LFM2 hybrid: attention + conv state</text>
+  <text x="674" y="282" class="c">/health</text>
+  <text x="674" y="300" class="c">/tokenize</text>
+  <text x="674" y="318" class="c">/completion (stream)</text>
+  <text x="674" y="336" class="c">/slots/0?action=save</text>
+  <text x="674" y="354" class="c">/slots/0?action=restore</text>
+  <text x="674" y="380" class="s">LFM2.5-350M Q4_0 · about 300 MiB</text>
+
+  <path d="M620,250 L658,250" stroke="#3ee6e0" stroke-width="2" fill="none" marker-end="url(#arrc)"/>
+  <text x="624" y="242" class="lbl">HTTP</text>
+  <path d="M620,140 L658,140" stroke="#3ee6e0" stroke-width="2" fill="none" marker-end="url(#arrc)" stroke-dasharray="4 3"/>
+  <text x="624" y="132" class="lbl">spawn</text>
+
+  <!-- files -->
+  <text x="30" y="440" class="own">FILES ON LUNA</text>
+  <rect x="30" y="452" width="290" height="110" class="file"/>
+  <text x="44" y="474" class="c">~/.local/opt/mike/</text>
+  <text x="44" y="494" class="t">smalltalk.py</text>
+  <text x="44" y="512" class="t">LFM2.5-350M-Q4_0.gguf (219 MB)</text>
+  <text x="44" y="530" class="t">llama-b11429/llama-server</text>
+  <text x="44" y="550" class="s">MIKE_HOME, read only at run time</text>
+
+  <rect x="340" y="452" width="300" height="110" class="file"/>
+  <text x="354" y="474" class="c">~/.local/state/mike/</text>
+  <text x="354" y="494" class="t">slots/l0-&lt;hash&gt;.bin  (the L0 frames)</text>
+  <text x="354" y="512" class="t">chat.jsonl  (every start and turn)</text>
+  <text x="354" y="530" class="t">llama-server.log  (last run only)</text>
+  <text x="354" y="550" class="s">XDG_STATE_HOME</text>
+
+  <rect x="660" y="452" width="270" height="110" class="file"/>
+  <text x="674" y="474" class="c">/tmp/luna-brain.lock</text>
+  <text x="674" y="494" class="t">"mike &lt;client pid&gt;"</text>
+  <text x="674" y="512" class="t">or "mannie &lt;pid&gt;": one brain</text>
+  <text x="674" y="530" class="t">at a time (≈300 MiB each)</text>
+  <text x="674" y="550" class="s">taken before spawning the server</text>
+
+  <path d="M790,396 L790,450" stroke="#6f7fa8" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+  <path d="M760,396 L500,450" stroke="#6f7fa8" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+  <text x="560" y="424" class="s">slot files written and read by the server</text>
+
+  <text x="30" y="600" class="s">Solid arrows: calls and data. Dashed: the window title Wyoh reads, the server spawn, files. Orange = Wyoh owns it, cyan = Mike owns it.</text>
+  <text x="30" y="616" class="s">Code: src/mike/smalltalk.py, src/wyoh/apps/mike/run, src/wyoh/wyoh_gamepad.py (mike_zone, mike_wait, mike_step).</text>
+</svg>

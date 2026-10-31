@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 632" width="960" height="632" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>The conversation as a token tape</title>
+  <defs><pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse"><rect width="120" height="120" fill="#0b1026"/><rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/><rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/><rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/></pattern></defs>
+  <style>.title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; } .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; } .h { font: bold 13px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; } .s { font: 11px 'DejaVu Sans', sans-serif; fill: #9fb3c8; } .seg { font: bold 11px 'DejaVu Sans Mono', monospace; } .key { font: 12px 'DejaVu Sans', sans-serif; fill: #d5deec; } .warn { font: bold 12px 'DejaVu Sans', sans-serif; fill: #ff6b6b; }</style>
+  <rect width="960" height="632" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">THE CONVERSATION AS A TOKEN TAPE</text>
+  <text x="30" y="68" class="sub">Conversation.ids: what llama-server's slot holds, and what each question makes it read</text>
+<rect x="30" y="88" width="14" height="10" fill="#6f7fa8"/><text x="50" y="98" class="key">restored from the L0 frame (file)</text>
+<rect x="285.79999999999995" y="88" width="14" height="10" fill="#1f6f73"/><text x="305.79999999999995" y="98" class="key">already in the slot (prompt cache)</text>
+<rect x="548.1999999999999" y="88" width="14" height="10" fill="#ffb347"/><text x="568.1999999999999" y="98" class="key">read now</text>
+<rect x="638.9999999999999" y="88" width="14" height="10" fill="#3ee6e0"/><text x="658.9999999999999" y="98" class="key">written by the model</text>
+<rect x="808.9999999999999" y="88" width="14" height="10" fill="#ff6b6b"/><text x="828.9999999999999" y="98" class="key">read again</text>
+<text x="30" y="146" class="h">Start</text><text x="30" y="164" class="s">warm: L0 restored from its frame</text>
+<rect x="230" y="130" width="68" height="26" fill="#6f7fa8"/><text x="264" y="147" class="seg" text-anchor="middle" fill="#0b1026">L0</text>
+<text x="30" y="208" class="h">Question 1</text><text x="30" y="226" class="s">reads 14 tokens</text>
+<rect x="230" y="192" width="68" height="26" fill="#6f7fa8"/><text x="264" y="209" class="seg" text-anchor="middle" fill="#0b1026">L0</text>
+<rect x="300" y="192" width="29" height="26" fill="#ffb347"/><text x="315" y="209" class="seg" text-anchor="middle" fill="#0b1026">U1</text>
+<rect x="331" y="192" width="64" height="26" fill="#3ee6e0"/><text x="363" y="209" class="seg" text-anchor="middle" fill="#0b1026">A1</text>
+<text x="30" y="270" class="h">Question 2</text><text x="30" y="288" class="s">reads 19: A1's last token, \n, U2</text>
+<rect x="230" y="254" width="68" height="26" fill="#6f7fa8"/><text x="264" y="271" class="seg" text-anchor="middle" fill="#0b1026">L0</text>
+<rect x="300" y="254" width="29" height="26" fill="#1f6f73"/><text x="315" y="271" class="seg" text-anchor="middle" fill="#e6ecf5">U1</text>
+<rect x="331" y="254" width="64" height="26" fill="#1f6f73"/><text x="363" y="271" class="seg" text-anchor="middle" fill="#e6ecf5">A1</text>
+<rect x="397" y="254" width="40" height="26" fill="#ffb347"/><text x="417" y="271" class="seg" text-anchor="middle" fill="#0b1026">U2</text>
+<rect x="439" y="254" width="86" height="26" fill="#3ee6e0"/><text x="482" y="271" class="seg" text-anchor="middle" fill="#0b1026">A2</text>
+<text x="30" y="332" class="h">Question 3</text><text x="30" y="350" class="s">reads 17</text>
+<rect x="230" y="316" width="68" height="26" fill="#6f7fa8"/><text x="264" y="333" class="seg" text-anchor="middle" fill="#0b1026">L0</text>
+<rect x="300" y="316" width="29" height="26" fill="#1f6f73"/><text x="315" y="333" class="seg" text-anchor="middle" fill="#e6ecf5">U1</text>
+<rect x="331" y="316" width="64" height="26" fill="#1f6f73"/><text x="363" y="333" class="seg" text-anchor="middle" fill="#e6ecf5">A1</text>
+<rect x="397" y="316" width="40" height="26" fill="#1f6f73"/><text x="417" y="333" class="seg" text-anchor="middle" fill="#e6ecf5">U2</text>
+<rect x="439" y="316" width="86" height="26" fill="#1f6f73"/><text x="482" y="333" class="seg" text-anchor="middle" fill="#e6ecf5">A2</text>
+<rect x="527" y="316" width="35" height="26" fill="#ffb347"/><text x="545" y="333" class="seg" text-anchor="middle" fill="#0b1026">U3</text>
+<rect x="564" y="316" width="75" height="26" fill="#3ee6e0"/><text x="602" y="333" class="seg" text-anchor="middle" fill="#0b1026">A3</text>
+<text x="30" y="394" class="h">/new</text><text x="30" y="412" class="s">L0 restored again: the slot cannot be cut back</text>
+<rect x="230" y="378" width="68" height="26" fill="#6f7fa8"/><text x="264" y="395" class="seg" text-anchor="middle" fill="#0b1026">L0</text>
+<text x="30" y="456" class="h">After a trim</text><text x="30" y="474" class="s">U1+A1 dropped: everything after L0 is read again</text>
+<rect x="230" y="440" width="68" height="26" fill="#6f7fa8"/><text x="264" y="457" class="seg" text-anchor="middle" fill="#0b1026">L0</text>
+<rect x="300" y="440" width="40" height="26" fill="#ff6b6b"/><text x="320" y="457" class="seg" text-anchor="middle" fill="#0b1026">U2</text>
+<rect x="342" y="440" width="86" height="26" fill="#ff6b6b"/><text x="385" y="457" class="seg" text-anchor="middle" fill="#0b1026">A2</text>
+<rect x="430" y="440" width="35" height="26" fill="#ff6b6b"/><text x="448" y="457" class="seg" text-anchor="middle" fill="#0b1026">U3</text>
+<rect x="468" y="440" width="75" height="26" fill="#ff6b6b"/><text x="505" y="457" class="seg" text-anchor="middle" fill="#0b1026">A3</text>
+<rect x="545" y="440" width="31" height="26" fill="#ff6b6b"/><text x="560" y="457" class="seg" text-anchor="middle" fill="#0b1026">U4</text>
+<rect x="578" y="440" width="64" height="26" fill="#3ee6e0"/><text x="610" y="457" class="seg" text-anchor="middle" fill="#0b1026">A4</text>
+<text x="654" y="457" class="warn">at the real limit (1,600 tokens):</text>
+<text x="654" y="473" class="warn">≈1,500 read ≈ 4 min on Luna</text>
+<text x="30" y="522" class="s">L0 = BOS + the system turn (28–35 tokens). Un = the user turn with its template; An = the answer ids exactly as generated, closed by &lt;|im_end|&gt; and \n.</text>
+<text x="30" y="540" class="s">Kept as ids, the tape the client sends always starts with what the slot holds, so llama-server reads only the new tail (cache_prompt).</text>
+<text x="30" y="558" class="s">Sent as text instead, a past answer can come back as different ids: the match stops there and the rest is read again (12.1: 59 tokens once).</text>
+<text x="30" y="576" class="s">Trimming the oldest turn breaks the match right after L0. Measured on the desk with a 260-token limit: 240 of 267 tokens read again.</text>
+</svg>

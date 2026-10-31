@@ -17,6 +17,7 @@ The names come from the novel. **Luna** is the machine. **Wyoh** is the desktop.
 | [10 · Wyoh, the desktop](10_wyoh.md) | Sway, the gamepad daemon, the Slate, the apps | 5 min |
 | [11 · Mycroft](11_mycroft.md) | Voice to text, models, what dictation costs on Luna | 5 min |
 | [12 · Mike](12_mike.md) | The local brain: one request, one action | 5 min |
+| [16 · Mike's harness and caches](16_mike-harness-and-caches.md) | For code review: the chat client, the token tape, the four caches, PreStaC, what to change | 20 min |
 | [13 · Mannie](13_mannie.md) | The frontier model, and the price of a "pong" | 4 min |
 | [14 · Luna](14_luna.md) | The device, its cards, what is still open | 4 min |
 | [15 · The cell](15_the-cell.md) | How the agents build all this | 5 min |
