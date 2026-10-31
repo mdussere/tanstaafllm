@@ -32,7 +32,7 @@ mike = [
     "llama-cpp-python==0.3.36",
 ]
 # Professor video: soundtrack synthesis, audio analysis, SVG rendering
-# (`worklines/professor/video/`).
+# (`worklines/hazel/video/trailer/`).
 video = [
     "cairosvg>=2.9.1",
     "numpy>=2.5.3",

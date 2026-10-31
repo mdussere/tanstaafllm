@@ -2,8 +2,8 @@
 # Re-render the whole video: soundtrack, frames, encode. Run from anywhere.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
-PROJECT="${PROJECT:-$(cd "$HERE/../../../.." && pwd)}"   # the repository root: its uv project has playwright, numpy, pillow
-OUT="${OUT:-$PROJECT/results/professor/video/$(date +%Y%m%dT%H%M%S)}"   # renders stay out of Git
+PROJECT="${PROJECT:-$(cd "$HERE/../../../../.." && pwd)}"   # the repository root: its uv project has playwright, numpy, pillow
+OUT="${OUT:-$PROJECT/results/hazel/trailer/$(date +%Y%m%dT%H%M%S)}"   # renders stay out of Git
 mkdir -p "$OUT"
 PY=(uv run --project "$PROJECT" python)
 

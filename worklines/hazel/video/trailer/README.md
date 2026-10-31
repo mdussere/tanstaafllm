@@ -7,7 +7,7 @@ Made by a sub-agent from the README and the `docs/` pages only, plus the key art
 ## Re-render
 
 ```bash
-worklines/professor/video/src/build.sh            # writes results/professor/video/<timestamp>/ (or OUT=…)
+worklines/hazel/video/trailer/src/build.sh            # writes results/hazel/trailer/<timestamp>/ (or OUT=…)
 ```
 
 It needs `ffmpeg`, `uv` and a Python project that provides Playwright (with Chromium), numpy and Pillow. By default it uses
@@ -21,9 +21,9 @@ What it does:
 ## Look at one moment
 
 ```bash
-cd worklines/professor/video/src
-uv run --project ../../../.. python capture.py stills /tmp/tanstaafllm-check/stills 12.5 30 58.6
-uv run --project ../../../.. python contact.py /tmp/tanstaafllm-check/sheet /tmp/tanstaafllm-check/stills/*.png
+cd worklines/hazel/video/trailer/src
+uv run --project ../../../../.. python capture.py stills /tmp/tanstaafllm-check/stills 12.5 30 58.6
+uv run --project ../../../../.. python contact.py /tmp/tanstaafllm-check/sheet /tmp/tanstaafllm-check/stills/*.png
 ```
 
 You can also serve `src/` (for example `python -m http.server` in `src/`) and open `index.html?t=12.5` for a single frame, or `index.html?play` to watch it loop without sound.

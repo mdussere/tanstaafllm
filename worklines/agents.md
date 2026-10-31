@@ -16,3 +16,4 @@ Session names change when a session restarts, so check `ListAgents` before relyi
 | wyoh | tanstfaafllm-8e | d56a17 | 2026-10-25 |
 | mannie | tanstfaafllm-d3 | 1fd5d4 | 2026-10-25 |
 | mannie (on Luna) | Mannie from Luna | 32d5e1 | 2026-10-30 |
+| hazel | tanstfaafllm-29 | 2a2a0c | 2026-10-31 |
