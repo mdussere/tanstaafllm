@@ -13,6 +13,7 @@ Language: write everything in English (code, docs, plans, notes, commit messages
 - **Mycroft** is Luna’s interactive input and composition capability. Its measured ASR baseline is offline, context-free audio-to-text; bounded contextualisation and the composition interface are separate, explicitly planned stages.
 - **Wyoh** is the observable desktop/window-management layer: state, context, and available actions.
 - **Mannie** is the frontier-model capability (Claude, Codex…): development work and Mike's costed escalation; not the universal brain.
+- **Hazel** is the cell's creative director and video producer (user, 2026-10-31).
 - **Luna** is the intended handheld environment; `luna-pi` is the Raspberry Pi reference/prototyping target.
 
 Some older records use historical names while nomenclature is consolidated. Follow the active plan and the principles document; do not silently rename components across the repository.
@@ -46,6 +47,7 @@ The current active worklines are:
 | `luna` | `worklines/luna/plan_luna.md` | `luna-pi` reference setup and physical-Luna characterisation (hardware, audio, boot facts); no Mycroft/Wyoh/Mike implementation outside a green-lit step. Since 2026-10-25, system work on Luna (packages, services, accounts, the root image) belongs to Mannie. |
 | `mike` | `worklines/mike/plan_mike.md` | Mike, the local brain: the small local model that proposes Wyoh actions through MCP. Desk host and `luna-pi` first; every action runs only after the user accepts it. |
 | `mannie` | `worklines/mannie/plan_mannie.md` | Mannie, the frontier-model capability: Claude Code on Luna, and Luna's operator since 2026-10-25 (packages, services, accounts, the root image; boot partition and card layout need the user's go). Works on branch `cell/mannie`, merged through pull requests. No secrets in the repository and no unattended mode. |
+| `hazel` | `worklines/hazel/plan_hazel.md` | Hazel, the creative director and video producer: the trailer, one video per story, the series' look and sound, and a public page. Does not change other worklines' code or docs; asks them for facts. |
 
 ## Tests and experiments
 
