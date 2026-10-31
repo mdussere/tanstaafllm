@@ -175,6 +175,8 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 - [ ] 8.2 Tell every session.
 
 ### Step 9 — The trailer ends on an opening
+
+*Since 2026-10-31 the videos belong to Hazel's workline: the trailer's sources are in `worklines/hazel/video/trailer/` (renders in `results/hazel/trailer/`), and Steps 9 and 11 continue in `worklines/hazel/plan_hazel.md`.*
 **Status**: 🧪 In progress (user, 2026-10-31).
 
 **Why:** the user drops the planned colonisation segment (story-a and story-b are not used). The trailer presents the cell in a fun, lively way, then opens: the adventure starts, follow it. The stories come later, one video per story.
