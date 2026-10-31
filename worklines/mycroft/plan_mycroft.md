@@ -276,6 +276,8 @@ date
 | 2026-10-28 | **8.8 accepted by the user** (`0808_01`). With Wyoh's session and resident Kroko on the new root, 515–525 MiB is available, and Kroko is at 163 MiB. The probe missed the dictation state, so there is no figure during a dictation; the user judged it not needed. A fix to the harness's reboot wait is included. Mannie was stopped for the slot; the user restarts it. |
 | 2026-10-30 | User decision relayed by Professor: sessions may message each other directly (roster in `worklines/agents.md`). Still in force: no SSH to Luna without Mannie on Luna's go. Sent the 8.8 result to Mannie from Luna directly, as it asked. |
 | 2026-10-30 | Professor, at the user's request: a coordinated commit, in the order Mike → Mycroft → Luna → Mannie → Professor. Mycroft commits only `test/mycroft/` and `worklines/mycroft/`, and does not push. Script `tmp/commit_mycroft_8_8.sh` is prepared; it waits for Professor's "your turn" and the user's go. |
+| 2026-10-30 | Committed `ae07ce4` (go from Professor on the user's behalf, which the user had endorsed: "Do what prof says"). Professor pushed it. |
+| 2026-10-31 | Professor relays a new user routine: at the end of each piece of work, commit own files, push to `origin main` (fetch and rebase first), and give GitHub links. It is not yet written in `AGENTS.md` or the skills, Mycroft asked; the user confirmed it in the Mycroft console. |
 
 ---
 
