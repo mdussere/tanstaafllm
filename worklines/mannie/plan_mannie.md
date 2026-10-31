@@ -318,6 +318,8 @@ date
 | 2026-10-25 16:09 | Luna → desk confirmed through Professor: Remote Control messaging works both ways. Next: memory (resume the session, durable notes across resets, restart at boot), and committing the desk's work so the Luna clone has the current plan. |
 | 2026-10-25 16:54 | Memory: restart behaviour checked; design `docs/0607_01`; launcher `mannie` installed on Luna; persona gains a "Memory" section; relayed to Mannie from Luna through Professor (user's rule). |
 | 2026-10-25 16:56 | Mannie from Luna's review of the memory design taken into `mannie` (stale-lock handling, cleanup, `stop --save`, pinned screen texts); on demand; resume only under 60 min. Waiting for the user's go to commit and push the desk's work to `cell/mannie`. |
+| 2026-10-25 17:10 | Desk work committed (68617cc, 568f6b3, ab86423, b809545) and pushed to `origin/cell/mannie`; Mannie from Luna rebased its two commits on top (`e05ada5`). New user rules (`cell-coordination`): Mannie on Luna is Luna's operator and may be messaged directly about operations there; no SSH to Luna without its "go"; no reboot while it runs. The desk session follows them from now on. |
+| 2026-10-30 | User decision, relayed by Professor: cell members may message each other directly; plan-first, the Luna SSH gate and no permission laundering stay. Professor's coordinated commit: the desk session commits only this plan (LOGBOOK and agents table are Professor's); Wolfenstein left to Mannie from Luna (7.6). |
 
 ---
 
