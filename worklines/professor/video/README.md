@@ -2,7 +2,7 @@
 
 Made by a sub-agent from the README and the `docs/` pages only, plus the key art (2026-10-25). The rendered MP4 is not in Git: rebuild it with `src/build.sh`.
 
-`tanstaafllm.mp4`: 1920 × 1080, 30 fps, H.264 (high profile, yuv420p) + AAC 48 kHz stereo, 60 s of choreography plus the reading holds of `src/holds.json` (94 s on 2026-10-30).
+`tanstaafllm.mp4`: 1920 × 1080, 30 fps, H.264 (high profile, yuv420p) + AAC 48 kHz stereo, 60 s of choreography plus the reading holds of `src/holds.json` (86.5 s on 2026-10-31).
 
 ## Re-render
 
@@ -34,7 +34,7 @@ You can also serve `src/` (for example `python -m http.server` in `src/`) and op
 |---|---|
 | `src/index.html` | The whole picture: a 1920 × 1080 canvas, and every frame is a pure function of time. |
 | `src/capture.py` | Frame capture with Playwright, and ffmpeg encoding. |
-| `src/music.py` | Chiptune soundtrack and effects at 120 BPM, on the same timeline as the picture. |
+| `src/score.py`, `src/nes.py` | The soundtrack: an emulated NES 2A03 sound chip (two pulses, a triangle, noise; mono; 60 Hz frames), composed by a sub-agent from the cue sheet (version A, kept by the user on 2026-10-30) and fitted to the cut. |
 | `src/build.sh` | One-command rebuild. |
 | `src/contact.py` | Contact sheets for frame inspection. |
 | `src/timing.py`, `src/holds.json` | Reading-time audit, and the holds that keep each screen's last text readable (see NOTES.md). |

@@ -517,12 +517,23 @@ const CELL = [
   { n: 'LUNA', j: 'The device: cards,', j2: 'boot, Wi-Fi, audio', pic: 'luna' }
 ];
 const RULES = [
-  [['PLANS FIRST.', C.chrome]],
-  [['NOTHING IS BUILT UNTIL THE ', C.chrome], ['HUMAN SAYS GO.', C.green]],
-  [['EVERY CLAIM ', C.chrome], ['MEASURED', C.amber], [' ON THE MACHINE.', C.chrome]],
-  [['NOTES, NOT CHATTER.', C.chrome]],
+  [['EACH AGENT OWNS ', C.chrome], ['ITS PART.', C.amber]],
+  [['EVERYONE TALKS TO ', C.chrome], ['EVERYONE.', C.cyan]],
+  [['PROFESSOR KEEPS ', C.chrome], ['THE DECISIONS.', C.amber]],
+  [['ADAM, THE HUMAN, ', C.chrome], ['GIVES THE GO.', C.green]],
   [['EVERYTHING IS ', C.chrome], ['WRITTEN DOWN.', C.cyan]]
 ];
+// What each agent says when it pops up: one speech bubble per tile.
+const BUBBLES = ['Who takes Luna?', 'Desktop is up!', 'I heard that.', 'One action. OK?', 'On it.', '983 MiB left!'];
+function bubble(x, y, s, p) {   // pixel speech bubble whose tail points down to (x, y)
+  if (p <= 0) return;
+  const w = measure(s, 30, 'V') + 36, h = 46, bx = x - w / 2, by = y - h - 18 - (1 - easeBack(p)) * 20;
+  ctx.save(); ctx.globalAlpha = clamp(p * 3);
+  rect(bx - 4, by - 4, w + 8, h + 8, C.ink); rect(bx, by, w, h, C.chrome);
+  rect(x - 8, by + h, 16, 8, C.chrome); rect(x - 4, by + h + 8, 8, 8, C.chrome);
+  ctx.restore();
+  txt(s, x, by + 33, 30, C.ink, { font: 'V', align: 'center', shadow: 0, alpha: clamp(p * 3) });
+}
 function scene7(t) {
   sky(C.navy, '#120a33'); stars(t, 35, 0.6);
   txt('THE CELL', W / 2, 140, 64, C.chrome, { align: 'center', scale: 1 + 0.03 * beatPulse(t) });
@@ -546,11 +557,17 @@ function scene7(t) {
     txt(c.j2, x + 225, y + 178, 34, C.chrome, { font: 'V', maxW: 255, shadow: 2 });
     ctx.restore();
   });
+  // the cell chatters: one bubble per agent, after all the tiles are in
+  CELL.forEach((c, i) => {
+    const t0 = 41.0 + i * 0.3, x = x0 + (i % 3) * (tw + gx), y = y0 + Math.floor(i / 3) * (th + gy);
+    const wob = Math.round(Math.sin(TA * 4 + i) * 2) * 2;
+    bubble(x + tw - 130, y + 40 + wob, BUBBLES[i], seg(t, t0, t0 + 0.25) * (t < 43.0 ? 1 : 1 - seg(t, 43.0, 43.2)));
+  });
   // rules ticker
   if (t >= 43.0) {
     const i = Math.min(4, Math.floor(t - 43.0)), t0 = 43.0 + i, p = seg(t, t0, t0 + 0.12);
     rect(0, 800, W, 190, C.ink, 0.85);
-    txt('THE RULES', M, 850, 24, C.dim);
+    txt('HOW THE CELL RUNS', M, 850, 24, C.dim);
     for (let k = 0; k < 5; k++) rect(W - M - (5 - k) * 34, 830, 24, 24, k <= i ? C.amber : '#262c5a');
     ctx.save(); ctx.translate(W / 2, 940); ctx.scale(lerp(1.4, 1, easeOut(p)), lerp(1.4, 1, easeOut(p)));
     runs(RULES[i], 0, 0, 44, { align: 'center', alpha: p * 2 });
@@ -560,36 +577,31 @@ function scene7(t) {
   dissolve(seg(t, 47.8, 48.0), C.ink, 17);
 }
 
-// Scene 8 (48-54 s): bring-up speedrun.
-const STAGES = [
-  ['FIRST BACKUP: A 62-BYTE FILE', 'RETRY. VERIFIED BYTE FOR BYTE.'],
-  ['ARCHR BOOTS TO A BLACK SCREEN', 'RIGHT PANEL DESCRIPTION. IT LIVES.'],
-  ['THE WI-FI CHIP IS INVISIBLE', '3 HARDWARE PATCHES. wlan0 APPEARS.'],
-  ['THE ROUTER REFUSES TO TALK', 'CHANNEL AUTO → 11. CONNECTED.'],
-  ['TYPING ON A MATCHBOX SCREEN', '$ ssh luna'],
-  ['A GAMING SYSTEM, ALL ROOT', 'NEW ROOT: ARCH LINUX ARM.']
-];
+// Scene 8 (48-54 s): the opening. The cell is ready; the adventure begins.
+const ROW = ['prof', 'wyoh', 'mic', 'mike', 'mannie', 'luna'];
 function scene8(t) {
-  const i = Math.min(5, Math.floor(t - 48)), t0 = 48 + i, lt = t - t0;
-  sky('#060a22', '#0f2a3a'); stars(t, 220, 0.7);
-  txt('SPEEDRUN: BRINGING UP THE HANDHELD', W / 2, 150, 40, C.chrome, { align: 'center' });
-  txt('SEPT - OCT 2026, CARD BY CARD', W / 2, 205, 24, C.dim, { align: 'center' });
-  txt(`STAGE 1-${i + 1}`, W / 2, 330, 32, C.amber, { align: 'center' });
-  const [a, b] = STAGES[i];
-  const pa = seg(lt, 0, 0.08), pb = seg(lt, 0.4, 0.48);
-  txt(a, W / 2, 450, 48, C.chrome, { align: 'center', alpha: pa });
-  if (pb > 0) txt(b, W / 2, 560, 48, i === 4 ? C.green : C.cyan, { align: 'center', alpha: pb, scale: lerp(1.3, 1, easeOut(pb)), font: 'P' });
-  if (lt > 0.7) txt('CLEAR!', W / 2, 660, 32, C.green, { align: 'center' });
-  // ground and running device
-  const gy = 920;
-  for (let x = 0; x < W; x += 40) { rect(x - ((t * 400) % 40), gy, 36, 18, '#2a3e6a'); }
-  rect(0, gy + 18, W, H - gy - 18, '#0a1530');
-  const prog = seg(t, 48, 54);
-  const dx = lerp(M + 40, W - M - 160, prog), hop = Math.sin(clamp(lt / 0.5) * Math.PI) * 70;
-  device(dx, gy - 168 - hop, 1.5, t, 'term');
-  // pips
-  for (let k = 0; k < 6; k++) rect(W / 2 - 3 * 60 + k * 60 + 10, 740, 40, 24, k <= i ? C.green : '#262c5a');
-  flash(t, t0, 0, 0.12, '#ffffff');
+  rect(0, 0, W, H, C.ink); stars(t, 60, 0.8);
+  moon(W / 2, lerp(H + 700, H + 260, easeOut(seg(t, 48.0, 49.5))), 1300, 0.55);
+  txt('THE CELL IS READY.', W / 2, 250, 40, C.chrome, { align: 'center', alpha: seg(t, 48.2, 48.35) });
+  const sp = seg(t, 49.0, 49.15);
+  if (sp > 0) txt('THE ADVENTURE BEGINS.', W / 2, 400, 72, C.amber, { align: 'center', rot: -0.02, scale: lerp(2.2, 1, easeOut(sp)), alpha: sp * 2 });
+  txt('Follow our missions, one story at a time.', W / 2, 500, 56, C.cyan, { font: 'V', align: 'center', alpha: seg(t, 50.2, 50.4), shadow: 3 });
+  // the six members hop onto the Moon, one after the other
+  const s = 150, gap = 40, x0 = (W - (6 * s + 5 * gap)) / 2, gy = 820;
+  ROW.forEach((k, i) => {
+    const t0 = 48.4 + i * 0.15, p = easeBack(seg(t, t0, t0 + 0.35));
+    if (p <= 0) return;
+    const hop = Math.abs(Math.sin((TA * 2.2 + i * 0.37) * Math.PI)) * 26;
+    const x = x0 + i * (s + gap), y = gy - s - hop + (1 - p) * 300;
+    rect(x - 6, y - 6, s + 12, s + 12, i === 0 ? C.amber : C.dim); rect(x, y, s, s, '#0a0d2a');
+    ctx.save(); ctx.beginPath(); ctx.rect(x, y, s, s); ctx.clip();
+    if (k === 'mic') mic(x + 12, y + 12, 8, t);
+    else if (k === 'luna') device(x + 40, y + 4, 1.3, t, 'moon');
+    else face(k, x, y, s);
+    ctx.restore();
+  });
+  if (t > 51.0 && Math.floor(TA * 2.5) % 2 === 0) txt('PRESS START TO FOLLOW', W / 2, 990, 28, C.amber, { align: 'center' });
+  flash(t, 48.0, 0, 0.2, '#ffffff');
 }
 
 // Scene 9 (54-60 s): doctrine, then the end card.

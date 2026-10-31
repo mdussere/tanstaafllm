@@ -200,6 +200,32 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 - [ ] 11.1 Agree on a common format (length, opening and closing cards, captions readable on a phone, sound) once the trailer and the first story video exist.
 - [ ] 11.2 One video per story, each committed with its sources.
 
+### Step 12 — Move the cell out of Termidor, into an isolated place
+**Status**: 📝 Proposed, to discuss and decide with the user (user, 2026-10-31).
+
+**Why:** the cell now has wide freedom (standing commit-and-push routine, Professor's delegated gos), and Termidor is the user's own desk machine with other projects on it. The user wants the agents isolated, so that they can keep that freedom without risk to the rest: either in a virtual machine ("OpenShell", to clarify with the user) or directly on `luna-pi`. No model training in the cell.
+
+**First assessment (2026-10-31, measured):**
+
+| Need | Today on Termidor | `luna-pi` (Pi 4B, 4 × Cortex-A72, 7.6 GiB, 14 GB card) |
+|---|---|---|
+| Claude Code sessions (6 to 7 at once) | about 1.1 GiB for all sessions and their tools | fits in RAM; Claude Code peaked at 244 MiB there in Mannie's measures |
+| Repository, `.venv`, Playwright's Chromium | 440 MB + 474 MB + 1.4 GB | **disk is the limit:** 5.3 GB free on the card; a larger card or a USB SSD would be needed |
+| Video renders (Chromium frame capture, ffmpeg) | about 10 min for 86 s | runs, but several times slower |
+| Mike's desk studies (models up to 4B, llama.cpp) | yes | slow (a few tokens per second for 4B); the large evaluations would stay elsewhere |
+| SSH to Luna, Remote Control | yes | yes, same network |
+| PyTorch training (Chat-GBC) | done once | out of scope (the user: no retraining) |
+
+Options to weigh:
+- **`luna-pi` as the cell's home:** physical isolation, same arm64 code as Luna; needs storage; heavy jobs (renders, large model evaluations) stay on Termidor or are dropped.
+- **A VM on Termidor:** strong isolation without new hardware; Termidor (i5-4590, 8 GB DDR3) would have to give it 4–5 GB, which squeezes the desktop.
+- **A container on Termidor** (rootless Podman or similar, only the repository mounted): the lightest, weaker isolation than a VM.
+- In every case: credentials scoped to the cell (a GitHub deploy key for this repository only, Claude login), no access to the user's other projects or home.
+
+- [ ] 12.1 Clarify "OpenShell" with the user; list what the agents must reach (GitHub, Luna, `luna-pi`, the network, the desk's `/data` results).
+- [ ] 12.2 Decide the target and its storage; plan the move (repository, venv, Playwright, skills, memories, `agents.md`).
+- [ ] 12.3 After the go: set up, move one session first (Professor), then the others; keep Termidor for heavy jobs only.
+
 ---
 
 ## Progress tracking ✅

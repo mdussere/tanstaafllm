@@ -86,23 +86,18 @@ SCREENS = [
         (39.20, "That trade-off, not raw speed, shapes the next decisions.", "V")]),
     ("7a The cell", 42.999, [
         (40.40, "Luna is built by a cell of AI coding agents: one Claude Code session per part.", "V"),
-        (42.75, "PROFESSOR WYOH MYCROFT MIKE MANNIE LUNA", "P")]),
-    ("7b Rule 1", 43.999, [(43.12, "PLANS FIRST.", "P")]),
-    ("7c Rule 2", 44.999, [(44.12, "NOTHING IS BUILT UNTIL THE HUMAN SAYS GO.", "P")]),
-    ("7d Rule 3", 45.999, [(45.12, "EVERY CLAIM MEASURED ON THE MACHINE.", "P")]),
-    ("7e Rule 4", 46.999, [(46.12, "NOTES, NOT CHATTER.", "P")]),
-    ("7f Rule 5", 47.8, [(47.12, "EVERYTHING IS WRITTEN DOWN.", "P")]),
+        (42.75, "PROFESSOR WYOH MYCROFT MIKE MANNIE LUNA", "P"),
+        (42.75, "Who takes Luna? Desktop is up! I heard that.", "V")]),
+    ("7b Run 1", 43.999, [(43.12, "EACH AGENT OWNS ITS PART.", "P")]),
+    ("7c Run 2", 44.999, [(44.12, "EVERYONE TALKS TO EVERYONE.", "P")]),
+    ("7d Run 3", 45.999, [(45.12, "PROFESSOR KEEPS THE DECISIONS.", "P")]),
+    ("7e Run 4", 46.999, [(46.12, "ADAM, THE HUMAN, GIVES THE GO.", "P")]),
+    ("7f Run 5", 47.8, [(47.12, "EVERYTHING IS WRITTEN DOWN.", "P")]),
 ]
-STAGES = [
-    ("FIRST BACKUP: A 62-BYTE FILE", "RETRY. VERIFIED BYTE FOR BYTE."),
-    ("ARCHR BOOTS TO A BLACK SCREEN", "RIGHT PANEL DESCRIPTION. IT LIVES."),
-    ("THE WI-FI CHIP IS INVISIBLE", "3 HARDWARE PATCHES. wlan0 APPEARS."),
-    ("THE ROUTER REFUSES TO TALK", "CHANNEL AUTO → 11. CONNECTED."),
-    ("TYPING ON A MATCHBOX SCREEN", "$ ssh luna"),
-    ("A GAMING SYSTEM, ALL ROOT", "NEW ROOT: ARCH LINUX ARM."),
-]
-for i, (a, b) in enumerate(STAGES):
-    SCREENS.append((f"8 Stage 1-{i + 1}", 49 + i - EPS, [(48.08 + i, a, "P"), (48.48 + i, b, "P")]))
+SCREENS.append(("8 Opening", 53.999, [
+    (48.35, "THE CELL IS READY.", "P"),
+    (49.15, "THE ADVENTURE BEGINS.", "P"),
+    (50.4, "Follow our missions, one story at a time.", "V")]))
 SCREENS += [
     ("9a Doctrine", 56.999, [
         (54.12, "NO FREE LLMS.", "P"),
