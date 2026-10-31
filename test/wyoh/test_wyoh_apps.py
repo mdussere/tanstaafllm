@@ -151,7 +151,9 @@ def test_the_generated_menu_holds_exactly_the_intended_entries(tmp_path):
     apps = [a.load(ROOT / "src/wyoh/apps/calculator")]
     menu = a.load_menu(ROOT / "src/wyoh/deploy/luna/menu.toml")
     report = a.generate(apps, menu, applications, tmp_path / "generated", [system])
-    assert report["not_found_on_system"] == ["wyoh-calculator.desktop"]  # Wyoh's own, not ArchR's
+    # Wyoh's own, not ArchR's; and the new root's duplicates (Mannie, 2026-10-30), absent from this fake system
+    assert sorted(report["not_found_on_system"]) == sorted(
+        ["wyoh-calculator.desktop", "foot.desktop", "footclient.desktop", "foot-server.desktop", "vim.desktop"])
     assert _menu(applications, system) == sorted(
         ["Calculator", "Image Viewer", "Mannie", "Task Manager", "Terminal", "Text Editor", "VLC", "Wi-Fi"])
 
@@ -193,3 +195,11 @@ def test_keys_with_gamepad_raw_are_refused(tmp_path):
     text = GOOD.replace('"pointer"', '"gamepad-raw"') + '\n[keys]\nBTN_TR = "KEY_LEFTCTRL"\n'
     with pytest.raises(a.ManifestError, match="gamepad-raw"):
         a.load(make_app(tmp_path, text))
+
+
+def test_mikes_window_manifest_matches_fn_b():
+    app = a.load(ROOT / "src/wyoh/apps/mike")
+    assert app.wayland_app_id == "mike" and app.name == "Mike" and app.input == "keys"
+    run = (ROOT / "src/wyoh/apps/mike/run").read_text(encoding="utf-8")
+    assert "-a mike" in run and "runuser -l michael" in run and "smalltalk.py" in run
+    assert g.MIKE_RUN == "/storage/.local/opt/wyoh-mike/run"  # where the menu and FN+B both start it

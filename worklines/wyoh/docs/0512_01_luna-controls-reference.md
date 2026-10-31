@@ -69,7 +69,7 @@ Codes come from Luna's device tree (Step 5.1).
 | FN + A | `BTN_MODE` + `BTN_EAST` | Sends the text into the window that had focus and presses Return (a terminal runs it; since 2026-10-15), then clears and hides the Slate (`validate`). While dictating, the dictated text goes in first | live |
 | FN + X | `BTN_MODE` + `BTN_NORTH` | Clears the Slate (`clear`) | live |
 | FN + Y | `BTN_MODE` + `BTN_WEST` | Sends the text to Mannie's window (lines joined) and presses Return, then clears and hides the Slate (`mannie`). If Mannie is not open, the text stays and the hint says so | core only (2026-10-15) |
-| FN + B | `BTN_MODE` + `BTN_SOUTH` | Reserved for Mike (`mike`): until Mike runs on Luna, the hint says so and the text stays | core only (2026-10-15) |
+| FN + B | `BTN_MODE` + `BTN_SOUTH` | Send to Mike (`mike`): starts Mike's window if needed, waits for "Mike — ready" (90 s at most), types the text, then Return; while Mannie runs, the text stays with a notice | core and tests (2026-10-31), not yet live |
 | FN + ↑ | `BTN_MODE` + `BTN_DPAD_UP` | Previous sent text (`history-prev`), newest first; the draft is kept | core only (2026-10-15) |
 | FN + ↓ | `BTN_MODE` + `BTN_DPAD_DOWN` | Next sent text (`history-next`); past the newest, the draft comes back | core only (2026-10-15) |
 | Left stick | `ABS_X`/`ABS_Y` | Moves the **green** selection on the keyboard (`move 0 …`): one push = one key, held = repeat after 0.3 s every 0.12 s | live |

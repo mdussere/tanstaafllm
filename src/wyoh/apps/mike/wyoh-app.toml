@@ -1,0 +1,17 @@
+# Mike's small-talk window (Wyoh 6.11, for Mike Step 12). Wyoh owns this
+# window, its menu entry and FN+B; Mike owns the client (smalltalk.py), the
+# model and llama-server, in MIKE_HOME (/home/michael/.local/opt/mike).
+# Deployed to /storage/.local/opt/wyoh-mike/.
+id = "mike"
+name = "Mike"
+comment = "Talk with Mike, Luna's small local model"
+version = "wyoh-6.11"
+source = "https://github.com/mdussere/tanstaafllm/tree/main/src/wyoh/apps/mike"
+licence = "Project licence (Wyoh launcher); Mike's files under their own"
+wayland_app_id = "mike"
+input = "keys"
+window = "fullscreen"
+gpu = false
+quit = "FN+B closes it (Sway kill), or /quit"
+icon = "./mike-icon.svg"
+categories = ["Utility", "Chat"]

@@ -866,6 +866,35 @@ def find_app_con(tree: dict[str, Any], app_id: str) -> int | None:
     return None
 
 
+# Mike's chat window (Wyoh 6.11): launcher, and the titles its client sets (OSC 2).
+MIKE_RUN = "/storage/.local/opt/wyoh-mike/run"
+MIKE_WAIT_S = 90.0
+
+
+def find_app_title(tree: dict[str, Any], app_id: str) -> tuple[int, str] | None:
+    """The first window with this app_id, and its title."""
+    if tree.get("app_id") == app_id and tree.get("type") in ("con", "floating_con"):
+        return tree["id"], tree.get("name") or ""
+    for child in tree.get("nodes", []) + tree.get("floating_nodes", []):
+        found = find_app_title(child, app_id)
+        if found is not None:
+            return found
+    return None
+
+
+def mike_step(window: tuple[int, str] | None) -> str:
+    """What FN+B does with Mike's window: start it, wait, deliver, or report busy.
+    A question typed while Mike thinks waits in its terminal, so it is delivered."""
+    if window is None:
+        return "start"
+    title = window[1]
+    if title in ("Mike — ready", "Mike — thinking"):
+        return "deliver"
+    if title.startswith("Mike — busy"):
+        return "busy"
+    return "wait"
+
+
 def con_app_id(tree: dict[str, Any], con_id: int) -> str | None:
     if tree.get("id") == con_id:
         return tree.get("app_id")
@@ -1170,6 +1199,7 @@ class Daemon:
         self.dictation_buffer = b""
         self.history = load_history(HISTORY_PATH)
         self.zone_submit = False  # Mannie: one prompt, lines joined
+        self.mike_deadline: float | None = None  # FN+B waits for Mike's window
         self.preload_pending = config.zone_preload or "--resident" in config.dictate_command
         self.zone_start_hidden = False
         # Mycroft's resident mode (Step 12.4) when the command asks for it.
@@ -1317,7 +1347,7 @@ class Daemon:
             {"open": self.open_zone, "validate": self.validate_zone, "discard": self.discard_zone,
              "hide": self.hide_zone, "show": self.show_zone, "clear": lambda: self.tell_zone("clear"),
              "dictate": self.dictate_zone,
-             "mike": lambda: self.tell_slate({"op": "notice", "text": "Mike is not on Luna yet; text kept"}),
+             "mike": self.mike_zone,
              "mannie": self.mannie_zone,
              "history-prev": lambda: self.tell_zone("history-prev"),
              "history-next": lambda: self.tell_zone("history-next"),
@@ -1568,6 +1598,52 @@ class Daemon:
         self.core._clear_cross()
         self.validate_zone()
 
+    def mike_zone(self) -> None:
+        """FN+B: send the Slate's text to Mike's window and press Return. Mike is
+        started if absent; the text stays in the Slate until it is ready."""
+        try:
+            window = find_app_title(self.sway.request(4), "mike")
+        except (OSError, ConnectionError):
+            window = None
+        step = mike_step(window)
+        if step == "deliver" and window is not None:
+            self.mike_deadline = None
+            self.zone_target, self.zone_submit = window[0], True
+            self.core.zone_state = "delivering"
+            self.core._clear_cross()
+            self.validate_zone()
+        elif step == "busy":
+            self.mike_deadline = None
+            self.tell_slate({"op": "notice", "text": "Mike cannot start while Mannie runs; text kept"})
+        elif self.mike_deadline is None:  # start, or already starting
+            if step == "start":
+                try:
+                    self.sway.command(f"exec {MIKE_RUN}")
+                except (OSError, ConnectionError):
+                    self.tell_slate({"op": "notice", "text": "Mike could not be started; text kept"})
+                    return
+            self.mike_deadline = time.monotonic() + MIKE_WAIT_S
+            self.tell_slate({"op": "notice", "text": "Mike is starting; the text follows when it is ready"})
+
+    def mike_wait(self, now: float) -> None:
+        """Called from the loop while FN+B waits: deliver once Mike is ready."""
+        if self.mike_deadline is None:
+            return
+        if self.core.zone_state != "open":  # the Slate was closed or sent elsewhere
+            self.mike_deadline = None
+            return
+        if now >= self.mike_deadline:
+            self.mike_deadline = None
+            self.tell_slate({"op": "notice", "text": "Mike did not get ready; text kept"})
+            return
+        try:
+            window = find_app_title(self.sway.request(4), "mike")
+        except (OSError, ConnectionError):
+            return
+        if mike_step(window) != "wait" and not (window is None):
+            self.mike_deadline = None
+            self.mike_zone()
+
     def discard_zone(self) -> None:
         self.tell_zone("discard")
         self.finish_zone("discarded")
@@ -1776,6 +1852,8 @@ class Daemon:
                 timeout = min(timeout, self.config.cross_window_s / 2)
             if self.menu is not None or self.zone is not None:
                 timeout = min(timeout, 0.25)  # notice the menu or the Slate closing by itself
+            if self.mike_deadline is not None:
+                timeout = min(timeout, 0.5)
             readable, _, _ = select.select(fds, [], [], timeout)
             now = time.monotonic()
             for path, fd in list(self.inputs.items()):
@@ -1796,6 +1874,7 @@ class Daemon:
             if self.menu is not None and self.menu.poll() is not None:
                 self.menu = None
                 self.write_status()
+            self.mike_wait(now)
 
     def close(self) -> None:
         self.apply(self.core.release_all())
