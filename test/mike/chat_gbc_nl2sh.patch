@@ -1,0 +1,75 @@
+diff --git a/configs/micro-sh.json b/configs/micro-sh.json
+new file mode 100644
+index 0000000..e652acd
+--- /dev/null
++++ b/configs/micro-sh.json
+@@ -0,0 +1,12 @@
++{
++  "name": "micro-sh",
++  "d_model": 64,
++  "n_layers": 3,
++  "n_heads": 4,
++  "d_ff": 128,
++  "ctx": 112,
++  "n_extra_tokens": 141,
++  "e_res": 10,
++  "temperature": 0.8,
++  "notes": "Mike Step 11: Rudy's micro with the shell vocabulary (99 base tokens); n_extra_tokens set so the LM head still fits one ROM bank"
++}
+\ No newline at end of file
+diff --git a/configs/tiny-sh.json b/configs/tiny-sh.json
+new file mode 100644
+index 0000000..360ccd9
+--- /dev/null
++++ b/configs/tiny-sh.json
+@@ -0,0 +1,12 @@
++{
++  "name": "tiny-sh",
++  "d_model": 48,
++  "n_layers": 2,
++  "n_heads": 3,
++  "d_ff": 96,
++  "ctx": 128,
++  "n_extra_tokens": 138,
++  "e_res": 10,
++  "temperature": 0.8,
++  "notes": "Mike Step 11: Rudy's tiny with the shell vocabulary (99 base tokens); n_extra_tokens set so the LM head still fits one ROM bank"
++}
+\ No newline at end of file
+diff --git a/llm/tokenizer.py b/llm/tokenizer.py
+index 3e82576..b66f15f 100644
+--- a/llm/tokenizer.py
++++ b/llm/tokenizer.py
+@@ -33,8 +33,11 @@ SPECIALS = ["<pad>", "<eos>", "<usr>", "<bot>"]
+ LETTERS = "abcdefghijklmnopqrstuvwxyz"
+ DIGITS = "0123456789"
+ PUNCT = ".,?!'-:()/&\";"
++# Shell variant (TANSTAAFLLM Mike Step 11): every printable ASCII character, case kept.
++SHELL_PUNCT = "|*~$><=_[]{}+%#@\\`^"
++UPPER = LETTERS.upper()
+ 
+-BASE_VOCAB = SPECIALS + [" "] + list(LETTERS) + list(DIGITS) + list(PUNCT)
++BASE_VOCAB = SPECIALS + [" "] + list(LETTERS) + list(DIGITS) + list(PUNCT) + list(SHELL_PUNCT) + list(UPPER)
+ BASE_SIZE = len(BASE_VOCAB)          # 54
+ MAX_VOCAB = 255                      # token ids are uint8_t in the ROM (and loop counters must not wrap)
+ MAX_TOKEN_LEN = 12                   # characters per learned token
+@@ -77,10 +80,7 @@ _REPLACE = {
+     "’": "'", "‘": "'", "“": '"', "”": '"',
+     "–": "-", "—": "-", "…": "...", " ": " ",
+     "\t": " ", "\r": " ", "\n": " ",
+-    "[": "(", "]": ")", "{": "(", "}": ")", "*": "", "_": " ",
+-    "+": " plus ", "%": " percent", "$": "", "#": "", "@": " at ",
+-    "=": "-", "<": "(", ">": ")", "|": " ", "\\": "/", "~": "-", "`": "'",
+-    "^": "", "×": "x",
++    "×": "x",
+ }
+ 
+ 
+@@ -91,7 +91,6 @@ def normalize(text: str) -> str:
+     for ch in text:
+         if unicodedata.combining(ch):
+             continue
+-        ch = ch.lower()
+         ch = _REPLACE.get(ch, ch)
+         out.append(ch)
+     text = "".join(out)
