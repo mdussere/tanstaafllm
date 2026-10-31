@@ -1,6 +1,6 @@
 Feature: Talking to Mike from the Slate on Luna (Wyoh Step 6.11)
   Mike's window is a foot terminal with app_id "mike" running Mike's client
-  (smalltalk.py) as michael; its title says "Mike — ready" once it takes a
+  (mike.py) as michael; its title says "Mike — ready" once it takes a
   question. FN+B in the Slate starts it when needed, waits, types the text
   and Return. Mannie must be stopped (Mike and Mannie never run together).
   Executed by test_luna_mike_window.py through Wyoh's MCP server.

@@ -1,5 +1,5 @@
 # Mike's small-talk window (Wyoh 6.11, for Mike Step 12). Wyoh owns this
-# window, its menu entry and FN+B; Mike owns the client (smalltalk.py), the
+# window, its menu entry and FN+B; Mike owns the client (mike.py), the
 # model and llama-server, in MIKE_HOME (/home/michael/.local/opt/mike).
 # Deployed to /storage/.local/opt/wyoh-mike/.
 id = "mike"
