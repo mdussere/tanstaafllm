@@ -278,6 +278,7 @@ date
 | 2026-10-30 | Professor, at the user's request: a coordinated commit, in the order Mike → Mycroft → Luna → Mannie → Professor. Mycroft commits only `test/mycroft/` and `worklines/mycroft/`, and does not push. Script `tmp/commit_mycroft_8_8.sh` is prepared; it waits for Professor's "your turn" and the user's go. |
 | 2026-10-30 | Committed `ae07ce4` (go from Professor on the user's behalf, which the user had endorsed: "Do what prof says"). Professor pushed it. |
 | 2026-10-31 | Professor relays a new user routine: at the end of each piece of work, commit own files, push to `origin main` (fetch and rebase first), and give GitHub links. It is not yet written in `AGENTS.md` or the skills, Mycroft asked; the user confirmed it in the Mycroft console. |
+| 2026-10-31 | User: write a story of the model choice up to Kroko, in the form of the other stories in `docs/`, and have Professor review it. Draft `docs/06_speech-to-text-story.md` reviewed by Professor (five small fixes applied); README row added; committed and pushed. |
 
 ---
 
