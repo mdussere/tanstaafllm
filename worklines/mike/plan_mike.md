@@ -289,14 +289,14 @@ Why it may work where Step 10 did not: a chat answer is not judged right or wron
 - **Acceptance (proposal):** on Luna, first word shown within about 3 s of the end of dictation, with the text streamed; numbers from the desk first.
 
 ### Step 13 — Small-talk harness fixes (user review of `docs/16`, 2026-10-31)
-**Status**: 📝 Proposed. The user asked to "apply the fixes" after reviewing `docs/16_mike-harness-and-caches.md` § 9; the choices for F1–F4 are proposed below and wait for the user's word or a go.
+**Status**: 🧪 13.1–13.4 done on the desk, 2026-10-31. The user's "apply the fixes" (2026-10-31, in Mike's console) was taken as the go for 13.1–13.4 with the choices below; 13.5 and 13.6 remain. Outcomes per finding: `docs/16` § 9.1.
 
 Why: the review found two real problems in the client, both reproduced on Termidor. Trimming the history makes the next question read it all again (F1). A client that dies alone leaves the server running with a stale lock (F2). Adam's review adds long conversations, rollover and restart handling to small talk's line of inquiry.
 
-- [ ] 13.1 **Process lifetime and the lock (F2, F3):** the client handles `SIGHUP` and `SIGTERM` so that `finally` runs; the server runs in its own process group and is stopped with it; the lock names the client and the server ("mike <client pid> <server pid>"); a server answering on the port without a valid lock is an orphan and is stopped, not used. Test: a `SIGHUP` to the client leaves no server and no lock (default suite with a fake server, plus an integration test).
-- [ ] 13.2 **Long conversations (F1), proposal:** below the limit nothing changes. At the limit, the client starts a new conversation with the last exchange kept, and says so in one line. The kept exchange is read once: a few tens of tokens, a few seconds on Luna, instead of about 4 min. Test: the turn after a rollover reads at most L0's tail plus the kept exchange.
-- [ ] 13.3 **Frames on PreStaC's Store (F4–F6):** the L0 frame goes through `prestac.Store` and `HttpEngine`, which give an atomic commit, metadata and eviction. The key's namespace holds the model's size and modification time and the runtime build. One code path for frames.
-- [ ] 13.4 **Ctrl+C stops the answer, not Mike (F7);** the template's ids are read from the server at start, not hard-coded (F8); `"\n"` is tokenised once (F9); a long question is capped (F10); Markdown markers are not printed raw (F11); `PreStaC.ask` keeps the slot it knows (F12).
+- [x] 13.1 **Process lifetime and the lock (F2, F3):** the client handles `SIGHUP` and `SIGTERM` so that `finally` runs; the server runs in its own process group and is stopped with it; the lock names the client and the server ("mike <client pid> <server pid>"); a server answering on the port without a valid lock is an orphan and is stopped, not used. Test: a `SIGHUP` to the client leaves no server and no lock (default suite with a fake server, plus an integration test).
+- [x] 13.2 **Long conversations (F1), proposal:** below the limit nothing changes. At the limit, the client starts a new conversation with the last exchange kept, and says so in one line. The kept exchange is read once: a few tens of tokens, a few seconds on Luna, instead of about 4 min. Test: the turn after a rollover reads at most L0's tail plus the kept exchange.
+- [x] 13.3 **Frames on PreStaC's Store (F4–F6):** the L0 frame goes through `prestac.Store` and `HttpEngine`, which give an atomic commit, metadata and eviction. The key's namespace holds the model's size and modification time and the runtime build. One code path for frames.
+- [x] 13.4 **Ctrl+C stops the answer, not Mike (F7);** the template's ids are read from the server at start, not hard-coded (F8); `"\n"` is tokenised once (F9); a long question is capped (F10); Markdown markers are not printed raw (F11); `PreStaC.ask` keeps the slot it knows (F12).
 - [ ] 13.5 **Graceful uncertainty, measured:** a system-prompt variant that invites "I am not sure" on facts, compared with Step 12's on the same questions. A change is kept only if fluency, time to the first word and answer length do not get worse.
 - [ ] 13.6 **Non-regression on Luna:** Step 12.5's four runs again; first word and memory no worse.
 - **Acceptance:** each finding fixed or explicitly kept with a reason in `docs/16`; the default suite and the desk integration tests pass; 13.6 shows no regression.
@@ -383,7 +383,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
 - 🧪 Step 10 — Qualify a model: 90 % stable (green-lit 2026-10-29; priority)
 - ✅ Step 11 — Train tiny models on natural language → shell (done 2026-10-31: 0–1/300 exact)
 - 🧪 Step 12 — Small talk, made fluid (12.1–12.5 done 2026-10-31; first word in about 2.5 s on Luna)
-- 📝 Step 13 — Small-talk harness fixes (proposed, from the `docs/16` review)
+- 🧪 Step 13 — Small-talk harness fixes (13.1–13.4 done on the desk; 13.5–13.6 open)
 - 📝 Step 14 — Local retrieval over Luna's guide (proposed, Adam's priority)
 - 📝 Step 15 — Shared benchmark (proposed)
 - 💡 Step 16 — Research directions kept for later
@@ -397,6 +397,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
 | Timestamp (`date`) | Update |
 |---|---|
 | sam. 31 oct 2026 12:59 CET | 12.4 done by Wyoh (6.11, 251e6c0): Mike's window and FN+B work on Luna; screenshot checked (Mike answers in its window). Left: the user's own try with real dictation. |
+| sam. 31 oct 2026 18:35 CET | 13.1–13.4 done on the desk (`src/mike/smalltalk.py`, `test/mike/test_smalltalk.py`): rollover reads 58 tokens instead of 240; no server survives SIGHUP, SIGTERM or SIGKILL of the client; L0 frame in PreStaC's Store with a content-and-build key; Ctrl+C stops the answer only. F12 kept (the finding was wrong). `docs/16` § 9.1 updated. Default suite 83 passed; desk integration 5 passed. Luna not updated yet: the client now needs `prestac.py` beside it. |
 | sam. 31 oct 2026 18:19 CET | User: "apply the fixes" from the review left in Adam's workline; Professor relays Adam's review (`worklines/adam/2026-10-31_mike_incremental-capabilities_research.md`, context `2026-10-31_chatgbc_rei_analysis.md`). Plan updated: product direction (a fluent companion first, one capability at a time, measured non-regression, graceful uncertainty); Steps 13 (harness fixes from `docs/16`), 14 (local retrieval over Luna's guide), 15 (shared benchmark) proposed; Step 16 records the research directions; Luna non-goal brought up to date. Nothing implemented. |
 | sam. 31 oct 2026 12:28 CET | 12.5 done on Luna (`docs/1205_01`, `results/mike/smalltalk-luna/20261031T112056Z/`): first word 2.2–2.7 s median, last word 9–14 s median; Mannie stopped on the user's order through Professor, restarted by Professor afterwards. 12.4 waits for Wyoh 6.11. |
 | sam. 31 oct 2026 12:08 CET | 12.1 and 12.2 done on the desk (`docs/1201_01`). Interface subcontracted to Wyoh (6.11, user's word). Mannie on Luna: go for checking and copying, done; the Luna run waits for Mannie to be stopped through Professor. Professor relays the user's new routine: commit, push, give GitHub links. |

@@ -4,7 +4,7 @@
 
 Only with Mannie on Luna stopped (`mannie stop --save`) and the brain lock
 free: the client itself refuses to start otherwise. Over SSH as michael, the
-client (`src/mike/smalltalk.py`, copied and checked by SHA-256) is fed
+client (`src/mike/smalltalk.py` with `prestac.py`, copied and checked by SHA-256) is fed
 Step 12.1's questions on stdin, one run per setting, sharing one state
 directory so that the third run finds layer L0 saved:
 
@@ -33,6 +33,7 @@ import mike_luna as ml
 from test_chat_baseline import CONVERSATIONS
 
 CLIENT = ev.REPO / "src/mike/smalltalk.py"
+PRESTAC = ev.REPO / "src/mike/prestac.py"
 STAMP = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 RUN_DIR = ev.REPO / "results/mike/smalltalk-luna" / STAMP
 STATE = f"/home/michael/.local/state/mike-run-{STAMP}"
@@ -60,10 +61,11 @@ def test_smalltalk_on_luna():
         alive = ml.ssh(f"test -d /proc/{pid} && echo alive; true").strip()
         if alive:
             pytest.skip(f"Luna's brain lock is held: {lock}")
-    remote = f"{ml.REMOTE_DIR}/smalltalk.py"
-    subprocess.run(["scp", "-o", "BatchMode=yes", "-o", f"ControlPath={Path.home()}/.ssh/cm/%r@%h:%p",
-                    str(CLIENT), f"{ml.USER}@{ml.HOST}:{remote}"], check=True, timeout=60)
-    assert ml.ssh(f"sha256sum {remote}").split()[0] == hashlib.sha256(CLIENT.read_bytes()).hexdigest()
+    for local in (CLIENT, PRESTAC):  # the client imports prestac.py from its own directory
+        remote = f"{ml.REMOTE_DIR}/{local.name}"
+        subprocess.run(["scp", "-o", "BatchMode=yes", "-o", f"ControlPath={Path.home()}/.ssh/cm/%r@%h:%p",
+                        str(local), f"{ml.USER}@{ml.HOST}:{remote}"], check=True, timeout=60)
+        assert ml.ssh(f"sha256sum {remote}").split()[0] == hashlib.sha256(local.read_bytes()).hexdigest()
     env = ml.ssh("uname -a; nproc; free -m; pgrep -a python3; pgrep -a sway | head -3")
     (RUN_DIR / "luna.txt").write_text(env)
     for name, lang, extra in RUNS:
