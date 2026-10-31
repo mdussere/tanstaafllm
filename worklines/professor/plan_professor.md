@@ -204,6 +204,37 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
   - *2026-10-31, the user via Mike:* first story video: the bring-up, from the box to the first `ssh luna` (`docs/03`). Handed to a sub-agent with a short brief (`/data/michael/tanstaafllm/video/bringup-pkg/BRIEF.md`, output `bringup-v1/`), 60–90 s, same pipeline and NES-chip sound as the trailer.
 - [ ] 11.3 A private screening page on claude.ai for the user's phone: https://claude.ai/artifact/Wqpg9wD9Ew5MunsYFhxqLn (trailer online 2026-10-31; add each story video as it is done). A public page later, by Hazel.
 
+### Step 13 — Say how fresh every record is
+**Status**: 📝 Proposal for the user (user, 2026-10-31); nothing applied yet.
+
+**Why:** the worklines accumulate Markdown records, and that is the intended way of working. Records of finished steps are not kept up to date, and they should not be: they say what was true on their date. The risk is that a new agent, or one of us, reads an old record as current. Each record should say, at the top, whether it still holds and how old it is.
+
+**What exists (survey, 2026-10-31):** 150 records in `worklines/*/docs/` (Wyoh 41, Luna 34, Mycroft 26, Mike 25, Professor 14, Mannie 7, Hazel 3). 93 have a `**Status:**` line, but it describes the result ("passed on the reference board"), not whether the record is still current; 66 carry a date; only 3 say they are superseded.
+
+**Proposal:**
+
+1. **One banner line under the title of every record** in `worklines/*/docs/`, kept apart from the existing `**Status:**` line:
+
+   ```markdown
+   > **Freshness:** 🟡 historical · **Written:** 2026-10-03 · **Checked:** 2026-10-31 · **Step:** luna 5.2 ✅
+   ```
+
+   Four values only:
+   - 🟢 **current**: the reference for an open step, or a standing contract, runbook or protocol still in use. Kept up to date.
+   - 🟡 **historical**: the record of a finished step. True on its date, not updated. The default once the step is ticked in the plan.
+   - 🔴 **superseded by** [the newer record](…): a later record or decision replaces it; the link is mandatory.
+   - ⚪ **draft**: a proposal or note not yet acted on.
+
+   **Written** is the record's first commit date; **Checked** is the date someone last confirmed the banner; **Step** names the plan step and its state.
+2. **Where it does not apply:** plans (`plan_<name>.md`) are the source of truth and stay as they are; the `docs/` guide pages are living documents and get only a "Checked" date; the stories (`docs/03`, `05`, `06`) are dated narratives and say so in their subtitle already.
+3. **The rule for readers**, one line in `AGENTS.md`: a 🟡 or 🔴 record is evidence of what was true then; before acting on it, read the plan and the newest record of that step.
+4. **Tooling, so it stays true:** `scripts/doc_freshness.py` proposes each banner from Git (dates), the file's step prefix and the step's checkbox in the plan; Professor reviews the 🟢 and 🔴 cases by hand. A deterministic test in `test/professor/` fails when a record has no banner or a 🔴 without a link. Each workline adds the banner when it writes a record, and switches it to 🟡 when it closes the step.
+5. **One commit for the whole pass**, containing only the banners, the `AGENTS.md` line, the script, the test and the LOGBOOK entry, so it is easy to review and to revert.
+
+- [x] 13.1 Proposal written (above).
+- [ ] 13.2 The user approves or adjusts it.
+- [ ] 13.3 Apply: run the script, review by hand, one commit, push, links; tell every session the rule.
+
 ### Step 12 — Move the cell out of Termidor, into an isolated place
 **Status**: 📝 Proposed, to discuss and decide with the user (user, 2026-10-31).
 
