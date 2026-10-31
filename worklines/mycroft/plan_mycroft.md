@@ -191,6 +191,11 @@ User direction: voice input in Wyoh's Slate (dictate, correct, send). The Slate 
   - Coordinate with Mike (tanstfaafllm-02) on how Mike would consume partials.
   - Measure the whole path, speech → retrieval → Mike's answer, not only Mike's <100 ms routing goal.
   - Result: a doc; no change to the deployed dictation path.
+  - **Mike's answer (2026-10-31; Mike's side is proposed step 14.7 in `plan_mike.md`, after 14.1–14.6):**
+    - Partials reach Mike only through Wyoh's daemon, and only while FN+B → Mike is the destination. There is no second channel to Mycroft, and the shape still has to be agreed with Wyoh.
+    - Mike would use them only for cheap, reversible preparation: a TF-IDF/BM25 or Model2Vec lookup, or restoring a PreStaC frame. Each new partial replaces the previous lookup, and the final text confirms or discards it.
+    - Plain text is enough; timestamps would only help to detect that the text has become stable.
+    - **Mike asks Mycroft to measure** how often, and by how much, the final differs from the last partial on Luna. This is part of 9.9.
 - [ ] 9.10 **Hotwords reopened, for Kroko** (proposed; same source). It absorbs 9.4 and needs a 🟩 go.
   - Check whether current Sherpa-ONNX supports hotwords with Kroko's tokenizer and decoding: modified beam search, `modeling_unit`, and how its lower-case, punctuated tokens behave.
   - Find out whether a `bpe.vocab` for Kroko can be obtained legitimately, or rebuilt from `tokens.txt`.
@@ -297,6 +302,7 @@ date
 | 2026-10-31 | Professor relays a new user routine: at the end of each piece of work, commit own files, push to `origin main` (fetch and rebase first), and give GitHub links. It is not yet written in `AGENTS.md` or the skills, Mycroft asked; the user confirmed it in the Mycroft console. |
 | 2026-10-31 | User: write a story of the model choice up to Kroko, in the form of the other stories in `docs/`, and have Professor review it. Draft `docs/06_speech-to-text-story.md` reviewed by Professor (five small fixes applied); README row added; committed and pushed. |
 | 2026-10-31 | Adam's §11 (`worklines/adam/2026-10-31_mike_incremental-capabilities_research.md`), relayed by Professor: added proposed 9.9 (Kroko's result fields; partial hypotheses for Mike, never acted on) and 9.10 (hotwords reopened for Kroko; absorbs 9.4). Not green-lit. Mike contacted about partials. |
+| 2026-10-31 | Mike answered on 9.9: partials only through Wyoh's daemon while FN+B targets Mike, for reversible lookups only, plain text enough. Mike's side is its proposed 14.7. Added to 9.9: measure how much the final differs from the last partial on Luna. |
 
 ---
 
