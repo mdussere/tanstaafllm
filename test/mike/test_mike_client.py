@@ -271,3 +271,123 @@ def test_rollover_reads_only_the_kept_exchange(tmp_path, monkeypatch):
     after = rows[i + 1]
     print(json.dumps([{k: r[k] for k in ("prompt_tokens", "prompt_n", "rolled_over")} for r in rows]))
     assert after["prompt_n"] <= rows[i]["kept_after"] + 30
+
+
+# --- 13.8 the journal, 13.9 the switch with Mannie ----------------------------------
+
+def test_journal_keeps_the_conversation_readable(tmp_path):
+    j = st.Journal(tmp_path, "fr")
+    j.started({"event": "start", "ready_s": 3.7, "l0": "restored", "VmRSS": 300 * 1024})
+    j.turn({"time": "2026-10-31T20:15:02+0100", "question": "Bonjour ?", "answer": "**Salut** !", "stop": "eos",
+            "first_s": 2.4, "total_s": 9.1, "prompt_n": 18, "predicted_n": 40})
+    j.turn({"time": "2026-10-31T20:15:30+0100", "question": "Et ensuite ?", "answer": "Eh bien", "stop": "user",
+            "first_s": 2.0, "total_s": 3.0, "prompt_n": 20, "predicted_n": 5})
+    j.note("end", "Session ended (/quit).")
+    md = j.md.read_text()
+    assert j.md.parent == tmp_path / "conversations"
+    assert "**You:** Bonjour ?\n\n**Mike:** Salut !" in md and "first word 2.4 s" in md
+    assert "Eh bien *[stopped]*" in md and "Session ended (/quit)." in md
+    rows = [json.loads(line) for line in j.jsonl.read_text().splitlines()]
+    assert [r["event"] for r in rows] == ["start", "turn", "turn", "end"]
+    assert {r["session"] for r in rows} == {j.session}
+    assert "question" in rows[1]  # the Luna test finds turns this way
+
+
+@pytest.mark.parametrize("typed, yes", [("\n", True), ("o\n", True), ("yes\n", True), ("n\n", False),
+                                        ("anything\n", False), ("", False)])
+def test_ask_yes_without_a_terminal(typed, yes, capsys):
+    assert st.ask_yes("?", io.StringIO(typed)) is yes
+
+
+FAKE_MANNIE = """#!/bin/sh
+echo "$*" >> "$CALLS"
+case "$1" in
+  stop) [ "${FAIL:-0}" = 1 ] && exit 1; kill "$(cut -d' ' -f2 "$MIKE_LOCK")"; rm -f "$MIKE_LOCK" ;;
+esac
+"""
+
+
+def _switch(tmp_path, typed, fail=False):
+    """The client started while a live 'mannie' holds the lock; returns (client, calls, lock, holder, state)."""
+    mannie = tmp_path / "mannie"
+    mannie.write_text(FAKE_MANNIE)
+    mannie.chmod(0o755)
+    holder = subprocess.Popen(["sleep", "60"])
+    lock, calls, state = tmp_path / "brain.lock", tmp_path / "calls", tmp_path / "state"
+    lock.write_text(f"mannie {holder.pid}\n")
+    env = {**os.environ, "XDG_STATE_HOME": str(state), "MIKE_LOCK": str(lock), "MIKE_MANNIE": str(mannie),
+           "MIKE_PORT": str(_port()), "MIKE_SERVER": str(tmp_path / "no-llama-server"), "CALLS": str(calls),
+           "FAIL": "1" if fail else "0"}
+    client = subprocess.run([sys.executable, str(Path(st.__file__)), "--lang", "en"], env=env, input=typed,
+                            text=True, capture_output=True, timeout=60)
+    return client, calls, lock, holder, state
+
+
+def _events(state):
+    return [json.loads(line)["event"] for line in (state / "mike/chat.jsonl").read_text().splitlines()]
+
+
+def test_mannie_kept_when_the_user_says_no(tmp_path):
+    client, calls, lock, holder, state = _switch(tmp_path, "n\n")
+    try:
+        assert client.returncode == 1 and "Stop Mannie and start Mike?" in client.stdout
+        assert not calls.exists() and lock.read_text() == f"mannie {holder.pid}\n" and holder.poll() is None
+        assert _events(state) == ["asks", "end"]
+    finally:
+        holder.kill()
+
+
+def test_mike_does_not_start_when_mannie_does_not_stop(tmp_path):
+    client, calls, lock, holder, state = _switch(tmp_path, "\n", fail=True)
+    try:
+        assert client.returncode == 1 and "Mannie did not stop" in client.stdout
+        assert calls.read_text() == "stop --save\n" and lock.read_text() == f"mannie {holder.pid}\n"
+        assert _events(state) == ["asks", "mannie-not-stopped", "end"]
+    finally:
+        holder.kill()
+
+
+def test_yes_stops_mannie_then_takes_the_lock(tmp_path):
+    """Return: Mannie is stopped with --save, then Mike takes the lock (here its server is missing, so it stops)."""
+    client, calls, lock, holder, state = _switch(tmp_path, "\n")
+    try:
+        assert calls.read_text() == "stop --save\n"
+        assert holder.wait(5) is not None
+        assert "No such file" in client.stderr  # Mike went on to start its (missing) server
+        assert not lock.exists()  # and released its own lock on the way out
+        assert _events(state) == ["asks", "mannie-stopped", "end"]
+    finally:
+        holder.kill()
+
+
+@pytest.mark.integration
+@pytest.mark.timeout(300)
+def test_switch_from_mannie_and_back_on_the_desk(tmp_path):
+    """13.9 end to end with a real server: stop Mannie, talk, /mannie hands Luna back; all of it in the journal."""
+    if not MODEL.is_file():
+        pytest.skip("model missing")
+    mannie = tmp_path / "mannie"
+    mannie.write_text(FAKE_MANNIE)
+    mannie.chmod(0o755)
+    holder = subprocess.Popen(["sleep", "60"])
+    lock, calls, state = tmp_path / "brain.lock", tmp_path / "calls", tmp_path / "state"
+    lock.write_text(f"mannie {holder.pid}\n")
+    env = {**os.environ, "XDG_STATE_HOME": str(state), "MIKE_LOCK": str(lock), "MIKE_MANNIE": str(mannie),
+           "MIKE_PORT": str(_port()), "MIKE_SERVER": str(ms.SERVER), "MIKE_MODEL": str(MODEL), "CALLS": str(calls)}
+    try:
+        client = subprocess.run([sys.executable, str(Path(st.__file__)), "--lang", "en"], env=env, text=True,
+                                input="\nWhat is the capital of France?\n/mannie\n", capture_output=True, timeout=240)
+    finally:
+        holder.kill()
+    out_dir = RUN_DIR / "switch"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "client.out").write_text(client.stdout + client.stderr)
+    (out_dir / "chat.jsonl").write_text((state / "mike/chat.jsonl").read_text())
+    md = next((state / "mike/conversations").glob("*.md"))
+    (out_dir / md.name).write_text(md.read_text())
+    assert client.returncode == 0, client.stdout + client.stderr
+    assert calls.read_text() == "stop --save\nstart\n"
+    assert not lock.exists()
+    assert _events(state) == ["asks", "mannie-stopped", "start", "turn", "end"]
+    assert "**You:** What is the capital of France?" in md.read_text()
+    assert "/mannie" in md.read_text()

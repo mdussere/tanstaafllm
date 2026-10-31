@@ -28,10 +28,15 @@ sit next to this file.
   refuses to start while another live client holds it (Mannie, for
   instance). The server dies with the client (its own process group, and a
   parent-death signal), and `SIGHUP`/`SIGTERM` run the client's clean-up.
-* Every turn is logged, with its timings, to `$XDG_STATE_HOME/mike/chat.jsonl`.
+  When Mannie holds it, the client offers to stop Mannie (`mannie stop
+  --save`) and then starts; `/mannie` hands Luna back (Step 13.9).
+* Every session is logged in `$XDG_STATE_HOME/mike/`: `chat.jsonl` holds each
+  start, turn and event with its timings, and `conversations/<session>.md`
+  the conversation itself, to read back (Step 13.8).
 
 Lines starting with "/" are commands: /new starts a new conversation,
-/quit leaves. Ctrl+C stops the answer being written; at the prompt it quits.
+/mannie stops Mike and starts Mannie, /quit leaves. Ctrl+C stops the answer
+being written; at the prompt it quits.
 """
 
 from __future__ import annotations
@@ -63,6 +68,23 @@ NOTICE = {"fr": {"new": "(nouvelle conversation)", "roll": "(conversation longue
                  "stopped": " [arrêté]"},
           "en": {"new": "(new conversation)", "roll": "(long conversation: only the last exchange is kept)",
                  "stopped": " [stopped]"}}
+SWITCH = {"fr": {"ask": "Mannie travaille sur Luna. L'arrêter pour démarrer Mike ? A (Entrée) = oui, B (Échap) = non",
+                 "wait": "Mannie enregistre son travail puis s'arrête (de une à quelques minutes)…",
+                 "failed": "Mannie ne s'est pas arrêté ; Mike ne démarre pas.",
+                 "kept": "Mannie continue ; Mike ne démarre pas.",
+                 "busy": "Luna est occupée ({}) ; Mike ne peut pas démarrer. Entrée pour fermer.",
+                 "hand": "Je rends Luna à Mannie : il démarre en arrière-plan (environ une minute). "
+                         "Ouvre-le depuis le menu.",
+                 "no_mannie": "Lanceur de Mannie introuvable ({}) ; Mike continue."},
+          "en": {"ask": "Mannie is working on Luna. Stop Mannie and start Mike? A (Return) = yes, B (Escape) = no",
+                 "wait": "Mannie is saving its work, then stopping (one to a few minutes)…",
+                 "failed": "Mannie did not stop; Mike does not start.",
+                 "kept": "Mannie goes on; Mike does not start.",
+                 "busy": "Luna is busy ({}); Mike cannot start. Return to close.",
+                 "hand": "Handing Luna back to Mannie: it starts in the background (about a minute). "
+                         "Open it from the menu.",
+                 "no_mannie": "Mannie's launcher not found ({}); Mike goes on."}}
+LINGER_S = 3.0  # time to read the last line before the window closes
 SAMPLING = {"temperature": 0.1, "top_k": 50, "repeat_penalty": 1.05}  # LFM2.5 model card
 CTX = 2048
 MAX_TOKENS = 120
@@ -135,7 +157,9 @@ def sse_events(lines: Iterator[bytes]) -> Iterator[dict[str, Any]]:
 # --- one brain on Luna ---------------------------------------------------------
 
 class BrainBusy(RuntimeError):
-    pass
+    @property
+    def holder(self) -> str:
+        return (str(self).split() or [""])[0]
 
 
 def alive(pid: int) -> bool:
@@ -408,6 +432,79 @@ def answer(server: Server, conv: Conversation, question: str, out=sys.stdout, la
             "stop": "user" if stopped else final.get("stop_type"), "rolled_over": rolled}
 
 
+class Journal:
+    """One session's trace (13.8): figures in `chat.jsonl`, the conversation in `conversations/<session>.md`."""
+
+    def __init__(self, state: Path, lang: str):
+        self.session = time.strftime("%Y%m%dT%H%M%S")
+        self.jsonl = state / "chat.jsonl"
+        self.md = state / "conversations" / f"{self.session}.md"
+        self.md.parent.mkdir(parents=True, exist_ok=True)
+        self.write(f"# Mike — {time.strftime('%Y-%m-%d %H:%M')} ({lang})\n")
+
+    def write(self, text: str) -> None:
+        with self.md.open("a", encoding="utf-8") as f:
+            f.write(text + "\n")
+
+    def record(self, record: dict[str, Any]) -> None:
+        with self.jsonl.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({"session": self.session, **record}, ensure_ascii=False) + "\n")
+
+    def note(self, event: str, text: str) -> None:
+        self.record({"event": event, "time": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "text": text})
+        self.write(f"*{time.strftime('%H:%M:%S')} — {text}*\n")
+
+    def started(self, start: dict[str, Any]) -> None:
+        self.record(start)
+        mib = f", server {start['VmRSS'] // 1024} MiB" if "VmRSS" in start else ""
+        self.write(f"*{time.strftime('%H:%M:%S')} — ready in {start['ready_s']} s (L0 {start['l0']}{mib}).*\n")
+
+    def turn(self, record: dict[str, Any]) -> None:
+        self.record({"event": "turn", **record})
+        cut = " *[stopped]*" if record["stop"] == "user" else ""
+        self.write(f"**You:** {record['question']}\n\n**Mike:** {plain(record['answer'])}{cut}\n\n"
+                   f"<sub>{record['time'][11:19]} · first word {record['first_s']} s · done {record['total_s']} s"
+                   f" · read {record['prompt_n']} tokens · wrote {record['predicted_n']}</sub>\n")
+
+
+def ask_yes(prompt: str, stdin=None) -> bool:
+    """One key in a terminal: Return (or o/y) is yes, Escape (or n/q) is no. Without a terminal, one line."""
+    stdin = stdin or sys.stdin
+    print(prompt, flush=True)
+    if not stdin.isatty():
+        line = stdin.readline()
+        return line != "" and line.strip().lower() in ("", "o", "oui", "y", "yes")
+    import termios
+    import tty
+    fd = stdin.fileno()
+    saved = termios.tcgetattr(fd)
+    try:
+        tty.setcbreak(fd)
+        while True:
+            key = os.read(fd, 1)
+            if key in (b"\r", b"\n", b"o", b"O", b"y", b"Y"):
+                return True
+            if key in (b"\x1b", b"n", b"N", b"q", b"Q", b""):
+                return False
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, saved)
+
+
+def stop_mannie(mannie: str) -> bool:
+    """`mannie stop --save`: Mannie logs, saves and commits, then exits and frees the lock."""
+    try:
+        return subprocess.run([mannie, "stop", "--save"], stdin=subprocess.DEVNULL).returncode == 0
+    except OSError:
+        return False
+
+
+def start_mannie(mannie: str, log: Path) -> None:
+    """`mannie start`, detached so that it outlives Mike's window."""
+    with log.open("w") as out:
+        subprocess.Popen([mannie, "start"], stdin=subprocess.DEVNULL, stdout=out, stderr=subprocess.STDOUT,
+                         start_new_session=True)
+
+
 def main(argv: list[str] | None = None) -> int:
     home = Path.home()
     state = Path(os.environ.get("XDG_STATE_HOME", home / ".local/state")) / "mike"
@@ -420,9 +517,14 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--lock", default=os.environ.get("MIKE_LOCK", "/tmp/luna-brain.lock"))
     p.add_argument("--repack", action="store_true", default=os.environ.get("MIKE_REPACK") == "1")
     p.add_argument("--threads", type=int, default=int(os.environ.get("MIKE_THREADS", "4")))
+    p.add_argument("--mannie", default=os.environ.get("MIKE_MANNIE", str(home / ".local/bin/mannie")))
     args = p.parse_args(argv)
+    say = SWITCH[args.lang]
+    reason = "end of input"
 
     def leave(signum, _frame):  # F2: the window closing (SIGHUP) or a kill (SIGTERM) runs `finally`
+        nonlocal reason
+        reason = f"signal {signal.Signals(signum).name}"
         raise SystemExit(128 + signum)
     for sig in (signal.SIGHUP, signal.SIGTERM):
         signal.signal(sig, leave)
@@ -430,24 +532,53 @@ def main(argv: list[str] | None = None) -> int:
     set_title("Mike — starting")
     print("Mike démarre…" if args.lang == "fr" else "Mike is starting…", flush=True)
     t0 = time.monotonic()
+    journal = Journal(state, args.lang)
+    lock = Path(args.lock)
     server = Server(args.port, args.server, args.model, state / "slots", args.threads, state / "llama-server.log",
                     args.repack)
     try:
         try:
-            server.start(Path(args.lock))
+            try:
+                server.start(lock)
+            except BrainBusy as busy:  # 13.9: Mannie holds Luna; the user decides
+                if busy.holder != "mannie" or not Path(args.mannie).exists():
+                    raise
+                set_title("Mike — asks: stop Mannie?")
+                journal.note("asks", f"Luna held by {busy}; asked to stop Mannie.")
+                if not ask_yes(say["ask"]):
+                    print(say["kept"], flush=True)
+                    reason = "Mannie kept, Mike not started"
+                    time.sleep(LINGER_S)
+                    return 1
+                set_title("Mike — waiting for Mannie")
+                print(say["wait"], flush=True)
+                stopped = stop_mannie(args.mannie)
+                journal.note("mannie-stopped" if stopped else "mannie-not-stopped",
+                             "Mannie stopped." if stopped else "`mannie stop --save` failed.")
+                if not stopped:
+                    print(say["failed"], flush=True)
+                    reason = "Mannie did not stop"
+                    time.sleep(LINGER_S)
+                    return 1
+                set_title("Mike — starting")
+                t0 = time.monotonic()
+                server.start(lock)
         except BrainBusy as busy:
-            print(f"Luna's brain is busy ({busy}); Mike cannot start now.", flush=True)
             set_title("Mike — busy")
-            input()
+            journal.note("busy", f"Luna held by {busy}; Mike not started.")
+            reason = "busy"
+            print(say["busy"].format(busy), flush=True)
+            try:
+                input()
+            except EOFError:
+                pass
             return 1
         conv = Conversation(server.tokenize, SYSTEM[args.lang], server.template())
         frame = L0Frame(server, conv.l0)
         how = frame.put_back()
         start = {"event": "start", "lang": args.lang, "ready_s": round(time.monotonic() - t0, 2), "l0": how,
                  "l0_tokens": len(conv.l0), "repack": args.repack, "threads": args.threads, **server.rss_kib()}
-        log = state / "chat.jsonl"
-        with log.open("a") as f:
-            f.write(json.dumps(start, ensure_ascii=False) + "\n")
+        journal.started(start)
         print(f"Prêt ({start['ready_s']} s). Pose ta question." if args.lang == "fr"
               else f"Ready ({start['ready_s']} s). Ask away.", flush=True)
         set_title(READY_TITLE)
@@ -459,24 +590,41 @@ def main(argv: list[str] | None = None) -> int:
             if not line:
                 continue
             if line in ("/quit", "/exit"):
+                reason = line
                 break
             if line == "/new":
                 conv.reset()
                 frame.put_back()
                 print(NOTICE[args.lang]["new"], flush=True)
+                journal.note("new", "New conversation (/new).")
                 continue
+            if line == "/mannie":
+                if not Path(args.mannie).exists():
+                    print(say["no_mannie"].format(args.mannie), flush=True)
+                    continue
+                reason = "/mannie: Luna handed back to Mannie"
+                server.stop()  # frees the lock before Mannie looks at it
+                start_mannie(args.mannie, state / "mannie-start.log")
+                print(say["hand"], flush=True)
+                time.sleep(LINGER_S)
+                break
             set_title("Mike — thinking")
             record = answer(server, conv, line, lang=args.lang) | server.rss_kib()
             if record["rolled_over"]:  # the slot must hold L0 alone before the kept exchange is read
                 frame.put_back()
                 print(NOTICE[args.lang]["roll"], flush=True)
             set_title(READY_TITLE)
-            with log.open("a") as f:
-                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            journal.turn(record)
+            if record["rolled_over"]:
+                journal.note("rollover", "Long conversation: only the last exchange is kept.")
     except KeyboardInterrupt:
-        pass
+        reason = "Ctrl+C"
+    except Exception as error:
+        reason = f"error: {error}"
+        raise
     finally:
         server.stop()
+        journal.note("end", f"Session ended ({reason}).")
     return 0
 
 
