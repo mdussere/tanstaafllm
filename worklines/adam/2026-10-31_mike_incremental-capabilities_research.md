@@ -154,3 +154,35 @@ Related project and research references:
 - [PreStaC design](../mike/docs/0901_01_prestac-study.md) and [desk results](../mike/docs/0902_01_prestac-desk-result.md)
 - [Mike harness / caches](../../docs/16_mike-harness-and-caches.md)
 - [Mike small-talk on Luna](../mike/docs/1205_01_smalltalk-on-luna.md)
+
+## 11. October 31 follow-up — exploit Kroko / Mycroft outputs; revisit hotwords
+
+**Adam's request:** document the possibility of exploiting information produced by Kroko beyond final plain text, and explicitly **reopen the hotwords investigation**, which has not been pursued recently. This is a proposed investigation for discussion with Mycroft and Mike, not an assertion that the features already work on Luna.
+
+### What the current adapter demonstrably does
+
+- Mycroft's `SherpaStreamingRecognizer._result()` in [`mycroft_console.py`](../mycroft/scripts/mycroft_console.py) retrieves `result.contents.text` and returns the transcription string; it does not currently forward other native result fields.
+- The C `_RecognizerResult` structure used by the adapter also declares `tokens`, `tokens_arr`, `timestamps`, `count` and `json`. **Field availability in an API is not proof that Kroko fills them with useful data.** Inspect actual runtime output before planning consumers.
+- Mycroft already obtains **intermediate streaming hypotheses** from successive `accept_pcm` calls, followed by a finalized result at `finish()`. Step 9.8 measured approximately **1.23–1.27 s** between stopping audio and the final result on Luna, including one second of silence padding.
+
+### A promising PreStaC / RAG integration
+
+Consider using *partial ASR hypotheses* to speculatively select a candidate guide passage, TF-IDF result, or PreStaC context **during dictation**, then confirming or invalidating the selection against the final transcript. This can move inexpensive lookup work off the post-dictation critical path. Partial transcripts may change: do not execute shell/MCP actions or commit irreversible operations based on partial recognition.
+
+Potentially useful extra signals, **if confirmed present**, include token sequence, token timestamps and JSON result metadata for precise spans and incremental updates. Do not assume calibrated confidence scores, N-best alternatives, word-level certainty or intent labels: these have not been demonstrated in the current Kroko integration. The user-facing goal is fast and accurate local knowledge retrieval, without harming normal conversation.
+
+### Hotwords: explicitly reopen the unfinished study
+
+The user notes that **hotwords have been left aside for some time** and requests a fresh pass. Existing [Mycroft Step 9.1 notes](../mycroft/docs/0901_01_known-words-and-lighter-models.md) demonstrated contextual biasing for the *previous French model*, with caveats about spelling versus pronunciation and modified beam search. The [Kroko candidate review](../mycroft/docs/0903_01_lighter-candidates-desk-result.md) expressly left **Kroko hotword support unverified**: different tokenization and missing published `bpe.vocab`.
+
+Investigate, rather than assume:
+- whether current Sherpa-ONNX and Kroko builds support contextual biasing/hotwords with Kroko's tokenizer and decoding configuration;
+- whether `bpe.vocab` can legitimately be obtained or reconstructed and which decoding mode is required;
+- dynamic context-specific lists, e.g. Luna app names, Wyoh, Mycroft, Kroko, PreStaC, project names and documentation titles;
+- measured gains in **recognition of known words** on real user speech, including English technical terms spoken with a French accent, versus false insertions and extra latency/CPU cost;
+- whether information from context selection can help set hotwords for the *next* utterance rather than creating a feedback loop based on an uncertain partial transcript.
+
+**Timing constraint:** the <100 ms objective discussed elsewhere applies to the routing / retrieval stage, **not** the entire ASR processing time. Compare actual complete speech → retrieval → Mike answer latency as well.
+
+**Ownership and scope:** this note records an exploration to coordinate with Mycroft/Mike. It does not direct any agent to deploy, retrain, change the current dictation path or run unsanctioned experiments on Luna.
+
