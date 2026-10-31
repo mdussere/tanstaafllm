@@ -11,6 +11,7 @@ The names come from the novel. **Luna** is the machine. **Wyoh** is the desktop.
 
 | Page | What you get | Time |
 |---|---|---|
+| [00 · The universe](00_the-moon-is-a-harsh-mistress.md) | Heinlein's novel: the story, the characters, the motto, the author, and how the project borrows them | 8 min |
 | [01 · Principles](01_principles.md) | The idea, the vocabulary, the rules of design | 10 min |
 | [04 · Architecture](04_architecture.md) | The whole machine, how a request travels, where the memory goes, how the cell works | 10 min |
 | [10 · Wyoh, the desktop](10_wyoh.md) | Sway, the gamepad daemon, the Slate, the apps | 5 min |
