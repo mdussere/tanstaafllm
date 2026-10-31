@@ -24,7 +24,7 @@ The names come from the novel. **Luna** is the machine. **Wyoh** is the desktop.
 | 20–30 · Operations, user guide, decisions | Running it, using it, and why it is like this | *to come* |
 | [03 · The bring-up story](03_r36-ultra-bring-up-story.md) | How the handheld was brought up, card by card | 15 min |
 | [05 · The text-to-shell story](05_text-to-shell-story.md) | Why a tiny model cannot turn a sentence into a shell command, measured | 6 min |
-| [06 · The speech-to-text story](06_speech-to-text-story.md) | How Mycroft went from a first French model to Kroko, resident in the Slate | 7 min |
+| [06 · The speech-to-text story](06_speech-to-text-story.md) | How Mycroft went from a first French model to Kroko, resident in the Slate, with every model compared | 9 min |
 | [02 · Testing](02_testing.md) | How every test and experiment is written and run | for contributors |
 | [How-to guides](howto/README.md) | Doing things on Luna yourself, step by step (first: fixing a game's buttons) | per guide |
 | [LOGBOOK](LOGBOOK.md) | Every material change, by date | reference |

@@ -30,57 +30,60 @@
     <rect x="780" y="100" width="150" height="80" fill="#1b1446" stroke="#7a5cd6" stroke-width="3"/>
   </g>
   <text x="44" y="126" class="h">MICROPHONE</text>
-  <text x="44" y="146" class="t">16 kHz audio</text>
-  <text x="44" y="166" class="s">jack: no signal; USB next</text>
+  <text x="44" y="146" class="t">USB-C headset</text>
+  <text x="44" y="166" class="s">16 kHz audio</text>
   <text x="254" y="126" class="h">mycroft_dictate</text>
-  <text x="254" y="146" class="t">Sherpa-ONNX, streaming</text>
-  <text x="254" y="164" class="t">French model, 2 threads</text>
+  <text x="254" y="146" class="t">Kroko French, resident</text>
+  <text x="254" y="164" class="t">loaded once, 2 threads</text>
   <text x="564" y="126" class="h">WYOH DAEMON</text>
-  <text x="564" y="146" class="t">starts it on L2,</text>
-  <text x="564" y="164" class="t">stops it on L2</text>
+  <text x="564" y="146" class="t">launches it at login;</text>
+  <text x="564" y="164" class="t">L2 starts, L2 stops</text>
   <text x="794" y="126" class="h">SLATE</text>
   <text x="794" y="146" class="t">underlined draft,</text>
-  <text x="794" y="164" class="t">then real text</text>
+  <text x="794" y="164" class="t">then final text</text>
   <g fill="none" stroke="#ffb347" stroke-width="3">
     <path d="M180 140 H238" marker-end="url(#aA)"/>
     <path d="M490 140 H548" marker-end="url(#aA)"/>
     <path d="M720 140 H778" marker-end="url(#aA)"/>
   </g>
-  <text x="520" y="206" class="lab" text-anchor="middle">JSON lines: ready · partial · final · error</text>
+  <text x="520" y="206" class="lab" text-anchor="middle">JSON lines: ready · listening · partial · final · error</text>
 
-  <!-- comparison -->
-  <text x="30" y="252" class="h">TWO FRENCH MODELS, SAME CLIPS</text>
-  <text x="30" y="272" class="s">current: Zipformer FR (int8) · candidate: Kroko FR (4× fewer parameters, punctuated) · measured on luna-pi, aarch64</text>
+  <!-- comparison: the same Luna run, plan step 9.3 -->
+  <text x="30" y="252" class="h">ON LUNA · THE FIRST MODEL AGAINST KROKO</text>
+  <text x="30" y="272" class="s">Sherpa French Zipformer (v0) against Kroko French (4× fewer parameters, punctuated) · same run, 2 threads</text>
 
   <text x="30" y="312" class="t">Peak memory</text>
   <g shape-rendering="crispEdges">
-    <rect x="200" y="298" width="444" height="22" fill="#6f7fa8"/>
-    <rect x="200" y="324" width="318" height="22" fill="#ffb347"/>
+    <rect x="200" y="298" width="425" height="22" fill="#6f7fa8"/>
+    <rect x="200" y="324" width="300" height="22" fill="#7bd389"/>
   </g>
-  <text x="208" y="314" class="in">current 222 MiB</text>
-  <text x="208" y="340" class="in">Kroko 159 MiB</text>
+  <text x="208" y="314" class="in">v0 236 MiB</text>
+  <text x="208" y="340" class="in">Kroko 167 MiB</text>
 
-  <text x="30" y="384" class="t">Decoding work</text>
+  <text x="30" y="384" class="t">Speed (RTF)</text>
   <g shape-rendering="crispEdges">
-    <rect x="200" y="370" width="440" height="22" fill="#6f7fa8"/>
-    <rect x="200" y="396" width="232" height="22" fill="#ffb347"/>
+    <rect x="200" y="370" width="435" height="22" fill="#6f7fa8"/>
+    <rect x="200" y="396" width="226" height="22" fill="#7bd389"/>
   </g>
-  <text x="208" y="386" class="in">current ×1</text>
-  <text x="208" y="412" class="in">Kroko ×0.53 (1.9× faster)</text>
+  <line x1="490" y1="364" x2="490" y2="424" stroke="#ff6b6b" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="496" y="433" class="s" style="fill:#ff6b6b">1.0 · keeps up</text>
+  <text x="208" y="386" class="in">v0 1.5 · falls behind</text>
+  <text x="208" y="412" class="in">Kroko 0.78</text>
 
-  <text x="30" y="456" class="t">Load time</text>
+  <text x="30" y="470" class="t">Until you speak</text>
   <g shape-rendering="crispEdges">
-    <rect x="200" y="442" width="164" height="22" fill="#6f7fa8"/>
-    <rect x="200" y="468" width="440" height="22" fill="#ff7b39"/>
+    <rect x="200" y="456" width="300" height="22" fill="#6f7fa8"/>
+    <rect x="200" y="482" width="3" height="22" fill="#7bd389"/>
   </g>
-  <text x="208" y="458" class="in">current 4.1 s</text>
-  <text x="208" y="484" class="in">Kroko 11 s (2.4 s once pre-optimised)</text>
+  <text x="208" y="472" class="in">v0 17.5 s, every dictation</text>
+  <text x="212" y="498" class="t" style="font-weight:bold">Kroko 0.002 s, resident</text>
 
-  <text x="680" y="320" class="t">On Luna itself, the current</text>
-  <text x="680" y="338" class="t">model needs ~17 s to load and</text>
-  <text x="680" y="356" class="t">runs at ~0.75× real time:</text>
-  <text x="680" y="374" class="t">too slow and too heavy to</text>
-  <text x="680" y="392" class="t">stay resident. Hence Kroko.</text>
-  <text x="680" y="430" class="s">Sources: Mycroft 0802_01 (Luna),</text>
-  <text x="680" y="446" class="s">0903_01 (desk), 0903_02 (luna-pi).</text>
+  <text x="680" y="320" class="t">Kroko loads once, in the</text>
+  <text x="680" y="338" class="t">background at login (24 s),</text>
+  <text x="680" y="356" class="t">then rests at 152 MiB. It is</text>
+  <text x="680" y="374" class="t">the only model measured that</text>
+  <text x="680" y="392" class="t">keeps up with speech on Luna.</text>
+  <text x="680" y="430" class="s">Sources: Mycroft plan step 9.3</text>
+  <text x="680" y="446" class="s">(Luna run 20261011T213949Z),</text>
+  <text x="680" y="462" class="s">0908_01 (resident Kroko).</text>
 </svg>

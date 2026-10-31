@@ -20,6 +20,7 @@ The first step was a review of what exists, followed by two candidates tested on
 
 - **Sherpa-ONNX with a French "Zipformer"** is a speech model made for French, and it streams: words appear while you speak. Its engine is a native library, and it publishes a ready-made build for ARM, Luna's processor family.
 - **Whisper Tiny** is OpenAI's smallest model, run through `whisper.cpp`.
+- **Moonshine Tiny**, another small model, stayed on paper: no French asset, licence and ARM path could be pinned (`0102_02`).
 - **The big names were ruled out on paper.** Google's Gemma 3n needs 2–3 GB, and NVIDIA's Parakeet 0.6B about 2 GB (`0201_02`, `0201_03`). No quality advantage pays for memory the device does not have.
 
 On three public French clips, and then on a 130-second reading by the user covering commands, code and project names, Sherpa won clearly:
@@ -68,6 +69,7 @@ Fine-tuning would not make the model smaller, and it was already French only. Th
 Three names came up: the user had noted two of them, and Charlie, a colleague, suggested Phonon-2. The user was even ready to speak English to Luna for a tiny, efficient model.
 
 - **Parakeet Redux and Phonon-2** are compressed versions of NVIDIA's Parakeet, small to download (164–178 MB) but still about 600 million parameters to compute. Parakeet Redux's engine publishes no build for ARM Linux. Phonon-2 runs on PyTorch, which would fill Luna's memory by itself. Both were rejected (`0903_01`).
+- **Sherpa's multilingual models** (NVIDIA's Canary and FastConformer, which include French) were not tried: they are larger than the v0 model, not smaller (`0901_01`).
 - **Kroko**, a French model published by Banafo and packaged for Sherpa, has about **18 million parameters**, a quarter of the old model. Its text comes with capitals and punctuation.
 
 On the desk, against the old model, on the user's reading (`0903_01`):
@@ -115,6 +117,38 @@ On Luna, with the prepared Kroko (`0908_01`):
 Wyoh wired it in (Wyoh step 12.4). Kroko loads in the background when Luna's session starts, so it is ready before the user needs it. In the Slate, L2 starts and stops dictation. On the desktop, L2 opens the Slate straight into dictation. The user's voice tests worked, and the next fixes were about keys pressed during a dictation.
 
 The last check came after Luna's move to Arch Linux ARM (`0808_01`). With the desktop running and Kroko resident, about **520 MiB of Luna's 983 MiB stay available**. That leaves room for Mannie (~180 MiB) beside it. The user's verdict: "It will hold."
+
+## The final comparison
+
+Nine models came up between September and October. Six never ran: four were stopped by memory or by a missing ARM build, two were set aside. Three were measured, and only one reached the Slate.
+
+![Every model and how far it got](img/mycroft-model-journey.svg)
+
+| # | Model | Size | Furthest stage | What decided | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Sherpa French Zipformer (2023) | ~73 M parameters | Luna | WER 13.4 %; on Luna RTF 1.5, 236 MiB, 17.5 s load | v0, then replaced: too slow on Luna |
+| 2 | Whisper Tiny q5_1 | 31 MB file | desk | WER 42.7 %; lost 2 of the 13 instructions | Rejected: quality |
+| 3 | Moonshine Tiny | — | paper | no French asset, licence or ARM path pinned | Deferred |
+| 4 | Gemma 3n E2B / E4B | general multimodal | paper | 2–3 GB minimum | Ruled out: memory |
+| 5 | Parakeet TDT 0.6B v3 | 600 M | paper | ≥ 2 GB to load, no streaming | Ruled out: memory |
+| 6 | NeMo Canary, FastConformer | 100–150 MB int8 | paper | larger than the v0 model | Not tried |
+| 7 | Parakeet Redux | 600 M, ternary | install check | its engine has no ARM64 Linux build | Cannot install |
+| 8 | Phonon-2 | 600 M, English only | paper | PyTorch plus 600 M parameters exceed 1 GiB | Cannot fit |
+| 9 | **Kroko French (2025)** | **~18 M** | **the Slate** | **WER 9.1 %, punctuated; on Luna RTF 0.78, 167 MiB** | **Chosen, resident** |
+
+The three measured models, side by side, on the same audio and at 2 threads:
+
+![The three measured models](img/mycroft-model-measures.svg)
+
+| | Whisper Tiny | Sherpa Zipformer | Kroko |
+| --- | --- | --- | --- |
+| Word errors, user's reading (desk) | 42.7 % | 13.4 % | **9.1 %** |
+| Capitals and punctuation | no | no | **yes** |
+| Speed on Luna (RTF, below 1 keeps up) | not run | 1.5 | **0.78** |
+| Peak memory on Luna | not run (230 MiB on the desk) | 236 MiB | **167 MiB** |
+| From launch to speaking, on Luna | not run | 17.5 s at every dictation | 24.4 s once per session, then **0.002 s** |
+
+Whisper never reached Luna: it failed the quality test on the desk, and a model that loses instructions is not worth measuring further. The Luna figures for Sherpa and Kroko come from the same run (plan step 9.3); the resident figures from `0908_01`.
 
 ## What we keep
 
