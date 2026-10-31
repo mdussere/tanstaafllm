@@ -122,6 +122,27 @@ Measure **separately and end-to-end**:
 
 Candidate experiments to discuss (not authorized here): lexical baseline vs tiny embedding model; micro-trained intent/slot tagger; prebuilt domain stacks; compact tool-response adapters; native LFM2.5 function calling vs micro-model dispatch; direct deterministic answers where appropriate.
 
+## 10. October 31 follow-up — first concrete embedding use case: RAG over Luna's guide
+
+**Adam's latest direction:** before using embeddings for generic zero-shot tool routing or semantic stack selection, **start with a simple, local RAG over Luna's existing guide / knowledge base**. The guide is the first corpus: bounded, available locally, project-specific, and straightforward to assess. **No internet retrieval is needed in this first stage.**
+
+Conceptual flow:
+1. Treat the Luna guide as the authoritative source material; identify its actual repository files and structure before designing ingestion.
+2. Index meaningful, referenceable passages of that guide offline. Compare small embedding options, including the Model2Vec POTION family, against a cheap lexical baseline.
+3. Embed the user's question; retrieve a small number of relevant passages and carry their source locations forward.
+4. Give Mike **only the minimal relevant excerpts**, not a verbose search response; answer with appropriate uncertainty when the guide lacks an answer.
+5. Measure factual grounding and end-to-end latency, especially **fresh passage prefill on Luna**. Fast embedding does not make a long retrieved chunk free to ingest.
+
+**Performance goal discussed:** the *routing / embedding / retrieval decision* should ideally complete in **under 100 ms on Luna** (warm, resident process). This is a design target, not a demonstrated measurement, and is **distinct from** the time required for Mike to read the retrieved passage and generate a response.
+
+**Candidate embedding models:** Model2Vec POTION-2M, 4M, and 8M; English-only use is acceptable if needed for accuracy or cost, because the user is willing to issue simple English commands. Do not assume a multilingual model is essential. Benchmark actual Luna CPU latency, RAM, indexing cost, and retrieval relevance before picking a model. Prior comparisons made during the discussion were estimates; MTEB aggregate and classification scores are **not zero-shot routing accuracy or Luna measurements**.
+
+**Non-regression:** Mike remains a pleasant conversational companion; guide-based retrieval should be invoked where helpful, without turning every small-talk exchange into a search or slowing the baseline unnecessarily.
+
+**Keep separate for later:** multi-stack semantic selection in PreStaC, micro-model tool/intent/argument parsing, and the two-pass speech-to-shell / MCP execution hypothesis remain valuable research directions, **not the immediate first embedding deliverable**.
+
+This records Adam's requested priority and makes the note available for Mike's own discussion. It does **not** authorize autonomous implementation or deployments.
+
 ## 9. Boundaries and collaboration
 
 This is **Adam's exploration for Mike to read and challenge**, not an instruction to change Mike's plan, start training, deploy on Luna, alter existing safety gates, or bypass Mannie ownership. Do not treat candidate architectures as established results.
