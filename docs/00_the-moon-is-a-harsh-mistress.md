@@ -94,7 +94,7 @@ TANSTAAFLLM borrows the motto and the humour, not a doctrine. In the project, "n
 | Mannie, the technician who repairs and operates | **Mannie**, the frontier model (Claude Code) that builds and operates Luna |
 | Wyoh, the agitator who makes things happen in public | **Wyoh**, the desktop: what people see and touch |
 | Professor de la Paz, the strategist | **Professor**, the session that coordinates the cell |
-| Adam Selene, the public face of the committee | **Adam**, the human-facing identity (on hold) |
+| Adam Selene, the public face of the committee | **Adam**, the user: the human in the cell, who gives the go |
 | The cell of conspirators | **The cell** of AI agents, one per part |
 | Earth, rich and far away | The desk host (Termidor) and the frontier models beyond the network |
 | TANSTAAFL and the brass cannon | The project's motto, and its stubbornness |

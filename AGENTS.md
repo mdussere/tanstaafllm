@@ -8,7 +8,7 @@ Language: write everything in English (code, docs, plans, notes, commit messages
 
 ### Shared component vocabulary
 
-- **Adam** is the human-facing identity the user addresses. It is not a separate brain or privileged agent. **On hold** since 2026-10-09: results go to the user directly.
+- **Adam** is the user: the human in the cell, who gives the go (user, 2026-10-31). In the novel, Adam Selene is the committee's public face; in Hebrew, *adam* is "man", from *adamah*, the earth. Adam is not an agent or a model.
 - **Mike** is the local reasoning and routing layer: a small local model on Luna that proposes Wyoh actions.
 - **Mycroft** is Luna’s interactive input and composition capability. Its measured ASR baseline is offline, context-free audio-to-text; bounded contextualisation and the composition interface are separate, explicitly planned stages.
 - **Wyoh** is the observable desktop/window-management layer: state, context, and available actions.

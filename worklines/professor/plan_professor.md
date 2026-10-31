@@ -166,6 +166,40 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
     **Stopped for the user's review.** Not yet: operations, user guide, decisions; the workline reviews.
 - [ ] 7.5 Acceptance: following the docs alone, a newcomer can explain the architecture, find each component, run it, and know its cost and status. Generated or checked parts pass their tests. Each page names its sources.
 
+### Step 8 — Adam is the user
+**Status**: 🧪 In progress (user, 2026-10-31: "c'est mon rôle, ça, Adam").
+
+**Why:** the vocabulary said Adam was "on hold", a human-facing identity not yet assigned. The user states that Adam is their own role in the cell: the human, the one who gives the go. In the novel, Adam Selene is the public face of the committee; in Hebrew, *adam* is "man", from *adamah*, the earth, the dust.
+
+- [ ] 8.1 Align the vocabulary: `AGENTS.md`, `docs/01_principles.md`, `docs/00_the-moon-is-a-harsh-mistress.md`, `docs/15_the-cell.md`, the README; record in `docs/LOGBOOK.md`.
+- [ ] 8.2 Tell every session.
+
+### Step 9 — The trailer ends on an opening
+**Status**: 🧪 In progress (user, 2026-10-31).
+
+**Why:** the user drops the planned colonisation segment (story-a and story-b are not used). The trailer presents the cell in a fun, lively way, then opens: the adventure starts, follow it. The stories come later, one video per story.
+
+- [ ] 9.1 Replace the speedrun (scene 8) with a short opening ("the adventure begins / follow our adventures"); make the cell's presentation fun, with the ticker on how the cell runs. A sub-agent may do it from a brief.
+- [ ] 9.2 Fit the chosen soundtrack (version A, NES-style, `/data/michael/tanstaafllm/video/music-a/`) to the new cut, and bring it into `video/src/` in place of the stop-gap `music.py`.
+- [ ] 9.3 Render, inspect frames, commit, push, links.
+
+### Step 10 — Story: the cell at work (case: Mike's Step 12)
+**Status**: 🧪 In progress (user, 2026-10-31).
+
+**Why:** the user finds the cell's exchanges interesting and wants them told as a story: who talks to whom, how work is split, what the user (Adam) gives and where they step in, how decisions are taken; an agora rather than a hierarchy. The case is the work the user gave Mike in Step 12 (small talk on Luna), including the Luna slot, Mannie stopping, and the rule changes it triggered.
+
+- [ ] 10.1 **Scribe:** collect the exchanges of the case from Professor's transcript, the plans, `luna-access.md`, the commits and the other sessions (ask them for their side): a dated log of who said what to whom, Adam's interventions, decisions. Output: `docs/1001_01_cell-at-work-log.md`.
+- [ ] 10.2 **Story** in `docs/` (next free number), in the house style of the other stories.
+- [ ] 10.3 **Animation:** a short, fun, shareable video of the cell at work: the agents, message bubbles, decisions, Adam's go. Same pipeline as the trailer (HTML canvas, Playwright, ffmpeg), NES-style sound.
+
+### Step 11 — Stories as videos, for LinkedIn
+**Status**: 📝 Proposed (user, 2026-10-31).
+
+**Why:** the user wants to share the project on LinkedIn: the trailer as the introduction, then one short video per story (the bring-up, text-to-shell, the cell at work, …).
+
+- [ ] 11.1 Agree on a common format (length, opening and closing cards, captions readable on a phone, sound) once the trailer and the first story video exist.
+- [ ] 11.2 One video per story, each committed with its sources.
+
 ---
 
 ## Progress tracking ✅
