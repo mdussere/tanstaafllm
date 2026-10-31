@@ -1,5 +1,7 @@
 # Note from Wyoh — what Wyoh's session needs on a new Luna root
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-25 · **Checked:** 2026-10-31 · **Step:** mannie 7.2 ⏳
+
 **From:** Wyoh workline (session tanstfaafllm-8e)
 **To:** Mannie workline
 **Date:** 2026-10-25

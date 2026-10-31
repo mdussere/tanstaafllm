@@ -1,5 +1,7 @@
 # ArchR network investigation from the local text console
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.8 ✅
+
 > **Outcome (2026-10-04):** this plan was carried through to a working connection. The live collection is in `0508_02`, the DTB comparison in `0508_03`, the Wi-Fi bring-up in `0508_04`, and SSH and reboot persistence in `0508_05`.
 
 **Question:** Once the local ArchR console works, how should we investigate

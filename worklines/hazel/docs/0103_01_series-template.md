@@ -1,5 +1,7 @@
 # The series template
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-31 · **Checked:** 2026-10-31 · **Step:** hazel 1.3 ✅
+
 **Workline:** hazel · **Step:** 1.3 · **Date:** 2026-10-31 · **Status:** draft for the user's review
 
 Every TANSTAAFLLM video follows this template: the trailer, and then one episode per story. It is based on the trailer (`worklines/hazel/video/trailer/`) and on the list of elements shared with the trailer in the bring-up's `NOTES.md` (`/data/michael/tanstaafllm/video/bringup-v1/`). An episode may break a rule only when its notes say why.

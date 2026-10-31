@@ -1,5 +1,7 @@
 # dArkOSRE first-boot observation — UI loop
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.5 ⏳
+
 **Question:** What did the first dArkOSRE boot establish on the disposable former-ArchR card?
 
 ## Observed result

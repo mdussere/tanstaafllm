@@ -1,5 +1,7 @@
 # Step 3b — lean runtime and micro-harness: result on the desk host
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-19 · **Checked:** 2026-10-31
+
 **Question answered:** without Python, how much RAM does Mike's model need, which quantisation is best, and can a ready-made micro-harness (ZeroClaw, PicoClaw) carry Mike?<br>
 **Date:** 2026-10-15<br>
 **Status:** measured on the desk host Termidor only (Intel i5-4590, 4 cores, x86-64). Nothing ran on `luna-pi` or Luna. Green light: the user, 2026-10-15 ("go 3b locally on termidor").<br>

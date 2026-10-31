@@ -1,5 +1,7 @@
 # Intent — the TANSTAAFLLM documentation (Professor Step 7)
 
+> **Freshness:** ⚪ draft · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** professor 7.3 ⏳
+
 **Status:** draft for the user's approval (sub-step 7.3). Nothing is written before `🟩 go Step 7`.
 **Date:** 2026-10-11
 **Author:** Professor

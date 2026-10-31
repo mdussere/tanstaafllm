@@ -1,5 +1,7 @@
 # ArchR Wi-Fi bring-up on Luna — from an empty SDIO bus to a DHCP lease (Steps 5.8c–5.8f)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.8 ✅
+
 ## Result
 
 On 2026-10-04 Luna (R36 Ultra) running ArchR on the disposable card joined the home WPA2 network over its internal RK915 Wi-Fi and received a DHCP lease:

@@ -1,5 +1,7 @@
 # Proposal — icons on Luna's desktop
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** wyoh 10 ⏳
+
 **Step:** Wyoh 10 (proposal; nothing is green-lit)
 **Date:** 2026-10-09
 **Question answered:** how to put movable application icons on the desktop above the wallpaper, pin them from the menu, and use them with the gamepad.

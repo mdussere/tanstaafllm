@@ -1,5 +1,7 @@
 # R36 Ultra: stock firmware, Arch-R bring-up, and Wi-Fi-driver investigation
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31
+
 ## Summary
 
 This discussion records recovery of access to the stock R36 Ultra EmuELEC image, the decision to preserve that image, and a proposed Arch-R-based experimental path. Its central technical lead is that stock EmuELEC could scan Wi-Fi networks while an Arch-R installation could not see any SSIDs, suggesting a driver, firmware, module-binding, or clone-hardware mismatch.

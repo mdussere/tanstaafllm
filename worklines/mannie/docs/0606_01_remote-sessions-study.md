@@ -1,5 +1,7 @@
 # Can the cell keep talking when Mannie is on Luna? Remote Control and cross-session messages
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-25 · **Checked:** 2026-10-31 · **Step:** mannie 6.6 ⏳
+
 **Step:** 6.6 and 6.8 of `plan_mannie.md`. **Date:** 2026-10-25. **Author:** Mannie (session tanstfaafllm-d3).
 **Question (user, 2026-10-25):** once Mannie runs on Luna, can it still use `SendMessage` with the desk sessions, and what does Anthropic's Remote Control offer, before choosing between messages and GitHub issues?
 **Sources:** Anthropic's documentation only, read on 2026-10-25: [Message your other Claude Code sessions](https://code.claude.com/docs/en/cross-session-messaging) and [Remote Control](https://code.claude.com/docs/en/remote-control). Nothing below has been tested yet.

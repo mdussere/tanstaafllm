@@ -1,5 +1,7 @@
 # Card storage reshape — result (Step 6)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-09 · **Checked:** 2026-10-31 · **Step:** luna 6.4 ✅
+
 **Question:** Did the Step 6 reshape give the ArchR card a 24 GiB root, a mounted `/home` and a separate `/storage`, without losing the boot, panel, Wi-Fi and SSH setup?
 
 **Answer:** yes, after one fix to the `/home` mount unit (below). Verified over SSH on 2026-10-05 after two reboots.

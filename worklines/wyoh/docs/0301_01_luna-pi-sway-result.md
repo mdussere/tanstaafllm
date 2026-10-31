@@ -1,5 +1,7 @@
 # Step 3 evidence — luna-pi Sway result
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-26 · **Checked:** 2026-10-31 · **Step:** wyoh 3.1 ✅
+
 **Status:** passed on the reference board, 2026-09-26
 
 `luna-pi` is a Raspberry Pi 4 Model B Rev 1.4, not Luna. At collection it ran Debian 13.7 (Trixie), arm64 kernel `6.18.50+rpt-rpi-v8`, with `MemTotal: 8,007,400 kB`, four Cortex-A72-class CPU entries, `/dev/dri/card0`, `card1`, and `renderD128`, plus four `/dev/input/event*` nodes. Its user-level Labwc/WayVNC reference session remained active.

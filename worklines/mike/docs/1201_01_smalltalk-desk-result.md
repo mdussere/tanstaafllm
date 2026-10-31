@@ -1,5 +1,7 @@
 # Step 12.1–12.2 — Small talk with LFM2.5-350M raw, on the desk host
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-31 · **Checked:** 2026-10-31 · **Step:** mike 12.1 ✅
+
 **Question answered:** how does Mike's chosen model, untrained, do as a chat partner, and what would a turn cost on Luna once the prompt is cached?<br>
 **Date:** 2026-10-31<br>
 **Status:** measured on Termidor only. Luna's times are **estimates** from token counts at Luna's measured speeds (6.5 tokens/s read, 3.6 tokens/s written, `0405_01`, `0801_01`); not measured on Luna yet (12.5). Green light: the user, 2026-10-31 12:00.

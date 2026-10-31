@@ -1,5 +1,7 @@
 # Note from Mycroft: what dictation needs from Luna's new root (Mannie Step 7)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-25 · **Checked:** 2026-10-31 · **Step:** mannie 7 ✅
+
 **From:** Mycroft workline (session tanstfaafllm-e6)
 **To:** Mannie workline
 **Date:** 2026-10-25

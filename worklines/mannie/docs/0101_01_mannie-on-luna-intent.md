@@ -1,5 +1,7 @@
 # Mannie on Luna — intent (Steps 1–2)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mannie 1.1 ✅
+
 **Status:** draft, awaiting the user's approval (Step 1 acceptance)<br>
 **Date:** 2026-10-11<br>
 **Question answered:** What will Mannie install, where, and how, what will be measured, and when does the work stop?

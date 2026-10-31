@@ -1,5 +1,7 @@
 # Step 4 re-entry — preserved Luna stock-image inventory
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** wyoh 4.5 ✅
+
 **Status:** read-only baseline captured 2026-09-27
 
 Luna is reachable as `root` through the configured SSH key. The preserved card boots **EmuELEC 4.7 Nexus devel** (`20260811180851`), arm64 Linux `5.10.160`, with `LIBREELEC_ARCH=OdroidGoAdvance.aarch64` and `COREELEC_PROJECT=Rockchip`.

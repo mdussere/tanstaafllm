@@ -1,5 +1,7 @@
 # Mike harness and zero-shot decider — raw ChatGPT export
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-19 · **Checked:** 2026-10-31 · **Step:** mike 7 ⏳
+
 > Source : https://chatgpt.com/share/6ace95fc-0800-83eb-bd5f-9d86b7257744  
 > Captured with `scripts/scrape_shared_chat.py` (kept-longest-text fix of 2026-10-13). One user message before the assistant message on Mike/Mannie memory modes was not captured (the user does not remember it). Cleaned record: `0700_02_harness-and-decider-discussion.md`.
 > Export Playwright le 2026-10-13 — 77 messages.

@@ -1,5 +1,7 @@
 # Step 9.2 — PreStaC on the desk host: result
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-30 · **Checked:** 2026-10-31 · **Step:** mike 9.2 ✅
+
 **Question answered:** does the Prefetch Stack Cache work, how much of the prompt does it restore, and what does it change in time and answers?<br>
 **Date:** 2026-10-29<br>
 **Status:** measured on the desk host Termidor only (green light: the user, 2026-10-29). Nothing ran on Luna.

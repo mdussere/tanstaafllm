@@ -1,5 +1,7 @@
 # Step 2 evidence — Sway IPC proof
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-26 · **Checked:** 2026-10-31 · **Step:** wyoh 2.1 ✅
+
 **Status:** passed on 2026-09-26
 **Question answered:** Can the proposed Sway-v0 boundary read session state, perform one bounded operation, observe its completion, and reject unsafe requests without a side effect?
 

@@ -1,5 +1,7 @@
 # 0001 — Analyse de la discussion initiale
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-25 · **Checked:** 2026-10-31
+
 ## Objet et périmètre
 
 Cette note synthétise la conversation initiale sur l'usage d'un Raspberry Pi inutilisé dans le projet **TANSTAAFLLM**. Elle distingue les éléments effectivement établis dans l'échange des recommandations ou hypothèses qui devront être validées sur la machine.

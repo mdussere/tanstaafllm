@@ -1,5 +1,7 @@
 # Candidate transcript comparison: the actual Step 4 evidence
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 1.4 ✅
+
 **Question answered:** Which voice samples were compared, what did each candidate actually say, and how was ground truth scored?
 
 **Status:** transparency supplement to Step 4, 2026-09-25. It adds no new model run and does not turn the three-fixture smoke test into a French accuracy claim.

@@ -1,3 +1,5 @@
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.8 ✅
+
 
 
 > **Outcome (2026-10-04):** the SDIO enumeration failure recorded here was traced to ArchR's device tree treating the Wi-Fi chip-enable pin as an SD card-detect input. It was fixed by the `wifi-rk915.dtbo` overlay (see `0508_03` and `0508_04`).

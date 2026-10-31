@@ -1,5 +1,7 @@
 # Step 12.5 — Small talk on Luna: measured
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-31 · **Checked:** 2026-10-31 · **Step:** mike 12.5 ✅
+
 **Question answered:** on Luna itself, how long does Mike take to start, to say its first word and to finish an answer, and does the repacked weight layout help?<br>
 **Date:** 2026-10-31<br>
 **Status:** measured on Luna (R36 Ultra, Cortex-A35 ×4, Arch Linux ARM), as michael, over SSH, without the window (Wyoh 6.11 builds it). Mannie on Luna was stopped on the user's order, relayed by Professor. Kroko, Sway and the Wyoh services kept running. No reboot.

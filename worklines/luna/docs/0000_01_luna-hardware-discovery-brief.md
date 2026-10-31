@@ -1,5 +1,7 @@
 # Luna hardware-discovery brief
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31
+
 **Status:** pre-execution scope record<br>
 **Question answered:** What is the authorised first hardware-discovery task, and what does it not authorise?
 

@@ -1,5 +1,7 @@
 # 0201 — TANSTAAFLLM v0 charter
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** professor 2.1 ✅
+
 **Question answered:** What is the one immediate v0 outcome, where does it run, and how will we know it is useful without pretending the whole handheld system already exists?
 
 **Status:** review-ready draft, 2026-09-25<br>

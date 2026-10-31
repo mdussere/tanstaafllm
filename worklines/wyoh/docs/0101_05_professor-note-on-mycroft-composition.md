@@ -1,5 +1,7 @@
 # Note from Professor — Mycroft composition and Wyoh context
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-26 · **Checked:** 2026-10-31 · **Step:** wyoh 1.1 ✅
+
 **From:** Professor workline  
 **To:** Wyoh workline  
 **Date:** 2026-09-25  

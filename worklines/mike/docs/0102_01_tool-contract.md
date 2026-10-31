@@ -1,5 +1,7 @@
 # Mike v0 tool contract (Step 1.2–1.4)
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mike 1.2 ✅
+
 **Question answered:** exactly which tools does the model see, with which allowed values, and how does Mike's adapter turn each call into Wyoh MCP requests?<br>
 **Date:** 2026-10-09<br>
 **Status:** 📋 draft written under Professor's decision D13 (delegated by the user). **Awaiting the user's approval** (Step 1 acceptance). Items marked **⚖️** need an explicit yes from the user.<br>

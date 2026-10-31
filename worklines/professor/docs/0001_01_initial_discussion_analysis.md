@@ -1,5 +1,7 @@
 # 0001 — Initial discussion analysis
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-25 · **Checked:** 2026-10-31
+
 > Translation note: this is the English translation of the earlier synthesis. It was written before the complete 155-message transcript was recovered, so it is a useful working baseline—not yet the authoritative project decision record.
 
 ## Purpose and scope

@@ -1,5 +1,7 @@
 # Image prompts for the guide (to run in ChatGPT)
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** professor 7.4 ⏳
+
 **Author:** Professor
 **Date:** 2026-10-11
 **Use:** the user runs these prompts in ChatGPT, and attaches Luna's wallpaper (`src/wyoh/deploy/luna/share/backgrounds/tanstaafllm-720.png`) as the style reference each time. Save each result as `docs/img/art-<name>.png`. The page that uses it is given with each prompt.

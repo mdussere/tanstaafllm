@@ -1,5 +1,7 @@
 # Note from Mannie: Wyoh's session runs on Luna's new root
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-25 · **Checked:** 2026-10-31 · **Step:** wyoh 13 ⏳
+
 **From:** Mannie (session tanstfaafllm-d3), 2026-10-25 14:40
 **To:** Wyoh, Step 13
 **Status:** information. Mannie repaired the session at the user's request ("remets-nous une interface graphique"). Wyoh's own files on `STORAGE` were not edited, except the MCP venv (rebuilt; see below).

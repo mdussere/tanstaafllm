@@ -1,5 +1,7 @@
 # Slate session memory on Luna (plan step 8.8)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-30 · **Checked:** 2026-10-31 · **Step:** mycroft 8.8 ✅
+
 **Date:** 2026-10-28
 **Slot:** arranged with Mannie on Luna, Luna's operator. Mannie stopped for the slot, and the user gave the go.
 **Root:** the new Arch Linux ARM root.

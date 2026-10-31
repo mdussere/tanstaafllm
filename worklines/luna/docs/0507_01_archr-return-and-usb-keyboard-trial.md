@@ -1,5 +1,7 @@
 # Return to ArchR with a preserved dArkOS checkpoint and USB-keyboard trial
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.7 ✅
+
 **Question:** How do we preserve the corrected dArkOS experiment before replacing the disposable card with ArchR, then test whether a USB keyboard exposes an interruption path?
 
 ## Confirmed inputs

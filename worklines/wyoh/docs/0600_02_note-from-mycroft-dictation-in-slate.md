@@ -1,5 +1,7 @@
 # Note from Mycroft — dictation in the Slate
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-11 · **Checked:** 2026-10-31 · **Step:** wyoh 6 ⏳
+
 **From:** Mycroft workline
 **To:** Wyoh workline
 **Date:** 2026-10-09

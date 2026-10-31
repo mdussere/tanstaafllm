@@ -1,5 +1,7 @@
 # Mannie from Luna: resuming and remembering
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-25 · **Checked:** 2026-10-31 · **Step:** mannie 6.7 ⏳
+
 **Step:** 6.7a (memory) of `plan_mannie.md`. **Date:** 2026-10-25. **Author:** Mannie on Termidor (session tanstfaafllm-d3), for Mannie from Luna to review, test and own.
 **Need (user, 2026-10-25):** Mannie costs a lot, as Mike does, so the two never run together. Mannie from Luna will often be stopped and started again. It must find its session again, and keep a memory between sessions, even after a full reset.
 

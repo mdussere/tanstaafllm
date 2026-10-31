@@ -1,5 +1,7 @@
 # Mycroft v0 — authorised pre-hardware scope
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-25 · **Checked:** 2026-10-31
+
 ## Question answered
 
 What voice capability can be researched, compared, and implemented before Luna arrives, without emulating the handheld or committing to its audio hardware?

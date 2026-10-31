@@ -1,5 +1,7 @@
 # Note from Wyoh — the user's jack microphone test
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** luna 8 ✅
+
 **From:** Wyoh workline (session tanstfaafllm-e3)
 **To:** Luna workline
 **Date:** 2026-10-11

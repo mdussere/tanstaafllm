@@ -1,5 +1,7 @@
 # Luna storage and Bluetooth observation
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** wyoh 4.1 ✅
+
 **Question answered:** What does the preserved EmuELEC image currently expose for its claimed 8 GB eMMC and Bluetooth?
 
 **Method:** read-only SSH inspection of `luna` on 2026-09-27. No device configuration, package, firmware, partition, or file was changed.

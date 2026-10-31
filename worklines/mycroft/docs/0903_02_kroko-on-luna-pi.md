@@ -1,5 +1,7 @@
 # Kroko on luna-pi, with a projection to Luna (plan step 9.3)
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mycroft 9.3 ⏳
+
 **Date:** 2026-10-11
 **Context:** the user asked to measure on `luna-pi` before Luna. `luna-pi` is aarch64 like Luna, nobody was using it, and Professor gave it to Mycroft. The Luna run was stopped during its upload; Luna was rebooted and released.
 **Machine:** `luna-pi`, Raspberry Pi 4: 4 × Cortex-A72 at up to 1.8 GHz, 8 GB RAM, Debian kernel 6.18 aarch64, Python 3.13.5, glibc 2.41. The user's own SSH session (with an idle `claude` process) was open, so `luna-pi` was **not rebooted**.

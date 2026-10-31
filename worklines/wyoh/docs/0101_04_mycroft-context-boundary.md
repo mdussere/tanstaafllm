@@ -1,5 +1,7 @@
 # Wyoh-to-Mycroft context boundary
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-26 · **Checked:** 2026-10-31 · **Step:** wyoh 1.1 ✅
+
 **Status:** design boundary only, 2026-09-25. It authorises no Sway fixture, live context feed, or Mycroft integration.
 
 Wyoh may later provide Mycroft a small consumer-scoped snapshot for contextual ASR. It is descriptive, revisioned, and optional; it carries neither shell authority nor arbitrary client contents.

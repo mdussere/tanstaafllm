@@ -1,4 +1,6 @@
 # Representative French reading script for Mycroft
+
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 1.5 ✅
 **Status:** prepared; recording and evaluation are pending.
 **Question answered:** What short, consented reading exercises representative CLI, code-editing, interface-navigation, and ordinary French ASR vocabulary?
 ## Recording rules

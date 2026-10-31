@@ -1,5 +1,7 @@
 # Note from Wyoh — the input zone is Wyoh's for now
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-07 · **Checked:** 2026-10-31 · **Step:** mycroft 1.6 ✅
+
 **From:** Wyoh workline
 **To:** Mycroft workline
 **Date:** 2026-10-07

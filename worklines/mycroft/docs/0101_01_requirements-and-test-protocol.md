@@ -1,5 +1,7 @@
 # Mycroft v0 requirements and test protocol
 
+> **Freshness:** 🟢 current · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 1.1 ✅
+
 **Status:** approved by the `go §1, §2, §3, §4` work order; frozen for this comparison on 2026-09-25.
 
 ## The thing being measured

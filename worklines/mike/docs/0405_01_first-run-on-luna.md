@@ -1,5 +1,7 @@
 # Step 4.5 — Mike's first run on Luna
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-30 · **Checked:** 2026-10-31 · **Step:** mike 4.5 ✅
+
 **Question answered:** does Mike's 3b runtime run on Luna, and how fast and how big is it there?<br>
 **Date:** 2026-10-25<br>
 **Status:** measured on Luna (R36 Ultra, Cortex-A35 ×4, Arch Linux ARM), as `michael`.

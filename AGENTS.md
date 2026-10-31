@@ -66,6 +66,7 @@ Read [docs/02_testing.md](docs/02_testing.md) before creating or running a test 
 - `docs/LOGBOOK.md` records material plan/workline changes.
 - `worklines/professor/docs/0001_01_initial_discussion.md` is the complete initial discussion transcript. Treat it as source evidence, not as verified technical documentation.
 - A workline plan is the operational source of truth for that workline’s current scope and progress.
+- **Records say how fresh they are** (Professor Step 13): every `worklines/*/docs/*.md` record carries a banner under its title, `> **Freshness:** 🟢 current | 🟡 historical | 🔴 superseded by [link] | ⚪ draft · **Written:** · **Checked:** · **Step:**`. A 🟡 or 🔴 record is evidence of what was true on its date: before acting on it, read the plan and the newest record of that step. Add the banner to every new record, switch it to 🟡 when you close its step, and to 🔴 with a link when a newer record replaces it. `scripts/doc_freshness.py` proposes banners; `test/professor/test_doc_freshness.py` checks them.
 
 Documentation, plans, workline artifacts, and reusable scripts are intended to be committed. **Routine (user, 2026-10-31):** when a session finishes a piece of its own work, it commits its own files, pushes to `origin main`, and gives the user direct GitHub links; the `commit-prep` skill has the details. Do not commit secrets, `.env` files, virtual environments, caches, generated builds, downloaded model weights, or private recordings.
 

@@ -1,5 +1,7 @@
 # Result — the Step 3.7 session on Luna's real display
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-07 · **Checked:** 2026-10-31 · **Step:** wyoh 4.7 ✅
+
 **Step:** Wyoh 4.7
 **Date:** 2026-10-04
 **Scope:** physical Luna (R36 Ultra) on the disposable ArchR card. Development session only; not a product shell, and not the production-base decision.

@@ -1,5 +1,7 @@
 # ArchR SSH access and reboot persistence (Steps 5.8h–5.8i)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.8 ✅
+
 ## Result
 
 As of 2026-10-04, Luna boots the disposable ArchR card, rejoins Wi-Fi by itself, and accepts key-only SSH from Termidor (`ssh luna`, root, `id_rsa_local`) with a stable host identity. Both were verified by a full reboot with no console use:

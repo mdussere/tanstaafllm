@@ -1,5 +1,7 @@
 # Mycroft v0 text-console intent
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 5.1 ✅
+
 **Question answered:** What exact user-visible application is built before any Mycroft v0 implementation starts?<br>
 **Status:** implementation green-lit; automated replay/recogniser evidence complete, real-microphone smoke test pending.<br>
 **Model policy:** one pinned model/runtime in v0; future model configurability is a separate compatibility requirement, not a v0 selector.

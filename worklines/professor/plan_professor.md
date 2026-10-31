@@ -205,7 +205,7 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 - [ ] 11.3 A private screening page on claude.ai for the user's phone: https://claude.ai/artifact/Wqpg9wD9Ew5MunsYFhxqLn (trailer online 2026-10-31; add each story video as it is done). A public page later, by Hazel.
 
 ### Step 13 — Say how fresh every record is
-**Status**: 📝 Proposal for the user (user, 2026-10-31); nothing applied yet.
+**Status**: ✅ Done (2026-10-31).
 
 **Why:** the worklines accumulate Markdown records, and that is the intended way of working. Records of finished steps are not kept up to date, and they should not be: they say what was true on their date. The risk is that a new agent, or one of us, reads an old record as current. Each record should say, at the top, whether it still holds and how old it is.
 
@@ -232,8 +232,8 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 5. **One commit for the whole pass**, containing only the banners, the `AGENTS.md` line, the script, the test and the LOGBOOK entry, so it is easy to review and to revert.
 
 - [x] 13.1 Proposal written (above).
-- [ ] 13.2 The user approves or adjusts it.
-- [ ] 13.3 Apply: run the script, review by hand, one commit, push, links; tell every session the rule.
+- [x] 13.2 The user approves (2026-10-31: "ça me plaît, vas-y, go").
+- [x] 13.3 Applied 2026-10-31: 150 records bannered (116 🟡, 32 🟢, 2 ⚪), rule in `AGENTS.md`, script and test. Apply: run the script, review by hand, one commit, push, links; tell every session the rule.
 
 ### Step 12 — Move the cell out of Termidor, into an isolated place
 **Status**: 📝 Proposed, to discuss and decide with the user (user, 2026-10-31).

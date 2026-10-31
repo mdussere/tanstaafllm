@@ -1,5 +1,7 @@
 # Luna controls reference
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** wyoh 5.12 ✅
+
 **Step:** Wyoh 5.12 (green-lit by Professor on the user's behalf, D4, 2026-10-09)
 **Question answered:** what every physical control of the R36 Ultra does in each mode of the Wyoh session, as the code defines it today.
 **Source of truth:** `wyoh_gamepad.Config` and `deploy/luna/gamepad.toml`. `test/wyoh/test_luna_controls_reference.py` fails when this document and the code disagree.

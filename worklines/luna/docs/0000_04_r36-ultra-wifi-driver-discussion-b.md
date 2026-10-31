@@ -1,5 +1,7 @@
 # R36 Ultra Arch-R Wi-Fi investigation: access to evidence
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31
+
 ## Summary
 
 This short discussion follows the Arch-R Wi-Fi failure: the handheld cannot connect and no SSIDs are visible. It reinforces that the immediate objective is to obtain a shell or inspect the removable Arch-R card, then identify the chipset and compare its required driver/firmware with the known-working stock EmuELEC image.

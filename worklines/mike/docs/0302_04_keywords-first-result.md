@@ -1,5 +1,7 @@
 # Step 3.6 result — option A: keyword table first, model second
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mike 3.2 ✅
+
 **Question answered:** if the keyword table answers what it recognises and the model answers only the rest, how much better is that than either alone?<br>
 **Date:** 2026-10-11<br>
 **Status:** computed from saved model answers: no model was run again. Inside the Step 3 green light. Desk-host answers only.

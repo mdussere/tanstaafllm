@@ -4,6 +4,8 @@
 
 # Wyoh — controller-first handheld interaction model
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-25 · **Checked:** 2026-10-31
+
 ## Question answered
 
 What must Wyoh describe and operate when Luna is a controller-operated retro handheld rather than a conventional desktop?

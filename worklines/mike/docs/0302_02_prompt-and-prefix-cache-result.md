@@ -1,5 +1,7 @@
 # Step 3.2d–f result — a better prompt and a cached prefix
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mike 3.2 ✅
+
 **Question answered:** how much do a better prompt (3.2d) and a cached prompt prefix (3.2f) change accuracy and speed, and does the constrained mode still fail to refuse (3.2e)?<br>
 **Date:** 2026-10-09<br>
 **Status:** measured on the desk host only (Intel i5-4590, 4 threads, `n_batch` 64, context 2,048). Same 13 smoke requests as `0302_01`. **No claim about Luna or `luna-pi`.**

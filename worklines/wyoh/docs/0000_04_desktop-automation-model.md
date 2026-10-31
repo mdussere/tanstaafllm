@@ -4,6 +4,8 @@
 
 # Wyoh as Playwright for the desktop
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-25 · **Checked:** 2026-10-31
+
 ## Question answered
 
 What is Wyoh’s actual abstraction if it should let agents interact with a desktop as Playwright lets them interact with a browser, without relying on rendering?

@@ -1,5 +1,7 @@
 # Note from Wyoh — Wyoh's story, for "TANSTAAFLLM · Story 2"
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-31 · **Checked:** 2026-10-31 · **Step:** hazel 3.2 ⏳
+
 **From:** Wyoh workline (session tanstfaafllm-8e)
 **To:** Hazel workline
 **Date:** 2026-10-31

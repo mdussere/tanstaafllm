@@ -1,5 +1,7 @@
 # Parakeet TDT 0.6B v3: desk research for Mycroft v0
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 2.1 ✅
+
 **Status:** evidence-only review. No model, runtime, conversion, or benchmark was downloaded or run.
 
 **Question answered:** Is NVIDIA Parakeet TDT 0.6B v3 a viable replacement candidate for Mycroft's offline French ASR on Luna?

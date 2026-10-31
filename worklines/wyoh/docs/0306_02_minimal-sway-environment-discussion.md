@@ -1,5 +1,7 @@
 # WayVNC, Sway, and the headless Wyoh session
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-30 · **Checked:** 2026-10-31 · **Step:** wyoh 3.6 ✅
+
 ## Summary
 
 This discussion distinguishes WayVNC from the traditional Xvnc/TigerVNC model and places it beside, rather than above, the Sway session that Wyoh observes through IPC. It proposes a headless Sway output exported through WayVNC when remote development access is needed, while retaining Sway as the owner of graphical state and input routing.

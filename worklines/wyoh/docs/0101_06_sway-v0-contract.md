@@ -1,5 +1,7 @@
 # Wyoh v0 contract — unmodified Sway with scoped IPC authority
 
+> **Freshness:** 🟢 current · **Written:** 2026-09-26 · **Checked:** 2026-10-31 · **Step:** wyoh 1.1 ✅
+
 **Status:** ratified for the green-lit pre-hardware proof, 2026-09-26  
 **Question answered:** What is Wyoh v0, and which authority does it expose before Luna hardware evidence exists?
 

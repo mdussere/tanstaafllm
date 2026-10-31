@@ -1,5 +1,7 @@
 # 0101 — Initial-discussion decision ledger
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** professor 1.1 ✅
+
 **Question answered:** What did the complete initial discussion actually establish, and what remains a proposal or an unverified claim?
 
 **Status:** review-ready draft, 2026-09-25<br>

@@ -1,5 +1,7 @@
 # dArkOSRE 720×720 profile correction
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.5 ⏳
+
 **Question:** Why did the earlier `r36_config.ini` change not produce a 720×720 screen, and what is the smallest reversible correction on the disposable card?
 
 ## Review result

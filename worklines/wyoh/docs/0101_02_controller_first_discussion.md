@@ -4,6 +4,8 @@
 
 # Initial TANSTAAFLLM discussion — cleaned Wyoh decision record
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-25 · **Checked:** 2026-10-31 · **Step:** wyoh 1.1 ✅
+
 > Source: https://chatgpt.com/share/6ab592d0-65a8-83ed-a39d-a20f3cfec445
 > Fresh Playwright export: 2026-09-25 — 155 messages.
 > The complete original-language transcript begins below and is also retained as the Professor source archive. This record distinguishes later user decisions from exploratory or unverified assistant suggestions.

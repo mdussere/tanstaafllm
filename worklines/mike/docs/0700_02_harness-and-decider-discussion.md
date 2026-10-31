@@ -1,5 +1,7 @@
 # Mike's harness and a zero-shot decider — cleaned discussion record
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-19 · **Checked:** 2026-10-31 · **Step:** mike 7 ⏳
+
 **Source:** ChatGPT shared conversation <https://chatgpt.com/share/6ace95fc-0800-83eb-bd5f-9d86b7257744>, captured on 2026-10-13. The raw export is [`0700_01_harness-and-decider-discussion-raw.md`](0700_01_harness-and-decider-discussion-raw.md) (77 messages); it is the primary reference. **Owner:** workline `mike`. **Plan step:** Step 7 (and an amended Step 3b).
 
 ## Summary

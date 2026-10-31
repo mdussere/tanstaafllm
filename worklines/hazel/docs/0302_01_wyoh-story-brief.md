@@ -1,5 +1,7 @@
 # Story 2 brief — "Ask the desktop" (Wyoh)
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-31 · **Checked:** 2026-10-31 · **Step:** hazel 3.2 ⏳
+
 **Workline:** hazel · **Step:** 3.2b · **Date:** 2026-10-31 · **Status:** brief for the first version
 
 This brief is for whoever composes the episode, a sub-agent or Hazel. It needs nothing from the cell's conversations.

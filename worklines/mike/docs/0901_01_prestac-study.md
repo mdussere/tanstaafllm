@@ -1,5 +1,7 @@
 # Step 9.1 — PreStaC, the Prefetch Stack Cache: study
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-30 · **Checked:** 2026-10-31 · **Step:** mike 9.1 ✅
+
 **Question answered:** what PreStaC is made of, how it fits with Mike's other layers and with Wyoh, Mycroft, Mannie and Luna, who calls whom, and how its asynchrony works.<br>
 **Date:** 2026-10-26<br>
 **Status:** design study, documentation only. Nothing is built.

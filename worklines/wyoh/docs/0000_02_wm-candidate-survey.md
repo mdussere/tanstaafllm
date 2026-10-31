@@ -6,6 +6,8 @@
 
 # Wyoh WM/compositor candidate survey
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-25 · **Checked:** 2026-10-31
+
 > **Current product-selection record:** Sway is the proposed v0 session engine. The controller-first document remains evidence about the delivered stock console and recovery surfaces, not the full Wyoh workspace contract.
 
 > **Current order:** unmodified Sway IPC → thin Wyoh adapter/capability mediator → Sway IPC extension or downstream fork only on demonstrated need. Qtile/labwc are comparative references, not v0 candidates.

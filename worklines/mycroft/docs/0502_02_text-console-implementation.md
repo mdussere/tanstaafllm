@@ -1,5 +1,7 @@
 # Mycroft v0 text-console implementation and automated evidence
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 5.2 ✅
+
 **Status:** foreground console implemented; automated replay and adapter evidence
 passes. A real microphone/terminal smoke test is still required before Step 5
 acceptance.

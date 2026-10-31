@@ -1,5 +1,7 @@
 # Result — fuzzel application menu on Luna's panel
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-07 · **Checked:** 2026-10-31 · **Step:** wyoh 4.8 ✅
+
 **Step:** Wyoh 4.8 (user direction 2026-10-05: "let's test fuzzel, install and test it with many interactions, take evidence images")
 **Date:** 2026-10-05
 **Scope:** Luna, ArchR card after Luna Step 6, root session. Development-only.

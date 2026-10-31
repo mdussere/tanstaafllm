@@ -1,5 +1,7 @@
 # Design — one owned Sway session for MCP and WayVNC
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-30 · **Checked:** 2026-10-31 · **Step:** wyoh 3.6 ✅
+
 **Step:** Wyoh 3.6
 **Status:** implementation authorised 2026-09-30
 **Question:** How can MCP operate the same virtual display that VNC presents without attaching to an arbitrary desktop?

@@ -1,5 +1,7 @@
 # Note from Mycroft: resident Kroko is ready for the Slate (Wyoh 12.4)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-19 · **Checked:** 2026-10-31 · **Step:** wyoh 12.4 ✅
+
 **From:** Mycroft workline
 **To:** Wyoh workline
 **Date:** 2026-10-15

@@ -1,5 +1,7 @@
 # Resident Kroko on Luna (plan step 9.8)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-19 · **Checked:** 2026-10-31 · **Step:** mycroft 9.8 ✅
+
 **Date:** 2026-10-13
 **Asked by:** Wyoh's note [`0903_03`](0903_03_note-from-wyoh-kroko-resident-in-slate.md), carrying the user's decisions (Kroko for the Slate, kept loaded while the Slate is hidden).
 **Luna slot:** Professor (session tanstfaafllm-96), 2026-10-13 22:41. Luna was rebooted before and after the series.

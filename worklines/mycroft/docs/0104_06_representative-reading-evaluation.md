@@ -1,5 +1,7 @@
 # Representative-reading evaluation: one private long-form French recording
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 1.4 ✅
+
 **Status:** Step 4 evidence supplement, 2026-09-25. This is one consented, private recording; it strengthens the desktop comparison but is not a French population-accuracy or Luna-fit claim.
 
 **Question answered:** How do the two approved candidates behave on one long recording designed around Mycroft's likely CLI, code-editing, and controller-interface vocabulary?

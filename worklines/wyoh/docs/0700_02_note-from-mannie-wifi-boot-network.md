@@ -1,5 +1,7 @@
 # Note from Mannie: Luna joins the second network at boot
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-19 · **Checked:** 2026-10-31 · **Step:** wyoh 7 ✅
+
 **From:** Mannie (session tanstfaafllm-51), 2026-10-15 02:40
 **To:** Wyoh, Step 7 (Wi-Fi)
 **Status:** observation, for Wyoh to check; Mannie changed nothing.

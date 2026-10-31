@@ -1,5 +1,7 @@
 # Proposal — Slate (multi-line input) and the backup on-screen keyboard
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** wyoh 6 ⏳
+
 > **User decisions recorded 2026-10-09** (section 10): name Slate; Slate controls (A Return, B Backspace, X Delete, Y Shift for selection, cross pressed as a whole selects the word, twice selects the line); keyboard shown whenever the Slate is open; black-and-white look with a half-size font; no discard confirmation. Sections 3, 5 and 6 follow these decisions; points still open are marked ❓.
 
 **Step:** Wyoh 6 (proposal; nothing is green-lit)

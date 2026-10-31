@@ -1,5 +1,7 @@
 # Survey — speech or natural language to a command line, with a small trained model
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-31 · **Checked:** 2026-10-31 · **Step:** mike 10.7 ⏳
+
 **Question answered:** has someone already built "speech to command line" or a small model trained on natural-language-to-bash, and what does it say about training a narrow model for Mike?<br>
 **Date:** 2026-10-30<br>
 **Status:** web survey only; nothing downloaded, run or trained. Figures are the authors' own, not measured here (user request, 2026-10-30: "find speech to command line; some geek must have done it").

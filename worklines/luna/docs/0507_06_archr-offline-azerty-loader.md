@@ -1,5 +1,7 @@
 # Offline French AZERTY loader for ArchR textmode
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.7 ✅
+
 **Question:** How can the ArchR textmode shell use a French AZERTY keyboard
 when the image has neither `loadkeys`, `localectl`, `/etc/vconsole.conf`, nor
 installed `kbd` keymaps?

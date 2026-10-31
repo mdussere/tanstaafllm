@@ -1,5 +1,7 @@
 # Note from Professor — normal user accounts on Luna
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** luna 7 ✅
+
 **From:** Professor
 **To:** Luna
 **Date:** 2026-10-11

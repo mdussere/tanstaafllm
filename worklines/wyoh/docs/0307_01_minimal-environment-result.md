@@ -1,5 +1,7 @@
 # Result — minimal workable Sway environment on `luna-pi`, operated through MCP
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-07 · **Checked:** 2026-10-31 · **Step:** wyoh 3.7 ✅
+
 **Step:** Wyoh 3.7
 **Status:** completed 2026-10-04
 **Scope:** `luna-pi` development session only; not Luna hardware or product-shell evidence.

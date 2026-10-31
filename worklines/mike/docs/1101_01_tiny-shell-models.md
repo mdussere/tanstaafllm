@@ -1,5 +1,7 @@
 # Step 11 — Rudy's tiny models trained on natural language → shell
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-31 · **Checked:** 2026-10-31 · **Step:** mike 11.1 ✅
+
 **Question answered:** do Chat-GBC's tiny and micro models, trained from scratch on the NL2SH-ALFA pairs, give usable shell commands, and how does that compare with LFM2.5-350M untrained?<br>
 **Date:** 2026-10-31<br>
 **Status:** measured on Termidor (CPU only). User request, 2026-10-30: "do the experiment anyway".

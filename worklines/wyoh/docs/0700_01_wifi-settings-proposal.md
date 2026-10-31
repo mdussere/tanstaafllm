@@ -1,5 +1,7 @@
 # Proposal — choosing a Wi-Fi network from Luna's buttons
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** wyoh 7 ✅
+
 **Step:** Wyoh 7 (proposal; nothing is green-lit)
 **Date:** 2026-10-09
 **Question answered:** how a person joins, switches and forgets Wi-Fi networks on Luna without SSH, and who owns which part.

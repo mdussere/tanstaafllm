@@ -1,5 +1,7 @@
 # Stock EmuELEC Wi-Fi driver identification procedure
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 4.3 ✅
+
 **Question answered:** Which Wi-Fi hardware path, kernel module, and firmware does the currently running factory EmuELEC image use on this R36 Ultra?
 
 **Status:** Prepared only. The stock image is running and reachable over SSH, but this procedure has not been executed.

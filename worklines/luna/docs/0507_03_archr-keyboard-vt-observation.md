@@ -1,5 +1,7 @@
 # ArchR first-boot keyboard and virtual-terminal observation
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.7 ✅
+
 **Question:** What does the USB-keyboard behaviour establish after ArchR reaches its graphical frontend, and does the black F2 screen provide a usable console?
 
 ## User observation

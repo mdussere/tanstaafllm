@@ -1,5 +1,7 @@
 # Step 3.3–3.4 — model comparison and recommendation
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mike 3.4 ✅
+
 **Question answered:** across every desk-host measurement of Step 3, how do the candidates compare, and which model does Mike use?<br>
 **Date:** 2026-10-11<br>
 **Status:** consolidates `0302_01` to `0302_05`. Desk host only (Intel i5-4590, x86_64); nothing measured on `luna-pi` or Luna. **Decision: LFM2.5-350M (user, 2026-10-11).** Naming note: the user is reconsidering the Mannie/Mike names; this document does not rename anything. *(Naming settled by D16 on 2026-10-11: this line is Mike, the local brain.)*

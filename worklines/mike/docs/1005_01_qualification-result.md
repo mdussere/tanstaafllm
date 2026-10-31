@@ -1,5 +1,7 @@
 # Step 10 — Qualifying a model: 90 % stable on the evaluation cases
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-30 · **Checked:** 2026-10-31 · **Step:** mike 10.5 ⏳
+
 **Question answered:** does any model give at least 90 % stable right answers on Mike's 112 evaluation cases, and how small can it be?<br>
 **Date:** 2026-10-29<br>
 **Status:** measured on the desk host Termidor only (green light: the user, 2026-10-29). BitNet b1.58 2B4T (10.4) ran alone afterwards (`results/mike/qualify/20261029T193703Z/`, 49 min).

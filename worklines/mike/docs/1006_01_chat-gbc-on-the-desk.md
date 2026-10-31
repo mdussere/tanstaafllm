@@ -1,5 +1,7 @@
 # Step 10.6 — Chat-GBC reproduced on the desk host
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-30 · **Checked:** 2026-10-31 · **Step:** mike 10.6 ✅
+
 **Question answered:** does Chat-GBC (a transformer of 21k–138k parameters that runs on a 1989 Game Boy) do what its README says, run on Termidor without the ROM or an emulator, and what does it mean for Mike?<br>
 **Date:** 2026-10-29<br>
 **Status:** measured on Termidor only (user request, 2026-10-29: "look at it and try to reproduce it on Termidor, not in an emulator").

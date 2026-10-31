@@ -1,5 +1,7 @@
 # Result — development-only full Sway IPC MCP validation over SSH
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-28 · **Checked:** 2026-10-31 · **Step:** wyoh 3.5 ✅
+
 **Step:** Wyoh 3.5
 **Status:** passed on 2026-09-28
 **Scope:** an isolated `luna-pi` headless Sway child. This is neither a Luna compatibility result nor a product/consumer API.

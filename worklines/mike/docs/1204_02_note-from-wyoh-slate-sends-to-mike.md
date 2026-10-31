@@ -1,5 +1,7 @@
 # Note from Wyoh — the Slate will send text to Mike (FN+B)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-19 · **Checked:** 2026-10-31 · **Step:** mike 12.4 ✅
+
 **From:** Wyoh workline
 **To:** Mike workline
 **Date:** 2026-10-15

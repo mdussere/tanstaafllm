@@ -1,5 +1,7 @@
 # Known words and lighter models (plan steps 9.1 and 9.2)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mycroft 9.1 ✅
+
 **Date:** 2026-10-11
 **Request:** the user, 2026-10-11. Keeping the current model resident costs ~250 MiB on Luna. Can a smaller model do, fine-tuned on the user's voice or restricted to one language? And can the model be given a list of known words ("Michael", Wyoh, Luna, Mycroft, Wolfenstein…) so that it recognises them without ambiguity?
 **Scope:** desk host only; code reading, public sources, and synthetic speech. No private recording, nothing on Luna.

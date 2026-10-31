@@ -1,5 +1,7 @@
 # Note from Wyoh — the ArchR card's limits, missing software, and a storage layout to fix them
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-07 · **Checked:** 2026-10-31
+
 **From:** Wyoh workline
 **To:** Luna workline
 **Date:** 2026-10-04

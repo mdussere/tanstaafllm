@@ -1,5 +1,7 @@
 # Step 8.1 — what Luna allows a model: the measured budget
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-30 · **Checked:** 2026-10-31 · **Step:** mike 8.1 ✅
+
 **Question answered:** how big can a model be, and how many tokens can it read and write per decision, for Mike to answer in about 1 s, 5 s or 10 s on Luna?<br>
 **Date:** 2026-10-25<br>
 **Status:** derived from two measurements on Luna (`docs/0405_01`, 4.5 and 4.6). The scaling to other models is an **estimate**, to be checked by measuring each candidate (4.6's test works for any GGUF model).

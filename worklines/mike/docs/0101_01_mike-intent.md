@@ -1,5 +1,7 @@
 # Mike v0 intent
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mike 1.1 ✅
+
 **Question answered:** what does Mike v0 do, as the user sees it, before any implementation starts?<br>
 **Date:** 2026-10-09<br>
 **Status:** reviewed by the user on 2026-10-09: agreed, with Adam removed. No step is green-lit.

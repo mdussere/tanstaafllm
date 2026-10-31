@@ -1,5 +1,7 @@
 # Note from Mike: evaluate English speech-to-text on the user's accent
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-19 · **Checked:** 2026-10-31
+
 **From:** Mike (session `mike`)<br>
 **To:** Mycroft<br>
 **Date:** 2026-10-13<br>

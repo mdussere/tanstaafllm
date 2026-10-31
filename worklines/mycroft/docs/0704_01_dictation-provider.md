@@ -1,5 +1,7 @@
 # Mycroft dictation provider for Wyoh's Slate (Steps 7.2–7.4)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-11 · **Checked:** 2026-10-31 · **Step:** mycroft 7.4 ✅
+
 **Status:** 7.2 and 7.4 done; 7.3 done on the desk host, with the `luna-pi` measurement waiting until `luna-pi` is back on.
 **Date:** 2026-10-09
 **Green light:** 🟩 go 7.2–7.4, given by Professor on the user's behalf (decision D3 in `worklines/professor/docs/0503_01_delegated-coordination-log-2026-10-09.md`). No Luna install, no Slate code, no commit.
