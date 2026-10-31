@@ -3,7 +3,7 @@
 
 Downloads, from PortMaster's netsurf port at a pinned commit, the aarch64
 `nsfb` binary, its private libraries (libs.aarch64: SDL 1.2 compatibility,
-libwebp, libffi, libwayland-client) and its resources. It then writes Wyoh's
+libwebp, libffi) and its resources. It then writes Wyoh's
 Choices over the port's (user, 2026-10-09: "minimalist, almost no images";
 2026-10-15: "a very, very simple browser"): images, backgrounds, animations
 and JavaScript off; DuckDuckGo Lite as home page and search, since Google
@@ -30,6 +30,9 @@ PORT = "ports/netsurf/netsurf"
 RAW = f"https://raw.githubusercontent.com/PortsMaster/PortMaster-New/{COMMIT}/{PORT}"
 TREE = f"https://api.github.com/repos/PortsMaster/PortMaster-New/git/trees/{COMMIT}:{PORT}?recursive=1"
 TAKE = ("nsfb", "libs.aarch64/", "resources/", "COPYING.txt")
+# The port's libwayland-client is older than the system's EGL expects: with it,
+# libEGL_mesa stops on wl_display_create_queue_with_name (luna-pi, 2026-10-31).
+SKIP = ("libs.aarch64/libwayland-client.so.0",)
 HERE = Path(__file__).resolve().parent
 
 # Wyoh's changes to the port's resources/Choices (NetSurf option names).
@@ -58,6 +61,10 @@ def choices(original: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+def wanted(name: str) -> bool:
+    return name.startswith(TAKE) and name not in SKIP
+
+
 def main() -> int:
     if len(sys.argv) != 2:
         print(__doc__, file=sys.stderr)
@@ -65,7 +72,7 @@ def main() -> int:
     out = Path(sys.argv[1])
     out.mkdir(parents=True, exist_ok=True)
     tree = json.load(urllib.request.urlopen(TREE, timeout=60))["tree"]
-    names = [item["path"] for item in tree if item["type"] == "blob" and item["path"].startswith(TAKE)]
+    names = [item["path"] for item in tree if item["type"] == "blob" and wanted(item["path"])]
     digests: dict[str, str] = {}
     for name in names:
         data = urllib.request.urlopen(f"{RAW}/{urllib.parse.quote(name)}", timeout=120).read()
