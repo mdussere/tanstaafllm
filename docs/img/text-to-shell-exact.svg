@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Text to shell: how often the command is right</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+    <pattern id="ghost" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0b1026"/><rect width="3" height="6" fill="#1f6f73"/>
+    </pattern>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .h { font: bold 14px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .t { font: 13px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .s { font: 11px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .v { font: bold 13px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; }
+    .need { font: bold 13px 'DejaVu Sans Mono', monospace; fill: #ff6b6b; }
+    .axis { font: 11px 'DejaVu Sans Mono', monospace; fill: #6f7fa8; }
+  </style>
+  <rect width="960" height="540" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">TEXT TO SHELL · IS THE COMMAND RIGHT?</text>
+  <text x="30" y="68" class="sub">share of test requests answered with a correct command · NL2SH-ALFA test set</text>
+
+  <!-- scale: x = 330 + 5.6 px per % (100 % at x = 890) -->
+  <g stroke="#1d2a4f" stroke-width="1">
+    <line x1="330" y1="92" x2="330" y2="462"/>
+    <line x1="470" y1="92" x2="470" y2="462"/>
+    <line x1="610" y1="92" x2="610" y2="462"/>
+    <line x1="750" y1="92" x2="750" y2="462"/>
+  </g>
+  <text x="330" y="478" class="axis" text-anchor="middle">0 %</text>
+  <text x="470" y="478" class="axis" text-anchor="middle">25 %</text>
+  <text x="610" y="478" class="axis" text-anchor="middle">50 %</text>
+  <text x="750" y="478" class="axis" text-anchor="middle">75 %</text>
+  <line x1="890" y1="86" x2="890" y2="462" stroke="#ff6b6b" stroke-width="3" stroke-dasharray="6 4"/>
+  <text x="890" y="478" class="need" text-anchor="middle">100 %</text>
+  <text x="884" y="104" class="need" text-anchor="end">what text to shell needs:</text>
+  <text x="884" y="120" class="need" text-anchor="end">run it without reading it</text>
+
+  <!-- measured here -->
+  <text x="30" y="112" class="h">MEASURED ON TERMIDOR · exact match</text>
+  <rect x="24" y="122" width="290" height="132" fill="#ffb347" opacity="0.08"/>
+  <text x="306" y="136" class="s" text-anchor="end" style="fill:#ffb347">fits Luna</text>
+
+  <text x="40" y="146" class="t">Chat-GBC tiny, trained here</text>
+  <text x="40" y="161" class="s">66 k parameters · 35 min</text>
+  <rect x="330" y="136" width="2" height="22" fill="#3ee6e0"/>
+  <text x="342" y="153" class="v">0 / 300</text>
+
+  <text x="40" y="188" class="t">Chat-GBC micro, trained here</text>
+  <text x="40" y="203" class="s">137 k parameters · 57 min</text>
+  <rect x="330" y="178" width="2" height="22" fill="#3ee6e0"/>
+  <text x="342" y="195" class="v">1 / 300 · 0.3 %</text>
+
+  <text x="40" y="230" class="t">LFM2.5-350M, untrained</text>
+  <text x="40" y="245" class="s">Mike's model today</text>
+  <rect x="330" y="220" width="21" height="22" fill="url(#ghost)" stroke="#3ee6e0" stroke-width="1"/>
+  <rect x="330" y="220" width="11" height="22" fill="#3ee6e0"/>
+  <text x="362" y="237" class="v">6 / 300 · 2 %</text>
+  <text x="482" y="237" class="s">(11 / 300 once its "sudo" is removed)</text>
+
+  <!-- published -->
+  <text x="30" y="292" class="h">PUBLISHED · commands judged by running them</text>
+
+  <text x="40" y="324" class="t">Qwen2.5-Coder-0.5B + LoRA</text>
+  <text x="40" y="339" class="s">MIT, fine-tuned on the same data</text>
+  <rect x="330" y="314" width="151" height="22" fill="#6f7fa8"/>
+  <text x="492" y="331" class="v">27 %</text>
+
+  <text x="40" y="366" class="t">Llama-3.2-1B + LoRA</text>
+  <text x="40" y="381" class="s">MIT · already too big for Luna</text>
+  <rect x="330" y="356" width="207" height="22" fill="#6f7fa8"/>
+  <text x="548" y="373" class="v">37 %</text>
+
+  <text x="40" y="408" class="t">Qwen2.5-Coder-3B + LoRA</text>
+  <text x="40" y="423" class="s">MIT</text>
+  <rect x="330" y="398" width="286" height="22" fill="#6f7fa8"/>
+  <text x="627" y="415" class="v">51 %</text>
+
+  <text x="40" y="450" class="t">Qwen3-14B, untrained</text>
+  <text x="40" y="465" class="s">KU Leuven · 40× Luna's model</text>
+  <rect x="330" y="440" width="448" height="22" fill="#6f7fa8"/>
+  <text x="789" y="457" class="v">≈ 80 %</text>
+
+  <text x="30" y="510" class="s">Exact match counts an equivalent command written differently as wrong, so the top bars are a floor; the published scores use other test sets and judges.</text>
+  <text x="30" y="526" class="s">Sources: worklines/mike/docs/1101_01 (measured), 1007_01 (published: Westenfelder et al., NAACL 2025; Jacobs et al., LAST-X 2026).</text>
+</svg>
