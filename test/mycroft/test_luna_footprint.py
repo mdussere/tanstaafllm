@@ -513,3 +513,28 @@ def test_luna_11_3_piper_lessac() -> None:
     _save("piper-after.txt", _ssh("grep -E 'MemTotal|MemAvailable' /proc/meminfo; cat /proc/loadavg"))
     (EVIDENCE / "step-11-3-piper.json").write_text(json.dumps(reports, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     assert all(run["exit_status"] == 0 for report in reports for run in report["runs"])
+
+
+@pytest.mark.timeout(1800)
+def test_luna_11_3_piper_beside_resident_kroko() -> None:
+    """Step 11.3, everything at once: one Piper synthesis while the Slate's own resident
+    Kroko provider and whatever else runs (the user's idle Mike) stay as they are.
+    Kroko English costs what Kroko French costs (10.6), so the Slate's provider stands for it.
+    No install beyond 11.3's files, no reboot, nothing started or stopped besides Piper."""
+    piper = f"{REMOTE_OPT}/{PIPER}"
+    script = f"""
+cd {REMOTE_SHARE}
+mem() {{ echo "== $1"; grep MemAvailable /proc/meminfo; ps -eo rss,args --sort=-rss | head -6 | cut -c1-160; }}
+mem before
+python3 luna_footprint_probe.py --raw --runs 1 --timeout 600 -- {TTS_BINARY} \\
+  --vits-model={piper}/en_US-lessac-medium.onnx --vits-tokens={piper}/tokens.txt \\
+  --vits-data-dir={piper}/espeak-ng-data --num-threads=2 --output-filename={REMOTE_SHARE}/piper-beside.wav \\
+  {shlex.quote(PIPER_SENTENCES[0])} > piper-beside.json
+mem after
+"""
+    result = _ssh(script, timeout=1200)
+    text = _save("piper-beside-kroko.txt", result)
+    report = json.loads(_ssh(f"cat {REMOTE_SHARE}/piper-beside.json").stdout)
+    (EVIDENCE / "step-11-3-piper-beside-kroko.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    assert result.returncode == 0 and "mycroft_dictate.py --resident" in text, "the Slate's Kroko provider should be resident"
+    assert report["runs"][0]["exit_status"] == 0

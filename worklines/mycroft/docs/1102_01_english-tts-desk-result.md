@@ -56,5 +56,5 @@ The user's go ("measure, only Piper"), Professor's slot. Mannie on Luna stopped;
 
 - **Close to the projection** (4–5×): Luna is about 11–13× slower than the desk host here.
 - **For Mike, Piper must be resident** (load once, ~20 s) and speak sentence by sentence: the first sentence is heard about 3× its own length after the text is ready, and each next sentence can be synthesised while the previous one plays. Short first sentences matter.
-- **Memory fits** beside resident Kroko English (162 MiB) and an idle Mike, with ~350 MiB left; not measured all three at once.
+- **Everything at once fits** (2026-11-02, `test_luna_11_3_piper_beside_resident_kroko`, evidence `…/20261101T230250Z/`): with the Slate's resident Kroko provider (149 MiB; French, and English costs the same, 10.6), the user's idle Mike (llama-server 294 MiB plus its 31 MiB client) and Sway, one Piper synthesis peaked at 109 MiB and MemAvailable never fell below **388 MiB**. Synthesis time was unchanged (wall 30.7 s), since Mike and Kroko were idle.
 - **For the tutor**, model sentences can be synthesised ahead of time and kept.
