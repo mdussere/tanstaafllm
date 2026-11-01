@@ -50,6 +50,21 @@ Duolingo inspires short drills, immediate feedback, progress and spaced repetiti
 
 **Acceptance criterion:** clearing Level 1 then playing Levels 2 and 3 demonstrably produces exercises invoking Level 1 names; a failed or uncertain older skill can recur later without resetting progress. Deterministic test fixtures cover selection and review scheduling.
 
+## End-of-level field exam — playable scenario (user direction, 2026-11-01)
+
+**Every level culminates in a short, staged exam**, separate from ordinary drills. The candidate navigates an original Luna-themed space (lunar base corridor, communications hub, airlock, observatory), encounters NPCs and consoles, and clears **five spoken interactions** to complete the mission. Inspiration from early first-person games such as Wolfenstein concerns *moving through a space and encountering checkpoints*, not copying its art, plot or engine.
+
+- Short exploration between five checkpoints; one spoken phrase or dialogue exchange unlocks each next area.
+- Checkpoints integrate the level's new language **and earlier lessons' skills**, following the spiral-learning rule.
+- A successful utterance triggers a visible world response (door, terminal, character reply). An uncertain result offers replay/retry and a transparent reason, not an unfair failure.
+- **Clear condition:** five validated spoken objectives; attempts need not be perfect on the first try. Progress remains visible and the learner can repeat a checkpoint.
+- Reward: mission debrief, rank/skill update, and STAGE CLEAR sequence in Luna's own retro-sci-fi language.
+- Level 1 candidate scenario: reach the lunar communications room by addressing or identifying crew members across five encounters; later exams build longer dialogue and system commands.
+- **Presentation choices left for a prototype:** simple first-person corridor / raycast, or lightweight tile-based traversal. Neither requires a complete 3D engine. Compare legibility and CPU/RAM costs on Luna before committing.
+- No real system commands are executed in exam mode.
+
+**Acceptance criteria for prototype:** the learner can traverse an environment with gamepad controls, trigger five distinct verbal exchanges, retry misunderstood utterances, and reach a final results screen only after five validated interactions. Evaluation uses a simulated scorer first; later Mycroft/phonetic scoring is integrated behind the same contract.
+
 ## Technical direction (candidate, not yet selected)
 - **Native 2D application**, no browser, HTML or DOM in the Luna runtime. Evaluate C + SDL2/SDL3 against C + raylib, on desk first and then through the agreed Luna operator. Python may help prototype tools but need not be the shipping runtime.
 - Fixed-timestep or frame-based game loop, scene/state machine, sprite atlas, bitmap text, simple particle and palette effects; avoid unnecessary 3D / Wolfenstein raycasting.
