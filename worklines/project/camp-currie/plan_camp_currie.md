@@ -1,5 +1,5 @@
 ---
-**Status**: 📋 Planning — project workline requested by the user, 2026-11-01; implementation not green-lit
+**Status**: 📋 Planning — initial shell requested by the user, 2026-11-01; implementation not green-lit
 **Date**: 2026-11-01
 **Priority**: Exploratory
 **Maintained**: Yes
@@ -13,6 +13,8 @@
 First cross-agent **project workline**, distinct from agent worklines: `worklines/project/camp-currie/`. The project may be developed with **Codex** rather than Claude Code; this choice concerns development tooling, not an additional runtime model. Professor coordinates dependencies; this plan owns the application scope, not other agents' components.
 
 **Product:** a standalone, offline, fullscreen English listening and pronunciation game on Luna. No dependency on Mike or a general-purpose LLM at runtime. Short deterministic lessons, guided repetition, measurable feedback, and progression.
+
+**First delivery boundary (user direction, 2026-11-01):** begin with the game shell only. It must be a navigable, playable-looking native application with deterministic simulated exercise results, but it must not capture audio, load or invoke STT/TTS/acoustic models, or depend on a Mycroft, Wyoh, Mike, Mannie or Hazel runtime/API. Speech remains a later replaceable boundary; the first two steps establish the screens, state transitions and control feel that speech will eventually occupy.
 
 ## Visual identity — a firm constraint
 The look belongs to **TANSTAAFLLM / Luna**, not to Final Fantasy. Final Fantasy-era RPGs inspire only the **dialogue interaction mechanics** (portraits, text boxes, transitions, turns), not their characters, world, assets, UI art or palette.
@@ -81,28 +83,47 @@ Keep the native game and deterministic pedagogy shared; isolate platform audio, 
 - Hazel advises on the graphic style and reuse of **original shared assets**; no silent changes to Hazel sources.
 - Mannie/Codex implements the project under user authorisation, while Mannie remains the sole Luna operator. No device SSH without its agreement.
 
+## Initial-shell isolation
+
+- The shell is a self-contained project artifact. It changes no component workline plan, code, service, asset library or device configuration.
+- Use only original placeholder art, generated primitives, or assets already explicitly licensed for this project. Do not copy Hazel assets or request changes from Hazel for Steps 1–2.
+- Model the future exercise evaluator behind a local deterministic fake (`success`, `retry`, `uncertain`) so its eventual speech implementation can replace it without changing scene flow.
+- Host-only work is sufficient for the initial shell. A Luna deployment, Wyoh launch integration, gamepad daemon integration, microphone access and audio playback are all out of scope unless separately planned and green-lit.
+- The implementing worker remains unnamed in project-facing artifacts for now. This does not alter repository traceability, review, green-light, or commit requirements.
+
+## 🚦 Green-light protocol
+
+- Planning and documentation only until the user explicitly says **“🟩 go Step N”**.
+- Step 1 and Step 2 are independently gated. A green light for Step 1 does not authorise Step 2.
+- A request to add audio capture, STT, TTS, acoustic scoring, device deployment, or a cross-workline dependency is a material scope change: update this plan first and obtain the relevant later green light.
+
 ## Green-light steps (planning is allowed; implementation requires explicit go)
-### Step 1 — Game design and visual storyboard
-**Status:** 📝 proposed
-- [ ] 1.1 Detail screen-by-screen sequence, timings, buttons, accessibility and error/uncertainty states.
-- [ ] 1.2 Create 3–5 original stills/mockups in Luna's retro-sci-fi style, with asset licences/provenance.
-- [ ] 1.3 Agree on an interface/animation vocabulary with Hazel without changing her workline.
-**Exit:** reviewed storyboard and visual acceptance criteria.
-
-### Step 2 — Native rendering spike
+### Step 1 — Standalone navigable shell (no speech)
 **Status:** ⏳ pending
-- [ ] 2.1 Compare SDL and raylib by implementation size, packaging, measured FPS, memory and gamepad control.
-- [ ] 2.2 Render one interactive dialogue scene at 720×720, test on host, then Luna with Mannie's permission.
-**Exit:** evidence-backed choice of native stack and screenshot proof.
+- [ ] 1.1 Select and document the smallest host-native rendering stack after a bounded comparison of SDL and raylib; do not install or change anything on Luna.
+- [ ] 1.2 Create a self-contained application skeleton at the intended 360×360 logical resolution, scaled to 720×720 with nearest-neighbour rendering.
+- [ ] 1.3 Implement controller/keyboard-navigable Title, Mission Select, Dialogue, “Your turn” placeholder, Result and Debrief scenes; every state and transition is deterministic and inspectable.
+- [ ] 1.4 Use original placeholder visual/audio-free assets and show an explicit no-microphone/no-speech affordance rather than imitating a live recording.
+- [ ] 1.5 Add reproducible host tests for the scene state machine and navigation, plus inspected screenshots of each screen.
+**Exit:** a local, fullscreen shell can be launched and navigated end-to-end with no microphone permission, audio input/output, model asset, network connection, device access or component-workline integration.
 
-### Step 3 — Speech and pronunciation experiment
+### Step 2 — Simulated first-mission vertical slice (no speech)
+**Status:** ⏳ pending
+- [ ] 2.1 Add one short “Meet the Crew” mission using the Level 1 names and original placeholder crew/terminal presentation.
+- [ ] 2.2 Drive the exercise loop with an explicitly labelled deterministic simulated evaluator: success, retry and uncertain; include replay-equivalent text/prompt controls without audio playback.
+- [ ] 2.3 Implement progress, retry and final debrief states, including a visible explanation that a result is simulated rather than a pronunciation judgement.
+- [ ] 2.4 Run five simulated checkpoints in the shell and make their completion state visible; this proves the future exam flow without exploration, microphone capture or an STT/TTS dependency.
+- [ ] 2.5 Add deterministic tests for success/retry/uncertain paths and an inspected screenshot/evidence set for the complete host run.
+**Exit:** a person can complete, retry and review a five-checkpoint first mission entirely through the native shell, while the app remains offline and contains no operational speech or model integration.
+
+### Step 3 — Speech and pronunciation experiment (later)
 **Status:** ⏳ pending
 - [ ] 3.1 Define Mycroft capture/STT/TTS API contracts and an opt-in sample corpus.
 - [ ] 3.2 Compare lexical baseline, known-word handling, phoneme alignment / GOP options, and abstention/uncertainty.
 - [ ] 3.3 Measure latency and peak RSS; distinguish transcription errors from actual phonetic errors.
-**Exit:** tested scoring contract and fallback for no phonetic model.
+**Exit:** tested scoring contract and fallback for no phonetic model. This step may replace the Step 2 simulated evaluator only after its own green light and contract review.
 
-### Step 4 — Three playable levels
+### Step 4 — Three playable speech-enabled levels (later)
 **Status:** ⏳ pending
 - [ ] 4.1 Implement the deterministic level data and retry/spaced-practice rules.
 - [ ] 4.2 Integrate audio, results and original character sprites.
@@ -110,6 +131,8 @@ Keep the native game and deterministic pedagogy shared; isolate platform audio, 
 **Exit:** three fully playable short levels, documented reproducible tests.
 
 ## Explicit non-goals
+- No speech capture, STT, TTS, acoustic/phonetic scoring, model download, microphone permission or audio playback in Steps 1–2.
+- No Luna deployment, Wyoh integration, gamepad-daemon change, or cross-workline implementation in Steps 1–2.
 - No Mike dependence, mandatory cloud service, or LLM in the game loop.
 - No claims of pronunciation proficiency based solely on Kroko recognition.
 - No imported Final Fantasy assets, characters or graphical identity.
@@ -128,3 +151,9 @@ Keep the native game and deterministic pedagogy shared; isolate platform audio, 
 - `docs/01_principles.md`
 
 **Coordination:** This plan is a cross-agent proposal; no task is assigned to another agent until its own plan and approvals are updated.
+
+## Plan change log
+
+| Date | Change |
+| --- | --- |
+| 2026-11-01 | Reordered the initial delivery into an isolated native shell (Step 1) and a simulated five-checkpoint vertical slice (Step 2), both deliberately without speech services or other-workline integration. |
