@@ -10,7 +10,9 @@ conversation, as `/new` does. Runs: one greedy (temperature 0) and three with
 the client's sampling and a fixed seed. Nothing is graded here; Professor
 grades the transcripts.
 
-The harness is the client's: nothing is adapted.
+The harness is the client's. LFM2.5: nothing is adapted. SmolLM2: its own
+ChatML template, which has no BOS, so L0 starts at `<|im_start|>`; the rest
+(system prompt, sampling, 120-token cap, KEEP_CTX) is Mike's.
 """
 
 from __future__ import annotations
@@ -32,13 +34,32 @@ import mike_server as ms  # noqa: E402
 from test_mike_client import _port  # noqa: E402
 
 ASSETS = Path(os.environ.get("MIKE_ASSET_ROOT", "/data/michael/tanstaafllm/mike-assets"))
-MODELS = {"lfm2.5-350m": "LFM2.5-350M-Q4_0.gguf"}
+# name: (file, languages). SmolLM2 (17.5, the user via Professor, 2026-11-01) is English-only:
+# bartowski/SmolLM2-360M-Instruct-GGUF @ 7be6f65, Q4_0, Apache-2.0, sha256 c3608933….
+MODELS = {"lfm2.5-350m": ("LFM2.5-350M-Q4_0.gguf", ("fr", "en")),
+          "smollm2-360m": ("SmolLM2-360M-Instruct-Q4_0.gguf", ("en",))}
 SCENARIOS = json.loads((Path(__file__).with_name("assessment_scenarios.json")).read_text())["scenarios"]
 RUNS = {"greedy": {"temperature": 0.0, "top_k": 1, "repeat_penalty": st.SAMPLING["repeat_penalty"], "seed": 0},
         **{f"seed{s}": {**st.SAMPLING, "seed": s} for s in (1, 2, 3)}}
 THREADS = int(os.environ.get("MIKE_THREADS", "8"))  # desk speed only; it does not change the answers' quality
 STAMP = os.environ.get("MIKE_ASSESS_STAMP", datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
 RUN_DIR = ev.REPO / "results/mike/assessment" / STAMP
+
+
+class NoBosConversation(st.Conversation):
+    """ChatML without a BOS token (SmolLM2's template)."""
+
+    def __post_init__(self) -> None:
+        self.l0 = self.tokenize(f"<|im_start|>system\n{self.system}<|im_end|>\n")
+        self.reset()
+
+
+def conversation(model: str, server: st.Server, lang: str) -> st.Conversation:
+    if model.startswith("smollm"):
+        end = server.tokenize("<|im_end|>")
+        assert len(end) == 1, end
+        return NoBosConversation(server.tokenize, st.SYSTEM[lang], st.Template(-1, end[0], server.tokenize("\n")))
+    return st.Conversation(server.tokenize, st.SYSTEM[lang], server.template())
 
 
 def transcript(model: str, scenario: str, lang: str, run: str, rows: list[dict]) -> str:
@@ -56,7 +77,8 @@ def transcript(model: str, scenario: str, lang: str, run: str, rows: list[dict])
 @pytest.mark.timeout(4 * 3600)
 @pytest.mark.parametrize("model", list(MODELS))
 def test_assessment(model, monkeypatch):
-    path = ASSETS / MODELS[model]
+    file, langs = MODELS[model]
+    path = ASSETS / file
     if not path.is_file():
         pytest.skip(f"{path} missing")
     out_dir = RUN_DIR / model
@@ -68,8 +90,8 @@ def test_assessment(model, monkeypatch):
         for run, sampling in RUNS.items():
             monkeypatch.setattr(st, "SAMPLING", sampling)
             for scenario, spec in SCENARIOS.items():
-                for lang in ("fr", "en"):
-                    conv = st.Conversation(server.tokenize, st.SYSTEM[lang], server.template())
+                for lang in langs:
+                    conv = conversation(model, server, lang)
                     frame = st.L0Frame(server, conv.l0)
                     frame.put_back()
                     mine = []
@@ -77,7 +99,7 @@ def test_assessment(model, monkeypatch):
                         r = st.answer(server, conv, q, io.StringIO(), lang=lang)
                         if r["rolled_over"]:  # as the client does
                             frame.put_back()
-                        mine.append(r | {"model": model, "file": path.name, "scenario": scenario, "lang": lang,
+                        mine.append(r | server.rss_kib() | {"model": model, "file": path.name, "scenario": scenario, "lang": lang,
                                          "run": run, "turn": t})
                     (out_dir / f"{scenario}-{lang}-{run}.md").write_text(transcript(model, scenario, lang, run, mine))
                     rows += mine
@@ -85,5 +107,5 @@ def test_assessment(model, monkeypatch):
                         f.writelines(json.dumps(r, ensure_ascii=False) + "\n" for r in mine)
     finally:
         server.stop()
-    expected = len(RUNS) * 2 * sum(len(s["fr"]) for s in SCENARIOS.values())
+    expected = len(RUNS) * len(langs) * sum(len(s["fr"]) for s in SCENARIOS.values())
     assert len(rows) == expected and all(r["answer"] or r["stop"] for r in rows)
