@@ -80,21 +80,21 @@ Planning and documentation are always allowed. Implementation needs Adam's **"�
 **Exit:** `docs/0101_01_design-and-stack.md` covers 1.1–1.5.
 
 ### Step 2 — Navigable shell (no speech)
-**Status:** ⏳ green-lit, not started
-- [ ] 2.1 `src/camp-currie/`: a pure core (scenes, actions, state) and a pygame renderer at 720×720.
-- [ ] 2.2 Title, Mission select (Level 1 open, Levels 2–3 shown locked), Briefing, Checkpoint, Your turn, Result and Debrief, navigable with the arrows, Return and Escape.
-- [ ] 2.3 An explicit "no microphone, simulated" sign on Your turn; no audio of any kind.
-- [ ] 2.4 Development agent protocol (`--agent`, JSON lines) and frame capture (`--shot`).
-- [ ] 2.5 Tests under `test/camp-currie/` with a `.feature` contract; every screen rendered and inspected; peak RSS reported for the full run.
+**Status:** ✅ done 2026-11-02 — [docs/0201_01_shell-result.md](docs/0201_01_shell-result.md)
+- [x] 2.1 `src/camp-currie/`: a pure core (scenes, actions, state) and a pygame renderer at 720×720.
+- [x] 2.2 Title, Mission select (Level 1 open, Levels 2–3 shown locked), Briefing, Checkpoint, Your turn, Result and Debrief, navigable with the arrows, Return and Escape.
+- [x] 2.3 An explicit "no microphone, simulated" sign on Your turn; no audio of any kind.
+- [x] 2.4 Development agent protocol (`--agent`, JSON lines) and frame capture (`--shot`).
+- [x] 2.5 Tests under `test/camp-currie/` with a `.feature` contract; every screen rendered and inspected; peak RSS reported for the full run.
 
 **Exit:** the shell runs on Termidor and `luna-pi`, every screen is reached with the keys alone, and the tests pass. Record: `docs/0201_01_shell-result.md`.
 
 ### Step 3 — Simulated first mission (no speech)
-**Status:** ⏳ green-lit, not started
-- [ ] 3.1 "Meet the Crew": five checkpoints, the names Mannie, Wyoh, Mycroft, Mike and Luna, each with a crew portrait cropped from the key art (Mycroft's microphone drawn in code) and a pronunciation hint. Wolfenstein, the sixth Level 1 name, comes with the full Level 1 (Step 5).
-- [ ] 3.2 The deterministic evaluator drives each attempt (a fixed script, seeded for tests); "listen again" shows the prompt again, since there is no audio.
-- [ ] 3.3 Progress (five signal lights), retries, the uncertain state with its reason, and a debrief saying the result is simulated, not a pronunciation score.
-- [ ] 3.4 Tests for the success, retry and uncertain paths and for a full mission, with screenshots of the run inspected and the peak RSS on the desk and on `luna-pi`.
+**Status:** ✅ done 2026-11-02 — [docs/0301_01_first-mission-result.md](docs/0301_01_first-mission-result.md)
+- [x] 3.1 "Meet the Crew": five checkpoints, the names Mannie, Wyoh, Mycroft, Mike and Luna, each with a crew portrait cropped from the key art (Mycroft's microphone drawn in code) and a pronunciation hint. Wolfenstein, the sixth Level 1 name, comes with the full Level 1 (Step 5).
+- [x] 3.2 The deterministic evaluator drives each attempt (a fixed script, seeded for tests); "listen again" shows the prompt again, since there is no audio.
+- [x] 3.3 Progress (five signal lights), retries, the uncertain state with its reason, and a debrief saying the result is simulated, not a pronunciation score.
+- [x] 3.4 Tests for the success, retry and uncertain paths and for a full mission, with screenshots of the run inspected and the peak RSS on the desk and on `luna-pi`.
 
 **Exit:** a person can play, retry and finish the five-checkpoint mission with the keys alone. Record: `docs/0301_01_first-mission-result.md` (Step 2's own record is `docs/0201_01_shell-result.md`).
 
@@ -123,6 +123,19 @@ Planning and documentation are always allowed. Implementation needs Adam's **"�
 - No browser, engine or LLM in the game; no hidden helper process.
 - No Final Fantasy assets or identity. The series' key art and OFL fonts are used, with their provenance recorded; Hazel's video sources are not changed.
 
+## Risks
+
+- **Memory under Wayland:** SDL2 has no software framebuffer on Wayland, so the GPU driver is loaded. `luna-pi` peaks at 106.5 MiB, mostly Mesa's shared LLVM code. Luna (libmali) is not measured. Mitigation, once the look is accepted: SDL3, or a thin `wl_shm` client.
+- **The key-art portraits** are crops; a speaking or animated portrait needs original frames (Hazel, later).
+
+## Progress tracking ✅
+
+- ✅ Step 1 — Study and design
+- ✅ Step 2 — Navigable shell
+- ✅ Step 3 — Simulated first mission
+- ⏳ Step 4 — Speech experiment (not green-lit)
+- ⏳ Step 5 — Three levels and the field exam (not green-lit)
+
 ## Open questions
 
 - Does the teacher character reuse Luna's cast, or is it a new original character?
@@ -136,12 +149,12 @@ Planning and documentation are always allowed. Implementation needs Adam's **"�
 ## Workline artifacts
 
 - (Step 1) [docs/0101_01_design-and-stack.md](docs/0101_01_design-and-stack.md)
-- (Step 2) `docs/0201_01_shell-result.md`
-- (Step 3) `docs/0301_01_first-mission-result.md`
+- (Step 2) [docs/0201_01_shell-result.md](docs/0201_01_shell-result.md): the shell, its screens, the memory finding
+- (Step 3) [docs/0301_01_first-mission-result.md](docs/0301_01_first-mission-result.md): the mission and its evidence
 
 ## Time log
 
 | Date | Entry |
 |---|---|
 | 2026-11-01 | Codex: Steps 1–3 attempted; result rejected by Adam. |
-| 2026-11-02 | Wyoh's session: plan rewritten; Codex's uncommitted files archived in `tmp/`; pygame-ce measured on Termidor and `luna-pi`; plan sent to Professor for review. Professor: OK, with 6 remarks folded in (portrait provenance, one record per step, Step 4 from Mycroft's Luna measures, Wolfenstein later, ownership line in Wyoh's plan). Adam: game mechanics from reference games, not only the videos. |
+| 2026-11-02 | Wyoh's session: plan rewritten; Codex's uncommitted files archived in `tmp/`; pygame-ce measured on Termidor and `luna-pi`; plan sent to Professor for review. Professor: OK, with 6 remarks folded in (portrait provenance, one record per step, Step 4 from Mycroft's Luna measures, Wolfenstein later, ownership line in Wyoh's plan). Adam: game mechanics from reference games, not only the videos. Steps 1–3 done: 10 tests pass, every screen inspected, full mission played on `luna-pi`'s real Sway. |
