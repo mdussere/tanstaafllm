@@ -14,6 +14,19 @@
    ],
    "expect": "Turn 3: Michel."
   },
+  "S1b-paul": {
+   "fr": [
+    "Bonjour, je m'appelle Paul. Et toi, comment tu t'appelles ?",
+    "Enchanté ! Il fait beau aujourd'hui, tu ne trouves pas ?",
+    "Au fait, comment je m'appelle ?"
+   ],
+   "en": [
+    "Hello, my name is Paul. And what is your name?",
+    "Nice to meet you! It's a lovely day today, isn't it?",
+    "By the way, what is my name?"
+   ],
+   "expect": "S1 with the name Paul (Professor, 2026-11-01): checks whether 'Michel' (French for Michael, short form Mike) confused the model. Turn 3: Paul."
+  },
   "S2-knowledge": {
    "fr": [
     "De quelle couleur est la mer ?",

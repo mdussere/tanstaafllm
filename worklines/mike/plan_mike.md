@@ -338,14 +338,14 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
   - (b) retrieval of short knowledge blocks, for a later RAG.
 
   Speed is the criterion: a few milliseconds per sentence, warm. Inputs are short. Long knowledge is summarised offline before it is embedded, so no long-text handling is needed. The "I don't know" filter is dropped for now (17.6), and nothing goes into the conversation or onto Luna yet.
-- [ ] 14.1 **Data, English:**
+- [x] 14.1 (done 2026-11-01: `flashlight_data.json`, `flashlight_blocks.py`, 65 guide blocks) **Data, English:**
   - a small labelled set of short sentences for routing: small talk, a question about the guide, a Luna action, plus a few domains;
   - short knowledge blocks (~100 words) from Luna's guide (`docs/`, how-tos), with questions that each name their expected block, and questions outside the guide.
-- [ ] 14.2 **Candidates:**
+- [x] 14.2 (done: POTION-2M/4M/8M, POTION-retrieval-32M, BM25, TF-IDF) **Candidates:**
   - Model2Vec POTION-2M, 4M and 8M;
   - a lexical baseline (TF-IDF or BM25);
   - any other tiny static or sentence embedder worth trying, each noted with its source, licence and size; weights stay out of Git.
-- [ ] 14.3 **Measures, Termidor:**
+- [x] 14.3 (done 2026-11-01, [`docs/1403_01`](docs/1403_01_flashlight-embedding.md): all static models ~0.14 ms per sentence; POTION-4M proposed, 81 % routing, 24/30 top-3, AUC 0.94, 15 MB, ~92 MiB process; for review) **Measures, Termidor:**
   - milliseconds per embedding, for a short sentence and for a ~100-word block;
   - RAM and disk;
   - zero-shot routing accuracy;
@@ -442,6 +442,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
 | Timestamp (`date`) | Update |
 |---|---|
 | sam. 31 oct 2026 12:59 CET | 12.4 done by Wyoh (6.11, 251e6c0): Mike's window and FN+B work on Luna; screenshot checked (Mike answers in its window). Left: the user's own try with real dictation. |
+| dim. 01 nov 2026 17:35 CET | 17.6 recorded (identity line tried and dropped; English default; Paul check: own name Mike 3/4). 14.1–14.3 done on Termidor (`docs/1403_01`): POTION-4M proposed as the flashlight embedding; sent to Professor for review. |
 | dim. 01 nov 2026 12:14 CET | Step 17 recorded (user via Professor): small-talk assessment of the unchanged 350M, before Steps 14–16; scenario files written, waiting for Professor's review. 1.2B and Qwen3-4B references dropped by the user. |
 | dim. 01 nov 2026 12:04 CET | 13.5 done on the desk (`docs/1305_01`, `results/mike/uncertainty/20261101T110218Z/`): a "say you are not sure" sentence gives 0/6 doubts on unknowable questions, as the current prompt; not kept. 13.9 on Luna still waits for Mannie 6.7c (its user's go) and Wyoh 6.12. |
 | sam. 31 oct 2026 20:09 CET | 13.8 and 13.9 done on the desk on the user's request: every session logged (`chat.jsonl` with session ids, plus a readable `conversations/<session>.md`); the switch with Mannie (ask, `mannie stop --save`, `/mannie`). Default suite 93 passed; desk integration (switch and back, signals) 4 passed, `results/mike/client-desk/20261031T190741Z/switch/`. Found that Mannie's lock reader takes Mike's 3-field lock for a dead one (Mannie 6.7c). Deployment to Luna waits for Mannie's fix and Wyoh's 6.12, together. |
@@ -516,6 +517,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
 - [`docs/1205_01_smalltalk-on-luna.md`](docs/1205_01_smalltalk-on-luna.md) — Step 12.5: small talk measured on Luna: first word in about 2.5 s, answer streamed at about 5 tokens/s, about 300 MiB.
 - [`docs/1305_01_graceful-uncertainty.md`](docs/1305_01_graceful-uncertainty.md) — Step 13.5: a prompt asking to admit doubt changes nothing; the 350M model invents (0/6 doubts on unknowable questions).
 - [`docs/1704_01_smalltalk-assessment-verdict.md`](docs/1704_01_smalltalk-assessment-verdict.md) — Step 17.4 (Professor): the 350M as shipped is poor in French, usable in light English small talk, reads a supplied text well, and never abstains.
+- [`docs/1403_01_flashlight-embedding.md`](docs/1403_01_flashlight-embedding.md) — Step 14.1–14.3: the flashlight embedding on Termidor; POTION-4M proposed.
 - [`docs/1007_01_speech-to-command-line-survey.md`](docs/1007_01_speech-to-command-line-survey.md) — speech/NL to command line: existing projects (Vox, NL2Shell, BashGemma), the MIT NL2SH data and results; training helps small models but open bash stays far from 90 %.
 - [`docs/1006_01_chat-gbc-on-the-desk.md`](docs/1006_01_chat-gbc-on-the-desk.md) — 10.6: Chat-GBC's shipped models reproduce their own numbers on Termidor; a trained specialist that generalises to 32–40 % of new phrasings.
 - [`docs/0902_01_prestac-desk-result.md`](docs/0902_01_prestac-desk-result.md) — Step 9.2: PreStaC on the desk: 98.3 % restored, 18 tokens read per question, same answers; the layer order costs accuracy.

@@ -39,6 +39,9 @@ video = [
     "scipy>=1.18.1",
     "soundfile>=0.14.0",
 ]
+embed = [
+    "model2vec>=0.10.0",
+]
 
 [tool.uv]
 # The repository is a collection of scripts, tests, and workline evidence, not
