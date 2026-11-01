@@ -442,7 +442,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
 | Timestamp (`date`) | Update |
 |---|---|
 | sam. 31 oct 2026 12:59 CET | 12.4 done by Wyoh (6.11, 251e6c0): Mike's window and FN+B work on Luna; screenshot checked (Mike answers in its window). Left: the user's own try with real dictation. |
-| dim. 01 nov 2026 17:55 CET | 14.3 re-run on enlarged sets at Professor's request (`results/mike/flashlight/20261101T163724Z/`): routing needs a static model (POTION-4M), retrieval over the guide does as well with BM25/TF-IDF. 14.4 waits for Luna (offline) and a slot via Professor. |
+| dim. 01 nov 2026 17:38 CET | 14.3 re-run on enlarged sets at Professor's request (`results/mike/flashlight/20261101T163724Z/`): routing needs a static model (POTION-4M), retrieval over the guide does as well with BM25/TF-IDF. 14.4 waits for Luna (offline) and a slot via Professor. |
 | dim. 01 nov 2026 17:35 CET | 17.6 recorded (identity line tried and dropped; English default; Paul check: own name Mike 3/4). 14.1–14.3 done on Termidor (`docs/1403_01`): POTION-4M proposed as the flashlight embedding; sent to Professor for review. |
 | dim. 01 nov 2026 12:14 CET | Step 17 recorded (user via Professor): small-talk assessment of the unchanged 350M, before Steps 14–16; scenario files written, waiting for Professor's review. 1.2B and Qwen3-4B references dropped by the user. |
 | dim. 01 nov 2026 12:04 CET | 13.5 done on the desk (`docs/1305_01`, `results/mike/uncertainty/20261101T110218Z/`): a "say you are not sure" sentence gives 0/6 doubts on unknowable questions, as the current prompt; not kept. 13.9 on Luna still waits for Mannie 6.7c (its user's go) and Wyoh 6.12. |
