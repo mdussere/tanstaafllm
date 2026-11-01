@@ -304,6 +304,23 @@ Why: the review found two real problems in the client, both reproduced on Termid
 - [ ] 13.6 **Non-regression on Luna:** Step 12.5's four runs again; first word and memory no worse.
 - **Acceptance:** each finding fixed or explicitly kept with a reason in `docs/16`; the default suite and the desk integration tests pass; 13.6 shows no regression.
 
+### Step 17 — Small-talk quality, assessed with nothing changed (runs before Steps 14–16)
+
+**Status**: ⏳ green-lit by the user via Professor (2026-11-01); scenario files written, waiting for Professor's review before any run.
+**Why:** the user finds talking to Mike "hallucination all the time, almost psychedelic" and wants reproducible evidence of where Mike stands before any tooling, decider or RAG work.
+**Rules (Professor, from the user):** Termidor only, for quality; Luna later, perhaps a subset, for timing. No change to Mike: the same client code, system prompt, LFM2.5-350M Q4_0 and sampling. No project knowledge: common knowledge and small talk only. LFM2.5-350M only (the user dropped the 1.2B and Qwen3-4B references, 2026-11-01). Professor grades: correct, approximate, wrong, invented or incoherent, plus memory and grounding. Mike does not grade and tunes nothing.
+
+- [x] 17.1 **Scenarios as data** (`test/mike/assessment_scenarios.json`, `mike_assessment.feature`, runner `test_mike_assessment.py`), each in French and in English:
+  - S1, greeting and name, 3 turns;
+  - S2, common knowledge, 10 questions;
+  - S3, a followed conversation on holidays, 5 turns;
+  - S4, a long conversation of 20 turns, with the dog "Rex" and "Lyon" asked again at turns 15 and 20;
+  - S5, grounding: a short paragraph, then 4 questions, one not answered by it;
+  - S6, a novel that does not exist.
+- [ ] 17.2 **Professor's review** of the files.
+- [ ] 17.3 **Run on Termidor:** one greedy run and seeds 1–3, all recorded in `results/mike/assessment/<timestamp>/` (`turns.jsonl` plus one Markdown transcript per scenario, language and run). The transcript paths go to Professor.
+- [ ] 17.4 **Professor's verdict** (written by Professor).
+
 ### Step 14 — Local retrieval over Luna's guide (Adam's priority, 2026-10-31)
 **Status**: 📝 Proposed, not green-lit. Source: Adam's review § 10 (`worklines/adam/2026-10-31_mike_incremental-capabilities_research.md`).
 
@@ -386,6 +403,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
 - 🧪 Step 10 — Qualify a model: 90 % stable (green-lit 2026-10-29; priority)
 - ✅ Step 11 — Train tiny models on natural language → shell (done 2026-10-31: 0–1/300 exact)
 - 🧪 Step 12 — Small talk, made fluid (12.1–12.5 done 2026-10-31; first word in about 2.5 s on Luna)
+- ⏳ Step 17 — Small-talk assessment (scenarios written; waiting for Professor's review)
 - 🧪 Step 13 — Small-talk harness fixes (13.1–13.5, 13.7–13.9 done; 13.9 on Luna waits for Mannie 6.7c and Wyoh 6.12; 13.6 open)
 - 📝 Step 14 — Local retrieval over Luna's guide (proposed, Adam's priority)
 - 📝 Step 15 — Shared benchmark (proposed)
@@ -400,6 +418,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
 | Timestamp (`date`) | Update |
 |---|---|
 | sam. 31 oct 2026 12:59 CET | 12.4 done by Wyoh (6.11, 251e6c0): Mike's window and FN+B work on Luna; screenshot checked (Mike answers in its window). Left: the user's own try with real dictation. |
+| dim. 01 nov 2026 12:14 CET | Step 17 recorded (user via Professor): small-talk assessment of the unchanged 350M, before Steps 14–16; scenario files written, waiting for Professor's review. 1.2B and Qwen3-4B references dropped by the user. |
 | dim. 01 nov 2026 12:04 CET | 13.5 done on the desk (`docs/1305_01`, `results/mike/uncertainty/20261101T110218Z/`): a "say you are not sure" sentence gives 0/6 doubts on unknowable questions, as the current prompt; not kept. 13.9 on Luna still waits for Mannie 6.7c (its user's go) and Wyoh 6.12. |
 | sam. 31 oct 2026 20:09 CET | 13.8 and 13.9 done on the desk on the user's request: every session logged (`chat.jsonl` with session ids, plus a readable `conversations/<session>.md`); the switch with Mannie (ask, `mannie stop --save`, `/mannie`). Default suite 93 passed; desk integration (switch and back, signals) 4 passed, `results/mike/client-desk/20261031T190741Z/switch/`. Found that Mannie's lock reader takes Mike's 3-field lock for a dead one (Mannie 6.7c). Deployment to Luna waits for Mannie's fix and Wyoh's 6.12, together. |
 | sam. 31 oct 2026 19:51 CET | 13.7: client renamed `mike.py` on the user's request and installed on Luna with `prestac.py` on the user's go (Mannie on Luna offline); `smalltalk.py` kept as a link for Wyoh's launcher, Wyoh asked to switch. The user's window was open with the Step 12 client: not touched, the new one starts at the next FN+B. |
