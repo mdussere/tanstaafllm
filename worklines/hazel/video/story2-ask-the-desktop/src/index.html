@@ -395,20 +395,25 @@ function cursor(t, x, y, h, c = C.green) { if (Math.floor(TA * 4) % 2 === 0) rec
 const V = (s, x, y, size, color, a, o = {}) => txt(s, x, y, size, color, Object.assign({ font: 'V', alpha: a, shadow: 3 }, o));
 const tag = (s, x, y, color, a = 1, o = {}) => txt(s, x, y, 28, color, Object.assign({ alpha: a }, o));
 
+// ---- Phone readability (user, 2026-11-01): the 1920-px frame spans a phone held upright.
+// Per screen: ONE key message (VT323 >= 90 or PS2P >= 56), at most one secondary (PS2P >= 40 or
+// VT323 >= 64); everything else is small glance text the story does not depend on, or is cut.
+// The HUD (stage number and title) keeps the series look.
+
 // ---- TITLE (0 - 6): the episode card
 function sTitle(t) {
   rect(0, 0, W, H, C.ink); stars(t, 20, seg(t, 0, 1) * 0.9);
   moon(W / 2, 1080 + 260, 1100, 0.35 * seg(t, 0, 1.5));
   txt('TANSTAAFLLM · STORY 2', W / 2, 330, 36, C.amber, { align: 'center', alpha: seg(t, 0.3, 0.5) });
   stampTxt('ASK THE DESKTOP', W / 2, 520, 100, C.chrome, t, 1.0, { align: 'center', from: 2.0 });
-  V('How an agent learned to work a desktop without looking at it.', W / 2, 650, 52, C.cyan, seg(t, 1.4, 1.6), { align: 'center' });
-  if (t > 2.4 && Math.floor(TA * 2.5) % 2 === 0) txt('PRESS START', W / 2, 880, 28, C.amber, { align: 'center' });
+  V('How an agent learned to work', W / 2, 635, 90, C.cyan, seg(t, 1.4, 1.6), { align: 'center' });   // large enough to read on a phone (user, 2026-11-01)
+  V('a desktop without looking at it.', W / 2, 725, 90, C.cyan, seg(t, 1.4, 1.6), { align: 'center' });
+  if (t > 2.4 && Math.floor(TA * 2.5) % 2 === 0) txt('PRESS START', W / 2, 885, 40, C.amber, { align: 'center' });
   flash(t, 1.0, 0, 0.25);
   flash(t, 6.0, 0.2, 0);
 }
 
 // ---- PLAYER (6 - 14): Wyoh, the desktop layer of Luna
-const STATS = [['ENGINE', 'SWAY, UNMODIFIED'], ['MACHINE', 'LUNA, A SMALL HANDHELD']];
 function sPlayer(t) {
   sky(C.navy, '#1a0f45'); stars(t, 25, 0.8);
   const bob = Math.round(Math.sin(t * Math.PI) * 2) * 4;
@@ -416,21 +421,14 @@ function sPlayer(t) {
   box(M, by, 560, 560, { edge: C.cyan });
   face('wyoh', M + 24, by + 24, 512);
   const X = 780, hp = easeOut(seg(t, 6.1, 6.45));
-  txt('PLAYER 2', X + (1 - hp) * 300, 230, 32, C.amber, { alpha: hp });
-  txt('WYOH', X + (1 - hp) * 500, 330, 80, C.chrome, { alpha: hp });
-  txt('THE DESKTOP LAYER OF LUNA', X, 400, 32, C.cyan, { alpha: seg(t, 6.8, 6.95) });
-  STATS.forEach(([k, v], i) => {
-    const t0 = 7.4 + i * 0.4, a = seg(t, t0, t0 + 0.12);
-    if (a <= 0) return;
-    rect(X, 440 + i * 70, 1020, 58, i % 2 ? C.navy2 : C.violet, 0.75 * a);
-    tag(k, X + 20, 482 + i * 70, C.dim, a);
-    tag(v, X + 260, 482 + i * 70, C.chrome, a, { maxW: 740 });
-  });
-  txt('QUEST:', X, 640, 32, C.amber, { alpha: seg(t, 8.2, 8.3) });
+  txt('PLAYER 2', X + (1 - hp) * 300, 250, 32, C.amber, { alpha: hp });
+  txt('WYOH', X + (1 - hp) * 500, 350, 80, C.chrome, { alpha: hp });
+  txt('THE DESKTOP LAYER', X, 440, 40, C.cyan, { alpha: seg(t, 6.8, 6.95) });
+  txt('OF LUNA', X, 500, 40, C.cyan, { alpha: seg(t, 6.8, 6.95) });
+  txt('QUEST:', X, 610, 32, C.amber, { alpha: seg(t, 8.2, 8.3) });
   const qa = seg(t, 8.25, 8.4);
-  V('"Give consumers a structured, inspectable,', X, 705, 48, C.chrome, qa, { maxW: 1020 });
-  V('synchronisable desktop they can observe', X, 757, 48, C.chrome, qa, { maxW: 1020 });
-  V('and operate without pixels."', X, 809, 48, C.chrome, qa, { maxW: 1020 });
+  V('Observe and operate', X, 705, 90, C.chrome, qa, { maxW: 1020 });
+  V('the desktop without pixels.', X, 790, 90, C.chrome, qa, { maxW: 1020 });
   flash(t, 6.0, 0, 0.3);
   dissolve(seg(t, 13.75, 14.0), C.ink, 11);
 }
@@ -440,23 +438,23 @@ const GUESS = [[15.0, 'A BUTTON?'], [15.5, 'A WINDOW?'], [16.0, 'WHICH ONE?']];
 function s1(t) {
   stageBg(t, 1); hud(t, 1, 14, STAGES[0][2]);
   if (t > 14.4) {                                   // the desktop, as a blurry screenshot
-    box(M, 240, 800, 430);
-    miniDesk(M + 30, 270, 740, 370, { focus: 1, bright: true });
-    pixelate(M + 30, 270, 740, 370, 37);
-    for (let y = 270; y < 640; y += 37) rect(M + 30, y, 740, 2, C.ink, 0.35);
-    for (let x = M + 30; x < M + 770; x += 37) rect(x, 270, 2, 370, C.ink, 0.35);
+    box(M, 230, 760, 400);
+    miniDesk(M + 30, 260, 700, 340, { focus: 1, bright: true });
+    pixelate(M + 30, 260, 700, 340, 35);
+    for (let y = 260; y < 600; y += 35) rect(M + 30, y, 700, 2, C.ink, 0.35);
+    for (let x = M + 30; x < M + 730; x += 35) rect(x, 260, 2, 340, C.ink, 0.35);
   }
-  if (t > 14.6) agent(990, 320 + Math.round(Math.sin(t * 6)) * 4, 10, t, 'squint');
-  GUESS.forEach(([t0, s], i) => {                  // each guess costs a coin
+  if (t > 14.6) agent(960, 300 + Math.round(Math.sin(t * 6)) * 4, 10, t, 'squint');
+  GUESS.forEach(([t0, s], i) => {                  // each guess costs a coin (glance text)
     if (t < t0) return;
-    const y = 300 + i * 100, a = seg(t, t0, t0 + 0.1);
+    const y = 290 + i * 100, a = seg(t, t0, t0 + 0.1);
     rect(1250, y - 46, measure(s, 28) + 40, 62, C.navy2, a); rect(1250, y - 46, 6, 62, C.amber, a);
     tag(s, 1270, y, C.amber, a);
     if (t < t0 + 0.6) coin(1230, y - 15 - 140 * seg(t, t0, t0 + 0.6), 3, t);
   });
-  V('Through screenshots, an agent guesses from pixels,', M, 740, 48, C.chrome, seg(t, 14.9, 15.1));
-  V('and pays for every image, on a small handheld.', M, 792, 48, C.chrome, seg(t, 14.9, 15.1));
-  txt('ON PAPER: A DOM FOR THE DESKTOP.', M, 870, 32, C.cyan, { alpha: seg(t, 17.0, 17.15) });
+  V('An agent guesses from pixels', M, 740, 90, C.chrome, seg(t, 14.9, 15.1));
+  V('and pays for every image.', M, 830, 90, C.chrome, seg(t, 14.9, 15.1));
+  txt('ON PAPER: A DESKTOP DOM.', M, 945, 40, C.cyan, { alpha: seg(t, 17.0, 17.15) });
   clearStamp(t, 18.5);
   flash(t, 14.0, 0, 0.3);
 }
@@ -466,18 +464,18 @@ function s2(t) {
   stageBg(t, 2); hud(t, 2, 20, STAGES[1][2]);
   if (t > 20.4) {                                    // the single full-screen scene
     const gone = t > 22.5;
-    box(M, 250, 760, 420, { edge: gone ? C.dim : C.chrome });
-    txt('HIOM', M + 50, 330, 44, gone ? C.dim : C.chrome);
-    rect(M + 50, 360, 660, 170, '#0c1440');
-    rect(M + 70, 380, 620, 24, '#3b4178'); rect(M + 70, 420, 400, 14, '#5c64a8'); rect(M + 70, 450, 300, 14, '#5c64a8');
+    box(M, 240, 760, 400, { edge: gone ? C.dim : C.chrome });
+    txt('HIOM', M + 50, 310, 32, gone ? C.dim : C.chrome);
+    rect(M + 50, 340, 660, 160, '#0c1440');
+    rect(M + 70, 360, 620, 24, '#3b4178'); rect(M + 70, 400, 400, 14, '#5c64a8'); rect(M + 70, 430, 300, 14, '#5c64a8');
     ['A', 'B', 'X'].forEach((k, i) => {              // the finite actions it advertises
-      const cx = M + 120 + i * 200, cy = 600;
+      const cx = M + 120 + i * 200, cy = 570;
       ctx.save(); ctx.fillStyle = gone ? '#3b4178' : [C.green, C.red, C.cyan][i]; ctx.beginPath(); ctx.arc(cx, cy, 36, 0, 7); ctx.fill(); ctx.restore();
       txt(k, cx, cy + 14, 28, C.ink, { align: 'center', shadow: 0 });
     });
   }
   // a real desktop does not fit: windows spill out of the scene
-  const SPILL = [[M + 560, 250, 240, 160], [M + 20, 500, 280, 150], [M + 480, 470, 300, 170], [M - 20, 380, 220, 140], [M + 280, 300, 240, 140]];
+  const SPILL = [[M + 560, 240, 240, 160], [M + 20, 480, 280, 150], [M + 480, 450, 300, 170], [M - 20, 370, 220, 140], [M + 280, 290, 240, 140]];
   SPILL.forEach(([x, y, w, h], i) => {
     const t0 = 21.6 + i * 0.15;
     if (t < t0) return;
@@ -486,17 +484,16 @@ function s2(t) {
     rect(cx - ww / 2 + 8, cy - hh / 2 + 8, ww, hh, C.shadow);
     rect(cx - ww / 2, cy - hh / 2, ww, hh, '#3b4178'); rect(cx - ww / 2 + 4, cy - hh / 2 + 18, ww - 8, hh - 22, '#05060f');
   });
-  const X = 960;
-  V('First idea: one full-screen scene,', X, 320, 48, C.chrome, seg(t, 20.6, 20.8));
-  V('with only the actions it advertises.', X, 372, 48, C.chrome, seg(t, 20.6, 20.8));
-  stampTxt('REOPENED', X + 30, 500, 64, C.red, t, 22.5, { rot: -0.05 });
-  V('One scene could not hold a real desktop.', X, 580, 48, C.chrome, seg(t, 22.8, 23.0), { maxW: 840 });
+  const X = 980;
+  tag('FIRST IDEA: ONE SCENE', X, 330, C.dim, seg(t, 20.6, 20.8));
+  tag('A DESKTOP DID NOT FIT.', X, 380, C.dim, seg(t, 22.8, 23.0));
+  stampTxt('REOPENED', X, 500, 48, C.red, t, 22.5, { rot: -0.05 });
   const a = seg(t, 23.2, 23.4);
-  if (a > 0) {                                       // the lesson kept from it
-    box(240, 685, 1300, 180, { edge: C.green, alpha: 0.95 * a });
-    tag('KEPT FROM IT:', 280, 735, C.amber, a);
-    stampTxt('WAIT FOR A NAMED CONDITION,', 890, 795, 44, C.green, t, 23.5, { align: 'center', from: 1.6 });
-    stampTxt('NEVER A FIXED DELAY.', 890, 850, 44, C.green, t, 23.5, { align: 'center', from: 1.6 });
+  if (a > 0) {                                       // the lesson kept from it: the key message
+    box(140, 650, 1640, 230, { edge: C.green, alpha: 0.95 * a });
+    tag('KEPT FROM IT:', 190, 705, C.amber, a);
+    stampTxt('WAIT FOR A NAMED CONDITION,', W / 2, 785, 56, C.green, t, 23.5, { align: 'center', from: 1.4 });
+    stampTxt('NEVER A FIXED DELAY.', W / 2, 855, 56, C.green, t, 23.5, { align: 'center', from: 1.4 });
   }
   clearStamp(t, 26.5);
   flash(t, 20.0, 0, 0.3);
@@ -506,38 +503,35 @@ function s2(t) {
 const TILES = [[31.0, 'SOCKET READY', '42 ms'], [31.5, 'FOCUS EVENT', '0.6 ms'], [32.0, 'SWAY MEMORY', '~20 MiB'], [32.5, 'KILLED, BACK IN', '7.5 ms']];
 function s3(t) {
   stageBg(t, 3); hud(t, 3, 28, STAGES[2][2]);
-  V("Don't build a compositor. Ask the one that exists.", M, 275, 48, C.cyan, seg(t, 28.4, 28.6));
+  V("Don't build a compositor.", M, 300, 90, C.cyan, seg(t, 28.4, 28.6));
+  V('Ask the one that exists.', M, 385, 90, C.cyan, seg(t, 28.4, 28.6));
   if (t > 28.9) {
-    box(M, 320, 560, 540, { edge: C.green });
-    miniDesk(M + 30, 350, 500, 300, { focus: Math.floor(t * 2) % 3 });
-    txt('SWAY', M + 30, 730, 44, C.chrome);
-    tag('UNMODIFIED', M + 30, 785, C.green, seg(t, 29.3, 29.4));
-    tag('NO FORK', M + 30, 830, C.amber, seg(t, 29.7, 29.8));
+    box(M, 430, 560, 440, { edge: C.green });
+    miniDesk(M + 30, 460, 500, 240, { focus: Math.floor(t * 2) % 3 });
+    txt('SWAY', M + 30, 760, 32, C.chrome);
+    tag('UNMODIFIED', M + 30, 805, C.green, seg(t, 29.3, 29.4));
+    tag('NO FORK', M + 30, 845, C.amber, seg(t, 29.7, 29.8));
     if (t > 30.2) {                                  // its own IPC socket
-      rect(M + 560, 500, 60, 24, '#8e97cc'); rect(M + 620, 490, 20, 44, '#cfd6ff');
-      tag('IPC', M + 570, 580, C.cyan, 1);
-      for (let i = 0; i < 4; i++) packet(t, TILES[i][0] - 0.3, TILES[i][0], M + 640, 760, 512, C.cyan);
+      rect(M + 560, 570, 60, 24, '#8e97cc'); rect(M + 620, 560, 20, 44, '#cfd6ff');
+      tag('IPC', M + 570, 650, C.cyan, 1);
+      for (let i = 0; i < 4; i++) packet(t, TILES[i][0] - 0.3, TILES[i][0], M + 640, 780, 582, C.cyan);
     }
   }
-  const X = 780;
-  if (t > 30.3) {
-    runs([['MEASURED ON ', C.amber], ['luna-pi', C.cyan]], X, 360, 28, { alpha: seg(t, 30.3, 30.4) });
-    V('a Raspberry Pi, headless Sway 1.10.1, 2026-09-26', X, 410, 48, C.dim, seg(t, 30.5, 30.7), { maxW: 1020 });
-  }
-  TILES.forEach(([t0, k, v], i) => {
+  const X = 800;
+  if (t > 30.3) runs([['MEASURED ON ', C.amber], ['luna-pi', C.cyan], [', A RASPBERRY PI', C.dim]], X, 460, 28, { alpha: seg(t, 30.3, 30.4) });
+  TILES.forEach(([t0, k, v], i) => {               // the secondary message: four figures, each on luna-pi
     if (t < t0) return;
-    const x = X + (i % 2) * 520, y = 440 + Math.floor(i / 2) * 215, a = seg(t, t0, t0 + 0.1);
-    box(x, y, 500, 200, { edge: C.cyan, alpha: 0.92 * a });
-    tag(k, x + 34, y + 62, C.dim, a, { maxW: 440 });
-    txt(v, x + 34, y + 134, 56, C.chrome, { alpha: a, scale: lerp(1.5, 1, easeOut(seg(t, t0, t0 + 0.15))) });
-    tag('luna-pi', x + 466, y + 176, C.cyan, a, { align: 'right' });
+    const x = X + (i % 2) * 510, y = 485 + Math.floor(i / 2) * 200, a = seg(t, t0, t0 + 0.1);
+    box(x, y, 490, 185, { edge: C.cyan, alpha: 0.92 * a });
+    tag(k, x + 30, y + 58, C.dim, a, { maxW: 430 });
+    txt(v, x + 30, y + 120, 40, C.chrome, { alpha: a, scale: lerp(1.5, 1, easeOut(seg(t, t0, t0 + 0.15))) });
+    tag('luna-pi', x + 460, y + 160, C.cyan, a, { align: 'right' });
   });
   clearStamp(t, 34.5);
   flash(t, 28.0, 0, 0.3);
 }
 
 // ---- STAGE 4 (36 - 44): the MCP bridge
-const STEPS = [[37.0, 'QUERY THE WINDOW TREE'], [38.0, 'ACT'], [39.0, 'WAIT FOR THE CONFIRMING EVENT']];
 function s4(t) {
   stageBg(t, 4); hud(t, 4, 36, STAGES[3][2]);
   agent(M + 20, 280, 9, t, 'ask');
@@ -556,21 +550,15 @@ function s4(t) {
   packet(t, 37.45, 37.85, P1x, P0, PY, C.green);      // ... the tree comes back
   packet(t, 38.0, 38.4, P0, P1x, PY, C.amber);        // act
   packet(t, 39.0, 39.4, P1x, P0, PY, C.green);        // the event confirms it
-  STEPS.forEach(([t0, s], i) => {
-    if (t < t0) return;
-    const a = seg(t, t0, t0 + 0.1), y = 640 + i * 62;
-    txt(String(i + 1), M, y, 32, C.amber, { alpha: a });
-    txt(s, M + 60, y, 32, C.chrome, { alpha: a });
-  });
-  stampTxt('26 TOOLS', 1560, 680, 64, C.amber, t, 40.0, { align: 'center', rot: -0.04 });
-  tag('luna-pi, THEN LUNA', 1560, 745, C.cyan, seg(t, 40.3, 40.4), { align: 'center' });
-  V('Aside: without structured output, a one-item list', M, 830, 48, C.dim, seg(t, 40.2, 40.4), { maxW: 1180 });
-  V('read as the object itself.', M, 880, 48, C.dim, seg(t, 40.2, 40.4), { maxW: 1180 });
+  V('Query the tree, act,', M, 700, 90, C.chrome, seg(t, 37.0, 37.15));
+  V('wait for the event.', M, 790, 90, C.chrome, seg(t, 39.0, 39.15));
+  stampTxt('26 TOOLS', 1580, 700, 48, C.amber, t, 40.0, { align: 'center', rot: -0.04 });
+  tag('luna-pi, THEN LUNA', 1580, 765, C.cyan, seg(t, 40.3, 40.4), { align: 'center' });
   clearStamp(t, 42.5);
   flash(t, 36.0, 0, 0.3);
 }
 
-// ---- STAGE 5, the boss (44 - 52): the black panel on Luna
+// ---- STAGE 5, the boss (44 - 52): the black panel on Luna; phase b from the flash at 48.5
 function s5(t) {
   stageBg(t, BOSS); hud(t, BOSS, 44, STAGES[4][2]);
   const fixed = t >= 48.5;
@@ -580,15 +568,19 @@ function s5(t) {
   const scr = t < 48.5 ? 'black' : (t < 48.6 ? 'flash' : 'desk');
   luna(170, 250 + Math.round(Math.sin(t * Math.PI) * 2) * 4, 5.5, t, scr, { focus: Math.floor(t * 2) % 3 });
   const X = 760;
-  tag('LUNA · 720 × 720 PANEL', X, 300, C.cyan, seg(t, 44.3, 44.4));
-  V('The same agent session, on the real panel:', X, 370, 48, C.chrome, seg(t, 44.5, 44.7), { maxW: 1040 });
-  stampTxt('BLACK.', X, 480, 64, C.red, t, 45.0, { rot: -0.04 });
-  V("Sway's own screenshots looked right.", X, 560, 48, C.chrome, seg(t, 45.6, 45.8), { maxW: 1040 });
-  if (t > 46.5) runs([['MALI GPU DRIVER: ', C.chrome], fixed ? ['LOADED', C.green] : ['NOT LOADED', C.red]], X, 650, 32, { alpha: seg(t, 46.5, 46.6) });
-  V('Sway was rendering in software.', X, 712, 48, C.dim, seg(t, 46.9, 47.1) * (fixed ? 0.45 : 1));
-  if (t > 48.8) {
-    termBox(X, 750, 520, 120, C.green);
-    V('1 passed', X + 40, 828, 56, C.green, 1, { shadow: 0 });
+  tag("LUNA'S REAL 720 × 720 PANEL", X, 300, C.cyan, seg(t, 44.3, 44.4));
+  if (!fixed) {
+    stampTxt('BLACK.', X, 440, 64, C.red, t, 45.0, { rot: -0.04 });
+    V("Sway's own screenshots", X, 560, 64, C.chrome, seg(t, 45.6, 45.8), { maxW: 1040 });
+    V('looked right.', X, 625, 64, C.chrome, seg(t, 45.6, 45.8), { maxW: 1040 });
+    if (t > 46.5) runs([['MALI GPU DRIVER: ', C.dim], ['NOT LOADED', C.red]], X, 740, 32, { alpha: seg(t, 46.5, 46.6) });
+  } else {
+    txt('GPU DRIVER', X, 440, 56, C.chrome);
+    txt('LOADED.', X, 520, 56, C.green);
+    if (t > 48.8) {
+      termBox(X, 600, 460, 130, C.green);
+      V('1 passed', X + 40, 690, 64, C.green, 1, { shadow: 0 });
+    }
   }
   clearStamp(t, 50.5);
   flash(t, 48.5, 0, 0.25);
@@ -607,37 +599,39 @@ function s6(t) {
   ACTIONS.forEach(([t0, , , b]) => { if (t >= t0 && t < t0 + 0.2) { press(ox, oy, s, 'FN'); press(ox, oy, s, b); } });
   if (t >= 54.6 && t < 54.8) press(ox, oy, s, 'L1');
   if (t >= 58.5 && t < 58.8) { press(ox, oy, s, 'FN'); press(ox, oy, s, 'B'); }
-  const X = 760;
   if (!phaseB) {
-    V('A daemon turns the buttons into desktop actions:', X, 330, 48, C.chrome, seg(t, 52.6, 52.8), { maxW: 1040 });
-    ACTIONS.forEach(([t0, k, s2], i) => {             // two rows of two: button, then action
+    const X = 760;
+    V('Buttons drive the desktop.', X, 330, 90, C.chrome, seg(t, 52.6, 52.8), { maxW: 1040 });
+    ACTIONS.forEach(([t0, k, s2], i) => {             // two rows of two: button, then action (glance text)
       if (t < t0) return;
       const x = X + (i % 2) * 530, y = 380 + Math.floor(i / 2) * 72;
       rect(x, y, 510, 58, C.navy2); rect(x, y + 52, 510, 6, C.cyan);
       tag(k, x + 16, y + 42, C.amber); tag(s2, x + 494, y + 42, C.cyan, 1, { align: 'right' });
     });
-    txt('THE SLATE TAKES THE TEXT.', X, 670, 32, C.amber, { alpha: seg(t, 54.8, 54.95) });
-    V('A floating text zone, opened with L1.', X, 730, 48, C.chrome, seg(t, 55.1, 55.3), { maxW: 1040 });
     tag('BUTTONS ONLY, ON LUNA, 2026-10-07', X, 580, C.dim, seg(t, 54.5, 54.6));
+    txt('THE SLATE TAKES', X, 700, 40, C.amber, { alpha: seg(t, 54.8, 54.95) });
+    txt('THE TEXT.', X, 760, 40, C.amber, { alpha: seg(t, 54.8, 54.95) });
+    tag('L1 OPENS IT', X, 830, C.dim, seg(t, 55.1, 55.3));
   } else {
-    agent(1640, 210, 5, t, 'ask');
-    txt('THE AGENT PRESSES', X, 320, 40, C.chrome, { alpha: seg(t, 57.6, 57.75) });
-    txt('THE SAME BUTTONS', X, 380, 40, C.chrome, { alpha: seg(t, 57.6, 57.75) });
-    V('through a virtual gamepad, not by clicking pixels.', X, 455, 48, C.chrome, seg(t, 57.9, 58.05), { maxW: 1040 });
+    const X = 680;
+    txt('A DEV AGENT PRESSES', X, 330, 56, C.chrome, { alpha: seg(t, 57.6, 57.75) });
+    txt('THE SAME BUTTONS', X, 405, 56, C.chrome, { alpha: seg(t, 57.6, 57.75) });
+    agent(1660, 365, 5, t, 'ask');
+    tag('VIA A VIRTUAL GAMEPAD, NOT PIXELS', X, 470, C.dim, seg(t, 57.9, 58.05));
     if (t > 58.5) {
       let x = X;
-      tag('ON LUNA, IN THE SLATE:', X, 535, C.amber);
-      x += keycap(x, 560, 'FN', t < 58.8) + 20;
-      txt('+', x + 10, 632, 40, C.chrome); x += 70;
-      x += keycap(x, 560, 'B', t < 58.8) + 40;
+      tag('ON LUNA, IN THE SLATE:', X, 545, C.amber);
+      x += keycap(x, 570, 'FN', t < 58.8) + 20;
+      txt('+', x + 10, 642, 40, C.chrome); x += 70;
+      x += keycap(x, 570, 'B', t < 58.8) + 40;
       if (t > 58.8) {
-        rect(x, 612, 120, 12, C.cyan); arrowHead(x + 140, 618, 1, C.cyan);
-        box(x + 170, 540, 150, 150, { edge: C.green });
-        face('mike', x + 185, 555, 120);
+        rect(x, 622, 120, 12, C.cyan); arrowHead(x + 140, 628, 1, C.cyan);
+        box(x + 170, 550, 150, 150, { edge: C.green });
+        face('mike', x + 185, 565, 120);
       }
     }
-    txt('MIKE ANSWERS IN 13 s', X, 770, 40, C.green, { alpha: seg(t, 59.0, 59.15) });
-    V('6.6 s if Mike is already open.', X, 835, 48, C.chrome, seg(t, 59.4, 59.55), { maxW: 1040 });
+    txt('MIKE STARTS,', X, 790, 40, C.green, { alpha: seg(t, 59.0, 59.15) });
+    txt('ANSWERS IN 13 s', X, 850, 40, C.green, { alpha: seg(t, 59.0, 59.15) });
     flash(t, 57.5, 0, 0.25);
   }
   clearStamp(t, 60.5);
@@ -649,26 +643,27 @@ const LAYERS = ['REAL PAD', 'WYOH DAEMON', 'APP PROFILE', 'VIRTUAL PAD', 'SDL', 
 const LAYER_OK = [63.5, 63.75, 64.0, 64.25, 67.0, 67.5, 68.0];
 function s7(t) {
   stageBg(t, 7); hud(t, 7, 62, STAGES[6][2]);
-  V('Luna, 2026-10-30, on the new system root:', M, 290, 48, C.chrome, seg(t, 62.4, 62.6), { maxW: 800 });
-  V("a game's buttons died.", M, 342, 48, C.chrome, seg(t, 62.4, 62.6), { maxW: 800 });
-  txt('FIX "VERIFIED":', M, 460, 32, C.amber, { alpha: seg(t, 64.5, 64.65) });
-  txt('THE CODES WERE RIGHT.', M, 510, 32, C.amber, { alpha: seg(t, 64.5, 64.65) });
-  txt('THE GAME DID NOT MOVE.', M, 610, 32, C.red, { alpha: seg(t, 65.0, 65.15) });
-  V('Check each layer, in turn.', M, 700, 48, C.cyan, seg(t, 66.5, 66.7), { maxW: 800 });
+  tag('LUNA, 2026-10-30:', M, 290, C.dim, seg(t, 62.4, 62.6));
+  tag("A GAME'S BUTTONS DIED.", M, 335, C.chrome, seg(t, 62.4, 62.6));
+  txt('FIX "VERIFIED".', M, 470, 40, C.amber, { alpha: seg(t, 64.5, 64.65) });
+  txt('THE GAME DID', M, 550, 40, C.red, { alpha: seg(t, 65.0, 65.15) });
+  txt('NOT MOVE.', M, 610, 40, C.red, { alpha: seg(t, 65.0, 65.15) });
   if (t > 62.9) {
+    const LX = 1000, LW = 800;
     LAYERS.forEach((s, i) => {
-      const y = 240 + i * 76, ok = t >= LAYER_OK[i], fail = i === 6 && t >= 65.0 && !ok;
+      const y = 230 + i * 74, ok = t >= LAYER_OK[i], fail = i === 6 && t >= 65.0 && !ok;
       const ver = i === 3 && t >= 64.5 && t < 67.0;
-      rect(980, y, 820, 62, ver ? '#3a2a10' : (i % 2 ? C.navy2 : C.violet), 0.85);
-      rect(980, y, 62, 62, ok ? C.green : (fail ? C.red : '#3b4178'));
-      txt(String(i + 1), 1011, y + 46, 28, C.ink, { align: 'center', shadow: 0 });
-      tag(s, 1070, y + 46, i === 6 ? C.chrome : C.dim);
-      if (ok) check(1736, y + 12, 38, C.green);
-      else if (fail) cross(1738, y + 14, 34, C.red);
-      else if (i >= 4 && t > 64.5) txt('?', 1755, y + 46, 28, C.dim, { align: 'center' });
+      rect(LX, y, LW, 60, ver ? '#3a2a10' : (i % 2 ? C.navy2 : C.violet), 0.85);
+      rect(LX, y, 60, 60, ok ? C.green : (fail ? C.red : '#3b4178'));
+      txt(String(i + 1), LX + 30, y + 45, 28, C.ink, { align: 'center', shadow: 0 });
+      tag(s, LX + 88, y + 45, i === 6 ? C.chrome : C.dim);
+      if (ok) check(LX + LW - 64, y + 11, 38, C.green);
+      else if (fail) cross(LX + LW - 62, y + 13, 34, C.red);
+      else if (i >= 4 && t > 64.5) txt('?', LX + LW - 45, y + 45, 28, C.dim, { align: 'center' });
     });
   }
-  stampTxt('ONLY THE LAST ONE PROVES THE FIX.', W / 2, 850, 40, C.chrome, t, 68.5, { align: 'center', from: 1.8 });
+  stampTxt('ONLY THE LAST LAYER', M, 840, 56, C.chrome, t, 68.5, { from: 1.4 });
+  stampTxt('PROVES THE FIX.', M, 915, 56, C.chrome, t, 68.5, { from: 1.4 });
   clearStamp(t, 70.5);
   flash(t, 62.0, 0, 0.3);
 }
@@ -694,7 +689,7 @@ function sPayoff(t) {
   const q = seg(t, 73.5, 73.65);
   if (q > 0) rect(0, 630, W, 140, C.ink, 0.7 * q);
   stampTxt('ASK THE DESKTOP.', W / 2, 745, 96, C.chrome, t, 73.5, { align: 'center', from: 2.0 });
-  V('Screenshots stay, as evidence for humans.', W / 2, 850, 52, C.cyan, seg(t, 74.6, 74.8), { align: 'center' });
+  V('Screenshots stay, as evidence for humans.', W / 2, 860, 64, C.cyan, seg(t, 74.6, 74.8), { align: 'center' });
   flash(t, 72.0, 0, 0.3);
   flash(t, 73.5, 0, 0.3);
   dissolve(seg(t, 77.75, 78.0), C.ink, 13);
@@ -705,28 +700,29 @@ function sResult(t) {
   rect(0, 0, W, H, C.ink); stars(t, 18, 0.8);
   moon(W / 2, 1080 + 300, 1100, 0.3);
   const q = seg(t, 78.0, 78.15);
-  if (q > 0) txt('STORY 2 CLEAR', W / 2, 260, 72, C.amber, { align: 'center', scale: lerp(1.8, 1, easeOut(q)), alpha: q * 3 });
+  if (q > 0) txt('STORY 2 CLEAR', W / 2, 230, 72, C.amber, { align: 'center', scale: lerp(1.8, 1, easeOut(q)), alpha: q * 3 });
   for (let i = 0; i < NSTAGES; i++) {
     const t0 = 78.6 + i * 0.08; if (t < t0) continue;
     const x = W / 2 - NSTAGES * 46 / 2 + i * 46;
-    rect(x, 324, 34, 34, C.shadow); rect(x, 320, 34, 34, C.green);
+    rect(x, 289, 34, 34, C.shadow); rect(x, 285, 34, 34, C.green);
   }
-  txt("DON'T LOOK AT THE DESKTOP,", W / 2, 500, 44, C.chrome, { align: 'center', alpha: seg(t, 79.2, 79.35) });
-  txt('ASK IT.', W / 2, 575, 44, C.chrome, { align: 'center', alpha: seg(t, 79.2, 79.35) });
-  V('The compositor already knows what a screenshot can only guess.', W / 2, 700, 56, C.cyan, seg(t, 80.4, 80.6), { align: 'center' });
+  txt("DON'T LOOK AT THE DESKTOP,", W / 2, 470, 64, C.chrome, { align: 'center', alpha: seg(t, 79.2, 79.35) });
+  txt('ASK IT.', W / 2, 560, 64, C.chrome, { align: 'center', alpha: seg(t, 79.2, 79.35) });
+  V('The compositor already knows', W / 2, 700, 64, C.cyan, seg(t, 80.4, 80.6), { align: 'center' });
+  V('what a screenshot can only guess.', W / 2, 775, 64, C.cyan, seg(t, 80.4, 80.6), { align: 'center' });
   flash(t, 78.0, 0, 0.3);
 }
 
-// ---- END CARD (84 - 90), as in the trailer
+// ---- END CARD (84 - 90), as in the trailer (motto and PRESS START enlarged for the phone)
 function sEnd(t) {
   rect(0, 0, W, H, C.ink); stars(t, 15, 0.8);
   moon(W / 2, 1080 + 200, 1100, 0.35);
   const p = easeOut(seg(t, 84.0, 84.4));
   titleLogo(W / 2, 330, lerp(1700, 1500, p), 1);
-  txt('There Ain\'t No Such Thing As A Free LLM.', W / 2, 600, 48, C.chrome, { font: 'V', align: 'center', alpha: seg(t, 84.3, 84.5), shadow: 3 });
-  txt('github.com/mdussere/tanstaafllm', W / 2, 700, 36, C.cyan, { align: 'center', alpha: seg(t, 84.6, 84.8) });
-  txt('A personal engineering project by Michael Dussere', W / 2, 790, 48, C.chrome, { font: 'V', align: 'center', alpha: seg(t, 84.9, 85.1), shadow: 3 });
-  if (t > 85.5 && Math.floor(TA * 3) % 2 === 0) txt('PRESS START', W / 2, 930, 28, C.amber, { align: 'center' });
+  txt('There Ain\'t No Such Thing As A Free LLM.', W / 2, 610, 64, C.chrome, { font: 'V', align: 'center', alpha: seg(t, 84.3, 84.5), shadow: 3 });
+  txt('github.com/mdussere/tanstaafllm', W / 2, 710, 36, C.cyan, { align: 'center', alpha: seg(t, 84.6, 84.8) });
+  txt('A personal engineering project by Michael Dussere', W / 2, 795, 48, C.chrome, { font: 'V', align: 'center', alpha: seg(t, 84.9, 85.1), shadow: 3 });
+  if (t > 85.5 && Math.floor(TA * 3) % 2 === 0) txt('PRESS START', W / 2, 935, 40, C.amber, { align: 'center' });
   flash(t, 84.0, 0, 0.5);
   if (t > 89.5) rect(0, 0, W, H, '#000', seg(t, 89.5, 90.0));
 }

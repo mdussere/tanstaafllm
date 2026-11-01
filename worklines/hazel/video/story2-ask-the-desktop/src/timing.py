@@ -38,7 +38,8 @@ SNAP, TOLERANCE = 0.5, 0.1
 BASE = 90.0   # the cut without holds (index.html BASE)   # holds sit just before the transition starts
 
 # (scene, cut in source seconds, [(readable at, text, font), ...])
-# Glance-only text (stat rows, tile captions, tree nodes, layer rows, CLEAR!) is left out.
+# Only key and secondary messages are listed (phone readability, 2026-11-01); small glance text
+# (tile captions, chips, tree nodes, layer rows, machine tags, CLEAR!) is left out.
 SCREENS = [
     ("0 Title", 5.8, [
         (0.5, "TANSTAAFLLM STORY 2", "P"),
@@ -47,63 +48,48 @@ SCREENS = [
     ("1 Player 2", 13.75, [
         (6.45, "PLAYER 2 WYOH", "P"),
         (6.95, "THE DESKTOP LAYER OF LUNA", "P"),
-        (8.4, "QUEST: \"Give consumers a structured, inspectable, synchronisable desktop they can observe and operate without pixels.\"", "V")]),
+        (8.4, "QUEST: Observe and operate the desktop without pixels.", "V")]),
     ("2 Stage 1 screenshot trap", 20.0, [
         (14.3, "STAGE 1 THE SCREENSHOT TRAP", "P"),
-        (15.1, "A BUTTON? A WINDOW? WHICH ONE?", "P"),
-        (15.1, "Through screenshots, an agent guesses from pixels, and pays for every image, on a small handheld.", "V"),
-        (17.15, "ON PAPER: A DOM FOR THE DESKTOP.", "P")]),
+        (15.1, "An agent guesses from pixels and pays for every image.", "V"),
+        (17.15, "ON PAPER: A DESKTOP DOM.", "P")]),
     ("3 Stage 2 HIOM", 28.0, [
         (20.3, "STAGE 2 ONE SCENE IS NOT A DESKTOP", "P"),
-        (20.8, "First idea: one full-screen scene, with only the actions it advertises.", "V"),
         (22.65, "REOPENED", "P"),
-        (23.0, "One scene could not hold a real desktop.", "V"),
         (23.65, "KEPT FROM IT: WAIT FOR A NAMED CONDITION, NEVER A FIXED DELAY.", "P")]),
     ("4 Stage 3 Sway", 36.0, [
         (28.3, "STAGE 3 ASK THE ONE THAT EXISTS", "P"),
         (28.6, "Don't build a compositor. Ask the one that exists.", "V"),
-        (29.8, "SWAY UNMODIFIED NO FORK", "P"),
-        (30.4, "MEASURED ON luna-pi", "P"),
-        (30.7, "a Raspberry Pi, headless Sway 1.10.1, 2026-09-26", "V"),
-        (32.6, "KILLED, BACK IN 7.5 ms luna-pi", "P")]),
+        (30.4, "MEASURED ON luna-pi, A RASPBERRY PI", "P"),
+        (32.6, "KILLED, BACK IN 7.5 ms", "P")]),
     ("5 Stage 4 MCP", 44.0, [
         (36.3, "STAGE 4 HAND IT TO AGENTS", "P"),
         (36.7, "MCP OVER SSH DEVELOPMENT ONLY", "P"),
-        (39.1, "1 QUERY THE WINDOW TREE 2 ACT 3 WAIT FOR THE CONFIRMING EVENT", "P"),
+        (37.15, "Query the tree, act,", "V"),
+        (39.15, "wait for the event.", "V"),
         (40.15, "26 TOOLS", "P"),
-        (40.4, "luna-pi, THEN LUNA", "P"),
-        (40.4, "Aside: without structured output, a one-item list read as the object itself.", "V")]),
-    ("6 Boss: black panel", 52.0, [
+        (40.4, "luna-pi, THEN LUNA", "P")]),
+    ("6a Boss: black panel", 48.5, [
         (44.3, "STAGE 5 BOSS: THE BLACK PANEL", "P"),
-        (44.7, "LUNA 720 x 720 PANEL The same agent session, on the real panel:", "V"),
         (45.15, "BLACK.", "P"),
         (45.8, "Sway's own screenshots looked right.", "V"),
-        (46.6, "MALI GPU DRIVER: NOT LOADED", "P"),
-        (47.1, "Sway was rendering in software.", "V"),
-        (48.6, "MALI GPU DRIVER: LOADED", "P"),
+        (46.6, "MALI GPU DRIVER: NOT LOADED", "P")]),
+    ("6b Boss: lit", 52.0, [
+        (48.6, "GPU DRIVER LOADED.", "P"),
         (48.8, "1 passed", "V")]),
     ("7a Stage 6 buttons", 57.5, [
         (52.3, "STAGE 6 17 BUTTONS, NO KEYBOARD", "P"),
-        (52.8, "A daemon turns the buttons into desktop actions:", "V"),
-        (54.35, "FN+PAD FOCUS FN+A FULL SCREEN FN+B CLOSE FN+R1 WORKSPACE", "P"),
-        (54.6, "BUTTONS ONLY, ON LUNA, 2026-10-07", "P"),
-        (54.95, "THE SLATE TAKES THE TEXT.", "P"),
-        (55.3, "A floating text zone, opened with L1.", "V")]),
+        (52.8, "Buttons drive the desktop.", "V"),
+        (54.95, "THE SLATE TAKES THE TEXT.", "P")]),
     ("7b Stage 6 agent and Mike", 62.0, [
-        (57.75, "THE AGENT PRESSES THE SAME BUTTONS", "P"),
-        (58.05, "through a virtual gamepad, not by clicking pixels.", "V"),
-        (58.5, "ON LUNA, IN THE SLATE: FN + B", "P"),
-        (59.15, "MIKE ANSWERS IN 13 s", "P"),
-        (59.55, "6.6 s if Mike is already open.", "V")]),
+        (57.75, "A DEV AGENT PRESSES THE SAME BUTTONS", "P"),
+        (59.15, "MIKE STARTS, ANSWERS IN 13 s", "P")]),
     ("8 Stage 7 seven layers", 72.0, [
         (62.3, "STAGE 7 SEVEN LAYERS", "P"),
-        (62.6, "Luna, 2026-10-30, on the new system root: a game's buttons died.", "V"),
-        (64.65, "FIX \"VERIFIED\": THE CODES WERE RIGHT.", "P"),
+        (64.65, "FIX \"VERIFIED\".", "P"),
         (65.15, "THE GAME DID NOT MOVE.", "P"),
-        (66.7, "Check each layer, in turn.", "V"),
-        (68.65, "ONLY THE LAST ONE PROVES THE FIX.", "P")]),
+        (68.65, "ONLY THE LAST LAYER PROVES THE FIX.", "P")]),
     ("9 Payoff", 77.75, [
-        (72.4, "sway_get_tree", "P"),
         (73.65, "ASK THE DESKTOP.", "P"),
         (74.8, "Screenshots stay, as evidence for humans.", "V")]),
     ("10 Story clear", 84.0, [
@@ -112,8 +98,7 @@ SCREENS = [
         (80.6, "The compositor already knows what a screenshot can only guess.", "V")]),
     ("11 End card", 89.5, [
         (84.5, "There Ain't No Such Thing As A Free LLM.", "V"),
-        (84.8, "github.com/mdussere/tanstaafllm", "P"),
-        (85.1, "A personal engineering project by Michael Dussere", "V")]),
+        (84.8, "github.com/mdussere/tanstaafllm", "P")]),
 ]
 
 

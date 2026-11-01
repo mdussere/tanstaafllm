@@ -28,6 +28,31 @@ Wyoh wanted, from the start, to let agents work the desktop natively: take hold 
 
 Cuts fall on 2 s bars (6, 14, 20, 28, 36, 44, 52, 62, 72, 78, 84). The in-stage flash at 57.5 (stage 6, phase b) is on a beat, not a bar: it is not a scene cut.
 
+## Phone readability, 2026-11-01
+
+The user watches on a phone held upright: the 1920-px frame spans the phone's width. Rule (user, measured): per screen ONE key message at ≥ 50 px glyph height (VT323 ≥ 90 px or Press Start 2P ≥ 56 px), at most one secondary at ≥ 35 px (PS2P ≥ 40 or VT323 ≥ 64), everything else small glance text the story does not depend on, or cut. Key lines ≤ ~6 words, 2 lines max. Timeline, music and score unchanged (no event time moved; the boss gains an in-stage phase change on its existing 48.5 flash).
+
+| Screen | Key message (size) | Secondary (size) | Small glance text kept | Cut |
+|---|---|---|---|---|
+| Title 0–6 | stamp ASK THE DESKTOP (P 100); subtitle V 90, two lines (approved, unchanged) | PRESS START (P 40) | TANSTAAFLLM · STORY 2 (P 36) | — |
+| Player 6–14 | "Observe and operate / the desktop without pixels." (V 90) | THE DESKTOP LAYER / OF LUNA (P 40) | PLAYER 2, QUEST: | stat rows (ENGINE, MACHINE); long quest quote shortened |
+| Stage 1, 14–20 | "An agent guesses from pixels / and pays for every image." (V 90) | ON PAPER: A DESKTOP DOM. (P 40) | three guess bubbles | "on a small handheld" |
+| Stage 2, 20–28 | WAIT FOR A NAMED CONDITION, / NEVER A FIXED DELAY. (P 56) | REOPENED (P 48) | FIRST IDEA: ONE SCENE, A DESKTOP DID NOT FIT., HIOM, KEPT FROM IT: | the two VT sentences |
+| Stage 3, 28–36 | "Don't build a compositor. / Ask the one that exists." (V 90) | the four figures (P 40), each tagged luna-pi | captions, SWAY / UNMODIFIED / NO FORK, MEASURED ON luna-pi, A RASPBERRY PI | "headless Sway 1.10.1, 2026-09-26" |
+| Stage 4, 36–44 | "Query the tree, act, / wait for the event." (V 90) | 26 TOOLS (P 48) | MCP OVER SSH, DEVELOPMENT ONLY, luna-pi, THEN LUNA | numbered step list; the structured-output aside |
+| Boss a, 44–48.5 | BLACK. (P 64) | "Sway's own screenshots / looked right." (V 64) | LUNA'S REAL 720 × 720 PANEL, MALI GPU DRIVER: NOT LOADED | "The same agent session…", "Sway was rendering in software." |
+| Boss b, 48.5–52 | GPU DRIVER / LOADED. (P 56) | 1 passed (V 64) | panel tag | — |
+| Stage 6a, 52–57.5 | "Buttons drive the desktop." (V 90) | THE SLATE TAKES / THE TEXT. (P 40) | button chips, BUTTONS ONLY, ON LUNA, 2026-10-07, L1 OPENS IT | "A daemon turns…", "A floating text zone…" |
+| Stage 6b, 57.5–62 | A DEV AGENT PRESSES / THE SAME BUTTONS (P 56) | MIKE STARTS, / ANSWERS IN 13 s (P 40), set apart below the keycaps | VIA A VIRTUAL GAMEPAD, NOT PIXELS, ON LUNA, IN THE SLATE: | "6.6 s if Mike is already open." |
+| Stage 7, 62–72 | ONLY THE LAST LAYER / PROVES THE FIX. (P 56) | FIX "VERIFIED". THE GAME DID / NOT MOVE. (P 40) | LUNA, 2026-10-30: A GAME'S BUTTONS DIED., layer rows | "on the new system root", "THE CODES WERE RIGHT.", "Check each layer, in turn." |
+| Payoff 72–78 | stamp ASK THE DESKTOP. (P 96) | "Screenshots stay, as evidence for humans." (V 64) | sway_get_tree, tree nodes | — |
+| Result 78–84 | DON'T LOOK AT THE DESKTOP, / ASK IT. (P 64; largest after the STORY 2 CLEAR stamp, P 72) | "The compositor already knows / what a screenshot can only guess." (V 64, two lines) | — | — |
+| End 84–90 | logo | motto (V 64), PRESS START (P 40) | github URL (P 36), byline (V 48) | — |
+
+Deviations to review: the HUD stage titles stay at P 44 (series look), so a stage screen shows one more ≥ 35 px line; WYOH (P 80) is a one-word name tag beside the key message; the stage-3 secondary is a group of four figures. The facts table above predates this pass; the cut lines are no longer on screen.
+
+Render: `results/hazel/story2-ask-the-desktop/20261101T124410/` — 90.0 s, holds +0.0 s, −15.3 LUFS, true peak −1.1 dBFS; contact sheets inspected (no overflow, nothing on the CLEAR! stamp).
+
 ## Every on-screen fact and its source
 
 All paths are in the repository. "Note" = `worklines/hazel/docs/0302_02_note-from-wyoh-story.md`.
@@ -75,11 +100,11 @@ Must-not-say check: no revision counter or `wyoh_revision` shown as working (the
 
 ## Reading audit (`src/timing.py`)
 
-`uv run --project /home/michael/git/tanstfaafllm python src/timing.py` → **Holds: +0.0 s, 90.0 s.** Every screen's last text has its orient time plus reading time before the cut (tightest: stage 6a, 2.20 s available for 2.15 s needed; stage 2, 4.35 s for 4.00 s). The changes made for this: the stage-2 lesson lands at 23.5 instead of 24.0, stage 6 phase b starts at 57.5, the date tag moved up, and the last stage-6 line was shortened.
+`uv run --project /home/michael/git/tanstfaafllm python src/timing.py` → **Holds: +0.0 s, 90.0 s.** Every screen's last text has its orient time plus reading time before the cut (after the 2026-11-01 phone pass, SCREENS lists only key and secondary messages; tightest: boss phase a, 1.90 s for 1.90 s; stage 2, 4.35 s for 4.00 s). The changes made for this: the stage-2 lesson lands at 23.5 instead of 24.0, stage 6 phase b starts at 57.5, the date tag moved up, and the last stage-6 line was shortened.
 
-Known limit: the stricter `--mode total` (all of a screen's text, read one after another) would ask for +34 s; the stages are dense. Stage text is layered so each new element is one line, and the stat tiles, layer rows and tree nodes are glance text. If the user finds a stage too fast on the phone, the first candidates for trimming are the stage-1 sentence and the stage-4 aside.
+Known limit: the stricter `--mode total` (all of a screen's text, read one after another) would ask for +34 s; the stages are dense. Stage text is layered so each new element is one line, and the stat tiles, layer rows and tree nodes are glance text. If the user finds a stage too fast on the phone, the first candidates for trimming were the stage-1 sentence and the stage-4 aside (both trimmed or cut on 2026-11-01).
 
-Sizes: Press Start 2P ≥ 28 px and VT323 ≥ 48 px everywhere except the keycap labels (32 px P, drawn on the key). No text in the outer 5 % except the HUD's standard positions (same as Story 1). Nothing overlaps the CLEAR! stamp (bottom right, y≈980): checked on the contact sheets.
+Sizes: see "Phone readability, 2026-11-01"; glance text stays at P 28–32 / V 48. No text in the outer 5 % except the HUD's standard positions (same as Story 1). Nothing overlaps the CLEAR! stamp (bottom right, y≈980): checked on the contact sheets.
 
 ## Sound
 
