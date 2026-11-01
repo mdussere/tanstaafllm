@@ -1,5 +1,7 @@
 # Takeover review, uv environment, and `luna-pi` re-validation
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-07 · **Checked:** 2026-10-31 · **Step:** wyoh 4 ⏳
+
 **Date:** 2026-10-04
 **Step:** Wyoh 4 (review and re-validation; no new step executed)
 **Question answered:** Is the Wyoh record coherent and is its pre-hardware evidence still reproducible, and what does Step 4 need next?

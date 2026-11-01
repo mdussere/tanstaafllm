@@ -1,5 +1,7 @@
 # Small tool-calling model survey (desk research)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31
+
 **Question answered:** which local language models of at most about 400 MB could let Mike turn a typed or dictated French request into a Wyoh MCP tool call, and what must be measured before choosing one?<br>
 **Date:** 2026-10-09<br>
 **Status:** desk research only. Nothing was downloaded or run. File sizes come from the Hugging Face file listings on 2026-10-09; capability claims come from model cards and vendor posts and are **not verified** here.

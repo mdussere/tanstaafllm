@@ -1,5 +1,7 @@
 # Result — Luna operated with only its buttons and the input zone
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-07 · **Checked:** 2026-10-31 · **Step:** wyoh 5.6 ✅
+
 **Step:** Wyoh 5 (sub-steps 5.2–5.6 and 5.8), autonomous work green-lit 2026-10-07
 **Intent:** [`0500_01_gamepad-input-intent.md`](0500_01_gamepad-input-intent.md)
 **Scope:** Luna, ArchR card after Luna Step 6, root session (user decision). Development-only.

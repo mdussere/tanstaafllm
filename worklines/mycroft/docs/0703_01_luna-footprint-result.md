@@ -1,5 +1,7 @@
 # Mycroft footprint on Luna — first measurement (plan step 8.1, formerly 7.3b)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mycroft 7.3 ✅
+
 **Date:** 2026-10-11
 **Green light:** the user, 2026-10-11 (then numbered 7.3b; now plan step 8.1). Luna slot given by Professor at 12:38 (`worklines/luna-access.md`).
 **Status:** measured on replay; Luna rebooted and released. Live microphone not measured (Luna Step 8).

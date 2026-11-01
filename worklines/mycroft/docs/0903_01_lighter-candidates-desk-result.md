@@ -1,5 +1,7 @@
 # Lighter models: Kroko, Parakeet Redux, Phonon-2 (plan steps 9.3 and 9.6, desk host)
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mycroft 9.3 ⏳
+
 **Date:** 2026-10-11
 **Green light:** the user, 2026-10-11: no more tuning of the current model; look for a substantially lighter one (Kroko, plus Parakeet Redux from the user and Phonon-2 from Charlie). The user would accept speaking English for a small, efficient model.
 **Scope:** desk host (`termidor`, x86_64, i5-4590), 2 threads. The Luna measurement of Kroko is prepared (`test_luna_9_3_kroko`) and waits for a slot.

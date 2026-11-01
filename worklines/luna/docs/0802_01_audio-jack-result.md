@@ -1,6 +1,8 @@
 # Audio jack and microphone — result (Step 8)
 
-**Status:** draft. Updated 2026-10-11 after 8.2c: the codec-configuration hypothesis is ruled out (see the end). Still pending: the user's optional checks. Desk analysis done on 2026-10-09 (sub-step 8.1b, decided by Professor on the user's behalf, D2). Nothing on the card, overlays or boot partition was changed.
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-11-01 · **Step:** luna 8.3 ✅
+
+**Status:** final (2026-11-01, Step 8 closed): the conclusion is the last section, USB-C headset. The sections before it record how the jack was ruled out. Updated 2026-10-11 after 8.2c: the codec-configuration hypothesis is ruled out (see the end). Still pending: the user's optional checks. Desk analysis done on 2026-10-09 (sub-step 8.1b, decided by Professor on the user's behalf, D2). Nothing on the card, overlays or boot partition was changed.
 
 **Question:** Is Luna's 3.5 mm jack headphones only, or headphones + microphone (4-pole headset)? Is there a built-in microphone? Mycroft's speech input depends on the answer.
 

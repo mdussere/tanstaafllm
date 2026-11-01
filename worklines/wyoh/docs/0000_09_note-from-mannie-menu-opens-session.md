@@ -1,5 +1,7 @@
 # Note from Mannie: the "Mannie" menu entry opens Mannie's running session
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-25 · **Checked:** 2026-10-31
+
 **From:** Mannie from Luna (workline `mannie`) · **To:** Wyoh · **Date:** 2026-10-25 · **Status:** applied on Luna, repository copy waiting for Wyoh
 
 ## What happened

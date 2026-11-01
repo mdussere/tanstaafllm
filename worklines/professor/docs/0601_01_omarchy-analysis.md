@@ -1,5 +1,7 @@
 # 0601 — Omarchy as an external reference for Luna
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-09 · **Checked:** 2026-10-31 · **Step:** professor 6.1 ✅
+
 **Question answered:** What is Omarchy, how does it relate to TANSTAAFLLM, and which of its ideas are worth taking to the low-end R36 Ultra (Luna)?
 
 **Status:** review-ready, 2026-10-05 (Professor Step 6)<br>

@@ -4,7 +4,7 @@
 
 ## In one sentence
 
-Wyoh turns ArchR's own Sway compositor into a desktop that you drive with Luna's buttons, and that an agent can read and drive through a small set of named actions.
+Wyoh turns the Sway compositor into a desktop that you drive with Luna's buttons, and that an agent can read and drive through a small set of named actions.
 
 ![Inside Wyoh](img/wyoh-inside.svg)
 
@@ -12,7 +12,7 @@ Wyoh turns ArchR's own Sway compositor into a desktop that you drive with Luna's
 
 | Piece | Code | On Luna | Started by |
 |---|---|---|---|
-| Sway session and its configuration | `src/wyoh/deploy/luna/` (`sway.conf`, `wyoh-sway.service`, `wyoh-gpu.sh`) | ArchR's Sway 1.11, with our config under `/storage/.local/share/tanstfaafllm/wyoh/` | systemd at boot |
+| Sway session and its configuration | `src/wyoh/deploy/luna/` (`sway.conf`, `wyoh-sway.service`, `wyoh-gpu.sh`) | Sway 1.12 from Arch Linux ARM (1.11 from ArchR until 2026-10-25), on ArchR's Mali driver, with our config under `/storage/.local/share/tanstfaafllm/wyoh/` | systemd at boot |
 | Gamepad daemon | `src/wyoh/wyoh_gamepad.py`, `deploy/luna/gamepad.toml` | same | `wyoh-gamepad.service` |
 | Slate (multi-line editor) | `src/wyoh/wyoh_slate.py` | a floating terminal window | the daemon, on L1 |
 | On-screen keyboard | `src/wyoh/wvkbd/` (a patch to wvkbd 0.15: AZERTY and two cursors) | built on `luna-pi`, deployed under `/storage` | the daemon, with the Slate |
@@ -20,7 +20,7 @@ Wyoh turns ArchR's own Sway compositor into a desktop that you drive with Luna's
 | Apps and menu | `src/wyoh/apps/<app>/` (a `wyoh-app.toml` manifest and a `run` launcher), `wyoh_apps.py` | apps under `/storage/.local/opt/`, menu entries generated | fuzzel menu, on Start |
 | MCP bridge (development) | `src/wyoh/wyoh_mcp_server.py`, `wyoh_virtual_input.py` | started over SSH, owns no port | an agent, for tests |
 
-You deploy with `make wyoh-luna-deploy`, and boot into the session with `make wyoh-luna-enable`. Removing it gives back ArchR's text console.
+You deploy with `make wyoh-luna-deploy`, and boot into the session with `make wyoh-luna-enable`. Removing it gives back the text console.
 
 ## How it talks to the others
 
@@ -70,6 +70,6 @@ With the session running, about 795 MiB of Luna's 983 MiB stay available for eve
 - **Waiting for the user's hands:** the check of the physical controls, the whole-cross press, and readability.
 - **Waiting for a microphone:** dictation in the Slate.
 - **Next:** chess, the Dino game, NetSurf, a Wi-Fi panel driven by the buttons, and possibly desktop icons and a full-screen-only window policy.
-- **Known limit:** the exclusive grab mutes ArchR's own gamepad hotkeys. The brightness shortcut is one of them.
+- **Known limit:** the daemon grabs the gamepad exclusively, so no system hotkey works outside Wyoh's own. ArchR's brightness shortcut was one of them, and it left with ArchR's system.
 
 **Sources:** `worklines/wyoh/plan_wyoh.md`, Steps 1, 5, 6, 9 and 12; results `0407_01`, `0408_01`, `0506_01`, `0605_01`; the controls reference `0512_01`.

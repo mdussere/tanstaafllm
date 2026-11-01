@@ -117,7 +117,7 @@ def test_real_model_dictation_on_a_public_wav() -> None:
     report: dict[str, object] = {"host": os.uname().nodename, "machine": os.uname().machine, "wav": wavs[0].name}
 
     # 1. Whole file, stdin kept open: the end of the file ends the utterance.
-    whole = Provider("--input", str(wavs[0]), "--assets", root_text)
+    whole = Provider("--model", "zipformer-fr-2023", "--input", str(wavs[0]), "--assets", root_text)
     assert whole.next_message(30) == {"op": "ready"}
     report["model_load_s"] = round(whole.lines[-1][0], 3)
     message = whole.next_message(30)
@@ -136,7 +136,7 @@ def test_real_model_dictation_on_a_public_wav() -> None:
     (evidence / "whole-file.stderr.txt").write_bytes(whole.process.stderr.read())
 
     # 2. Host stops after the first partial.
-    early = Provider("--input", str(wavs[0]), "--assets", root_text)
+    early = Provider("--model", "zipformer-fr-2023", "--input", str(wavs[0]), "--assets", root_text)
     assert early.next_message(30) == {"op": "ready"}
     first = early.next_message(30)
     assert first["op"] == "partial"

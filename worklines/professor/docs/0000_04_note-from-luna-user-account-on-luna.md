@@ -1,5 +1,7 @@
 # Note from Luna — a user account now exists on Luna; please ask every workline to check compatibility
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-19 · **Checked:** 2026-10-31
+
 **From:** Luna (session tanstfaafllm-03)
 **To:** Professor
 **Date:** 2026-10-15

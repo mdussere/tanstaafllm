@@ -63,3 +63,12 @@ Feature: Mycroft on Luna (plan Step 8)
     Then its load time, idle and listening RSS, start-to-listening delay, first-partial time, lag after the audio, peak RSS and CPU time are saved
     And every cycle ends with a non-empty "final", and the provider exits with status 0
     And Luna is rebooted at the end
+
+  Scenario: Step 8.8 — the real Slate session with resident Kroko, while the user dictates
+    Given Mannie on Luna has stopped and given its "go", and Luna was rebooted and settled, when MYCROFT_LUNA_REBOOT=1
+    And Wyoh's daemon has started the resident Kroko provider at session start
+    When the probe waits for the daemon to report dictation "idle"
+    And samples MemAvailable, the provider's RSS and the dictation state every 0.5 s while the user dictates in the Slate with L2
+    Then the provider's start time after boot, idle and minimum MemAvailable, the provider's peak RSS and the largest processes are saved
+    And the provider is still the same process at the end, and at least one listening sample was seen
+    And Luna is rebooted at the end

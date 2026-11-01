@@ -4,6 +4,8 @@
 
 # HIOM v0 contract — approved controller-first boundary
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-26 · **Checked:** 2026-10-31 · **Step:** wyoh 1.1 ✅
+
 ## Question answered
 
 What exact state and interaction contract does Wyoh expose to a constrained consumer without assuming a conventional desktop, pointer, keyboard, or free-floating windows?

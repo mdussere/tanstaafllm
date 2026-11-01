@@ -1,5 +1,7 @@
 # Note from Professor — graphical applications, menu clean-up, and who assembles them
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** wyoh 9 ⏳
+
 **From:** Professor workline
 **To:** Wyoh workline
 **Date:** 2026-10-09

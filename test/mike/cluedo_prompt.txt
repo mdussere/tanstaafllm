@@ -1,0 +1,23 @@
+<|im_start|>system
+Tu es le narrateur d'une partie de Cluedo. Tu lis attentivement la scène et tu réponds en une seule ligne courte.<|im_end|>
+<|im_start|>user
+Voici la scène de la partie de ce soir, au manoir Tudor.
+
+Il est vingt-deux heures. Le docteur Lenoir a été retrouvé sans vie dans la bibliothèque, près de la grande fenêtre qui donne sur le parc. Six personnes se trouvaient au manoir ce soir-là : le colonel Moutarde, madame Pervenche, mademoiselle Rose, le professeur Violet, madame Leblanc et le révérend Olive. Le manoir compte neuf pièces : le hall, le salon, la salle à manger, la cuisine, la salle de bal, la véranda, la salle de billard, la bibliothèque et le bureau. Six armes ont été retrouvées dans la maison : le chandelier, le poignard, la corde, la clé anglaise, le revolver et la matraque.
+
+À dix-neuf heures, tout le monde a dîné ensemble dans la salle à manger. Madame Leblanc avait préparé un gratin, et le révérend Olive a dit le bénédicité. Pendant le repas, le docteur Lenoir a annoncé qu'il allait changer son testament le lendemain matin, et qu'une seule personne autour de la table en serait privée. Il n'a pas dit laquelle. Le colonel Moutarde a ri très fort, madame Pervenche a renversé son verre, et le professeur Violet a quitté la table quelques minutes pour aller chercher ses lunettes dans le bureau.
+
+À vingt heures, les invités se sont séparés. Le colonel Moutarde et le révérend Olive sont allés jouer au billard. Ils ont joué trois parties sans interruption, et la femme de chambre les a entendus se disputer sur le score jusqu'à vingt-deux heures passées. Madame Leblanc est restée dans la cuisine pour faire la vaisselle ; le cuisinier, qui rangeait la réserve, confirme qu'elle n'est pas sortie avant vingt-deux heures quinze. Mademoiselle Rose a dit qu'elle allait écrire des lettres dans le salon. Madame Pervenche s'est installée dans la véranda avec un livre, et le professeur Violet est parti dans la salle de bal pour répéter un morceau de piano.
+
+À vingt et une heures, la femme de chambre a apporté du thé. Elle a trouvé mademoiselle Rose dans le salon, en train d'écrire, et elle a remarqué que la corde des rideaux du salon avait disparu. Dans la véranda, madame Pervenche dormait dans son fauteuil, son livre ouvert sur les genoux. Dans la salle de bal, le piano était silencieux et le professeur Violet n'était pas là ; sa veste était posée sur le tabouret.
+
+À vingt et une heures trente, le jardinier, qui fermait les volets, a vu une silhouette traverser le parc depuis la salle de bal jusqu'à la grande fenêtre de la bibliothèque. La silhouette portait des lunettes qui brillaient sous la lanterne, et elle tenait quelque chose de long et souple, enroulé autour de la main. Le jardinier n'a pas vu son visage.
+
+À vingt et une heures quarante-cinq, mademoiselle Rose a entendu un bruit sourd venant de la bibliothèque, mais elle a pensé qu'un livre était tombé. Elle n'a pas bougé, et la femme de chambre confirme qu'elle était encore dans le salon à dix heures moins cinq, quand elle est revenue chercher le plateau.
+
+À vingt-deux heures, le colonel Moutarde est allé chercher un cigare dans la bibliothèque et a découvert le corps. Le docteur Lenoir portait une marque fine autour du cou. Sur le tapis, près de la fenêtre restée entrouverte, on a retrouvé un morceau de corde de rideau, des traces de terre fraîche venant du parc, et une partition de piano froissée. Le chandelier, le poignard, la clé anglaise, le revolver et la matraque étaient tous à leur place habituelle, intacts, dans le hall.
+
+Quand on l'a retrouvé, à vingt-deux heures dix, le professeur Violet était de retour dans la salle de bal. Ses chaussures étaient couvertes de terre, et il a dit qu'il était seulement sorti prendre l'air.
+
+Question : qui est l'assassin, avec quelle arme, et dans quelle pièce ? Donne le nom de l'assassin, puis l'arme, puis la pièce, en une seule ligne.<|im_end|>
+<|im_start|>assistant\n

@@ -93,8 +93,11 @@ def _reboot_and_settle() -> None:
     time.sleep(20)  # let the old sshd go away before the first probe
     deadline = time.monotonic() + 300
     while time.monotonic() < deadline:
-        if _ssh("true", timeout=15).returncode == 0:
-            break
+        try:
+            if _ssh("true", timeout=15).returncode == 0:
+                break
+        except subprocess.TimeoutExpired:  # Luna still booting: the TCP connect hangs
+            subprocess.run(["ssh", *SSH_MUX, "-O", "exit", HOST], capture_output=True)
         time.sleep(5)
     else:
         pytest.fail("Luna did not answer SSH within 300 s of the reboot")
@@ -364,3 +367,27 @@ def test_luna_9_8_resident_kroko() -> None:
     run = report["runs"][0]
     assert run["exit_status"] == 0 and "error" not in run
     assert all(utterance["final_text"].strip() for utterance in run["utterances"])
+
+
+@pytest.mark.timeout(1800)
+def test_luna_8_8_slate_session() -> None:
+    """Step 8.8: memory of the real Slate session (Wyoh's daemon and its resident
+    Kroko) while the user dictates; no second model is loaded."""
+    _install({f"{REMOTE_SHARE}/slate_session_probe.py": Path(__file__).with_name("slate_session_probe.py")},
+             "install-slate-session-probe")
+    reboot = os.environ.get("MYCROFT_LUNA_REBOOT") == "1"
+    window = float(os.environ.get("MYCROFT_DICTATION_WINDOW", "180"))
+    if reboot:
+        _reboot_and_settle()
+    try:
+        print(f"\n>>> Luna: dictate in the Slate now (L2 to start and stop), for {window:.0f} s <<<", flush=True)
+        result = _ssh(f"python3 {REMOTE_SHARE}/slate_session_probe.py --window {window}", timeout=window + 400)
+        _save("slate-session.txt", result)
+        report = json.loads(result.stdout.decode().strip().splitlines()[-1])
+        (EVIDENCE / "step-8-8-slate-session.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    finally:
+        if reboot:
+            _reboot_and_settle()
+    assert "error" not in report, report.get("error")
+    assert report["provider_alive_at_end"]
+    assert report["listening_samples"] > 0, "no dictation seen during the window"

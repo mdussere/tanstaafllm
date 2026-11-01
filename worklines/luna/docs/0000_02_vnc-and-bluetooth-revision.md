@@ -1,5 +1,7 @@
 # Luna Pi VNC and Bluetooth revision
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31
+
 **Status:** pre-execution decision record<br>
 **Question answered:** What is the short first-pass plan for `luna-pi`?
 

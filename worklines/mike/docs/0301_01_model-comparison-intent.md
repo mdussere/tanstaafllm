@@ -1,5 +1,7 @@
 # Step 3 intent — which small models, how big, how much memory
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mike 3.1 ✅
+
 **Question answered:** which three models do we test first, what will they cost in file size and RAM, and how is the first test run?<br>
 **Date:** 2026-10-09<br>
 **Status:** shortlist proposed; Step 3 green-lit by the user ("go", 2026-10-09). RAM figures below are **estimates** from each model's published architecture; the measured figures are in `0302_01`.

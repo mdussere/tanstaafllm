@@ -1,5 +1,7 @@
 # An Arch Linux ARM root for Luna, on ArchR's boot path: study and first image
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-25 · **Checked:** 2026-10-31 · **Step:** mannie 7.1 ⏳
+
 **Step:** 7.1 of `plan_mannie.md` (study), with the first image of 7.3 prepared. **Date:** 2026-10-25. **Author:** Mannie (session tanstfaafllm-d3).
 **Request (user, 2026-10-25):** "télécharge Arch Linux ARM … commence à préparer l'image Arch Linux ARM pour Luna … regarde la configuration noyau … travaille un peu en autonomie."
 **Status:** the image is built and checked on the desk host. **Nothing has been written to a card.** Writing waits for the user's go and the backup question below.

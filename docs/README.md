@@ -11,16 +11,21 @@ The names come from the novel. **Luna** is the machine. **Wyoh** is the desktop.
 
 | Page | What you get | Time |
 |---|---|---|
+| [00 · The universe](00_the-moon-is-a-harsh-mistress.md) | Heinlein's novel: the story, the characters, the motto, the author, and how the project borrows them | 8 min |
 | [01 · Principles](01_principles.md) | The idea, the vocabulary, the rules of design | 10 min |
 | [04 · Architecture](04_architecture.md) | The whole machine, how a request travels, where the memory goes, how the cell works | 10 min |
 | [10 · Wyoh, the desktop](10_wyoh.md) | Sway, the gamepad daemon, the Slate, the apps | 5 min |
 | [11 · Mycroft](11_mycroft.md) | Voice to text, models, what dictation costs on Luna | 5 min |
 | [12 · Mike](12_mike.md) | The local brain: one request, one action | 5 min |
+| [16 · Mike's harness and caches](16_mike-harness-and-caches.md) | For code review: the chat client, the token tape, the four caches, PreStaC, what to change | 20 min |
 | [13 · Mannie](13_mannie.md) | The frontier model, and the price of a "pong" | 4 min |
 | [14 · Luna](14_luna.md) | The device, its cards, what is still open | 4 min |
 | [15 · The cell](15_the-cell.md) | How the agents build all this | 5 min |
 | 20–30 · Operations, user guide, decisions | Running it, using it, and why it is like this | *to come* |
 | [03 · The bring-up story](03_r36-ultra-bring-up-story.md) | How the handheld was brought up, card by card | 15 min |
+| [05 · The text-to-shell story](05_text-to-shell-story.md) | Why a tiny model cannot turn a sentence into a shell command, measured | 6 min |
+| [06 · The speech-to-text story](06_speech-to-text-story.md) | How Mycroft went from a first French model to Kroko, resident in the Slate, with every model compared | 9 min |
+| [07 · The model story](07_mike-model-story.md) | How Mike's model was chosen: every model tried, the questions that changed, and why LFM2.5-350M stays | 9 min |
 | [02 · Testing](02_testing.md) | How every test and experiment is written and run | for contributors |
 | [How-to guides](howto/README.md) | Doing things on Luna yourself, step by step (first: fixing a game's buttons) | per guide |
 | [LOGBOOK](LOGBOOK.md) | Every material change, by date | reference |

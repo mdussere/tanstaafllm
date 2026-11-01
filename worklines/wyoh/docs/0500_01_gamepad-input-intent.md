@@ -1,5 +1,7 @@
 # Wyoh gamepad input — intent
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-07 · **Checked:** 2026-10-31 · **Step:** wyoh 5 ⏳
+
 > **Superseded mapping (2026-10-09):** the controls described here are out of date (left-stick pointer, L1 open/discard, L2 validate). The current reference, checked against the code by a test, is [`0512_01_luna-controls-reference.md`](0512_01_luna-controls-reference.md). This intent stays as the record of Step 5's design.
 
 **Question answered:** What exactly is built so that Luna's session is used through the device's own controls, before any code is written?<br>

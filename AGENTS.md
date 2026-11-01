@@ -2,17 +2,18 @@
 
 ## Project orientation
 
-TANSTAAFLLM is a resource-aware, AI-native personal-computing experiment for a constrained handheld. Read [README.md](README.md) and [docs/01_principles.md](docs/01_principles.md) before proposing architectural or naming changes.
+TANSTAAFLLM is a resource-aware, AI-native personal-computing experiment for a constrained handheld. Read [README.md](README.md) and [docs/01_principles.md](docs/01_principles.md) before proposing architectural or naming changes. The names, motto and tone come from Heinlein's *The Moon Is a Harsh Mistress*: [docs/00_the-moon-is-a-harsh-mistress.md](docs/00_the-moon-is-a-harsh-mistress.md) is the shared reference for that universe; read it before writing a story, a scene or a name that borrows from it.
 
 Language: write everything in English (code, docs, plans, notes, commit messages, messages between sessions), and talk to the user in French, even when they write or dictate in English (user rule, 2026-10-11). Keep the literary vocabulary useful and secondary to clear technical behaviour.
 
 ### Shared component vocabulary
 
-- **Adam** is the human-facing identity the user addresses. It is not a separate brain or privileged agent. **On hold** since 2026-10-09: results go to the user directly.
+- **Adam** is the user: the human in the cell, who gives the go (user, 2026-10-31). In the novel, Adam Selene is the committee's public face; in Hebrew, *adam* is "man", from *adamah*, the earth. Adam is not an agent or a model.
 - **Mike** is the local reasoning and routing layer: a small local model on Luna that proposes Wyoh actions.
 - **Mycroft** is Luna’s interactive input and composition capability. Its measured ASR baseline is offline, context-free audio-to-text; bounded contextualisation and the composition interface are separate, explicitly planned stages.
 - **Wyoh** is the observable desktop/window-management layer: state, context, and available actions.
 - **Mannie** is the frontier-model capability (Claude, Codex…): development work and Mike's costed escalation; not the universal brain.
+- **Hazel** is the cell's creative director and video producer (user, 2026-10-31).
 - **Luna** is the intended handheld environment; `luna-pi` is the Raspberry Pi reference/prototyping target.
 
 Some older records use historical names while nomenclature is consolidated. Follow the active plan and the principles document; do not silently rename components across the repository.
@@ -23,7 +24,7 @@ The first repository-mandatory skill is **`workplan`**.
 
 Use it whenever work involves a workline, plan, roadmap, multi-step effort, or a new tracked discovery/implementation stream. Read its `SKILL.md` before acting. It defines the canonical workline layout, plan template, green-light protocol, artifact naming, and logbook requirement.
 
-The second mandatory skill is **`cell-coordination`** (`skills/cell-coordination/SKILL.md`). Read it before sending or answering any cross-session message, or before writing a note for another workline. In short, Professor coordinates the cell. Other sessions message only Professor and never each other; between worklines they leave notes. Every request goes into the receiving plan, and a blocked session records its state in its plan and asks the user in its own console. `worklines/agents.md` lists the running sessions.
+The second mandatory skill is **`cell-coordination`** (`skills/cell-coordination/SKILL.md`). Read it before sending or answering any cross-session message, or before writing a note for another workline. In short, Professor coordinates the cell, and since 2026-10-30 any session may message any other directly; a request that changes the receiver's work still lands in its plan. Mannie on Luna is Luna's operator: no session uses SSH on Luna without Mannie's agreement, and nobody reboots Luna while Mannie runs there. A blocked session records its state in its plan and asks the user in its own console. `worklines/agents.md` lists the running sessions.
 
 No other skill is mandatory solely because of this repository. Use other available skills only when the user request or task clearly requires them.
 
@@ -43,9 +44,10 @@ The current active worklines are:
 | `professor` | `worklines/professor/plan_professor.md` | Project framing, decision ledger, and coordination/isolation of specialist worklines; it does not implement their subsystems. |
 | `mycroft` | `worklines/mycroft/plan_mycroft.md` | Input/composition architecture and its pre-hardware ASR baseline; no ungreen-lit context feed, command routing, target-device audio work, or implementation. |
 | `wyoh` | `worklines/wyoh/plan_wyoh.md` | Desktop/WM observability and interface design; no premature compositor fork or target-hardware implementation. |
-| `luna` | `worklines/luna/plan_luna.md` | `luna-pi` reference setup and physical-Luna characterisation, imaging, and boot/network bring-up on disposable cards; no Mycroft/Wyoh/Mike implementation outside a green-lit step. |
+| `luna` | `worklines/luna/plan_luna.md` | `luna-pi` reference setup and physical-Luna characterisation (hardware, audio, boot facts); no Mycroft/Wyoh/Mike implementation outside a green-lit step. Since 2026-10-25, system work on Luna (packages, services, accounts, the root image) belongs to Mannie. |
 | `mike` | `worklines/mike/plan_mike.md` | Mike, the local brain: the small local model that proposes Wyoh actions through MCP. Desk host and `luna-pi` first; every action runs only after the user accepts it. |
-| `mannie` | `worklines/mannie/plan_mannie.md` | Mannie, the frontier-model capability: Claude Code on Luna, measured on `luna-pi` first. No secrets in the repository and no unattended mode. |
+| `mannie` | `worklines/mannie/plan_mannie.md` | Mannie, the frontier-model capability: Claude Code on Luna, and Luna's operator since 2026-10-25 (packages, services, accounts, the root image; boot partition and card layout need the user's go). Works on branch `cell/mannie`, merged through pull requests. No secrets in the repository and no unattended mode. |
+| `hazel` | `worklines/hazel/plan_hazel.md` | Hazel, the creative director and video producer: the trailer, one video per story, the series' look and sound, and a public page. Does not change other worklines' code or docs; asks them for facts. |
 
 ## Tests and experiments
 
@@ -64,8 +66,9 @@ Read [docs/02_testing.md](docs/02_testing.md) before creating or running a test 
 - `docs/LOGBOOK.md` records material plan/workline changes.
 - `worklines/professor/docs/0001_01_initial_discussion.md` is the complete initial discussion transcript. Treat it as source evidence, not as verified technical documentation.
 - A workline plan is the operational source of truth for that workline’s current scope and progress.
+- **Records say how fresh they are** (Professor Step 13): every `worklines/*/docs/*.md` record carries a banner under its title, `> **Freshness:** 🟢 current | 🟡 historical | 🔴 superseded by [link] | ⚪ draft · **Written:** · **Checked:** · **Step:**`. A 🟡 or 🔴 record is evidence of what was true on its date: before acting on it, read the plan and the newest record of that step. Add the banner to every new record, switch it to 🟡 when you close its step, and to 🔴 with a link when a newer record replaces it. `scripts/doc_freshness.py` proposes banners; `test/professor/test_doc_freshness.py` checks them.
 
-Documentation, plans, workline artifacts, and reusable scripts are intended to be committed. Do not commit secrets, `.env` files, virtual environments, caches, generated builds, downloaded model weights, or private recordings.
+Documentation, plans, workline artifacts, and reusable scripts are intended to be committed. **Routine (user, 2026-10-31):** when a session finishes a piece of its own work, it commits its own files, pushes to `origin main`, and gives the user direct GitHub links; the `commit-prep` skill has the details. Do not commit secrets, `.env` files, virtual environments, caches, generated builds, downloaded model weights, or private recordings.
 
 ## Working safely
 

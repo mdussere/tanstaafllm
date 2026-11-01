@@ -1,5 +1,7 @@
 # Arch R Flasher difference — missing R36 Ultra panel overlay
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.7 ✅
+
 **Question:** Is the current ArchR write different from the earlier use of the Arch R Flasher, and does that explain the apparent non-boot?
 
 ## Answer

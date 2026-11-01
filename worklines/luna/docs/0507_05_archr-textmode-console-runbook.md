@@ -1,5 +1,7 @@
 # ArchR text-mode boot and local-console runbook
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.7 ✅
+
 **Question:** How can the disposable ArchR card boot directly into its built-in
 local shell rather than Sway/EmulationStation, without changing its root
 filesystem or panel overlay?

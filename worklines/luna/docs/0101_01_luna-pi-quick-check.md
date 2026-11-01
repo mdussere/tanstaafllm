@@ -1,5 +1,7 @@
 # Luna Pi quick check
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** luna 1.1 ✅
+
 **Status:** completed<br>
 **Question answered:** Is `luna-pi` suitable for the first graphical experiments, and does it have Bluetooth?
 

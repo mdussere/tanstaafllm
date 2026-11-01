@@ -1,5 +1,7 @@
 # VNC screenshot diagnostic
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** luna 2.2 ✅
+
 **Status:** blocked visual-session result<br>
 **Question answered:** Does the VNC endpoint render a usable visible desktop?
 

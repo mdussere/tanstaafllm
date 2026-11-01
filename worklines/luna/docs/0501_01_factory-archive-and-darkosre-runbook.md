@@ -1,5 +1,7 @@
 # Luna Step 5 runbook — archive factory EmuELEC, then stage dArkOSRE R36 Ultra
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.1 ✅
+
 **Purpose:** a human-executable procedure for preserving the supplied factory card and preparing a separate dArkOSRE proof card. It does not authorise any command by itself. Every block-device command below is destructive when it writes an `of=/dev/...` target.
 
 ## Verified source URLs — checked 2026-09-27

@@ -1,5 +1,7 @@
 # Step 2 result — evaluation sets, fake Wyoh, scoring, keyword baseline
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mike 2.1 ✅
+
 **Question answered:** what do we measure a model against, and how well does a model-free keyword table already do?<br>
 **Date:** 2026-10-09<br>
 **Status:** done under Professor's decision D13 (delegated by the user). Deterministic; no model, no device.

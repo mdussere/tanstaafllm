@@ -1,5 +1,7 @@
 # R36 Ultra — preserve the hardware reference, then stage an alternative-base trial
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31
+
 ## Summary
 
 The discussion moves the immediate priority from further Arch-R Wi-Fi debugging to protecting the factory EmuELEC card: it is the only verified hardware reference for this particular R36 Ultra. It then proposes a controlled dArkOSRE trial on a separate card, because it was reported to have beta R36 Ultra support and a more conventional Debian userspace.

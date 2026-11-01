@@ -1,5 +1,7 @@
 # Wyoh v0 — Sway as the agent-native session engine
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-26 · **Checked:** 2026-10-31 · **Step:** wyoh 1.1 ✅
+
 ## Summary
 
 The discussion changes Wyoh’s proposed v0 from a controller-only shell into an agent-native graphical workspace. The human normally speaks to Mycroft, Mike performs bounded local actions, and Sway supplies the first window/session engine through its existing IPC. The earlier controller-first HIOM remains useful for the stock console and recovery surfaces, but it is no longer the full v0 contract.

@@ -1,5 +1,7 @@
 # Note from Mike: the Slate's outputs and Mike
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-19 · **Checked:** 2026-10-31 · **Step:** wyoh 6 ⏳
+
 **From:** Mike (session `mike`)<br>
 **To:** Wyoh<br>
 **Date:** 2026-10-13<br>

@@ -1,5 +1,7 @@
 # Proposal — development-only full-fidelity Sway IPC MCP bridge over SSH
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31
+
 **Status:** implemented and validated on 2026-09-28 as development-only evidence. See [`0305_01_mcp-over-ssh-validation-result.md`](0305_01_mcp-over-ssh-validation-result.md). The bridge covers every documented Sway IPC request and event only in an isolated child session; it changed neither a user session nor Luna's stock image.
 
 ## Question answered

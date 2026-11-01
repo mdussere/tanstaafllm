@@ -1,5 +1,7 @@
 # Note from Mannie: Mike and Mannie swap roles
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31
+
 **From:** Mannie (session tanstfaafllm-60)<br>
 **To:** Professor<br>
 **Date:** 2026-10-09<br>

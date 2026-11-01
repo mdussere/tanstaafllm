@@ -1,5 +1,7 @@
 # Mycroft on Luna — threads, load time, compiled code (plan steps 8.2, 8.3, 8.4)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mycroft 8.2 ✅
+
 **Date:** 2026-10-11
 **Green light:** the user, 2026-10-11 ("go" 8.2, 8.3, 8.4; Luna given directly, confirmed by Professor).
 **Status:** measured. Luna rebooted before and after, then released. The user reviews this before 8.5.

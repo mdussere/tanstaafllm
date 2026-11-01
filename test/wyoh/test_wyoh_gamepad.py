@@ -11,6 +11,8 @@ import math
 import sys
 from pathlib import Path
 
+import time
+
 import pytest
 
 ROOT = Path(__file__).parents[2]
@@ -777,6 +779,113 @@ TREE = {"id": 1, "type": "root", "nodes": [{"id": 2, "type": "workspace", "nodes
 def test_mannie_and_app_ids_are_found_in_the_sway_tree():
     assert g.find_app_con(TREE, "mannie") == 11 and g.find_app_con(TREE, "mike") is None
     assert g.con_app_id(TREE, 12) == "wyoh-slate" and g.con_app_id(TREE, 99) is None
+
+
+def _mike_tree(title):
+    tree = {"id": 1, "type": "root", "nodes": [{"id": 2, "type": "workspace", "nodes": [
+        {"id": 10, "type": "con", "app_id": "foot", "name": "sh", "nodes": []}]}]}
+    if title is not None:
+        tree["nodes"][0]["nodes"].append({"id": 13, "type": "con", "app_id": "mike", "name": title, "nodes": []})
+    return tree
+
+
+@pytest.mark.parametrize("title, step", [(None, "start"), ("Mike — starting", "wait"), ("foot", "wait"),
+                                         ("Mike — ready", "deliver"), ("Mike — thinking", "deliver"),
+                                         ("Mike — busy", "busy"), ("Mike — asks: stop Mannie?", "asks"),
+                                         ("Mike — waiting for Mannie", "waiting")])
+def test_fn_b_starts_waits_for_or_delivers_to_mike(title, step):
+    window = g.find_app_title(_mike_tree(title), "mike")
+    assert window == (None if title is None else (13, title))
+    assert g.mike_step(window) == step
+
+
+class _MikeDaemon:
+    """Just what Daemon.mike_zone and Daemon.mike_wait touch."""
+    mike_zone = g.Daemon.mike_zone
+    mike_wait = g.Daemon.mike_wait
+
+    def __init__(self, title):
+        self.title, self.commands, self.notices, self.sent = title, [], [], 0
+        self.mike_deadline, self.mike_hid_slate = None, False
+        self.zone_target, self.zone_submit = None, False
+        self.hidden = self.shown = 0
+        self.core = type("Core", (), {"zone_state": "open", "_clear_cross": lambda self: None})()
+        self.sway = self
+
+    def request(self, kind):
+        return _mike_tree(self.title)
+
+    def command(self, text):
+        self.commands.append(text)
+
+    def tell_slate(self, message):
+        self.notices.append(message["text"])
+
+    def validate_zone(self):
+        self.sent += 1
+
+    def hide_zone(self):
+        self.hidden += 1
+
+    def show_zone(self):
+        self.shown += 1
+
+
+def test_fn_b_lets_mike_ask_to_stop_mannie_then_sends_after_the_save():
+    d = _MikeDaemon(None)
+    d.mike_zone()  # Mike starts, finds Mannie, and asks
+    d.title = "Mike — asks: stop Mannie?"
+    d.mike_wait(d.mike_deadline - 80)
+    assert d.hidden == 1 and d.core.zone_state == "hidden" and d.commands[-1] == "[con_id=13] focus"
+    assert d.mike_deadline - time.monotonic() > 800  # long enough for Mannie's save
+    d.title = "Mike — waiting for Mannie"  # the user pressed A
+    d.mike_wait(time.monotonic())
+    assert d.hidden == 1 and d.sent == 0
+    d.title = "Mike — ready"
+    d.mike_wait(time.monotonic())
+    assert d.shown == 1 and d.sent == 1 and d.zone_target == 13 and d.mike_deadline is None
+
+
+def test_fn_b_keeps_the_text_hidden_when_the_user_says_no_to_stopping_mannie():
+    d = _MikeDaemon("Mike — asks: stop Mannie?")
+    d.mike_zone()
+    assert d.hidden == 1 and d.mike_hid_slate
+    d.title = None  # B: Mike's window closes
+    d.mike_wait(time.monotonic())
+    assert d.sent == 0 and d.shown == 0 and d.mike_deadline is None and not d.mike_hid_slate
+    assert d.core.zone_state == "hidden"  # L1 brings the text back
+
+
+def test_fn_b_starts_mike_then_sends_once_it_is_ready():
+    d = _MikeDaemon(None)
+    d.mike_zone()
+    assert d.commands == [f"exec {g.MIKE_RUN}"] and d.sent == 0 and "starting" in d.notices[-1]
+    d.mike_zone()  # pressed again while it starts: not started twice
+    assert len(d.commands) == 1
+    d.mike_wait(d.mike_deadline - 80)  # window not mapped yet
+    d.title = "Mike — starting"
+    d.mike_wait(d.mike_deadline - 70)
+    assert d.sent == 0 and d.mike_deadline is not None
+    d.title = "Mike — ready"
+    d.mike_wait(d.mike_deadline - 60)
+    assert d.sent == 1 and d.zone_target == 13 and d.zone_submit and d.core.zone_state == "delivering"
+    assert d.mike_deadline is None
+
+
+def test_fn_b_keeps_the_text_when_mike_is_busy_or_too_slow():
+    d = _MikeDaemon("Mike — busy")
+    d.mike_zone()
+    assert d.sent == 0 and d.notices == ["Mike cannot start while Mannie runs; text kept"]
+    d = _MikeDaemon("Mike — starting")
+    d.mike_zone()
+    d.mike_wait(d.mike_deadline + 1)
+    assert d.sent == 0 and d.mike_deadline is None and d.notices[-1] == "Mike did not get ready; text kept"
+    d = _MikeDaemon("Mike — starting")
+    d.mike_zone()
+    d.core.zone_state = "closed"  # the Slate was closed meanwhile: nothing is sent
+    d.title = "Mike — ready"
+    d.mike_wait(d.mike_deadline - 60)
+    assert d.sent == 0 and d.mike_deadline is None
 
 
 def test_history_keeps_sent_texts_but_never_wifi_passwords(tmp_path):

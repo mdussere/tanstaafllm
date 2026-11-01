@@ -1,5 +1,7 @@
 # Card storage reshape — design for Step 6
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-09 · **Checked:** 2026-10-31 · **Step:** luna 6.1 ✅
+
 **Question:** How should the disposable 58.2 GiB ArchR card be repartitioned so that `/` has room for packages, `/home` exists, and `/storage` holds only bulk data, without losing the working boot, panel, Wi-Fi and SSH setup?
 
 **Status:** design only. Nothing has been changed on the card. Execution requires **🟩 go Step 6**.

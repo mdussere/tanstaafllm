@@ -41,7 +41,7 @@ MODEL_ID = "sherpa-onnx-fr-zipformer-int8 / 2023-04-14"
 
 @dataclass(frozen=True)
 class ModelProfile:
-    """One French streaming transducer the adapter can load (plan step 9.3)."""
+    """One streaming transducer the adapter can load (plan steps 9.3 and 10)."""
 
     label: str
     dirname: str
@@ -60,8 +60,17 @@ MODEL_PROFILES = {
     "kroko-fr-2025": ModelProfile("kroko-fr-community / 2025-08-06 (fp32, ORT-extended)",
                                   "sherpa-onnx-streaming-zipformer-fr-kroko-2025-08-06-ort-extended",
                                   "encoder.onnx", "decoder.onnx", "joiner.onnx", False),
+    # English, for Mike in English (plan step 10, desk host only): Kroko English as
+    # published, and the smaller English Zipformer 20M (upper case, no punctuation).
+    "kroko-en-2025": ModelProfile("kroko-en-community / 2025-08-06 (fp32)",
+                                  "sherpa-onnx-streaming-zipformer-en-kroko-2025-08-06",
+                                  "encoder.onnx", "decoder.onnx", "joiner.onnx", False),
+    "zipformer-en-20M": ModelProfile("sherpa-onnx-en-zipformer-20M-int8 / 2023-02-17",
+                                     "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17",
+                                     "encoder-epoch-99-avg-1.int8.onnx", "decoder-epoch-99-avg-1.int8.onnx",
+                                     "joiner-epoch-99-avg-1.int8.onnx", True),
 }
-DEFAULT_MODEL = "zipformer-fr-2023"
+DEFAULT_MODEL = "kroko-en-2025"  # the user, 2026-11-01: English for Mike (plan step 10.6)
 CHUNK_MS = 200
 # Sherpa inference threads. Plan step 8.2 measures 2 and 4 on Luna; the default
 # follows that measurement.
@@ -482,8 +491,10 @@ class SherpaStreamingRecognizer:
             self._config.decoding_method = b"modified_beam_search"
             self._config.max_active_paths = 4
         if hotwords:
-            # The model's tokens are upper case; Sherpa splits each word with bpe.vocab.
-            self._hotwords = "\n".join(word.upper() for word in hotwords).encode("utf-8")
+            # Sherpa splits each word with bpe.vocab. The 2023 French model's tokens are
+            # upper case; Kroko's keep the case, so words are written as they should appear.
+            words = [word.upper() if profile.lowercase else word for word in hotwords]
+            self._hotwords = "\n".join(words).encode("utf-8")
             self._config.model_config.modeling_unit = b"bpe"
             self._config.model_config.bpe_vocab = encode(required["bpe.vocab"])
             self._config.hotwords_buf = self._hotwords

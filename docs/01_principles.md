@@ -29,7 +29,7 @@ The current repository slug is historical and may not match the intended project
 | **TANSTAAFLLM** | project and design philosophy | yes | The whole experiment and its resource-aware principle. |
 | **Luna** | handheld device and its local environment | yes | The home of the system’s components. |
 | **luna-pi** | Raspberry Pi reference/prototyping target | mostly internal | A development and comparison target, not a replacement for Luna. |
-| **Adam Selene** / **Adam** | the system’s human-facing identity | — | **On hold** (user, 2026-10-09): not part of the current design. Results go to the user directly. Kept below as a possible later layer. |
+| **Adam Selene** / **Adam** | the user, the human in the cell | the user | **The user's role** (user, 2026-10-31): Adam gives the go, sets the goals and decides. Not an agent, not a model. In Hebrew, *adam* is "man", from *adamah*, the earth. |
 | **Mike** | local brain | internal | A small local model on Luna (candidate: LFM2.5-350M). It interprets a request and proposes one action through Wyoh, which the user accepts or refuses. When a request is too hard, it escalates to Mannie. |
 | **Mycroft** | input and composition capability | internal | Turns voice into an editable, reviewable proposal. Its ASR baseline is context-free; bounded contextual vocabulary is a separately measured later capability. |
 | **Wyoh** | interface, state, context, and possible actions | internal, rendered to the user | Makes the environment legible and actionable for Mike, and drivable with Luna's buttons. |
@@ -38,9 +38,9 @@ The current repository slug is historical and may not match the intended project
 
 The naming is deliberately layered. **Luna is the machine. Mike is the local intelligence. Mannie is the expensive one far away.** Mycroft and Wyoh provide input and the environment. **Professor** is the coordinating project workline, not another component running on Luna. **Adam**, the single public face, is on hold until a real need for it appears.
 
-## Adam Selene: one public identity, not one more agent (on hold)
+## Adam: the human in the cell
 
-*On hold since 2026-10-09: the user does not see Adam in the story for now, and results go to the user directly. The section is kept as the design to return to.*
+*Since 2026-10-31, Adam is the user's own role (user decision): the human who gives the go. The earlier design below, where Adam was a voice for Mike, is kept as history; it is not the current design.*
 
 Adam Selene is the public identity under which Mike presents itself to the user. Adam is not a second brain, a hidden model, or an additional authority layer.
 

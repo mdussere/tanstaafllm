@@ -1,5 +1,7 @@
 # Note from Professor — OpenCL on Luna's GPU (parked)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mycroft 7.3 ✅
+
 **From:** Professor
 **To:** Mycroft
 **Date:** 2026-10-11

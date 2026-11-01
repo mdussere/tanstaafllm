@@ -1,5 +1,7 @@
 # Luna Pi VNC virtual display
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** luna 2.1 ✅
+
 **Status:** VNC transport complete; visible desktop blocked
 **Question answered:** Is a lightweight, recoverable virtual display available without a physical Pi monitor?
 

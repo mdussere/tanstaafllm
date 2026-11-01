@@ -1,5 +1,7 @@
 # Transition — shared Sway and WayVNC virtual display
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 2.6 ⏳
+
 **Step:** Luna 2.6–2.8
 **Status:** implementation authorised 2026-09-30
 **Question:** Can the Pi’s VNC endpoint display the exact Sway instance operated through Wyoh MCP?

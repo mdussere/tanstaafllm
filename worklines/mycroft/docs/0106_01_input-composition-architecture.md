@@ -1,5 +1,7 @@
 # Mycroft input and composition architecture
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 1.6 ✅
+
 **Status:** planning decision, 2026-09-25. No interface, context source, classifier, or command execution is authorised by this document.
 
 Mycroft is Luna's input-and-composition capability. Its already-measured ASR slice remains deliberately narrow: recorded audio, Sherpa reference decoder, and context-free text. The broader product path is:

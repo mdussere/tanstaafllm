@@ -1,5 +1,7 @@
 # Step 4 recheck — Luna stock-inventory reachability
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** wyoh 4.5 ✅
+
 **Status:** live recheck could not reach Luna; no target operation occurred, 2026-09-27.
 
 ## Question answered

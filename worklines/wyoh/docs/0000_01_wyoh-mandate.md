@@ -4,6 +4,8 @@
 
 # Wyoh mandate — what the initial discussion establishes
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-25 · **Checked:** 2026-10-31
+
 ## Question answered
 
 What should the Wyoh workline own before hardware or compositor implementation begins?

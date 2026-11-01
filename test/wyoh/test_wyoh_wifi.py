@@ -20,11 +20,11 @@ sys.path.insert(0, str(ROOT / "src" / "wyoh"))
 import wyoh_wifi as w  # noqa: E402
 
 STATION = "/net/connman/iwd/0/2"
-HOME = f"{STATION}/4d69636b207769666920686f6d65_psk"
+HOME = f"{STATION}/486f6d65206e6574776f726b_psk"
 BOX = f"{STATION}/46726565626f782d314532334236_psk"
 CAFE = f"{STATION}/636166c3a9_open"
 OFFICE = f"{STATION}/6f6666696365_8021x"
-KNOWN_HOME = "/net/connman/iwd/4d69636b207769666920686f6d65_psk"
+KNOWN_HOME = "/net/connman/iwd/486f6d65206e6574776f726b_psk"
 
 
 def _v(kind: str, value):
@@ -45,12 +45,12 @@ OBJECTS = {
     STATION: {"net.connman.iwd.Device": {"Name": _v("s", "wlan0")},
               "net.connman.iwd.Station": {"State": _v("s", "connected"), "Scanning": _v("b", False),
                                           "ConnectedNetwork": _v("o", HOME)}},
-    HOME: _network("Mick wifi home", "psk", connected=True, known=KNOWN_HOME),
-    BOX: _network("Freebox-1E23B6", "psk"),
+    HOME: _network("Home network", "psk", connected=True, known=KNOWN_HOME),
+    BOX: _network("Neighbour-AP", "psk"),
     CAFE: _network("café", "open"),
     OFFICE: _network("office", "8021x"),
     f"{STATION}/gone_psk": _network("gone", "psk"),  # not in GetOrderedNetworks: out of range
-    KNOWN_HOME: {"net.connman.iwd.KnownNetwork": {"Name": _v("s", "Mick wifi home"), "Type": _v("s", "psk")}},
+    KNOWN_HOME: {"net.connman.iwd.KnownNetwork": {"Name": _v("s", "Home network"), "Type": _v("s", "psk")}},
 }
 ORDERED = [[BOX, -5500], [HOME, -5700], [CAFE, -7000], [OFFICE, -8200]]
 
@@ -63,13 +63,13 @@ def test_the_station_is_wlan0():
 
 def test_networks_in_range_connected_first_then_strongest():
     found = w.networks(OBJECTS, ORDERED)
-    assert [n.ssid for n in found] == ["Mick wifi home", "Freebox-1E23B6", "café", "office"]
+    assert [n.ssid for n in found] == ["Home network", "Neighbour-AP", "café", "office"]
     assert found[0].connected and found[0].known == KNOWN_HOME and found[0].signal == -5700
     assert not found[1].known
 
 
 def test_saved_networks():
-    assert w.known_networks(OBJECTS) == [(KNOWN_HOME, "Mick wifi home")]
+    assert w.known_networks(OBJECTS) == [(KNOWN_HOME, "Home network")]
 
 
 @pytest.mark.parametrize("signal, shown", [(-4500, "▮▮▮▮"), (-6500, "▮▮▮▯"), (-7000, "▮▮▯▯"), (-8800, "▮▯▯▯")])
@@ -79,26 +79,26 @@ def test_signal_bars(signal, shown):
 
 def test_menu_lines():
     assert w.menu_lines(w.networks(OBJECTS, ORDERED)) == [
-        "✓ Mick wifi home  ▮▮▮▮",
-        "  Freebox-1E23B6  ▮▮▮▮",
+        "✓ Home network  ▮▮▮▮",
+        "  Neighbour-AP  ▮▮▮▮",
         "  café  ▮▮▯▯  Open",
         "  office  ▮▯▯▯  Enterprise (no)",
         "Rescan", "Forget a network…", "Disconnect"]
 
 
 def test_a_saved_network_out_of_reach_is_starred_when_in_range():
-    objects = {**OBJECTS, HOME: _network("Mick wifi home", "psk", known=KNOWN_HOME)}
-    assert w.menu_lines(w.networks(objects, ORDERED))[1].startswith("★ Mick wifi home")
+    objects = {**OBJECTS, HOME: _network("Home network", "psk", known=KNOWN_HOME)}
+    assert w.menu_lines(w.networks(objects, ORDERED))[1].startswith("★ Home network")
 
 
 # --- profiles -----------------------------------------------------------------------
 
 @pytest.mark.parametrize("ssid, name", [
-    ("Mick wifi home", "Mick wifi home.psk"),       # as on Luna (/storage/.cache/iwd)
+    ("Home network", "Home network.psk"),       # as on Luna (/storage/.cache/iwd)
     ("Free_box-1", "Free_box-1.psk"),
     ("café", "=636166c3a9.psk"),
     ("a/b", "=612f62.psk"),
-    ("Mick's", "=4d69636b2773.psk"),
+    ("Bob's", "=426f622773.psk"),
 ])
 def test_iwd_profile_names(ssid, name):
     assert w.profile_name(ssid, "psk") == name
@@ -162,7 +162,7 @@ class FakeBus:
 
 
 def test_bar_shows_the_connected_network_and_its_signal():
-    assert w.bar_text(w.Iwd(FakeBus())) == "Mick wifi home ▮▮▮▮"
+    assert w.bar_text(w.Iwd(FakeBus())) == "Home network ▮▮▮▮"
 
 
 def test_bar_without_iwd():
@@ -188,7 +188,7 @@ def test_a_known_network_connects_without_a_password(tmp_path, monkeypatch, caps
     monkeypatch.setattr(w, "read_secret", lambda prompt: asked.append(prompt) or "")
     assert w.connect(w.Iwd(bus), HOME, tmp_path) == 0
     assert asked == [""]  # only the closing key
-    assert "Connected to Mick wifi home." in capsys.readouterr().out
+    assert "Connected to Home network." in capsys.readouterr().out
     assert list(tmp_path.iterdir()) == []
 
 

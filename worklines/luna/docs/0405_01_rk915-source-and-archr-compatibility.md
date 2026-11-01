@@ -1,5 +1,7 @@
 # RK915 source and Arch-R compatibility assessment
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 4.5 ✅
+
 **Questions answered:** Is Luna’s RK915 driver part of upstream EmuELEC? Does Arch-R contain support for it? Can the stock driver be added to the mounted Arch-R image without recompilation?
 
 **Method:** read-only SSH evidence from the factory EmuELEC image; read-only inspection of all three user-mounted Arch-R partitions; and shallow partial clones of the official upstream repositories under `/home/michael/git/`. `ARCHR_ROOT` was already mounted by the user; every action in this assessment was a read. No file on the Arch-R card was changed.

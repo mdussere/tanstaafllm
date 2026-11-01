@@ -1,5 +1,7 @@
 # Note from Professor — normal user accounts on Luna
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** luna 7 ✅
+
 **From:** Professor
 **To:** Luna
 **Date:** 2026-10-11
@@ -43,6 +45,10 @@ Written after a discussion with the user in Luna's console. The two user decisio
 
 1. **One user account, not one per agent.** Wyoh's session (Sway, gamepad, Slate), Mycroft, Mike and Mannie are user processes started for the user, like a `startx` session, not daemons serving others. They run as the user. Real daemons (`sshd`, `iwd`, `seatd`) stay system services as they are.
 2. **Passwordless sudo, for now.** Typing passwords on Luna is impractical.
+
+> **Correction (2026-10-25, at Professor's request):** passwordless sudo does not exist on ArchR. `/usr/bin/sudo` is ArchR's shim: it drops sudo's options and runs the command as the *same* user. There is no `sudo` package in `[archr]`, so `--apply` wrote no sudoers drop-in (found by `--check` on 2026-10-15, and independently by Mannie). `michael` was added without root rights; administration stays `ssh luna` as root. A real sudo for `michael` comes with the Arch Linux ARM root that replaces ARCHR_ROOT (user decision 2026-10-25, `worklines/mannie/plan_mannie.md` Step 7). The paragraphs below about sudo describe the original proposal, not what is on the card.
+>
+> Applied on 2026-10-15 instead: `michael`, uid 1000, groups `wheel`, `video`, `audio`, `input`, `render`, home `/home/michael`, SSH by key. The shadow entry is `*`, not `!`, so key login works. It is also written in `/usr/cache/shadow`, from which ArchR rebuilds the shadow file at every boot. Script: `worklines/luna/scripts/luna_user_account.sh`.
 
 ### Consequence to keep in view
 

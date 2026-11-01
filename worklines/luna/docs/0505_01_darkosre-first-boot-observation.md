@@ -1,5 +1,7 @@
 # dArkOSRE first-boot observation — UI loop
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.5 ⏳
+
 **Question:** What did the first dArkOSRE boot establish on the disposable former-ArchR card?
 
 ## Observed result
@@ -26,4 +28,4 @@ Do not change DTBs again or join a network. If the image exposes SSH through an 
 
 The mounted dArkOS ROOTFS uses NetworkManager's `keyfile` plugin. Its normal persistent profile store is `etc/NetworkManager/system-connections/`; no connection profile is preinstalled. The packaged `ssh.service` exists but is not enabled.
 
-Termidor's active `Mick wifi home` profile is WPA-PSK, DHCP, autoconnecting, has no MAC/BSSID/user permission lock, and uses only `connection.interface-name=wlp3s0`. Copying that root-owned profile to dArkOS, removing that one interface lock, enabling `ssh.service` offline, and placing the existing `id_rsa_local.pub` into `ark`'s `authorized_keys` is the planned secret-safe path. The profile copy and boot-time connection have not yet been performed.
+Termidor's active `Home network` profile is WPA-PSK, DHCP, autoconnecting, has no MAC/BSSID/user permission lock, and uses only `connection.interface-name=wlp3s0`. Copying that root-owned profile to dArkOS, removing that one interface lock, enabling `ssh.service` offline, and placing the existing `id_rsa_local.pub` into `ark`'s `authorized_keys` is the planned secret-safe path. The profile copy and boot-time connection have not yet been performed.

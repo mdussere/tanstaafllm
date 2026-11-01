@@ -1,5 +1,7 @@
 # Shared ChatGPT discussion — cleaned decision record
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** professor 1.2 ✅
+
 **Source:** [0102_02_shared-chatgpt-options-source.md](0102_02_shared-chatgpt-options-source.md)<br>
 **Captured:** 2026-09-25 with `scripts/scrape_shared_chat.py` (14 messages)<br>
 **Status:** decision record; external technical claims remain unverified unless separately evidenced.

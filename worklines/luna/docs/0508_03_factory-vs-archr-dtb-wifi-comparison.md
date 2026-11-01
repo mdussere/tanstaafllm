@@ -1,5 +1,7 @@
 # Factory versus ArchR DTB — RK915 Wi-Fi comparison (Step 5.8c)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.8 ✅
+
 > **Superseded outcome:** this records the first overlay proposal (v1). Its physical tests led to v2 and v3 and to a working connection; see `0508_04_archr-wifi-bring-up-result.md`. The v1 hashes below no longer match the current `wifi-rk915.dtbo`.
 
 ## Summary

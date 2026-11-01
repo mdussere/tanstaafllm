@@ -1,5 +1,7 @@
 # Result — shared Sway, WayVNC, and MCP validation
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-30 · **Checked:** 2026-10-31 · **Step:** wyoh 3.6 ✅
+
 **Step:** Wyoh 3.6
 
 **Status:** completed on 2026-09-30 — **rendered-client claim withdrawn 2026-10-04**

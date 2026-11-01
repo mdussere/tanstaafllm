@@ -1,5 +1,7 @@
 # Result — the Slate and its on-screen keyboard on Luna
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** wyoh 6.5 ✅
+
 **Step:** Wyoh 6 (sub-steps 6.1–6.5), green-lit by the user on 2026-10-09 ("go")
 **Proposal and decisions:** [`0600_01_slate-and-keyboard-proposal.md`](0600_01_slate-and-keyboard-proposal.md)
 **Scope:** Luna, ArchR card, root session. Development-only.

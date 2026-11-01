@@ -1,5 +1,7 @@
 # A short course on the Device Tree (DTS / DTB / DTBO)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31
+
 Learning material, not a work record. Every example is taken from Luna (R36 Ultra, Rockchip RK3326) and the Step 5.8c investigation in `0508_03_factory-vs-archr-dtb-wifi-comparison.md`.
 
 ---

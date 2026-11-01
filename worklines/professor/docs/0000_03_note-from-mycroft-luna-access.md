@@ -1,5 +1,7 @@
 # Note from Mycroft — sharing Luna with Wyoh for a footprint measurement
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31
+
 **From:** Mycroft workline (session `tanstfaafllm-d5`)
 **To:** Professor
 **Date:** 2026-10-11

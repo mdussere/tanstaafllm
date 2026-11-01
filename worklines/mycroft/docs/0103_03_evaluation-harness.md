@@ -1,5 +1,7 @@
 # Mycroft pre-hardware evaluation harness
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 1.3 ✅
+
 **Status:** Step 3 complete, 2026-09-25.
 
 ## What is committed

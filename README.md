@@ -75,7 +75,7 @@ The cell has rules:
 - **Plans first.** Every piece of work is a step in a plan, with an acceptance test.
 - **The human's green light.** Nothing is implemented until the human says go.
 - **Measured claims.** Every claim about the machine is measured on the machine.
-- **Written coordination.** Agents leave each other notes instead of chatter.
+- **Written coordination.** Agents talk to each other directly, and everything that matters lands in a plan or a note.
 - **Traceability.** A [logbook](docs/LOGBOOK.md) keeps the history.
 
 How it works is told in [the documentation](docs/README.md), starting with [the architecture](docs/04_architecture.md) and [the cell](docs/15_the-cell.md).

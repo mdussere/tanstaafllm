@@ -1,5 +1,7 @@
 # Activités LLM Raspberry Pi
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** wyoh 5 ⏳
+
 > Source : https://chatgpt.com/share/6ac819b6-827c-83eb-93d5-8c1d20e42dfd  
 > Export Playwright le 2026-10-09 — 12 messages.
 

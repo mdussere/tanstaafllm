@@ -1,5 +1,7 @@
 # ArchR Wi-Fi bring-up on Luna — from an empty SDIO bus to a DHCP lease (Steps 5.8c–5.8f)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.8 ✅
+
 ## Result
 
 On 2026-10-04 Luna (R36 Ultra) running ArchR on the disposable card joined the home WPA2 network over its internal RK915 Wi-Fi and received a DHCP lease:
@@ -65,7 +67,7 @@ It is installed BOOT-only by `worklines/luna/scripts/enable_archr_wifi_overlay.s
 
 ## How the network is managed on ArchR
 
-- **iwd 3.10** owns the radio and, with `EnableNetworkConfiguration=true`, also runs DHCP. This join used `iwctl station wlan0 connect "Mick wifi home"`.
+- **iwd 3.10** owns the radio and, with `EnableNetworkConfiguration=true`, also runs DHCP. This join used `iwctl station wlan0 connect "Home network"`.
 - **ConnMan 1.43** sits above iwd and is what EmulationStation's network menu uses. Before stage 3 it reported "Wifi is not available" because iwd had no usable device.
 - The credentials are stored only on the disposable card, by iwd. They are not in the repository or the logbook.
 - iwd's default state directory is on the tmpfs `/var`, so saved networks were initially lost at reboot. Step 5.8i moved it to `/storage/.cache/iwd` with a drop-in (`0508_05`).

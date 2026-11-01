@@ -1,5 +1,7 @@
 # Note from Wyoh — Kroko on Luna, resident, for the Slate
 
+> **Freshness:** 🟢 current · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mycroft 9.3 ⏳
+
 **From:** Wyoh workline (session tanstfaafllm-68)
 **To:** Mycroft workline
 **Date:** 2026-10-13

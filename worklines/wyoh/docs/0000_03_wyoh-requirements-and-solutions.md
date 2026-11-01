@@ -4,6 +4,8 @@
 
 # Wyoh requirements proposal and solution paths
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-25 · **Checked:** 2026-10-31
+
 > **History (corrected 2026-10-04):** Between the controller-first reframe and the Sway follow-up, this document was marked superseded by `0000_05_controller-first-handheld-model.md` and its HIOM. That HIOM model is itself now historical; the status note above is current. Solution paths A–D and the "decisions requested" below are the 2026-09-25 proposal, not the ratified path (see `0101_06_sway-v0-contract.md`).
 
 ## Question answered

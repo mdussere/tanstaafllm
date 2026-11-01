@@ -1,5 +1,7 @@
 # ArchR text-console and AZERTY confirmation
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.7 ✅
+
 **Question:** Did the prepared ArchR textmode boot override and offline French
 AZERTY loader work on the physical R36 Ultra?
 

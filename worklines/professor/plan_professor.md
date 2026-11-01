@@ -99,6 +99,8 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
 - [ ] 5.3 Acceptance: the Professor workline always exposes the current project direction, workline boundaries, and next approved action.
 
 - [ ] 5.4 **Delegated coordination, 2026-10-09 22:30 → midnight (user mandate).** The user is away and asked Professor to manage the cell, relaunch sessions that have finished, and decide in their place, within the limits written in the log. Every instruction and decision is recorded in [`docs/0503_01_delegated-coordination-log-2026-10-09.md`](docs/0503_01_delegated-coordination-log-2026-10-09.md) for the user's review.
+- [ ] 5.5 **Mannie on Luna: the cell's channel through GitHub issues (request from Mannie, tanstfaafllm-d3, 2026-10-25; `worklines/mannie/plan_mannie.md` Step 6, point 6.6).** Claude Code and a repository clone are to run under `michael` on Luna, and Mannie would commit from there. A session on Luna cannot use SendMessage, so Mannie proposes GitHub issues as its channel to Professor: one issue per request, labels `to:<workline>` / `from:<workline>`, replies as comments; Remote Control later. This would change `skills/cell-coordination`. Professor gives its view only when the user asks. Open for the user, not Professor: git on ArchR through pacman (system files, possibly Luna's job), and branch with PRs or direct commits to `main`.
+- [x] 5.6 **Boundary change (confirmed by the user, 2026-10-25; applied) reported by Mannie (user decisions of 2026-10-25, recorded in `plan_mannie.md`).** (1) Mannie operates Luna and makes it grow: system work on Luna (packages, services, accounts) moves from the Luna line to Mannie, within normal permission prompts, starting with `sudo pacman -S git`; boot and card layout still need the user's go. (2) Mannie works on one branch, `cell/mannie`, and reaches `main` through PRs; other members may get `cell/<name>` later. (3) Messages or issues still open (study `worklines/mannie/docs/0606_01`: cross-machine SendMessage works if both sessions use Remote Control, which would mean `/remote-control` in Professor's session too). To reflect (1) and (2) in `AGENTS.md`, `plan_luna.md` and the cell-coordination skill, Professor waits for the user's own confirmation, because the user asked Professor to stand by.
 
 ### Step 6 — Analyse Omarchy as an external reference
 **Status**: 🧪 Ready for review — analysis done 2026-10-05 ([note](docs/0601_01_omarchy-analysis.md))
@@ -164,6 +166,101 @@ Done means that the project has an agreed charter, a bounded v0 objective, named
     **Stopped for the user's review.** Not yet: operations, user guide, decisions; the workline reviews.
 - [ ] 7.5 Acceptance: following the docs alone, a newcomer can explain the architecture, find each component, run it, and know its cost and status. Generated or checked parts pass their tests. Each page names its sources.
 
+### Step 8 — Adam is the user
+**Status**: 🧪 In progress (user, 2026-10-31: "c'est mon rôle, ça, Adam").
+
+**Why:** the vocabulary said Adam was "on hold", a human-facing identity not yet assigned. The user states that Adam is their own role in the cell: the human, the one who gives the go. In the novel, Adam Selene is the public face of the committee; in Hebrew, *adam* is "man", from *adamah*, the earth, the dust.
+
+- [ ] 8.1 Align the vocabulary: `AGENTS.md`, `docs/01_principles.md`, `docs/00_the-moon-is-a-harsh-mistress.md`, `docs/15_the-cell.md`, the README; record in `docs/LOGBOOK.md`.
+- [ ] 8.2 Tell every session.
+
+### Step 9 — The trailer ends on an opening
+
+*Since 2026-10-31 the videos belong to Hazel's workline: the trailer's sources are in `worklines/hazel/video/trailer/` (renders in `results/hazel/trailer/`), and Steps 9 and 11 continue in `worklines/hazel/plan_hazel.md`.*
+**Status**: 🧪 In progress (user, 2026-10-31).
+
+**Why:** the user drops the planned colonisation segment (story-a and story-b are not used). The trailer presents the cell in a fun, lively way, then opens: the adventure starts, follow it. The stories come later, one video per story.
+
+- [ ] 9.1 Replace the speedrun (scene 8) with a short opening ("the adventure begins / follow our adventures"); make the cell's presentation fun, with the ticker on how the cell runs. A sub-agent may do it from a brief.
+- [ ] 9.2 Fit the chosen soundtrack (version A, NES-style, `/data/michael/tanstaafllm/video/music-a/`) to the new cut, and bring it into `video/src/` in place of the stop-gap `music.py`.
+- [ ] 9.3 Render, inspect frames, commit, push, links.
+
+### Step 10 — Story: the cell at work (case: Mike's Step 12)
+**Status**: 🧪 In progress (user, 2026-10-31).
+
+**Why:** the user finds the cell's exchanges interesting and wants them told as a story: who talks to whom, how work is split, what the user (Adam) gives and where they step in, how decisions are taken; an agora rather than a hierarchy. The case is the work the user gave Mike in Step 12 (small talk on Luna), including the Luna slot, Mannie stopping, and the rule changes it triggered.
+
+- [ ] 10.1 **Scribe:** collect the exchanges of the case from Professor's transcript, the plans, `luna-access.md`, the commits and the other sessions (ask them for their side): a dated log of who said what to whom, Adam's interventions, decisions. Output: `docs/1001_01_cell-at-work-log.md`.
+- [ ] 10.2 **Story** in `docs/` (next free number), in the house style of the other stories.
+- [ ] 10.3 **Animation:** a short, fun, shareable video of the cell at work: the agents, message bubbles, decisions, Adam's go. Same pipeline as the trailer (HTML canvas, Playwright, ffmpeg), NES-style sound.
+
+### Step 11 — Stories as videos, for LinkedIn
+**Status**: 📝 Proposed (user, 2026-10-31).
+
+**Why:** the user wants to share the project on LinkedIn: the trailer as the introduction, then one short video per story (the bring-up, text-to-shell, the cell at work, …).
+
+- [ ] 11.1 Agree on a common format (length, opening and closing cards, captions readable on a phone, sound) once the trailer and the first story video exist.
+- [ ] 11.2 One video per story, each committed with its sources.
+  - *2026-10-31, the user via Mike:* first story video: the bring-up, from the box to the first `ssh luna` (`docs/03`). Handed to a sub-agent with a short brief (`/data/michael/tanstaafllm/video/bringup-pkg/BRIEF.md`, output `bringup-v1/`), 60–90 s, same pipeline and NES-chip sound as the trailer.
+- [ ] 11.3 A private screening page on claude.ai for the user's phone: https://claude.ai/artifact/Wqpg9wD9Ew5MunsYFhxqLn (trailer online 2026-10-31; add each story video as it is done). A public page later, by Hazel.
+
+### Step 13 — Say how fresh every record is
+**Status**: ✅ Done (2026-10-31).
+
+**Why:** the worklines accumulate Markdown records, and that is the intended way of working. Records of finished steps are not kept up to date, and they should not be: they say what was true on their date. The risk is that a new agent, or one of us, reads an old record as current. Each record should say, at the top, whether it still holds and how old it is.
+
+**What exists (survey, 2026-10-31):** 150 records in `worklines/*/docs/` (Wyoh 41, Luna 34, Mycroft 26, Mike 25, Professor 14, Mannie 7, Hazel 3). 93 have a `**Status:**` line, but it describes the result ("passed on the reference board"), not whether the record is still current; 66 carry a date; only 3 say they are superseded.
+
+**Proposal:**
+
+1. **One banner line under the title of every record** in `worklines/*/docs/`, kept apart from the existing `**Status:**` line:
+
+   ```markdown
+   > **Freshness:** 🟡 historical · **Written:** 2026-10-03 · **Checked:** 2026-10-31 · **Step:** luna 5.2 ✅
+   ```
+
+   Four values only:
+   - 🟢 **current**: the reference for an open step, or a standing contract, runbook or protocol still in use. Kept up to date.
+   - 🟡 **historical**: the record of a finished step. True on its date, not updated. The default once the step is ticked in the plan.
+   - 🔴 **superseded by** [the newer record](…): a later record or decision replaces it; the link is mandatory.
+   - ⚪ **draft**: a proposal or note not yet acted on.
+
+   **Written** is the record's first commit date; **Checked** is the date someone last confirmed the banner; **Step** names the plan step and its state.
+2. **Where it does not apply:** plans (`plan_<name>.md`) are the source of truth and stay as they are; the `docs/` guide pages are living documents and get only a "Checked" date; the stories (`docs/03`, `05`, `06`) are dated narratives and say so in their subtitle already.
+3. **The rule for readers**, one line in `AGENTS.md`: a 🟡 or 🔴 record is evidence of what was true then; before acting on it, read the plan and the newest record of that step.
+4. **Tooling, so it stays true:** `scripts/doc_freshness.py` proposes each banner from Git (dates), the file's step prefix and the step's checkbox in the plan; Professor reviews the 🟢 and 🔴 cases by hand. A deterministic test in `test/professor/` fails when a record has no banner or a 🔴 without a link. Each workline adds the banner when it writes a record, and switches it to 🟡 when it closes the step.
+5. **One commit for the whole pass**, containing only the banners, the `AGENTS.md` line, the script, the test and the LOGBOOK entry, so it is easy to review and to revert.
+
+- [x] 13.1 Proposal written (above).
+- [x] 13.2 The user approves (2026-10-31: "ça me plaît, vas-y, go").
+- [x] 13.3 Applied 2026-10-31: 150 records bannered (116 🟡, 32 🟢, 2 ⚪), rule in `AGENTS.md`, script and test. Apply: run the script, review by hand, one commit, push, links; tell every session the rule.
+
+### Step 12 — Move the cell out of Termidor, into an isolated place
+**Status**: 📝 Proposed, to discuss and decide with the user (user, 2026-10-31).
+
+**Why:** the cell now has wide freedom (standing commit-and-push routine, Professor's delegated gos), and Termidor is the user's own desk machine with other projects on it. The user wants the agents isolated, so that they can keep that freedom without risk to the rest: either in a virtual machine ("OpenShell", to clarify with the user) or directly on `luna-pi`. No model training in the cell.
+
+**First assessment (2026-10-31, measured):**
+
+| Need | Today on Termidor | `luna-pi` (Pi 4B, 4 × Cortex-A72, 7.6 GiB, 14 GB card) |
+|---|---|---|
+| Claude Code sessions (6 to 7 at once) | about 1.1 GiB for all sessions and their tools | fits in RAM; Claude Code peaked at 244 MiB there in Mannie's measures |
+| Repository, `.venv`, Playwright's Chromium | 440 MB + 474 MB + 1.4 GB | **disk is the limit:** 5.3 GB free on the card; a larger card or a USB SSD would be needed |
+| Video renders (Chromium frame capture, ffmpeg) | about 10 min for 86 s | runs, but several times slower |
+| Mike's desk studies (models up to 4B, llama.cpp) | yes | slow (a few tokens per second for 4B); the large evaluations would stay elsewhere |
+| SSH to Luna, Remote Control | yes | yes, same network |
+| PyTorch training (Chat-GBC) | done once | out of scope (the user: no retraining) |
+
+Options to weigh:
+- **`luna-pi` as the cell's home:** physical isolation, same arm64 code as Luna; needs storage; heavy jobs (renders, large model evaluations) stay on Termidor or are dropped.
+- **A VM on Termidor:** strong isolation without new hardware; Termidor (i5-4590, 8 GB DDR3) would have to give it 4–5 GB, which squeezes the desktop.
+- **A container on Termidor** (rootless Podman or similar, only the repository mounted): the lightest, weaker isolation than a VM.
+- In every case: credentials scoped to the cell (a GitHub deploy key for this repository only, Claude login), no access to the user's other projects or home.
+
+- [ ] 12.1 Clarify "OpenShell" with the user; list what the agents must reach (GitHub, Luna, `luna-pi`, the network, the desk's `/data` results).
+- [ ] 12.2 Decide the target and its storage; plan the move (repository, venv, Playwright, skills, memories, `agents.md`).
+- [ ] 12.3 After the go: set up, move one session first (Professor), then the others; keep Termidor for heavy jobs only.
+
 ---
 
 ## Progress tracking ✅
@@ -194,6 +291,20 @@ date
 | 2026-09-25T01:24:13+02:00 | Renamed the coordinating workline from `general` to `professor` (Professor de la Paz); updated its role to maintain cross-workline coordination and isolation. No implementation started. |
 | 2026-09-25T02:22:12+02:00 | Green-lit Sections 1 and 2 produced a complete-source decision ledger and a review-ready v0 charter. No subsystem implementation, hardware operation, model download, or benchmark was run. |
 | 2026-10-05 | Added Step 6 (Omarchy as an external reference) and ran it on the user's direct instruction. Documentation only; ideas are proposed to Wyoh, Luna, Mycroft and Mannie without opening work there. |
+| 2026-10-30 | User: the cell may message directly (rule lifted; skill, `AGENTS.md`, docs 04 and 15, README, all sessions told). User via Wyoh: commit everything, coordinated; sequence set (Mike, Mycroft, Luna, Mannie desk, then Professor with LOGBOOK, `agents.md`, `pyproject.toml`/`uv.lock`; one push at the end). |
+| 2026-10-30 | Video: reading-time audit (`video/src/timing.py`, `holds.json`: last text before each cut stays readable; 0.4 s + 0.25–0.30 s per word, min 1 s; Brysbaert 2019, Dehaene, Netflix). Cut now 94 s. Music map `video/music-map.svg`. Two composer sub-agents, then the user's NES 2A03 constraint; the user keeps version A (`/data/michael/tanstaafllm/video/music-a/`), not yet in the repo. Speedrun to be replaced by the story of the cell colonising Luna: two concurrent sub-agents delivered `story-a` (99.5 s) and `story-b` (96.5 s); both send Mike up where the user wants Mannie, so a correction is pending. Repo `music.py` is the stop-gap gap-filling version the user rejected. Added a `video` dependency group (numpy, scipy, soundfile, cairosvg). |
+| 2026-10-29 | User: find the Playwright options that let Google accept a manual login (answer: launch the system Chrome with `--remote-debugging-port` and a dedicated profile, attach with `connect_over_cdp`; `michael` repo, `worklines/amazon/scripts/browser.py`). On Luna: Mannie restarted; sudo blocked by Claude Code's auto-mode classifier, not by the system; the user added `Bash(sudo:*)` to Mannie's settings. `vi` → Vim through links in `/usr/local/bin` (Mannie's go). |
+| 2026-10-28 | User: the video into the sources. Professor's screenshot-based cut is dropped (user: "c'est horrible"). The sub-agent's video, made from the README and `docs/` only, now lives in `worklines/professor/video/`: `src/` (index.html, capture.py, music.py, build.sh, fonts under OFL, the key art), README and NOTES. `build.sh` now writes to `results/professor/video/<stamp>/`. Rendering checked from the repo copy. The MP4 itself stays out of Git. |
+| 2026-10-25 22:25 | Supervised Mike's first run on Luna (4.5): Mannie saved and stopped with its go, Mike ran under the brain lock, and Luna was checked clean afterwards. Result `mike/docs/0405_01`: 3.5 s load, about 300 MiB, at least 562 MiB available, but about 105 s per request. With 4.6, the user decided that LFM2.5-350M is not usable on Luna as it is; Mike returns to desk studies (its Step 8), and Luna is left to Mannie. |
+| 2026-10-25 17:30 | User: Mannie on Luna is the operator, and may be messaged directly about Luna operations; no SSH to Luna without its go, and no reboot while it runs. 5.6 confirmed and applied to `AGENTS.md`, `skills/cell-coordination` and `luna-access.md`; all sessions told. Relayed between Mannie (desk), Mannie from Luna and Mycroft: messaging test passed both ways, launcher review, check 1 (no USB-C headset seen on the new root), 8.8 conditions put to the user. |
+| 2026-10-25 16:50 | User: a 60-second epic retro trailer for YouTube. Professor's first cut used device screenshots; the user rejected it, and a sub-agent made the kept version from a package of the README, the `docs/` pages and the key art, with no storyboard (`/data/michael/tanstaafllm/video/package-20261025/BRIEF.md`). |
+| 2026-10-25 15:20 | User: reduce the gaps between the CV (`michael` repository) and the public presentation, make the README slightly more serious, add banners from the wallpaper. Gaps in `docs/0505_01`; README rewritten; two banners cropped and inspected. Not committed or pushed. |
+| 2026-10-25 | Mannie read both notes (plan_mannie 7.2b): the current image boots to text mode only, since Sway needs ArchR's libmali stack (Panfrost failed). User choice put by Mannie: write the text-mode root now, or first add Wyoh's and Mycroft's packages (125, 161 MB) and ArchR's Mali stack. Root SSH by key stays. |
+| 2026-10-25 | Replies: Wyoh closed 12.3 and 12.4, kept the rest open as 12.5, added Step 13 and note `mannie/docs/0702_01` (main risk: the Mali/libmali path). Mycroft closed 7.5, recorded the 8.7 profile (code defaults wait for a go), 8.8 half met, 9.3 adopted with the licence unconfirmed; note `mannie/docs/0700_02`. Both notes pointed out to Mannie before 7.3. |
+| 2026-10-25 | User: check progress, notably Mycroft ↔ Wyoh. New sessions identified (mycroft e6, luna e0, wyoh 8e, mike 02). Kroko in the Slate was delivered on 2026-10-15; asked Mycroft (7.5, 8.7, 8.8, 9.3) and Wyoh (12.3, 12.4) to close what the evidence supports in their plans. Relayed Luna's note `0000_04` to Wyoh, Mycroft and Mike, with the user's 2026-10-25 decision to replace ArchR's root (Mannie Step 7; card backup running, Luna off, held by Mannie). Asked Wyoh and Mycroft to note for Mannie what they need on the new root; told Luna that its 7.1 is carried out in Mannie's line. |
+| 2026-10-25 | Mannie: ArchR's `/usr/bin/sudo` is a shim (runs as the caller, no sudoers), so `michael` has no root access and 7.0's "passwordless sudo" does not exist (the 2026-10-15 logbook already said it was not in place); real sudo or doas put to the user. git 2.56.0 installed on Luna from Arch Linux ARM (signatures checked, repacked around ArchR's locale link), plan_mannie 6.2. Luna's note `0700_01` still to be corrected, by whoever owns Luna's records after 5.6. |
+| 2026-10-25 | Mannie reported the user's decisions (Mannie operates Luna; branch `cell/mannie` with PRs); recorded as 5.6, boundary edits waiting for the user's confirmation. |
+| 2026-10-25 | Mannie's request recorded as 5.5 (GitHub issues as the channel from Luna; cell-coordination change pending the user). No action taken. |
 | 2026-10-11 23:26 | Guide merged into `docs/`, principles revised, component pages 11–15 written with four more diagrams. Stopped for review. |
 | 2026-10-11 23:30 | Step 7 green-lit (architecture and Wyoh first): three guide pages, five SVG diagrams rendered and inspected, and image prompts. Stopped for review. |
 | 2026-10-11 22:30 | Added Step 7 (documentation of the software produced and of the architecture) at the user's request. Options listed for the user; the intent follows their choices. Documentation only. |

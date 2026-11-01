@@ -2,8 +2,10 @@
 
 Only one session uses Luna (the R36 Ultra, `ssh luna`) at a time. Luna has about 1 GiB of RAM: a speech model and a graphical test running together would distort each other's measurements, or exhaust the memory. Professor decides who holds Luna. A session that wants Luna asks Professor, and does not contact the session that holds it.
 
+**Since 2026-10-25, Mannie runs on Luna as its operator** (user). No session uses SSH on Luna without first telling Mannie on Luna what it will run and getting its agreement, and nobody reboots or resets Luna while Mannie is running there. A reboot waits until Mannie has saved its state and stopped (`skills/cell-coordination`).
+
 **Rules for the holder:**
-- Reboot Luna after each test series (`ssh luna reboot`, then wait for SSH), as the user asked.
+- Reboot Luna after each test series (`ssh luna reboot`, then wait for SSH), as the user asked, but only once Mannie on Luna has stopped.
 - Install only under `/storage/.local/`. Make no change to the boot partition, the card layout, or ArchR's own files.
 - To release Luna: finish the current series, reboot Luna, record the state in your plan, then tell Professor "Luna released".
 
@@ -11,7 +13,7 @@ Only one session uses Luna (the R36 Ultra, `ssh luna`) at a time. Luna has about
 
 | Since | Holder | Purpose | Release condition |
 |---|---|---|---|
-| 2026-10-25 00:28 | Mannie (tanstfaafllm-d3, and Mannie from Luna on the device) | Mannie operates Luna (user decision, 2026-10-25): Step 7 done (Arch Linux ARM root, card back in Luna since 14:27), 7.5 keyboard rescue, 6.7a Mannie from Luna. Other lines ask Mannie, through Professor. | Mannie operates Luna; slots for other lines through Professor |
+| 2026-10-26 | Mannie on Luna (operator) | Mannie lives on Luna (user, 2026-10-25) | — |
 
 ## Queue
 
@@ -69,3 +71,14 @@ Waiting for `luna-pi`: Mannie (Claude Code, the 600 MiB rehearsal if green-lit).
 | 2026-10-25 00:28 | The user gave Mannie the go for 6.1–6.5; Mannie took the free Luna. |
 | 2026-10-25 09:00 | The user put Luna's card in Termidor for Mannie's Step 7 (study and preparation of an Arch Linux ARM root). Mannie remounted its four partitions read-only. |
 | 2026-10-25 14:27 | The card is back in Luna; Luna boots the Arch Linux ARM root (Mannie Step 7.3). |
+| 2026-10-25 17:40 | Mannie from Luna saved its state (3348544, pushed) and gave its go; Professor ran `mannie stop` over SSH as michael. Lock free, MemAvailable 654 MiB. Luna given to Mike for its first run, supervised by Professor. |
+| 2026-10-25 | Mike released Luna: 4.5 done (`worklines/mike/docs/0405_01`), stopped after 3 requests at the user's word. Professor checked: no llama-server, lock free, Mannie stopped, MemAvailable 651 MiB; Mike's files kept in `~/.local/opt/mike/` (259 MB). No reboot. |
+| 2026-10-25 22:20 | Mike: 4.6 run at the user's direct request (raw llama-completion, no harness: about 165 s for a 1,056-token prompt; the model is the cost). User decision: LFM2.5-350M is not usable on Luna as it is; Luna is left to Mannie, and Mike goes back to desk studies (Mike Step 8). Luna rebooted at 22:11, not by Mike. No Mike process, no lock. Luna free; Mannie's restart is the user's call. |
+| 2026-10-26 | User: restart Mannie. Professor ran `mannie start` over SSH: fresh start, Remote Control "Mannie from Luna" (ref aca8f5), brain lock "mannie 13735", MemAvailable 369 MiB. |
+| 2026-10-28 | Mycroft: 8.8 slot with Mannie stopped (user go). Luna was rebooted twice by the harness; no reboot after the last window, at the user's choice. Nothing was installed except `slate_session_probe.py` under `/storage/.local/share/tanstfaafllm/mycroft/`. Mannie can be restarted. |
+| 2026-10-31 12:20 | Mike took Luna for 12.5 (small-talk run, about 20 min, as michael): Mannie on Luna stopped itself on the user's order, relayed by Professor; lock free, MemAvailable 550 MiB. Kroko, Sway and Wyoh services untouched, no reboot. |
+| 2026-10-31 12:27 | Mike released Luna: 12.5 done (`results/mike/smalltalk-luna/20261031T112056Z/`, 6 min 22 s). No lock, no llama-server, MemAvailable 558 MiB; no reboot. Mannie's restart left to Professor. |
+| 2026-10-31 12:34 | Wyoh booked Luna for 6.11 (Mike's window and FN+B: deploy, regenerate apps, one wyoh-gamepad restart, live check with screenshots; about 15 min, no reboot), agreed by Professor; waiting for Mannie to stop. |
+| 2026-10-31 12:58 | Wyoh released Luna: 6.11 live check passed (`results/wyoh/luna-mike-window/20261031T115702Z/`). Deployed `wyoh_gamepad.py` (backup `.bak-20261031`) and `/storage/.local/opt/wyoh-mike/`, regenerated app entries (Calculator restored after a first run without its manifest glob), Sway reloaded, wyoh-gamepad restarted twice. Mike closed: no llama-server, no brain lock, MemAvailable 567 MiB. No reboot; Mannie can be restarted. |
+| 2026-10-31 19:50 | Mike installed its Step 13 client on Luna on the user's go (Mannie on Luna offline): `mike.py` and `prestac.py` copied to `/home/michael/.local/opt/mike/` (SHA-256 checked), `smalltalk.py` now a link to `mike.py`, the old one kept as `smalltalk.py.step12`. Copy only: the user's open Mike window and its server were not touched, no service restarted, no reboot. |
+| 2026-10-31 20:15 | Mike copied the 13.8/13.9 `mike.py` (journal, switch prompt) to `/home/michael/.local/opt/mike/` on the user's install go (Mannie on Luna offline; SHA-256 checked). The user's Mike window (lock `mike 2189 2207`) was left running; the new client applies at the next start. No service touched, no reboot. |

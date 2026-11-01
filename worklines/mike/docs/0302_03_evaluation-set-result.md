@@ -1,5 +1,7 @@
 # Step 3.2c result — the shortlist on the full evaluation sets
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mike 3.2 ✅
+
 **Question answered:** on the Step 2 evaluation sets (81 main + 31 held-out requests), how well do the LFM models do with the contract, compared with the keyword baseline?<br>
 **Date:** 2026-10-09<br>
 **Status:** measured on the desk host only (Intel i5-4590, 4 threads, `n_batch` 64), done under Professor's D13. **The host was shared:** load average about 4 from other sessions, so the times are pessimistic. No claim about Luna or `luna-pi`.

@@ -102,3 +102,65 @@ def test_known_words_with_and_without_a_list(tmp_path: Path) -> None:
     (evidence / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     for setting in report["settings"].values():
         assert all(text.strip() for text in setting["texts"])
+
+
+# Plan step 9.10 / 10: known words on Kroko English, on the user's consented
+# French-accented English reading (docs/1003_01), kept private. Kroko ships no
+# bpe.vocab; scripts/vocab_from_tokens.py rebuilds one from its tokens.txt.
+ENGLISH_KNOWN_WORDS = ["Mycroft", "Wyoh", "Mannie", "Luna", "NetSurf", "Wolfenstein"]
+ENGLISH_SETTINGS = {
+    "greedy": {},
+    "beam": {"beam_search": True},
+    "beam+hotwords 3.0": {"hotwords": ENGLISH_KNOWN_WORDS, "hotwords_score": 3.0},
+    "beam+hotwords 3.0, Wyoh and Mannie 10": {
+        "hotwords": ["Mycroft", "Wyoh :10", "Mannie :10", "Luna", "NetSurf", "Wolfenstein"], "hotwords_score": 3.0},
+}
+SPOKEN_NUMBERS = "one two three four five six seven eight nine ten eleven twelve thirteen fourteen".split()
+
+
+def _without_spoken_numbers(text: str) -> str:
+    """The user read the sentence numbers aloud; drop them, in order, before scoring."""
+    kept, next_number = [], 0
+    for word in text.split():
+        if next_number < len(SPOKEN_NUMBERS) and "".join(filter(str.isalpha, word.lower())) == SPOKEN_NUMBERS[next_number]:
+            next_number += 1
+            continue
+        kept.append(word)
+    return " ".join(kept)
+
+
+@pytest.mark.integration
+@pytest.mark.timeout(600)
+def test_kroko_english_known_words_on_the_users_reading(tmp_path: Path) -> None:
+    root_text, reading = os.environ.get("MYCROFT_ASSET_ROOT"), os.environ.get("MYCROFT_PRIVATE_READING_EN")
+    if not root_text or not reading or not Path(reading).is_file() or not shutil.which("ffmpeg"):
+        pytest.skip("MYCROFT_ASSET_ROOT, MYCROFT_PRIVATE_READING_EN (the user's English reading) and ffmpeg are needed")
+    root = Path(root_text)
+    profile = console.MODEL_PROFILES["kroko-en-2025"]
+    if not (root / profile.dirname / "bpe.vocab").is_file():
+        pytest.skip("bpe.vocab is missing beside Kroko English (run scripts/vocab_from_tokens.py)")
+    spec = importlib.util.spec_from_file_location("benchmark_asr", REPO / "worklines/mycroft/scripts/benchmark_asr.py")
+    benchmark = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(benchmark)
+    wav = tmp_path / "reading.wav"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", reading, "-ac", "1", "-ar", "16000",
+                    "-sample_fmt", "s16", str(wav)], check=True)
+    script = (REPO / "worklines/mycroft/docs/1003_01_english-reading-script.md").read_text(encoding="utf-8")
+    truth = script.split("## Canonical ground truth", 1)[1]
+    reference = " ".join(line[2:] for line in truth.splitlines() if line.startswith("> "))
+
+    report: dict = {"known_words": ENGLISH_KNOWN_WORDS, "settings": {}}
+    for name, options in ENGLISH_SETTINGS.items():
+        recognizer = console.SherpaStreamingRecognizer(root, num_threads=2, model="kroko-en-2025", **options)
+        try:
+            text = _decode(recognizer, wav)
+        finally:
+            recognizer.close()
+        scored = _without_spoken_numbers(text)
+        found = {word: scored.count(word) for word in ENGLISH_KNOWN_WORDS}
+        report["settings"][name] = {"text": text, "wer": benchmark.word_error_rate(reference, scored), "known_words_found": found}
+
+    evidence = REPO / "results/mycroft/hotwords-en" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    evidence.mkdir(parents=True)
+    (evidence / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    assert all(setting["text"].strip() for setting in report["settings"].values())

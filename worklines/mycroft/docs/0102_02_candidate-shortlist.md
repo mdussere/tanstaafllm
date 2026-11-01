@@ -1,5 +1,7 @@
 # Mycroft v0 candidate shortlist
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 1.2 ✅
+
 **Status:** Step 2 evidence, 2026-09-25. Hands-on candidates are capped at two.
 
 ## Decision

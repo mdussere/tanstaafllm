@@ -1,5 +1,7 @@
 # Step 3.7 — how much RAM does Mike really need?
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mike 3.2 ✅
+
 **Question answered:** the user finds about 500 MiB far too much. How much of it is the model, and how much is avoidable overhead?<br>
 **Date:** 2026-10-11<br>
 **Status:** measured on the desk host (x86_64) only. Evidence: `results/mike/lean-memory/20261011T100738Z/summary.jsonl`; test `test/mike/test_lean_memory.py` (`integration`). Three requests per run, prompt v4, constrained, context 2,048.

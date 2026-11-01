@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Mycroft: the three measured models</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+    <pattern id="ghost" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0b1026"/><rect width="3" height="6" fill="#3e7a4a"/>
+    </pattern>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .h { font: bold 14px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .t { font: 13px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .s { font: 11px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .v { font: bold 13px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; }
+    .need { font: bold 11px 'DejaVu Sans Mono', monospace; fill: #ff6b6b; }
+    .na { font: italic 12px 'DejaVu Sans', sans-serif; fill: #6f7fa8; }
+  </style>
+  <rect width="1000" height="640" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">MYCROFT · THE THREE MEASURED MODELS</text>
+  <text x="30" y="68" class="sub">Whisper Tiny · Sherpa French Zipformer · Kroko French — same audio, 2 threads</text>
+
+  <!-- legend -->
+  <rect x="30" y="84" width="14" height="14" fill="#ff6b6b"/><text x="50" y="96" class="t">Whisper Tiny q5_1</text>
+  <rect x="200" y="84" width="14" height="14" fill="#ffb347"/><text x="220" y="96" class="t">Sherpa French Zipformer (v0)</text>
+  <rect x="440" y="84" width="14" height="14" fill="#7bd389"/><text x="460" y="96" class="t">Kroko French (chosen)</text>
+
+  <!-- A · accuracy: x = 140 + 6 px per % -->
+  <text x="30" y="136" class="h">ACCURACY · desk host</text>
+  <text x="30" y="152" class="s">word errors on the user's 130 s reading · lower is better</text>
+  <text x="30" y="181" class="t">Whisper</text>
+  <rect x="140" y="168" width="256" height="20" fill="#ff6b6b"/>
+  <text x="404" y="183" class="v">42.7 %</text>
+  <text x="30" y="215" class="t">Sherpa</text>
+  <rect x="140" y="202" width="80" height="20" fill="#ffb347"/>
+  <text x="228" y="217" class="v">13.4 %</text>
+  <text x="30" y="249" class="t">Kroko</text>
+  <rect x="140" y="236" width="55" height="20" fill="#7bd389"/>
+  <text x="203" y="251" class="v">9.1 %</text>
+  <text x="30" y="282" class="s">Kroko also writes capitals and punctuation;</text>
+  <text x="30" y="296" class="s">the other two write bare words.</text>
+
+  <!-- B · speed on Luna: x = 620 + 150 px per 1.0 RTF -->
+  <text x="520" y="136" class="h">SPEED · on Luna</text>
+  <text x="520" y="152" class="s">real-time factor: seconds of work per second of speech</text>
+  <line x1="770" y1="160" x2="770" y2="262" stroke="#ff6b6b" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="776" y="270" class="need">1.0 · keeps up with speech</text>
+  <text x="520" y="181" class="t">Whisper</text>
+  <text x="620" y="183" class="na">not run on Luna</text>
+  <text x="520" y="215" class="t">Sherpa</text>
+  <rect x="620" y="202" width="225" height="20" fill="#ffb347"/>
+  <text x="853" y="217" class="v">1.5 · behind</text>
+  <text x="520" y="249" class="t">Kroko</text>
+  <rect x="620" y="236" width="117" height="20" fill="#7bd389"/>
+  <text x="626" y="251" class="v" style="fill:#0b1026">0.78</text>
+
+  <!-- C · memory on Luna: x = 140 + 1 px per MiB -->
+  <text x="30" y="352" class="h">MEMORY · on Luna</text>
+  <text x="30" y="368" class="s">peak RSS in MiB · Luna has 983 MiB for everything</text>
+  <text x="30" y="397" class="t">Whisper</text>
+  <text x="140" y="399" class="na">not run on Luna (230 MiB on the desk)</text>
+  <text x="30" y="431" class="t">Sherpa</text>
+  <rect x="140" y="418" width="236" height="20" fill="#ffb347"/>
+  <text x="384" y="433" class="v">236</text>
+  <text x="30" y="465" class="t">Kroko</text>
+  <rect x="140" y="452" width="167" height="20" fill="#7bd389"/>
+  <text x="315" y="467" class="v">167</text>
+  <text x="30" y="498" class="s">Resident in the Slate: Kroko rests at 152 MiB and</text>
+  <text x="30" y="512" class="s">peaks at 172 MiB while dictating.</text>
+
+  <!-- D · waiting on Luna: x = 640 + 5 px per s -->
+  <text x="520" y="352" class="h">WAITING · on Luna</text>
+  <text x="520" y="368" class="s">seconds from launch until you can speak</text>
+  <text x="520" y="395" class="t">Sherpa</text>
+  <text x="520" y="409" class="s">at every dictation</text>
+  <rect x="640" y="388" width="88" height="20" fill="#ffb347"/>
+  <text x="736" y="403" class="v">17.5 s</text>
+  <text x="520" y="433" class="t">Kroko</text>
+  <text x="520" y="447" class="s">as published</text>
+  <rect x="640" y="426" width="239" height="20" fill="#7bd389" opacity="0.45"/>
+  <text x="887" y="441" class="v">47.7 s</text>
+  <text x="520" y="471" class="t">Kroko</text>
+  <text x="520" y="485" class="s">prepared, once</text>
+  <rect x="640" y="464" width="122" height="20" fill="#7bd389"/>
+  <text x="770" y="479" class="v">24.4 s · once per session</text>
+  <text x="520" y="509" class="t">Kroko</text>
+  <text x="520" y="523" class="s">resident</text>
+  <rect x="640" y="502" width="3" height="20" fill="#7bd389"/>
+  <text x="652" y="517" class="v">0.002 s · press and speak</text>
+
+  <line x1="30" y1="550" x2="970" y2="550" stroke="#1d2a4f" stroke-width="1"/>
+  <text x="30" y="574" class="t">Kroko is the only one that keeps up with speech on Luna. Its long load stopped mattering once it stayed loaded:</text>
+  <text x="30" y="592" class="t">Luna loads it in the background at login, and every dictation then starts at once.</text>
+  <text x="30" y="620" class="s">Sources: worklines/mycroft/docs/0104_06 and 0903_01 (accuracy), plan step 9.3 run 20261011T213949Z (Luna speed, memory, load), 0908_01 (resident Kroko).</text>
+</svg>

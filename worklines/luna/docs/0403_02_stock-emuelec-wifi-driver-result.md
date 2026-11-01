@@ -1,5 +1,7 @@
 # Stock EmuELEC Wi-Fi driver evidence
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 4.3 ✅
+
 **Question answered:** Which Wi-Fi hardware path, driver, and firmware behaviour does the running factory EmuELEC image use on Luna?
 
 **Method:** Step 4.3 read-only SSH collection on 2026-09-27. Commands inspected kernel, sysfs, module, firmware, device-tree, and radio state only. They did not scan, connect, alter RF state, load/unload modules, or modify either card.

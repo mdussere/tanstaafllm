@@ -1,5 +1,7 @@
 # Mycroft v0 model decision: Sherpa-ONNX French Zipformer (provisional)
 
+> **Freshness:** 🟡 historical · **Written:** 2026-09-27 · **Checked:** 2026-10-31 · **Step:** mycroft 1.4 ✅
+
 **Status:** Step 4 complete, 2026-09-25. This is a pre-hardware v0 selection, not a Luna compatibility claim.
 
 ## Decision

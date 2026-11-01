@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 480" width="960" height="480" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Micro answers by habit</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .cmd { font: bold 16px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; }
+    .v { font: bold 12px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; }
+    .s { font: 11px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .q { font: 12.5px 'DejaVu Sans Mono', monospace; fill: #d5deec; }
+    .bad { font: 12.5px 'DejaVu Sans Mono', monospace; fill: #ff6b6b; }
+    .key { font: 12px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+  </style>
+  <rect width="960" height="480" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">MICRO ANSWERS BY HABIT</text>
+  <text x="30" y="68" class="sub">first word of each answer, 300 test requests · scale: 1 request = 3 px</text>
+
+  <rect x="560" y="84" width="14" height="10" fill="#3ee6e0"/><text x="580" y="94" class="key">what micro wrote</text>
+  <rect x="720" y="84" width="14" height="10" fill="#6f7fa8"/><text x="740" y="94" class="key">what was expected</text>
+
+  <!-- rows: x0 = 120, 3 px per request -->
+  <g>
+    <text x="100" y="128" class="cmd" text-anchor="end">find</text>
+    <rect x="120" y="112" width="345" height="14" fill="#3ee6e0"/><text x="472" y="124" class="v">115</text>
+    <rect x="120" y="128" width="327" height="10" fill="#6f7fa8"/><text x="454" y="138" class="s">109</text>
+
+    <text x="100" y="172" class="cmd" text-anchor="end">cat</text>
+    <rect x="120" y="156" width="246" height="14" fill="#3ee6e0"/><text x="373" y="168" class="v">82</text>
+    <rect x="120" y="172" width="30" height="10" fill="#6f7fa8"/><text x="157" y="182" class="s">10</text>
+
+    <text x="100" y="216" class="cmd" text-anchor="end">sudo</text>
+    <rect x="120" y="200" width="99" height="14" fill="#3ee6e0"/><text x="226" y="212" class="v">33</text>
+    <rect x="120" y="216" width="1" height="10" fill="#6f7fa8"/><text x="128" y="226" class="s">0</text>
+
+    <text x="100" y="260" class="cmd" text-anchor="end">echo</text>
+    <rect x="120" y="244" width="12" height="14" fill="#3ee6e0"/><text x="139" y="256" class="v">4</text>
+    <rect x="120" y="260" width="48" height="10" fill="#6f7fa8"/><text x="175" y="270" class="s">16</text>
+
+    <text x="100" y="304" class="cmd" text-anchor="end">grep</text>
+    <rect x="120" y="288" width="1" height="14" fill="#3ee6e0"/><text x="128" y="300" class="v">0</text>
+    <rect x="120" y="304" width="39" height="10" fill="#6f7fa8"/><text x="166" y="314" class="s">13</text>
+
+    <text x="100" y="348" class="cmd" text-anchor="end">ls</text>
+    <rect x="120" y="332" width="9" height="14" fill="#3ee6e0"/><text x="136" y="344" class="v">3</text>
+    <rect x="120" y="348" width="18" height="10" fill="#6f7fa8"/><text x="145" y="358" class="s">6</text>
+  </g>
+  <text x="120" y="392" class="key">45 different commands written, where the test expects 96.</text>
+
+  <!-- examples -->
+  <rect x="540" y="130" width="390" height="250" fill="#10233a" stroke="#3b4a7a" stroke-width="2"/>
+  <text x="556" y="156" class="s">ASKED</text>
+  <text x="556" y="176" class="q">list files in the current</text>
+  <text x="556" y="192" class="q">directory</text>
+  <text x="556" y="214" class="s">MICRO WROTE</text>
+  <text x="556" y="234" class="bad">find . -name "*.*"</text>
+  <line x1="556" y1="256" x2="914" y2="256" stroke="#3b4a7a"/>
+  <text x="556" y="280" class="s">ASKED</text>
+  <text x="556" y="300" class="q">create a directory</text>
+  <text x="556" y="316" class="q">/testbed/test_dir</text>
+  <text x="556" y="338" class="s">MICRO WROTE · a command that does not exist</text>
+  <text x="556" y="358" class="bad">create -r /test_name/test_temp_dir/…</text>
+
+  <text x="30" y="446" class="s">Chat-GBC micro (137 k parameters) trained from scratch on 39,549 NL2SH-ALFA pairs. "find" is the expected command of 109 requests, so</text>
+  <text x="30" y="462" class="s">writing it everywhere is the cheapest way to look right. Source: results/mike/chat-gbc-nl2sh/20261030T223755Z/micro/rows.jsonl.</text>
+</svg>

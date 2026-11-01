@@ -1,5 +1,7 @@
 # Step 3.2a–b result — first smoke test of the three shortlisted models
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-13 · **Checked:** 2026-10-31 · **Step:** mike 3.2 ✅
+
 **Question answered:** out of the box, on the desk host, do the three shortlisted models pick the right Wyoh action for short French requests, how fast, and with how much memory?<br>
 **Date:** 2026-10-09<br>
 **Status:** measured on the desk host only (Intel i5-4590, 4 threads, x86_64). **No claim about Luna or `luna-pi`.**

@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Mycroft: every speech model, how far it got</title>
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="#0b1026"/>
+      <rect x="13" y="21" width="2" height="2" fill="#9fb3c8"/>
+      <rect x="71" y="9" width="2" height="2" fill="#6f7fa8"/>
+      <rect x="98" y="63" width="2" height="2" fill="#9fb3c8"/>
+    </pattern>
+  </defs>
+  <style>
+    .title { font: bold 26px 'DejaVu Sans Mono', monospace; fill: #e6ecf5; letter-spacing: 2px; }
+    .sub { font: 13px 'DejaVu Sans Mono', monospace; fill: #9fb3c8; }
+    .h { font: bold 12px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .t { font: bold 13px 'DejaVu Sans', sans-serif; fill: #e6ecf5; }
+    .s { font: 11px 'DejaVu Sans', sans-serif; fill: #9fb3c8; }
+    .w { font: 11.5px 'DejaVu Sans', sans-serif; fill: #d5deec; }
+    .ok { font: bold 11.5px 'DejaVu Sans Mono', monospace; fill: #7bd389; }
+    .mid { font: bold 11.5px 'DejaVu Sans Mono', monospace; fill: #ffb347; }
+    .no { font: bold 11.5px 'DejaVu Sans Mono', monospace; fill: #ff6b6b; }
+    .off { font: bold 11.5px 'DejaVu Sans Mono', monospace; fill: #8a96b8; }
+  </style>
+  <rect width="1000" height="680" fill="url(#stars)"/>
+  <text x="30" y="46" class="title">MYCROFT · NINE MODELS, ONE VOICE</text>
+  <text x="30" y="68" class="sub">every speech-to-text model considered, in the order it came up · how far each one got</text>
+
+  <!-- stage columns: paper 350 · desk 430 · luna-pi 510 · Luna 590 · Slate 670 -->
+  <text x="350" y="104" class="h" text-anchor="middle">on paper</text>
+  <text x="430" y="104" class="h" text-anchor="middle">desk</text>
+  <text x="510" y="104" class="h" text-anchor="middle">luna-pi</text>
+  <text x="590" y="104" class="h" text-anchor="middle">Luna</text>
+  <text x="670" y="104" class="h" text-anchor="middle">Slate</text>
+  <text x="720" y="104" class="h">verdict</text>
+  <g stroke="#1d2a4f" stroke-width="1">
+    <line x1="350" y1="114" x2="350" y2="616"/>
+    <line x1="430" y1="114" x2="430" y2="616"/>
+    <line x1="510" y1="114" x2="510" y2="616"/>
+    <line x1="590" y1="114" x2="590" y2="616"/>
+    <line x1="670" y1="114" x2="670" y2="616"/>
+  </g>
+
+  <!-- 1 Sherpa French Zipformer -->
+  <text x="30" y="138" class="t">Sherpa French Zipformer</text>
+  <text x="30" y="154" class="s">2023 · ~73 M parameters · streaming</text>
+  <line x1="350" y1="142" x2="590" y2="142" stroke="#ffb347" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="590" cy="142" r="8" fill="#ffb347"/>
+  <text x="720" y="138" class="mid">v0, then too slow</text>
+  <text x="720" y="154" class="w">WER 13 % · Luna: RTF 1.5, 236 MiB</text>
+
+  <!-- 2 Whisper Tiny -->
+  <text x="30" y="194" class="t">Whisper Tiny q5_1</text>
+  <text x="30" y="210" class="s">OpenAI via whisper.cpp · multilingual</text>
+  <line x1="350" y1="198" x2="430" y2="198" stroke="#ff6b6b" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="430" cy="198" r="8" fill="#ff6b6b"/>
+  <text x="720" y="194" class="no">rejected: quality</text>
+  <text x="720" y="210" class="w">WER 43 % · lost 2 of 13 instructions</text>
+
+  <!-- 3 Moonshine -->
+  <text x="30" y="250" class="t">Moonshine Tiny</text>
+  <text x="30" y="266" class="s">small model · desk research only</text>
+  <circle cx="350" cy="254" r="8" fill="#8a96b8"/>
+  <text x="720" y="250" class="off">deferred</text>
+  <text x="720" y="266" class="w">no French asset or ARM path pinned</text>
+
+  <!-- 4 Gemma 3n -->
+  <text x="30" y="306" class="t">Gemma 3n E2B / E4B</text>
+  <text x="30" y="322" class="s">Google · general multimodal model</text>
+  <circle cx="350" cy="310" r="8" fill="#ff6b6b"/>
+  <text x="720" y="306" class="no">ruled out: memory</text>
+  <text x="720" y="322" class="w">needs 2–3 GB; Luna has 1 GiB in all</text>
+
+  <!-- 5 Parakeet TDT 0.6B v3 -->
+  <text x="30" y="362" class="t">Parakeet TDT 0.6B v3</text>
+  <text x="30" y="378" class="s">NVIDIA · 600 M parameters · 25 languages</text>
+  <circle cx="350" cy="366" r="8" fill="#ff6b6b"/>
+  <text x="720" y="362" class="no">ruled out: memory</text>
+  <text x="720" y="378" class="w">needs ≥ 2 GB to load · no streaming</text>
+
+  <!-- 6 Canary / FastConformer -->
+  <text x="30" y="418" class="t">NeMo Canary, FastConformer</text>
+  <text x="30" y="434" class="s">Sherpa packages · en / de / es / fr</text>
+  <circle cx="350" cy="422" r="8" fill="#8a96b8"/>
+  <text x="720" y="418" class="off">not tried</text>
+  <text x="720" y="434" class="w">larger than the v0 model, not smaller</text>
+
+  <!-- 7 Parakeet Redux -->
+  <text x="30" y="474" class="t">Parakeet Redux</text>
+  <text x="30" y="490" class="s">Moondream · 600 M, ternary · 178 MB</text>
+  <line x1="350" y1="478" x2="430" y2="478" stroke="#ff6b6b" stroke-width="6" stroke-dasharray="2 6" stroke-linecap="round"/>
+  <circle cx="350" cy="478" r="8" fill="#ff6b6b"/>
+  <text x="720" y="474" class="no">cannot install</text>
+  <text x="720" y="490" class="w">its engine has no ARM64 Linux build</text>
+
+  <!-- 8 Phonon-2 -->
+  <text x="30" y="530" class="t">Phonon-2</text>
+  <text x="30" y="546" class="s">Fermion · 600 M · English only · 164 MB</text>
+  <circle cx="350" cy="534" r="8" fill="#ff6b6b"/>
+  <text x="720" y="530" class="no">cannot fit</text>
+  <text x="720" y="546" class="w">PyTorch + 600 M parameters &gt; 1 GiB</text>
+
+  <!-- 9 Kroko -->
+  <rect x="22" y="566" width="956" height="48" fill="#7bd389" opacity="0.08"/>
+  <text x="30" y="586" class="t">Kroko French</text>
+  <text x="30" y="602" class="s">Banafo, 2025 · ~18 M parameters · punctuated</text>
+  <line x1="350" y1="590" x2="670" y2="590" stroke="#7bd389" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="670" cy="590" r="9" fill="#7bd389"/>
+  <text x="720" y="586" class="ok">chosen · resident</text>
+  <text x="720" y="602" class="w">WER 9 % · Luna: RTF 0.8, 167 MiB</text>
+
+  <text x="30" y="636" class="s">Dotted line: Parakeet Redux's install was checked on the desk host, but could not be resolved for ARM.</text>
+  <text x="30" y="652" class="s">WER: word error rate on the user's 130 s reading. RTF: seconds of work per second of speech; below 1 keeps up.</text>
+  <text x="30" y="668" class="s">Sources: worklines/mycroft/docs/0102_02, 0104_04, 0104_06, 0201_02, 0201_03, 0901_01, 0903_01, 0903_02, 0908_01; plan step 9.3.</text>
+</svg>

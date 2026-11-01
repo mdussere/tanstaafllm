@@ -1,5 +1,7 @@
 # ArchR mounted-card console configuration result
 
+> **Freshness:** 🟡 historical · **Written:** 2026-10-04 · **Checked:** 2026-10-31 · **Step:** luna 5.7 ✅
+
 **Question:** Why does `Ctrl`+`Alt`+`F2` show a black screen while F1 returns
 to the ArchR frontend, and can the mounted card explain it?
 
