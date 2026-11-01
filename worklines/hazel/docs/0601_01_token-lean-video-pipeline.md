@@ -69,6 +69,29 @@ The model's work becomes three things: the story, the script, and the one new te
 - **Expected gain, not yet measured:** an episode built from a script should cost a fraction of today's 160 + 129 k. The model writes about 150 lines of YAML and one new template, and reads a text report and one small sheet. **Measure it** on the next episode: the sub-agent tokens per episode go in the plan.
 - **Risk: a pipeline that is too rigid makes every episode look the same,** which is the opposite of the library's goal. Two things guard against it: the one-new-template rule, and template parameters that allow variants.
 
+## 4b. Would Rive help? (user's question, 2026-11-02)
+
+Checked on 2026-11-02 by a web search. Nothing was installed or tested.
+
+**What exists:**
+
+- Rive's official route to a video is the **Cloud Renderer**, which runs from the editor's export menu (help.rive.app/editor/exporting). We found no official local CLI.
+- Local renderers are **third-party and unverified:**
+  - `breakawaydata/rive-render`: a TypeScript wrapper around a C++ binary, MP4 through ffmpeg;
+  - `George-RD/rive-rs-cli`: builds a `.riv` from JSON and renders PNG frames through headless Chromium;
+  - `covector/rive-png-renderer`: runs in the browser, not from a command line.
+- AI authoring goes through Rive's **official MCP server**, which only runs while the **Early Access desktop editor** is open (rive.app/docs/editor/ai/mcp). There are also community tools: RiveMCP, which lists 139 tools, and the Rive Skills.
+
+**Assessment:**
+
+- **Tokens:** Rive does not remove the cost. If the model drives Rive, it makes one tool call per shape, keyframe and transition, which likely costs more tokens than writing the JS. If a human draws in the editor, the token cost is zero, but the human's time replaces it. The savings in §2 come from parametric templates, a script, and a text lint. They do not depend on the drawing tool.
+- **Costs:**
+  - `.riv` files are binary, so they cannot be reviewed as a diff in Git;
+  - a pixel-art look works against a vector tool;
+  - the render would depend on a cloud service or on unverified community tools, instead of our headless Chromium.
+- **Worth taking:** Rive's model of artboards with data-bound text slots, driven by state machines. It is the same idea as the parametric templates of 6.3. We keep that concept and keep our own canvas runtime.
+- **Decision proposed:** no switch now. A short spike with `rive-render` on Termidor, on one template, only if the user wants to draw templates himself in the editor.
+
 ## 5. Proposed steps (Step 6 of the plan)
 
 1. **6.1** This analysis (done) and the user's choices.
