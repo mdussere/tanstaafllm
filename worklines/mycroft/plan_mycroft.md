@@ -333,6 +333,7 @@ date
 | 2026-11-01 | The user: add finding a text-to-speech model, for Mike and Mannie and for the English tutor. Proposed Step 11 (shortlist, desk measures, Luna cost); the non-goal on text-to-speech is lifted for research. |
 | 2026-11-01 | Professor relays the user's decisions: Kroko English as default (10.6: desk done, Luna open through Mannie), first English TTS tests (11.1–11.2, `1102_01`; samples sent to the user), and a speech-assessment survey (11.4, `1104_01`). |
 | 2026-11-01 | 11.5 desk: ZIPA-T small INT8 through Sherpa's offline binary, scored against eSpeak (`1105_01`). 10.6: Kroko English prepared at the "extended" level for Luna. Termidor restarted; the Luna slot waits for Professor's "Mannie stopped, go". |
+| 2026-11-01 | Luna slot (Professor's go, Mannie stopped, no reboot). 10.6: Kroko English installed and measured resident at 2 threads: ready 22.5 s, 162 MiB idle, 188 MiB peak, final 0.7–0.8 s after the audio (`results/mycroft/luna-footprint/20261101T171148Z/`); the Slate still runs French (Wyoh paused). 11.5: ZIPA-T small on a 6.6 s clip: load 34.5 s, decode 4.0 s (0.6 s per second of audio), peak 306 MiB (`…/20261101T171306Z/`). Paused by the user afterwards. |
 ---
 
 ## Workline artifacts
