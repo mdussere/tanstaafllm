@@ -595,3 +595,7 @@
   - The look follows the videos.
   - Stack: Python + pygame-ce, measured with a 720×720 window and text at 28.3 MiB on `luna-pi` and 30.4 MiB on Termidor.
   - Steps 1–3 green-lit; Professor reviews the plan.
+
+## 2026-11-02
+
+- **Hazel Step 6 green-lit (user, 2026-11-02):** to spend CPU instead of tokens, videos move to a script-to-video pipeline (`worklines/hazel/docs/0601_01_token-lean-video-pipeline.md`): a shared runtime, parametric sequence templates with music cues, an episode script, a generator, a text layout lint and a low-resolution preview. First target: Story 2 rebuilt from a script. Until then, no new video is generated. Rive was assessed and not adopted (§4b).

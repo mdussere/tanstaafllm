@@ -101,13 +101,13 @@ Done means: the trailer and the first story videos are published, they read as o
 - [x] 5.4 Put the episode rules into the series template (§6b phone text, §6c library rules, 2026-11-01): frame templates mandatory; at least three library templates in the body, none filling more than half the scenes; at least one new template per episode, added to the library after review; briefs name the templates.
 
 ### Step 6 — A token-lean pipeline: the model writes a script, the CPU builds the video
-**Status**: 📋 Under discussion with the user (2026-11-02). Rule: no new video generation until the pipeline transformations are done (user, 2026-11-02). No implementation without the user's go
+**Status**: 🧪 In progress (user, 2026-11-02: `🟩 go` 6.2–6.6, "essaie déjà de reproduire la story 2 avec le pipeline"). Rule kept: no new video until the pipeline is done. Scope: the pipeline is built from Story 2; the trailer and Story 1 stay on their own frozen sources (not migrated). Built by one Sonnet sub-agent, reviewed by Hazel; Rive not used (§4b of the analysis)
 - [x] 6.1 Analysis: where the tokens go (≈ 160 k + 129 k sub-agent tokens for Story 2), and what a generator can do instead (`docs/0601_01_token-lean-video-pipeline.md`).
-- [ ] 6.2 `video/common/`: one shared runtime extracted from the three videos; they still build, with identical output (frame hash).
+- [ ] 6.2 `video/common/`: one shared runtime (renderer head, nes.py, capture, contact), extracted from Story 2. The trailer and Story 1 keep their frozen copies.
 - [ ] 6.3 Parametric templates with music cues: the frame and the most used body templates first.
 - [ ] 6.4 The episode script format and the generator (timeline, score cues, reading audit, NOTES.md tables).
 - [ ] 6.5 The layout lint as a text report (overflow, overlap, margins, phone glyph heights) and a low-resolution preview with one small contact sheet.
-- [ ] 6.6 The next episode through the pipeline, its token count recorded and compared with Story 2.
+- [ ] 6.6 Story 2 rebuilt from an episode script through the pipeline: same picture (pixel diff of stills against the current render), same timing, lint clean. Token count recorded and compared with Story 2's ≈ 290 k. Then Story 2's postponed revision (Playwright opening, no seven-layers stage) as script edits.
 
 ## Progress tracking ✅
 
@@ -141,6 +141,7 @@ Done means: the trailer and the first story videos are published, they read as o
 | lun. 02 nov 2026 00:31:05 CET | User: Story 1 stays as it is; discussion of Step 6 opened. |
 | lun. 02 nov 2026 00:34:18 CET | User: Story 2 revision: drop the seven-layers stage, open on the Playwright/browser parallel with a comparison table. Sonnet sub-agent launched. |
 | lun. 02 nov 2026 00:36:40 CET | User: stop; no new video before the pipeline is transformed. Sub-agent stopped, partial edits saved as a patch, Story 2 sources restored. |
+| lun. 02 nov 2026 00:45:40 CET | User: `🟩 go` Step 6 (6.2–6.6), first target: reproduce Story 2 with the pipeline. Sonnet sub-agent launched. |
 
 ## Workline artifacts
 
