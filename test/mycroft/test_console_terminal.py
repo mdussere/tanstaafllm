@@ -44,7 +44,7 @@ class PtyConsole:
         if self.pid == 0:  # child: size the terminal, then become the console
             fcntl.ioctl(0, termios.TIOCSWINSZ, struct.pack("HHHH", ROWS, COLUMNS, 0, 0))
             os.environ.update(MYCROFT_ASSET_ROOT=str(asset_root), TERM="xterm")
-            os.execv(sys.executable, [sys.executable, str(CONSOLE), "--input", str(wav)])
+            os.execv(sys.executable, [sys.executable, str(CONSOLE), "--model", "zipformer-fr-2023", "--input", str(wav)])
 
     def pump(self, seconds: float) -> None:
         deadline = time.monotonic() + seconds

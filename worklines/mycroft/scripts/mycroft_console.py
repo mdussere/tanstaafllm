@@ -70,7 +70,7 @@ MODEL_PROFILES = {
                                      "encoder-epoch-99-avg-1.int8.onnx", "decoder-epoch-99-avg-1.int8.onnx",
                                      "joiner-epoch-99-avg-1.int8.onnx", True),
 }
-DEFAULT_MODEL = "zipformer-fr-2023"
+DEFAULT_MODEL = "kroko-en-2025"  # the user, 2026-11-01: English for Mike (plan step 10.6)
 CHUNK_MS = 200
 # Sherpa inference threads. Plan step 8.2 measures 2 and 4 on Luna; the default
 # follows that measurement.
