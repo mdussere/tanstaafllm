@@ -491,8 +491,10 @@ class SherpaStreamingRecognizer:
             self._config.decoding_method = b"modified_beam_search"
             self._config.max_active_paths = 4
         if hotwords:
-            # The model's tokens are upper case; Sherpa splits each word with bpe.vocab.
-            self._hotwords = "\n".join(word.upper() for word in hotwords).encode("utf-8")
+            # Sherpa splits each word with bpe.vocab. The 2023 French model's tokens are
+            # upper case; Kroko's keep the case, so words are written as they should appear.
+            words = [word.upper() if profile.lowercase else word for word in hotwords]
+            self._hotwords = "\n".join(words).encode("utf-8")
             self._config.model_config.modeling_unit = b"bpe"
             self._config.model_config.bpe_vocab = encode(required["bpe.vocab"])
             self._config.hotwords_buf = self._hotwords

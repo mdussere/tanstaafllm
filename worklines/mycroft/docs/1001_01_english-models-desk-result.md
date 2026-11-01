@@ -79,4 +79,23 @@ The Zipformer 20M lost much more: "terminal full screen" → "DAMNOL FOO STREAM"
 
 **Reading:** Kroko English understands the user's French-accented English about as well as Kroko French understands their French. Its weak point is the project's own names, which is what known words (proposed 9.10) are for: a per-dictation list with Mycroft, Wyoh and Mannie, mapped from how the user pronounces them. Meanwhile Mike could also tolerate "Minecraft" or "Many" in its own lookup.
 
+## 10.5 Known words on Kroko English (2026-11-01, the user's go)
+
+Kroko ships no `bpe.vocab`, which Sherpa needs to split a known word into tokens. `scripts/vocab_from_tokens.py` rebuilds one from Kroko's own `tokens.txt` (646 pieces). A first version scored pieces by rank alone, so Sherpa split "Mannie" into single letters that the model never emits, and the list did little. Scored so that the split with the fewest pieces wins, as the model's own BPE merges do, the list works. The adapter now writes known words in their own case for Kroko (the 2023 French model needed upper case).
+
+`test/mycroft/test_hotwords.py::test_kroko_english_known_words_on_the_users_reading` (integration, private reading). Evidence: `results/mycroft/hotwords-en/20261101T120553Z/` (ignored by Git). List: Mycroft, Wyoh, Mannie, Luna, NetSurf, Wolfenstein.
+
+| Setting | WER (numbers removed) | Known words right (of Mycroft, Wyoh, Mannie, Luna ×2, NetSurf, Wolfenstein) |
+| --- | --- | --- |
+| Greedy (today's default) | 0.111 | 2 of 7 |
+| Beam search, no list | 0.119 | 2 of 7 |
+| **Beam search + list, boost 3.0** | **0.089** | **5 of 7** |
+| Same, Wyoh and Mannie boosted to 10 | 0.104 | 5 of 7, and new errors ("Myc Mycroft", "My") |
+
+- **Fixed by the list:** "Minecraft" → Mycroft, "net surf" → NetSurf, "lunar guide" → Luna guide.
+- **Not fixed: Wyoh ("you") and Mannie ("Many").** As the user says them, they sound like ordinary English words, and a stronger boost only damages the neighbouring words. Two options remain: a small replacement table after recognition, limited to the dictation's context (for example "Many and the professor" → "Mannie and the Professor"), or Mike tolerating "you"/"Many" in its own lookup.
+- **With the list, Kroko English reaches 8.9 %**, as good as Kroko French on the French reading (9.1 %).
+
+Not yet measured: beam search's extra CPU on Luna (here the four settings decode in a few seconds each on the desk host).
+
 **Next:** the user's English reading (`1003_01`), then the same comparison on it. No Luna measure before the user decides.

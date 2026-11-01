@@ -221,6 +221,7 @@ User direction: voice input in Wyoh's Slate (dictate, correct, send). The Slate 
 - [x] 10.2 **Desk measures, as in 9.3** — **Result ([`1001_01`](docs/1001_01_english-models-desk-result.md)):** on two LibriSpeech clips (which favour the Zipformer 20M), Kroko English WER 0 and 0.083, mostly spelling; Zipformer 20M 0.056 and 0.042. Zipformer 20M: about half the CPU, 93 against 158 MiB, load 0.8–1.5 s against 4.8 s, but bare upper-case words.
 - [x] 10.3 **The user's French-accented English reading** — script [`1003_01`](docs/1003_01_english-reading-script.md), recorded by the user on their phone (94 s, private). **Result ([`1001_01`](docs/1001_01_english-models-desk-result.md)):** Kroko English WER 0.119 (spoken numbers removed; Kroko French made 0.091 on the French reading), punctuated; it misses the project names (Mycroft → "Minecraft", Wyoh → "you", Mannie → "Many"), which is 9.10's job. The Zipformer 20M, ≈ 0.35, is ruled out.
 - [x] 10.4 **`--model` choice for English** — `kroko-en-2025` and `zipformer-en-20M` in `MODEL_PROFILES`, so the console and the Slate provider can switch (`--model kroko-en-2025`). Default unchanged; nothing deployed. Tests: profile test in `test_console.py`, `test_kroko_english_profile_streams_punctuated_text` (integration; last word kept through the adapter).
+- [x] 10.5 **Known words on Kroko English** (user's go, 2026-11-01: "try hotwords on Kroko and rerun the test") — **Result ([`1001_01`](docs/1001_01_english-models-desk-result.md)):** `bpe.vocab` rebuilt from Kroko's tokens (`scripts/vocab_from_tokens.py`, fewest-pieces scoring). With beam search and a boost of 3.0, WER 0.111 → 0.089 and 5 of 7 names right (Mycroft, NetSurf, Luna fixed). Wyoh ("you") and Mannie ("Many") are not fixable by boosting; a context-limited replacement table or Mike's tolerance remains. Not wired into the console or the provider yet; Luna cost of beam search not measured.
 
 ### Recorded for later (not authorised)
 
@@ -316,6 +317,7 @@ date
 
 | 2026-11-01 | Professor relays the user: Mike works in English, not French (Mike `1704_01`), so try English speech-to-text. Added Step 10 (go on the user's mandate, desk only). 10.1, 10.2 and 10.4 done (`1001_01`): Kroko English and Zipformer 20M measured, `--model kroko-en-2025` and `zipformer-en-20M` added. 10.3 script ready (`1003_01`); the recording waits for the user. |
 | 2026-11-01 | 10.3: the user recorded the English script on their phone. Kroko English WER 0.119 against 0.35 for the Zipformer 20M; the misses are project names (Mycroft, Wyoh, Mannie). Results in `1001_01`. |
+| 2026-11-01 | 10.5 at the user's go: known words on Kroko English with a rebuilt `bpe.vocab`; WER 0.089 and 5 of 7 names; Wyoh and Mannie need a mapping. The user proposes a side project: Luna as their English tutor (sentences to say, corrections, avatar in the videos' look); passed to Professor. |
 ---
 
 ## Workline artifacts
