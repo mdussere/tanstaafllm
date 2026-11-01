@@ -510,7 +510,7 @@ def main(argv: list[str] | None = None) -> int:
     state = Path(os.environ.get("XDG_STATE_HOME", home / ".local/state")) / "mike"
     opt = Path(os.environ.get("MIKE_HOME", home / ".local/opt/mike"))
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    p.add_argument("--lang", choices=sorted(SYSTEM), default=os.environ.get("MIKE_LANG", "fr"))
+    p.add_argument("--lang", choices=sorted(SYSTEM), default=os.environ.get("MIKE_LANG", "en"))
     p.add_argument("--port", type=int, default=int(os.environ.get("MIKE_PORT", "8091")))
     p.add_argument("--server", default=os.environ.get("MIKE_SERVER", str(opt / "llama-b11429/llama-server")))
     p.add_argument("--model", default=os.environ.get("MIKE_MODEL", str(opt / "LFM2.5-350M-Q4_0.gguf")))

@@ -321,15 +321,38 @@ Why: the review found two real problems in the client, both reproduced on Termid
 - [x] 17.3 (done 2026-11-01, `results/mike/assessment/20261101T111535Z/lfm2.5-350m/`: 360 turns in 7 min 40 s; 2 rollovers, both in S4 English at turn 18, greedy and seed 2, so turn 20 is asked after the early turns were dropped; 5 answers cut at 120 tokens) **Run on Termidor:** one greedy run and seeds 1–3, all recorded in `results/mike/assessment/<timestamp>/` (`turns.jsonl` plus one Markdown transcript per scenario, language and run). The transcript paths go to Professor.
 - [x] 17.4 **Professor's verdict** (done 2026-11-01, [`docs/1704_01`](docs/1704_01_smalltalk-assessment-verdict.md)): not good enough as a French companion; usable for light English small talk, with reliable memory within a conversation; it extracts facts from a supplied text well (24/24) but never abstains (0/24); its own facts must not be trusted. The user decides the next steps; nothing changed in Mike.
 - [x] 17.5 (graded by Professor, `docs/1704_01` § 17.5: neither model is clearly better in English; SmolLM2 more concise and a little more accurate on simple facts, LFM2.5 better at following the user; both read a text perfectly and never abstain; the language mattered more than the model) **SmolLM2-360M-Instruct, English only (user via Professor, 2026-11-01):** model from `bartowski/SmolLM2-360M-Instruct-GGUF` @ 7be6f65, Q4_0, 230 MB, Apache-2.0, sha256 `c3608933…`. Weights in the desk's asset folder, not in Git. The English S1–S6 scenarios run greedy and with the same three seeds, through the same harness and Mike's settings. The only change is the model's own ChatML template, which has no BOS. Run done: 180 turns in `results/mike/assessment/20261101T111535Z/smollm2-360m/`, beside LFM's. Measured on the desk, not on Luna: first token 0.19 s median, against LFM's 0.15 s; 36 tokens/s written, against 47; answers shorter, 21 tokens median against 48; none cut at 120 tokens; no rollover; server peak memory 340 MiB on the desk. LFM's memory was not recorded in its run; about 300 MiB on Luna (`docs/1205_01`). Professor grades it against LFM's English runs.
+- [x] 17.6 **The user's decisions after 17.4–17.5 (Adam via Professor, 2026-11-01, with go):**
+  - no "I don't know" filter for now; the abstention gate is dropped;
+  - a very light identity line in the system prompt;
+  - English first: `mike.py` now defaults to English (`MIKE_LANG`), and Mycroft's Kroko English feeds it;
+  - next, the embedding study (Step 14, reshaped).
+  - **Identity line, measured and not kept.** It added "Your name is Mike." and was re-run on S1, S2 and S4 in English (`results/mike/assessment/20261101T162639Z/`). Mike still introduced itself as "Michel" in 4 of 4 runs, and turn 3 now answered "Mike" for the user's name in 4 of 4 runs, against "Michel" in 3 of 4 before. In S4, Rex was recalled 4/4 and Lyon 3/4, against 2/4 before. The line was removed; S2 is with Professor for grading. Note: "Michel" is the French form of Michael, whose short form is Mike, so the scenario's name may be what confuses this model.
 
 ### Step 14 — Local retrieval over Luna's guide (Adam's priority, 2026-10-31)
-**Status**: 📝 Proposed, not green-lit. Source: Adam's review § 10 (`worklines/adam/2026-10-31_mike_incremental-capabilities_research.md`).
+**Status**: ⏳ 14.1–14.3 green-lit (user via Professor, 2026-11-01), reshaped as the flashlight-embedding study; 14.4–14.7 not green-lit. Source: Adam's review § 10 (`worklines/adam/2026-10-31_mike_incremental-capabilities_research.md`).
 
 Why: Mike invents facts. The first source of truth to give it is bounded, local and checkable: the project's own guide. No internet. Retrieval only **selects** passages; Mike answers from them, or says that the guide does not say. That fits the 2026-10-13 decision that embedding similarity is at most a pre-filter, never a decision.
 
-- [ ] 14.1 **The corpus:** identify what "Luna's guide" is in the repository (the `docs/` pages, the how-tos, the workline docs?), their structure, and how a passage is cited (file and heading). A question set with expected passages, including questions the guide cannot answer. English is acceptable.
-- [ ] 14.2 **Passages, offline:** cut the guide into short, referenceable passages; build the indexes on Termidor.
-- [ ] 14.3 **Retrieval, desk:** a lexical baseline (TF-IDF or BM25, keywords) against Model2Vec POTION-2M, 4M and 8M. Measure top-1 and top-3 hits, abstention when nothing matches, index size, RAM and latency. The model is picked from these numbers, not from MTEB scores.
+- **Reshaped (user via Professor, 2026-11-01, 🟩 go for 14.1–14.3 on Termidor):** first choose a **"flashlight embedding"**, the smallest, fastest embedding model that serves two uses:
+  - (a) zero-shot routing of short user sentences, by similarity to label descriptions or examples;
+  - (b) retrieval of short knowledge blocks, for a later RAG.
+
+  Speed is the criterion: a few milliseconds per sentence, warm. Inputs are short. Long knowledge is summarised offline before it is embedded, so no long-text handling is needed. The "I don't know" filter is dropped for now (17.6), and nothing goes into the conversation or onto Luna yet.
+- [ ] 14.1 **Data, English:**
+  - a small labelled set of short sentences for routing: small talk, a question about the guide, a Luna action, plus a few domains;
+  - short knowledge blocks (~100 words) from Luna's guide (`docs/`, how-tos), with questions that each name their expected block, and questions outside the guide.
+- [ ] 14.2 **Candidates:**
+  - Model2Vec POTION-2M, 4M and 8M;
+  - a lexical baseline (TF-IDF or BM25);
+  - any other tiny static or sentence embedder worth trying, each noted with its source, licence and size; weights stay out of Git.
+- [ ] 14.3 **Measures, Termidor:**
+  - milliseconds per embedding, for a short sentence and for a ~100-word block;
+  - RAM and disk;
+  - zero-shot routing accuracy;
+  - retrieval top-1 and top-3;
+  - how well in-domain and out-of-domain scores separate, which decides whether a threshold is possible.
+
+  The model is picked from these numbers, not from MTEB scores.
 - [ ] 14.4 **Retrieval, Luna:** the chosen retrievers in a warm, resident process. Design target: under 100 ms from question to passages (not a measurement yet). It needs only the standard library or numpy; anything to install goes through Mannie.
 - [ ] 14.5 **Into the conversation:** only the minimal excerpt, with its source, as a fresh layer before the question; Mike quotes the source, or says the guide does not cover it. Measure **the fresh passage's reading time on Luna** (about 6.5 tokens/s: a 100-token excerpt costs about 15 s, so the excerpt size is the real constraint) and the end-to-end latency.
 - [ ] 14.6 **When to retrieve:** not on every turn. The trigger (a command, a threshold, a question form) is chosen by measurement, so that small talk is not slowed (non-regression, as in 13.6).

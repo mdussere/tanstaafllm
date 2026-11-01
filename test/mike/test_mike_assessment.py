@@ -39,6 +39,9 @@ ASSETS = Path(os.environ.get("MIKE_ASSET_ROOT", "/data/michael/tanstaafllm/mike-
 MODELS = {"lfm2.5-350m": ("LFM2.5-350M-Q4_0.gguf", ("fr", "en")),
           "smollm2-360m": ("SmolLM2-360M-Instruct-Q4_0.gguf", ("en",))}
 SCENARIOS = json.loads((Path(__file__).with_name("assessment_scenarios.json")).read_text())["scenarios"]
+# MIKE_ASSESS_ONLY="S1-greeting,S2-knowledge,S4-long" and MIKE_ASSESS_LANGS="en" replay a subset (17.6).
+ONLY = [s for s in os.environ.get("MIKE_ASSESS_ONLY", "").split(",") if s]
+LANGS = [s for s in os.environ.get("MIKE_ASSESS_LANGS", "").split(",") if s]
 RUNS = {"greedy": {"temperature": 0.0, "top_k": 1, "repeat_penalty": st.SAMPLING["repeat_penalty"], "seed": 0},
         **{f"seed{s}": {**st.SAMPLING, "seed": s} for s in (1, 2, 3)}}
 THREADS = int(os.environ.get("MIKE_THREADS", "8"))  # desk speed only; it does not change the answers' quality
@@ -90,7 +93,9 @@ def test_assessment(model, monkeypatch):
         for run, sampling in RUNS.items():
             monkeypatch.setattr(st, "SAMPLING", sampling)
             for scenario, spec in SCENARIOS.items():
-                for lang in langs:
+                if ONLY and scenario not in ONLY:
+                    continue
+                for lang in [lang for lang in langs if not LANGS or lang in LANGS]:
                     conv = conversation(model, server, lang)
                     frame = st.L0Frame(server, conv.l0)
                     frame.put_back()
@@ -107,5 +112,6 @@ def test_assessment(model, monkeypatch):
                         f.writelines(json.dumps(r, ensure_ascii=False) + "\n" for r in mine)
     finally:
         server.stop()
-    expected = len(RUNS) * len(langs) * sum(len(s["fr"]) for s in SCENARIOS.values())
+    played = [s for name, s in SCENARIOS.items() if not ONLY or name in ONLY]
+    expected = len(RUNS) * len([lang for lang in langs if not LANGS or lang in LANGS]) * sum(len(s["fr"]) for s in played)
     assert len(rows) == expected and all(r["answer"] or r["stop"] for r in rows)
