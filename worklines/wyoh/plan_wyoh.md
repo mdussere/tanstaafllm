@@ -72,6 +72,8 @@ The pre-hardware outcome is a ratified Sway-v0 path and a testable, capability-m
 - Every green-lit step records exact upstream versions and measurements where relevant.
 - Installing on Luna, forking upstream, exposing an interaction, or broadening Wyoh into a launcher/shell requires an explicitly scoped next step.
 
+> **Also held by this session (Adam, 2026-11-02):** the project workline Camp Currie (`worklines/project/camp-currie/plan_camp_currie.md`). It is a separate plan; Wyoh's boundary does not change.
+
 ## Plan steps (no execution until green light)
 
 ### Step 1 — Ratify Wyoh’s agent-native Sway-v0 contract and product path

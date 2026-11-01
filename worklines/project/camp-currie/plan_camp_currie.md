@@ -60,6 +60,7 @@ Steps 1–3 build the **game without speech**: a playable shell and a first miss
   - the crew portraits from the series' key art (`worklines/hazel/.../art/wallpaper.png`, cropped once into the game's assets);
   - a green, tilted "CLEAR!".
   - Reference stills: `worklines/hazel/video/library/T06-two-boxes`, `T11-boss-fight`, `T15-roster`.
+  - Then, the same day: "don't stick to the videos' examples; it must fit the game's dynamics; take examples from reference games". So the screens borrow their mechanics from games: Star Fox and Metal Gear comm calls, Ace Attorney stamps, the Super Mario World and FTL maps, Duolingo feedback, Star Fox results. Details in `docs/0101_01` §3.
 - **Agent and accessibility protocol (development only):** `--agent` reads named actions on stdin and writes the semantic state as JSON lines on stdout, so a test or an agent never reads pixels. `--shot` saves the frame.
 
 ## 🚦 Green-light protocol
@@ -69,12 +70,12 @@ Planning and documentation are always allowed. Implementation needs Adam's **"�
 ## Steps
 
 ### Step 1 — Study and design (no game code)
-**Status:** 🧪 in progress
-- [ ] 1.1 Learner journey and screens: Title → Mission select → Briefing → five checkpoints (prompt → your turn → result) → Debrief, with controls, timing and the error and uncertainty states.
-- [ ] 1.2 The simulated evaluator contract (`success`, `retry`, `uncertain`), what each shows the learner, and the boundary a speech evaluator will replace.
-- [ ] 1.3 Visual direction: palette, fonts and sizes readable at arm's length on 720×720, and asset provenance.
+**Status:** ✅ done 2026-11-02 — [docs/0101_01_design-and-stack.md](docs/0101_01_design-and-stack.md)
+- [x] 1.1 Learner journey and screens: Title → Mission select → Briefing → five checkpoints (prompt → your turn → result) → Debrief, with controls, timing and the error and uncertainty states.
+- [x] 1.2 The simulated evaluator contract (`success`, `retry`, `uncertain`), what each shows the learner, and the boundary a speech evaluator will replace.
+- [x] 1.3 Visual direction: palette, fonts and sizes readable at arm's length on 720×720, and asset provenance.
 - [x] 1.4 Stack choice, measured on Termidor and `luna-pi`, with the proposed Luna budget (above).
-- [ ] 1.5 Test and evidence plan: pure core tests, rendered screenshots inspected, the agent protocol, memory reports.
+- [x] 1.5 Test and evidence plan: pure core tests, rendered screenshots inspected, the agent protocol, memory reports.
 
 **Exit:** `docs/0101_01_design-and-stack.md` covers 1.1–1.5.
 
@@ -86,19 +87,24 @@ Planning and documentation are always allowed. Implementation needs Adam's **"�
 - [ ] 2.4 Development agent protocol (`--agent`, JSON lines) and frame capture (`--shot`).
 - [ ] 2.5 Tests under `test/camp-currie/` with a `.feature` contract; every screen rendered and inspected; peak RSS reported for the full run.
 
-**Exit:** the shell runs on Termidor and `luna-pi`, every screen is reached with the keys alone, and the tests pass.
+**Exit:** the shell runs on Termidor and `luna-pi`, every screen is reached with the keys alone, and the tests pass. Record: `docs/0201_01_shell-result.md`.
 
 ### Step 3 — Simulated first mission (no speech)
 **Status:** ⏳ green-lit, not started
-- [ ] 3.1 "Meet the Crew": five checkpoints, the names Mannie, Wyoh, Mycroft, Mike and Luna, each with a crew portrait drawn in code and a pronunciation hint.
+- [ ] 3.1 "Meet the Crew": five checkpoints, the names Mannie, Wyoh, Mycroft, Mike and Luna, each with a crew portrait cropped from the key art (Mycroft's microphone drawn in code) and a pronunciation hint. Wolfenstein, the sixth Level 1 name, comes with the full Level 1 (Step 5).
 - [ ] 3.2 The deterministic evaluator drives each attempt (a fixed script, seeded for tests); "listen again" shows the prompt again, since there is no audio.
 - [ ] 3.3 Progress (five signal lights), retries, the uncertain state with its reason, and a debrief saying the result is simulated, not a pronunciation score.
 - [ ] 3.4 Tests for the success, retry and uncertain paths and for a full mission, with screenshots of the run inspected and the peak RSS on the desk and on `luna-pi`.
 
-**Exit:** a person can play, retry and finish the five-checkpoint mission with the keys alone, and the record is in `docs/0201_01_shell-and-mission-result.md`.
+**Exit:** a person can play, retry and finish the five-checkpoint mission with the keys alone. Record: `docs/0301_01_first-mission-result.md` (Step 2's own record is `docs/0201_01_shell-result.md`).
 
 ### Step 4 — Speech and pronunciation experiment (later)
 **Status:** ⏳ not green-lit
+- Start from Mycroft's measures on Luna (2026-11-01/02, Mycroft commits e24fb39 and 7c7f3c7):
+  - Kroko EN resident: 149–188 MiB, final text 0.7–0.8 s after speech;
+  - ZIPA-T small (phonemes): 306 MiB peak, 4 s for a 6.6 s clip, one sentence at a time;
+  - Piper Lessac TTS: 103–147 MiB, 3–3.9× slower than real time.
+- So the crew's lines are **pre-synthesised** (no live TTS on Luna), and the memory budget is set for the whole scene: game + Kroko + ZIPA, without Mike or Mannie.
 - [ ] 4.1 Mycroft capture, STT and TTS contracts, and an opt-in sample corpus.
 - [ ] 4.2 Compare lexical checking, known-word handling, phoneme alignment or GOP scoring, and abstention.
 - [ ] 4.3 Latency and peak RSS on Luna; separate transcription errors from phonetic errors.
@@ -129,12 +135,13 @@ Planning and documentation are always allowed. Implementation needs Adam's **"�
 
 ## Workline artifacts
 
-- (Step 1) `docs/0101_01_design-and-stack.md`
-- (Steps 2–3) `docs/0201_01_shell-and-mission-result.md`
+- (Step 1) [docs/0101_01_design-and-stack.md](docs/0101_01_design-and-stack.md)
+- (Step 2) `docs/0201_01_shell-result.md`
+- (Step 3) `docs/0301_01_first-mission-result.md`
 
 ## Time log
 
 | Date | Entry |
 |---|---|
 | 2026-11-01 | Codex: Steps 1–3 attempted; result rejected by Adam. |
-| 2026-11-02 | Wyoh's session: plan rewritten; Codex's uncommitted files archived in `tmp/`; pygame-ce measured on Termidor and `luna-pi`; plan sent to Professor for review. |
+| 2026-11-02 | Wyoh's session: plan rewritten; Codex's uncommitted files archived in `tmp/`; pygame-ce measured on Termidor and `luna-pi`; plan sent to Professor for review. Professor: OK, with 6 remarks folded in (portrait provenance, one record per step, Step 4 from Mycroft's Luna measures, Wolfenstein later, ownership line in Wyoh's plan). Adam: game mechanics from reference games, not only the videos. |
