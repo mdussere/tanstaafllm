@@ -86,6 +86,7 @@ Done means: the trailer and the first story videos are published, they read as o
     - Wyoh's check (2026-11-01): points 1 and 2 right; point 3 reworded ("A DEV AGENT PRESSES THE SAME BUTTONS", "MIKE STARTS, ANSWERS IN 13 s") so the agent and Mike don't read as one.
     - The user (2026-11-01, watching on a phone held upright): title subtitle at VT323 90 px "très confortable"; PRESS START (PS2P 28 px) "limite". Hazel's analysis: most key messages sit at or below PRESS START's size (VT323 48 px sentences, PS2P 32 px). Rule proposed: one short key message per screen at ≥ 50 px glyph height (VT323 ≥ 90 / PS2P ≥ 56), one secondary at ≥ 35 px, the rest cut or glance-only.
     - [x] Rework Story 2 with that rule (user: "demande à un sous-agent de reprendre 2"). Done by a sub-agent, reviewed by Hazel: one key message per screen at ≥ 50 px, secondary lines cut; 90.0 s, +0.0 s holds, −15.3 LUFS, −1.1 dBTP (`results/hazel/story2-ask-the-desktop/20261101T124410/`). Delivered to `~/Videos/TANSTAAFLLM/` and the private page. Left: NOTES.md's fact table still lists lines that were cut.
+    - [ ] Story 2, second revision (user, 2026-11-02): (a) drop stage 7 "Seven layers": a regression, not part of the story; (b) open with the inspiration: Playwright lets an LLM drive a browser by reading its DOM, not screenshots, and Wyoh wants the same for a desktop. A new stage 1 shows the comparison table, BROWSER | DESKTOP (source `worklines/wyoh/docs/0000_04_desktop-automation-model.md`, the table "Playwright | Wyoh"; on screen, Sway's window tree stands for the DOM, because the DWOM is a design). **⏸️ Postponed (user, 2026-11-02): no new video is generated before the pipeline transformations of Step 6.** The sub-agent was stopped; its partial edits are saved in `/data/michael/tanstaafllm/video/story2-wyoh/patches/20261102-playwright-opening-partial.patch` and the sources are back at their committed state. This revision will be the first test case of the new pipeline (6.6).
     - [x] Then: the rule into the series template (done, §6b). Story 1 stays as it is (user, 2026-11-02). The trailer: not decided.
 
 ### Step 4 — A public page
@@ -100,7 +101,7 @@ Done means: the trailer and the first story videos are published, they read as o
 - [x] 5.4 Put the episode rules into the series template (§6b phone text, §6c library rules, 2026-11-01): frame templates mandatory; at least three library templates in the body, none filling more than half the scenes; at least one new template per episode, added to the library after review; briefs name the templates.
 
 ### Step 6 — A token-lean pipeline: the model writes a script, the CPU builds the video
-**Status**: 📋 Proposed (user, 2026-11-01: "brûler du CPU plutôt que de brûler du token"); no implementation without the user's go
+**Status**: 📋 Under discussion with the user (2026-11-02). Rule: no new video generation until the pipeline transformations are done (user, 2026-11-02). No implementation without the user's go
 - [x] 6.1 Analysis: where the tokens go (≈ 160 k + 129 k sub-agent tokens for Story 2), and what a generator can do instead (`docs/0601_01_token-lean-video-pipeline.md`).
 - [ ] 6.2 `video/common/`: one shared runtime extracted from the three videos; they still build, with identical output (frame hash).
 - [ ] 6.3 Parametric templates with music cues: the frame and the most used body templates first.
@@ -138,6 +139,8 @@ Done means: the trailer and the first story videos are published, they read as o
 | dim. 01 nov 2026 18:08:49 CET | User: optimise video production for tokens, spend CPU instead. Step 6 proposed, analysis `docs/0601_01`. |
 | dim. 01 nov 2026 18:14:09 CET | ⏸️ Pause (user via Professor, tokens low). State: Steps 1, 2.1–2.2, 3.2a–c, 5 done; waiting for the user on 3.2d (verdict on Story 2, YouTube uploads), 2.3 (thumbnails), the phone-rule check of Story 1 and the trailer, and Step 6 (go for the generator). Nothing running. |
 | lun. 02 nov 2026 00:31:05 CET | User: Story 1 stays as it is; discussion of Step 6 opened. |
+| lun. 02 nov 2026 00:34:18 CET | User: Story 2 revision: drop the seven-layers stage, open on the Playwright/browser parallel with a comparison table. Sonnet sub-agent launched. |
+| lun. 02 nov 2026 00:36:40 CET | User: stop; no new video before the pipeline is transformed. Sub-agent stopped, partial edits saved as a patch, Story 2 sources restored. |
 
 ## Workline artifacts
 
