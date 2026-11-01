@@ -268,3 +268,5 @@ def test_each_model_profile_names_its_own_files(tmp_path: Path) -> None:
             console.SherpaStreamingRecognizer(tmp_path, model=name)
     assert console.MODEL_PROFILES["zipformer-fr-2023"].lowercase is True
     assert console.MODEL_PROFILES["kroko-fr-2025"].lowercase is False
+    assert console.MODEL_PROFILES["kroko-en-2025"].lowercase is False
+    assert console.MODEL_PROFILES["zipformer-en-20M"].lowercase is True

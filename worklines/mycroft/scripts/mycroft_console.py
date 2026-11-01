@@ -41,7 +41,7 @@ MODEL_ID = "sherpa-onnx-fr-zipformer-int8 / 2023-04-14"
 
 @dataclass(frozen=True)
 class ModelProfile:
-    """One French streaming transducer the adapter can load (plan step 9.3)."""
+    """One streaming transducer the adapter can load (plan steps 9.3 and 10)."""
 
     label: str
     dirname: str
@@ -60,6 +60,15 @@ MODEL_PROFILES = {
     "kroko-fr-2025": ModelProfile("kroko-fr-community / 2025-08-06 (fp32, ORT-extended)",
                                   "sherpa-onnx-streaming-zipformer-fr-kroko-2025-08-06-ort-extended",
                                   "encoder.onnx", "decoder.onnx", "joiner.onnx", False),
+    # English, for Mike in English (plan step 10, desk host only): Kroko English as
+    # published, and the smaller English Zipformer 20M (upper case, no punctuation).
+    "kroko-en-2025": ModelProfile("kroko-en-community / 2025-08-06 (fp32)",
+                                  "sherpa-onnx-streaming-zipformer-en-kroko-2025-08-06",
+                                  "encoder.onnx", "decoder.onnx", "joiner.onnx", False),
+    "zipformer-en-20M": ModelProfile("sherpa-onnx-en-zipformer-20M-int8 / 2023-02-17",
+                                     "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17",
+                                     "encoder-epoch-99-avg-1.int8.onnx", "decoder-epoch-99-avg-1.int8.onnx",
+                                     "joiner-epoch-99-avg-1.int8.onnx", True),
 }
 DEFAULT_MODEL = "zipformer-fr-2023"
 CHUNK_MS = 200

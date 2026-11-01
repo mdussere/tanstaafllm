@@ -102,3 +102,29 @@ def test_kroko_profile_streams_punctuated_text() -> None:
         recognizer.close()
 
     assert result.startswith("Ce site contient"), result
+
+
+@pytest.mark.integration
+def test_kroko_english_profile_streams_punctuated_text() -> None:
+    """Step 10.4: the same adapter loads Kroko English, selected with --model kroko-en-2025."""
+    root_text = os.environ.get("MYCROFT_ASSET_ROOT")
+    if not root_text:
+        pytest.skip("MYCROFT_ASSET_ROOT is not set; pinned assets are external to the repository")
+    root = Path(root_text)
+    profile = console.MODEL_PROFILES["kroko-en-2025"]
+    if not (root / profile.dirname / profile.encoder).is_file():
+        pytest.skip("Kroko English is not installed under MYCROFT_ASSET_ROOT")
+    wav = root / "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17" / "test_wavs" / "0.wav"
+    if not wav.is_file():
+        pytest.skip("the English Zipformer 20M test clips are not installed under MYCROFT_ASSET_ROOT")
+    recognizer = console.SherpaStreamingRecognizer(root, num_threads=2, model="kroko-en-2025")
+    try:
+        with wave.open(str(wav), "rb") as source:
+            while pcm := source.readframes(3200):
+                recognizer.accept_pcm(pcm, source.getframerate())
+        recognizer.accept_pcm(b"\x00\x00" * 8000, 16000)
+        result = recognizer.finish()
+    finally:
+        recognizer.close()
+
+    assert result.startswith("After early nightfall"), result

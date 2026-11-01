@@ -212,6 +212,16 @@ User direction: voice input in Wyoh's Slate (dictate, correct, send). The Slate 
   - **Parakeet Redux** (Moondream; Parakeet TDT 0.6B v3 with ternary weights, 178 MB, CC-BY-4.0, French listed): **rejected for Luna**. Its Photon engine's kernels publish no aarch64 Linux build, so `uv pip compile` fails for aarch64; on x86 it pulls PyTorch and CUDA. See [`0903_01`](docs/0903_01_lighter-candidates-desk-result.md).
   - **Phonon-2** (Fermion Research; compressed Parakeet v3, 164 MB download, CC-BY-4.0, English only): **rejected for Luna**, even though the user would accept English. Its Linux engine is PyTorch + Transformers, and ~600 M parameters expanded at load exceed 1 GiB (~30× Kroko's compute). See [`0903_01`](docs/0903_01_lighter-candidates-desk-result.md).
 
+### Step 10 — English speech-to-text, for Mike in English
+**Status**: 🚧 In progress — go on the user's mandate, relayed by Professor on 2026-11-01. Desk host (Termidor) only.
+**Why:** Mike's assessment (`worklines/mike/docs/1704_01`) finds LFM2.5-350M usable in English but not in French. The user wants to try speaking English to Mike, with their French accent: "il va falloir adapter Mycroft pour avoir un modèle purement en anglais… voir si j'arrive à parler en anglais et s'il me comprend".
+**Boundary:** no change to the deployed French path, nothing on Luna until the user decides.
+
+- [x] 10.1 **Find Kroko English and alternatives of similar size** — **Result ([`1001_01`](docs/1001_01_english-models-desk-result.md)):** `sherpa-onnx-streaming-zipformer-en-kroko-2025-08-06` (57 MB, ~18 M parameters, punctuated; same unconfirmed CC-BY-SA as Kroko French) and the English Zipformer 20M (Apache-2.0, int8, upper case, no punctuation). Moonshine Tiny is offline in Sherpa; the other English streaming models are larger.
+- [x] 10.2 **Desk measures, as in 9.3** — **Result ([`1001_01`](docs/1001_01_english-models-desk-result.md)):** on two LibriSpeech clips (which favour the Zipformer 20M), Kroko English WER 0 and 0.083, mostly spelling; Zipformer 20M 0.056 and 0.042. Zipformer 20M: about half the CPU, 93 against 158 MiB, load 0.8–1.5 s against 4.8 s, but bare upper-case words.
+- [ ] 10.3 **The user's French-accented English reading** — script ready ([`1003_01`](docs/1003_01_english-reading-script.md)): Luna app names, commands, project words, small talk. **Waits for the user's recording**, consented and kept private; then `test_english_candidates` with `MYCROFT_PRIVATE_READING_EN`.
+- [x] 10.4 **`--model` choice for English** — `kroko-en-2025` and `zipformer-en-20M` in `MODEL_PROFILES`, so the console and the Slate provider can switch (`--model kroko-en-2025`). Default unchanged; nothing deployed. Tests: profile test in `test_console.py`, `test_kroko_english_profile_streams_punctuated_text` (integration; last word kept through the adapter).
+
 ### Recorded for later (not authorised)
 
 - **Re-format action:** one press finishes sentences and adds punctuation and capitals. Candidates are rules, a French punctuation model (existence unverified), or Mike.
@@ -304,6 +314,7 @@ date
 | 2026-10-31 | Adam's §11 (`worklines/adam/2026-10-31_mike_incremental-capabilities_research.md`), relayed by Professor: added proposed 9.9 (Kroko's result fields; partial hypotheses for Mike, never acted on) and 9.10 (hotwords reopened for Kroko; absorbs 9.4). Not green-lit. Mike contacted about partials. |
 | 2026-10-31 | Mike answered on 9.9: partials only through Wyoh's daemon while FN+B targets Mike, for reversible lookups only, plain text enough. Mike's side is its proposed 14.7. Added to 9.9: measure how much the final differs from the last partial on Luna. |
 
+| 2026-11-01 | Professor relays the user: Mike works in English, not French (Mike `1704_01`), so try English speech-to-text. Added Step 10 (go on the user's mandate, desk only). 10.1, 10.2 and 10.4 done (`1001_01`): Kroko English and Zipformer 20M measured, `--model kroko-en-2025` and `zipformer-en-20M` added. 10.3 script ready (`1003_01`); the recording waits for the user. |
 ---
 
 ## Workline artifacts
@@ -331,6 +342,8 @@ date
 - `worklines/mycroft/docs/0903_01_lighter-candidates-desk-result.md` — Steps 9.3 and 9.6 on the desk host: Kroko against the current model; Parakeet Redux and Phonon-2 rejected for Luna.
 - `worklines/mycroft/docs/0903_02_kroko-on-luna-pi.md` — Step 9.3 on `luna-pi`: Kroko against the current model, its load diagnosis, the aarch64-prepared files, and a projection to Luna.
 - `worklines/mycroft/docs/0703_03_note-from-professor-opencl-parked.md` — Professor's note on the parked GPU/OpenCL idea.
+- `worklines/mycroft/docs/1001_01_english-models-desk-result.md` — Steps 10.1–10.2: Kroko English and the English Zipformer 20M on the desk host.
+- `worklines/mycroft/docs/1003_01_english-reading-script.md` — Step 10.3: the user's French-accented English reading script and its ground truth.
 
 ## Active architecture and reopened evidence — 2026-09-25
 
