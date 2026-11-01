@@ -99,6 +99,15 @@ Done means: the trailer and the first story videos are published, they read as o
 - [x] 5.3 (built by a sub-agent, reviewed by Hazel, 2026-11-01; 23 template folders, 2.5 MB; the sub-agent hit the session limit during its final checks, Hazel checked every folder has its card, snippet and still) Build `worklines/hazel/video/library/`: one card per template (concept, effect, dynamics in beats, graphic elements, text slots sized for the phone, music cue, variants with stills, code snippet), plus `uses.md` for the three videos.
 - [x] 5.4 Put the episode rules into the series template (§6b phone text, §6c library rules, 2026-11-01): frame templates mandatory; at least three library templates in the body, none filling more than half the scenes; at least one new template per episode, added to the library after review; briefs name the templates.
 
+### Step 6 — A token-lean pipeline: the model writes a script, the CPU builds the video
+**Status**: 📋 Proposed (user, 2026-11-01: "brûler du CPU plutôt que de brûler du token"); no implementation without the user's go
+- [x] 6.1 Analysis: where the tokens go (≈ 160 k + 129 k sub-agent tokens for Story 2), and what a generator can do instead (`docs/0601_01_token-lean-video-pipeline.md`).
+- [ ] 6.2 `video/common/`: one shared runtime extracted from the three videos; they still build, with identical output (frame hash).
+- [ ] 6.3 Parametric templates with music cues: the frame and the most used body templates first.
+- [ ] 6.4 The episode script format and the generator (timeline, score cues, reading audit, NOTES.md tables).
+- [ ] 6.5 The layout lint as a text report (overflow, overlap, margins, phone glyph heights) and a low-resolution preview with one small contact sheet.
+- [ ] 6.6 The next episode through the pipeline, its token count recorded and compared with Story 2.
+
 ## Progress tracking ✅
 
 - 📋 Plan drafted by Professor.
@@ -126,6 +135,7 @@ Done means: the trailer and the first story videos are published, they read as o
 | dim. 01 nov 2026 12:54:10 CET | Story 2 reworked for phone reading (sub-agent), reviewed, delivered, private page updated. |
 | dim. 01 nov 2026 13:00:54 CET | User agreed on the library structure (5.2); a sub-agent builds `video/library/` (5.3). |
 | dim. 01 nov 2026 17:22:52 CET | Library built (5.3): README index, uses.md, 23 template cards with stills and snippets. 5.4 (episode rules in the series template) next. |
+| dim. 01 nov 2026 18:08:49 CET | User: optimise video production for tokens, spend CPU instead. Step 6 proposed, analysis `docs/0601_01`. |
 
 ## Workline artifacts
 
@@ -135,6 +145,7 @@ Done means: the trailer and the first story videos are published, they read as o
 - Private phone page (Professor's): https://claude.ai/artifact/Wqpg9wD9Ew5MunsYFhxqLn, links both videos.
 - `worklines/hazel/video/trailer/` — the trailer's sources (moved from Professor, 2026-10-31).
 - `docs/0103_01_series-template.md` — the series template (draft).
+- `docs/0601_01_token-lean-video-pipeline.md` — where the tokens go; the script-to-video generator proposal.
 - `video/library/` — the sequence template library (index, uses, 23 cards).
 - `docs/0501_01_sequence-library-analysis.md` — templates in the three videos, and the proposed library structure.
 - `docs/0302_01_wyoh-story-brief.md` — Story 2 brief; `docs/0302_02_note-from-wyoh-story.md` — Wyoh's story (from Wyoh).
