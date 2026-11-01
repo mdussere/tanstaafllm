@@ -34,8 +34,10 @@ Not taken this round: Matcha (needs a separate vocoder), Supertonic and Pocket T
 - **Kokoro is out for Luna:** slower than real time already on the desk host (RTF 1.9), and twice the memory.
 - **Piper and Kitten nano are the Luna candidates.** All three are understood by Kroko almost perfectly; the shared errors are the project names ("McRoft", "Wyo") and "in ship" heard as "and ship".
 - **The RSS includes Python and the wheel** (~100 MiB of it is not the model); Mycroft's ctypes path would be lighter, as it was for Kroko.
-- **Projection to Luna, to verify:** the desk-to-Luna ratio was about 15–20× for speech-to-text. On that basis Piper (RTF ~0.27 here) would be around real time on Luna or slower, so speaking sentence by sentence while the next one is synthesised would matter. Only a Luna run can say.
+- **Projection to Luna, to verify:** the desk-to-Luna ratio was about 16× for Kroko and ZIPA. On that basis Piper (RTF ~0.27 here) would take about 4–5 s per second of speech on Luna, so synthesising the next sentence while one is spoken, or a short wait, would matter; Kokoro would take about 30 s. Only a Luna run can say. (Corrected 2026-11-01: an earlier version said "around real time".)
 
 ## For the user
 
 The four voices, the same five sentences each, were sent to the user as `tts-<model>.m4a` to judge how natural they sound. Their choice, plus the round-trip check, decides which voice goes to a Luna measure (11.3, with Mannie's go).
+
+**The user's choice (2026-11-01):** by ear, Kokoro and Piper Lessac sound best. Kokoro costs about 7× Piper's CPU and 3× its model memory, and neither Alan nor Kitten nano is much lighter than Lessac, so **Piper Lessac is the voice for Luna**. Its licence (Blizzard 2013) must be checked before any redistribution.
