@@ -48,4 +48,13 @@ Reading the errors:
 - **Public clips say little about the user's accent.** The question is how each understands French-accented English with Luna's app names and commands. That is the reading in `1003_01`, which waits for the user.
 - **Kroko English's load (4.8 s here)** is longer than its French twin's (2.9 s); preparing the files once at ONNX Runtime's "extended" level halved the French load on Luna, and would be the first thing to try before Luna.
 
+## First try on the user's voice (2026-11-01)
+
+The user sent a 13 s phone recording (M4A, private, outside the repository): one free sentence in French-accented English, not the script. Evidence: `results/mycroft/english-candidates/20261101T115058Z/` (ignored by Git). The harness's WER compares it with the script, so it is meaningless here; judged by hand against what was said:
+
+- **Kroko English:** every word right, punctuated (20 words).
+- **Zipformer 20M:** 4 words wrong out of 20 ("phone" became "foam", "proper" became "popoth"; "computer" misspelt; "of" inserted).
+
+One sentence proves little, but it is the first sign that Kroko English understands the user's accent.
+
 **Next:** the user's English reading (`1003_01`), then the same comparison on it. No Luna measure before the user decides.
