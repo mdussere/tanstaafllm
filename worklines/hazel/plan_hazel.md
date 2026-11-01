@@ -76,13 +76,13 @@ Done means: the trailer and the first story videos are published, they read as o
 - [ ] 2.3 Thumbnails from the renderer: a `thumbnail` scene in each video's `index.html`, to replace Professor's Pillow thumbnails (2026-10-31) once the user agrees.
 
 ### Step 3 — The next episodes
-**Status**: ⏸️ Paused (3.2 Wyoh green-lit by the user, 2026-10-31; paused the same day for the cell's token budget)
+**Status**: 🧪 In progress (3.2 first version delivered 2026-11-01; waiting for the user's verdict)
 - [ ] 3.1 Text-to-shell (`docs/05`), the cell at work (Professor's Step 10 log), the principles.
 - [ ] 3.2 **Story 2, Wyoh: touching the desktop without screenshots** (user, 2026-10-31: "c'est ton premier travail"). The story: Wyoh's goal from the start is to interact with the desktop natively, not through screenshots; to take hold of it directly and get feedback. First version, then the user judges.
   - [x] 3.2a Build the story with Wyoh (session `tanstfaafllm-8e`): ask for the arc, the turning points and the facts. Wyoh answered with seven beats, sources and a must-not-say list: `docs/0302_02_note-from-wyoh-story.md`. Sentence to remember: "Don't look at the desktop, ask it: the compositor already knows what a screenshot can only guess."
-  - [ ] 3.2b Write the episode brief (series template, Story 2 frame) and have it composed, by a sub-agent with the brief and the project texts (as for Story 1) or by Hazel. Brief: `docs/0302_01_wyoh-story-brief.md` ("ASK THE DESKTOP", seven stages, ≤ 90 s). A sub-agent composes it in `/data/michael/tanstaafllm/video/story2-wyoh/`, starting from Story 1's sources.
-  - **⏸️ Paused (user via Professor, 2026-10-31, cell near its token limit):** the composing sub-agent was stopped mid-work. State in `/data/michael/tanstaafllm/video/story2-wyoh/src/`: `index.html` and `score.py` partly rewritten for Story 2 (not checked), `timing.py` and `build.sh` still Story 1's, no `NOTES.md`, no render. To resume: start a fresh sub-agent with the same brief and the instruction to continue from these files (or restart from Story 1's `src/`). Start nothing until the user or Professor says so.
-  - [ ] 3.2c Review against the template and the reading audit; check each fact against its source (and with Wyoh); render; deliver `~/Videos/TANSTAAFLLM/tanstaafllm-story2-<slug>.mp4`; sources in `worklines/hazel/video/story2-<slug>/`; tell Professor for the private page; commit and push.
+  - [x] 3.2b Write the episode brief (series template, Story 2 frame) and have it composed, by a sub-agent with the brief and the project texts (as for Story 1) or by Hazel. Brief: `docs/0302_01_wyoh-story-brief.md` ("ASK THE DESKTOP", seven stages, ≤ 90 s). A sub-agent composes it in `/data/michael/tanstaafllm/video/story2-wyoh/`, starting from Story 1's sources.
+  - [x] 3.2c Review against the template and the reading audit; check each fact against its source (and with Wyoh); render; deliver; sources in Git; private page; commit and push. **First version, 2026-11-01:** 90.0 s, reading audit +0.0 s, −15.3 LUFS, −1.1 dBTP; contact sheets inspected by Hazel. Delivered to `~/Videos/TANSTAAFLLM/tanstaafllm-story2-ask-the-desktop.mp4`; sources in `worklines/hazel/video/story2-ask-the-desktop/`; added by Hazel to the private page (1280 × 720 copy, 7.4 MB), which also got Story 1's eight-stage blurb and the new sources path. Asked Wyoh to confirm three staged points (Sway's screenshots in the black-panel stage, the seven layer names, the agent pressing FN+B to reach Mike).
+  - [ ] 3.2d The user's verdict on the first version; Wyoh's fact check; YouTube upload by the user.
 
 ### Step 4 — A public page
 **Status**: ⏳ Pending
@@ -108,6 +108,8 @@ Done means: the trailer and the first story videos are published, they read as o
 | sam. 31 oct 2026 19:54:55 CET | User: `🟩 go` for a Wyoh episode (Step 3.2): work Wyoh's story with her into a video, first version. Step 3.2 added. |
 | sam. 31 oct 2026 19:57:16 CET | Wyoh's story note received (3.2a done); brief written (`docs/0302_01`); composition handed to a sub-agent in `/data/michael/tanstaafllm/video/story2-wyoh/`. |
 | sam. 31 oct 2026 20:10:05 CET | Pause asked by the user via Professor (token limit): Story 2 sub-agent stopped; state recorded under 3.2. Nothing new started. |
+| dim. 01 nov 2026 12:01:49 CET | Resume (user via Professor): one lean sub-agent finishes Story 2 from the save point in `/data/michael/tanstaafllm/video/story2-wyoh/`. |
+| dim. 01 nov 2026 12:18:42 CET | Story 2 "Ask the desktop" first version: finished by a sub-agent from the save point, reviewed by Hazel, delivered, on the private page, sources committed. |
 
 ## Workline artifacts
 
@@ -118,5 +120,6 @@ Done means: the trailer and the first story videos are published, they read as o
 - `worklines/hazel/video/trailer/` — the trailer's sources (moved from Professor, 2026-10-31).
 - `docs/0103_01_series-template.md` — the series template (draft).
 - `docs/0302_01_wyoh-story-brief.md` — Story 2 brief; `docs/0302_02_note-from-wyoh-story.md` — Wyoh's story (from Wyoh).
+- `worklines/hazel/video/story2-ask-the-desktop/` — Story 2 "Ask the desktop" (Wyoh) sources, first version 2026-11-01.
 - `worklines/hazel/video/story1-hello-luna/` — Story 1 "Hello, Luna" sources (from the sub-agent's `bringup-v1`, revised 2026-10-31).
 - `/data/michael/tanstaafllm/video/` — packages, briefs and renders of the sub-agents (music A, story A/B, bring-up).
