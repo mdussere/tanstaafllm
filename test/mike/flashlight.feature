@@ -22,3 +22,4 @@ Feature: Mike 14.1-14.3, the "flashlight embedding"
       | minishlab/potion-base-4M       |
       | minishlab/potion-base-8M       |
       | minishlab/potion-retrieval-32M |
+      | rrf (BM25 + POTION-4M fused)   |

@@ -23,7 +23,7 @@ import flashlight_bench as bench  # noqa: E402
 import flashlight_blocks as fb  # noqa: E402
 
 CANDIDATES = ["bm25", "tfidf", "minishlab/potion-base-2M", "minishlab/potion-base-4M", "minishlab/potion-base-8M",
-              "minishlab/potion-retrieval-32M"]
+              "minishlab/potion-retrieval-32M", "rrf"]
 RUN_DIR = HERE.parents[1] / "results/mike/flashlight" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 

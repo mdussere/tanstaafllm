@@ -345,7 +345,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
   - Model2Vec POTION-2M, 4M and 8M;
   - a lexical baseline (TF-IDF or BM25);
   - any other tiny static or sentence embedder worth trying, each noted with its source, licence and size; weights stay out of Git.
-- [x] 14.3 (done 2026-11-01, [`docs/1403_01`](docs/1403_01_flashlight-embedding.md), enlarged sets: 120 routing sentences, 60+20 questions, 45 ASR-like variants; all candidates 0.13–0.20 ms per sentence; POTION-4M routes best for its size (81 %, 77 % noisy), BM25/TF-IDF retrieve as well or better (44–46/60 top-3 against 42); proposal: POTION-4M for routing with BM25 beside it; for review) **Measures, Termidor:**
+- [x] 14.3 (done 2026-11-01, [`docs/1403_01`](docs/1403_01_flashlight-embedding.md), enlarged sets: 120 routing sentences, 60+20 questions, 45 ASR-like variants; all candidates 0.13–0.20 ms per sentence; POTION-4M routes best for its size (81 %, 77 % noisy), BM25/TF-IDF retrieve as well or better (44–46/60 top-3 against 42); agreed with Professor: POTION-4M for routing; for retrieval, BM25 + POTION-4M fused by reciprocal rank, 48/60 top-3 like the 32M, with 15 MB) **Measures, Termidor:**
   - milliseconds per embedding, for a short sentence and for a ~100-word block;
   - RAM and disk;
   - zero-shot routing accuracy;

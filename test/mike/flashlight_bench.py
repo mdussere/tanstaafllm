@@ -2,7 +2,8 @@
 
     python test/mike/flashlight_bench.py <candidate>   # prints one JSON line
 
-Candidates: `bm25` and `tfidf` (lexical, standard library and numpy), and Model2Vec
+Candidates: `bm25` and `tfidf` (lexical, standard library and numpy), `rrf` (BM25 fused
+with POTION-4M by reciprocal rank), and Model2Vec
 static models by Hugging Face id (`minishlab/potion-base-2M`…). Run in its own process
 so that its peak memory is its own. Measures:
 
@@ -97,7 +98,30 @@ class Static:
         return self.index @ self.embed([query])[0]
 
 
+class Fusion:
+    """Reciprocal-rank fusion of BM25 and a static model (Professor, 2026-11-01): 1/(k + rank), summed."""
+
+    STATIC = "minishlab/potion-base-4M"
+
+    def __init__(self, k: int = 60):
+        self.k, self.parts = k, [Lexical("bm25"), Static(self.STATIC)]
+
+    def fit(self, docs: list[str]) -> None:
+        for part in self.parts:
+            part.fit(docs)
+
+    def scores(self, query: str) -> np.ndarray:
+        out = None
+        for part in self.parts:
+            ranks = np.empty(len(part.index if isinstance(part, Static) else part.docs))
+            ranks[np.argsort(-part.scores(query))] = np.arange(1, len(ranks) + 1)
+            out = 1 / (self.k + ranks) if out is None else out + 1 / (self.k + ranks)
+        return out
+
+
 def disk_mib(name: str) -> float | None:
+    if name == "rrf":
+        name = Fusion.STATIC
     if "/" not in name:
         return 0.0
     from huggingface_hub.constants import HF_HUB_CACHE  # the files the model actually downloaded
@@ -152,7 +176,8 @@ def route(make, labels: dict, tests: list, with_anchors: bool) -> dict:
 
 
 def main(name: str) -> dict:
-    make = (lambda: Lexical(name)) if name in ("bm25", "tfidf") else (lambda: Static(name))
+    make = ((lambda: Lexical(name)) if name in ("bm25", "tfidf") else (lambda: Fusion()) if name == "rrf"
+            else (lambda: Static(name)))
     base = rss_peak_mib()
     t = time.perf_counter()
     engine = make()
