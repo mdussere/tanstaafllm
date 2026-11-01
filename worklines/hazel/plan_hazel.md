@@ -83,10 +83,21 @@ Done means: the trailer and the first story videos are published, they read as o
   - [x] 3.2b Write the episode brief (series template, Story 2 frame) and have it composed, by a sub-agent with the brief and the project texts (as for Story 1) or by Hazel. Brief: `docs/0302_01_wyoh-story-brief.md` ("ASK THE DESKTOP", seven stages, ≤ 90 s). A sub-agent composes it in `/data/michael/tanstaafllm/video/story2-wyoh/`, starting from Story 1's sources.
   - [x] 3.2c Review against the template and the reading audit; check each fact against its source (and with Wyoh); render; deliver; sources in Git; private page; commit and push. **First version, 2026-11-01:** 90.0 s, reading audit +0.0 s, −15.3 LUFS, −1.1 dBTP; contact sheets inspected by Hazel. Delivered to `~/Videos/TANSTAAFLLM/tanstaafllm-story2-ask-the-desktop.mp4`; sources in `worklines/hazel/video/story2-ask-the-desktop/`; added by Hazel to the private page (1280 × 720 copy, 7.4 MB), which also got Story 1's eight-stage blurb and the new sources path. Asked Wyoh to confirm three staged points (Sway's screenshots in the black-panel stage, the seven layer names, the agent pressing FN+B to reach Mike).
   - [ ] 3.2d The user's verdict on the first version; Wyoh's fact check; YouTube upload by the user.
+    - Wyoh's check (2026-11-01): points 1 and 2 right; point 3 reworded ("A DEV AGENT PRESSES THE SAME BUTTONS", "MIKE STARTS, ANSWERS IN 13 s") so the agent and Mike don't read as one.
+    - The user (2026-11-01, watching on a phone held upright): title subtitle at VT323 90 px "très confortable"; PRESS START (PS2P 28 px) "limite". Hazel's analysis: most key messages sit at or below PRESS START's size (VT323 48 px sentences, PS2P 32 px). Rule proposed: one short key message per screen at ≥ 50 px glyph height (VT323 ≥ 90 / PS2P ≥ 56), one secondary at ≥ 35 px, the rest cut or glance-only.
+    - [ ] Rework Story 2 with that rule (user: "demande à un sous-agent de reprendre 2"); sub-agent at work in `worklines/hazel/video/story2-ask-the-desktop/`.
+    - [ ] Then: the rule into the series template; Story 1 and the trailer checked against it (user's go).
 
 ### Step 4 — A public page
 **Status**: ⏳ Pending
 - [ ] 4.1 A public page presenting the trailer and the episodes, after the user's go on its content and links (LinkedIn, YouTube).
+
+### Step 5 — A library of sequence templates
+**Status**: 🧪 In progress (5.1 asked by the user, 2026-11-01)
+- [x] 5.1 Analyse the templates used in the trailer, Story 1 and Story 2: what each does, how often, who made it; propose a plain-file structure (`docs/0501_01_sequence-library-analysis.md`). Reason (user): the sub-agents copy the previous video, so Story 2 reads like Story 1; a template box keeps unity and makes change deliberate.
+- [ ] 5.2 The user agrees on the structure (or amends it).
+- [ ] 5.3 Build `worklines/hazel/video/library/`: one card per template (concept, effect, dynamics in beats, graphic elements, text slots sized for the phone, music cue, variants with stills, code snippet), plus `uses.md` for the three videos.
+- [ ] 5.4 Put the episode rules into the series template: frame templates mandatory; at least three library templates in the body, none filling more than half the scenes; at least one new template per episode, added to the library after review; briefs name the templates.
 
 ## Progress tracking ✅
 
@@ -110,6 +121,8 @@ Done means: the trailer and the first story videos are published, they read as o
 | sam. 31 oct 2026 20:10:05 CET | Pause asked by the user via Professor (token limit): Story 2 sub-agent stopped; state recorded under 3.2. Nothing new started. |
 | dim. 01 nov 2026 12:01:49 CET | Resume (user via Professor): one lean sub-agent finishes Story 2 from the save point in `/data/michael/tanstaafllm/video/story2-wyoh/`. |
 | dim. 01 nov 2026 12:18:42 CET | Story 2 "Ask the desktop" first version: finished by a sub-agent from the save point, reviewed by Hazel, delivered, on the private page, sources committed. |
+| dim. 01 nov 2026 12:38:24 CET | Wyoh's fact check applied; title subtitle at 90 px approved by the user; phone readability analysis; sub-agent reworks Story 2's text sizes. |
+| dim. 01 nov 2026 12:46:45 CET | User: build a library of sequence templates (Step 5). Analysis and proposed structure written (5.1); waiting for the user's agreement. |
 
 ## Workline artifacts
 
@@ -119,6 +132,7 @@ Done means: the trailer and the first story videos are published, they read as o
 - Private phone page (Professor's): https://claude.ai/artifact/Wqpg9wD9Ew5MunsYFhxqLn, links both videos.
 - `worklines/hazel/video/trailer/` — the trailer's sources (moved from Professor, 2026-10-31).
 - `docs/0103_01_series-template.md` — the series template (draft).
+- `docs/0501_01_sequence-library-analysis.md` — templates in the three videos, and the proposed library structure.
 - `docs/0302_01_wyoh-story-brief.md` — Story 2 brief; `docs/0302_02_note-from-wyoh-story.md` — Wyoh's story (from Wyoh).
 - `worklines/hazel/video/story2-ask-the-desktop/` — Story 2 "Ask the desktop" (Wyoh) sources, first version 2026-11-01.
 - `worklines/hazel/video/story1-hello-luna/` — Story 1 "Hello, Luna" sources (from the sub-agent's `bringup-v1`, revised 2026-10-31).
