@@ -136,6 +136,7 @@ Done means: the trailer and the first story videos are published, they read as o
 | dim. 01 nov 2026 13:00:54 CET | User agreed on the library structure (5.2); a sub-agent builds `video/library/` (5.3). |
 | dim. 01 nov 2026 17:22:52 CET | Library built (5.3): README index, uses.md, 23 template cards with stills and snippets. 5.4 (episode rules in the series template) next. |
 | dim. 01 nov 2026 18:08:49 CET | User: optimise video production for tokens, spend CPU instead. Step 6 proposed, analysis `docs/0601_01`. |
+| dim. 01 nov 2026 18:14:09 CET | ⏸️ Pause (user via Professor, tokens low). State: Steps 1, 2.1–2.2, 3.2a–c, 5 done; waiting for the user on 3.2d (verdict on Story 2, YouTube uploads), 2.3 (thumbnails), the phone-rule check of Story 1 and the trailer, and Step 6 (go for the generator). Nothing running. |
 
 ## Workline artifacts
 
