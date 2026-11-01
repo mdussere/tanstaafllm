@@ -28,10 +28,25 @@ A game screen should feel as if it belongs to the same universe as the videos. U
 
 ## First three levels (proposed)
 - **Level 1 — Meet the Crew:** pronunciation and ASR calibration for *Mannie, Mycroft, Wyoh, Mike, Luna, Wolfenstein*. Isolate name-recognition failures from demonstrated pronunciation errors. Several samples per name.
-- **Level 2 — Talk to the Crew:** short utterances such as “Can you open the browser?”; word- and (when validated) phoneme-level feedback, replay and targeted practice.
+- **Level 2 — Talk to the Crew:** short utterances such as “Can you open the browser?”; word- and (when validated) phoneme-level feedback, replay and targeted practice. Mix new words with previously practised character names rather than leaving Level 1 behind.
 - **Level 3 — Command Center:** spoken Luna commands, e.g. “Mannie, launch Wolfenstein 3D”; simulate the resulting actions in the game (no actual system command execution). Progressive variety and difficulty.
 
 Duolingo inspires short drills, immediate feedback, progress and spaced repetition; these are mechanics, not copied art or curricula.
+
+## Spiral progression — continuous consolidation (user direction, 2026-11-01)
+
+**Clearing a level never retires its material.** Each lesson introduces a small amount of new content while naturally reusing knowledge from earlier lessons; recall is embedded **inside** current exercises, not only in a separate review mode.
+
+- Level 1: practise names individually, e.g. “Mannie”, “Wyoh”, “Wolfenstein”.
+- Level 2: reuse those names in new dialogue patterns: “Mannie, can you open the browser?”
+- Level 3: reuse both names and dialogue vocabulary in longer commands: “Mannie, launch Wolfenstein 3D.”
+- Later lessons deliberately revisit earlier sounds, expressions and names, with varied contexts rather than rote repetition.
+- Track mastery **per skill** (phonemes, words/names, constructions), not only per cleared level. Keep a compact local progress record with last attempt, confidence/quality, error type and next due review.
+- Proposed deterministic scheduler: choose new content plus a few due older skills, weighted toward recent difficulty and elapsed time; avoid repeatedly punishing uncertain acoustic estimates. Graduation is provisional and reversible.
+- Suggested first balancing experiment: roughly 70% current lesson / 30% prior material; **hypothesis to test**, not a fixed rule. The important guarantee is always some earlier material woven into each lesson.
+- Show the continuity diegetically: former crew members return, names recur in missions, and the lunar command centre builds on previous radio conversations.
+
+**Acceptance criterion:** clearing Level 1 then playing Levels 2 and 3 demonstrably produces exercises invoking Level 1 names; a failed or uncertain older skill can recur later without resetting progress. Deterministic test fixtures cover selection and review scheduling.
 
 ## Technical direction (candidate, not yet selected)
 - **Native 2D application**, no browser, HTML or DOM in the Luna runtime. Evaluate C + SDL2/SDL3 against C + raylib, on desk first and then through the agreed Luna operator. Python may help prototype tools but need not be the shipping runtime.
