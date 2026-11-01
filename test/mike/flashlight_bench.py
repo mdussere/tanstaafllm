@@ -11,6 +11,7 @@ so that its peak memory is its own. Measures:
 * zero-shot routing: each label as its description only, then as description + anchors
   (the nearest of those prototypes wins);
 * retrieval over the guide's blocks: top-1 and top-3;
+* the same routing and retrieval on ASR-like noisy variants (`noisy` in the data);
 * the top-1 score of guide questions against questions outside the guide (AUC, and the
   best single threshold's accuracy): can a threshold tell "out of domain"?
 """
@@ -165,16 +166,22 @@ def main(name: str) -> dict:
     index_s = time.perf_counter() - t
     block100 = min(texts, key=lambda x: abs(len(x.split()) - 100))
     r = DATA["retrieval"]
-    top1 = top3 = 0
-    pos, misses = [], []
-    for q, want in r["questions"]:
-        s = engine.scores(q)
-        order = [ids[i] for i in np.argsort(-s)[:3]]
-        top1 += order[0] in want
-        top3 += any(o in want for o in order)
-        pos.append(float(s.max()))
-        if order[0] not in want:
-            misses.append([q, order[0]])
+
+    def retrieve(questions):
+        top1 = top3 = 0
+        best, misses = [], []
+        for q, want in questions:
+            s = engine.scores(q)
+            order = [ids[i] for i in np.argsort(-s)[:3]]
+            top1 += order[0] in want
+            top3 += any(o in want for o in order)
+            best.append(float(s.max()))
+            if order[0] not in want:
+                misses.append([q, order[0]])
+        return {"questions": len(questions), "top1": top1, "top3": top3, "misses": misses}, best
+
+    clean, pos = retrieve(r["questions"])
+    noisy, _ = retrieve(DATA["noisy"]["retrieval"])
     neg = [float(engine.scores(q).max()) for q in r["outside"]]
     lab = DATA["routing"]
     return {
@@ -185,8 +192,9 @@ def main(name: str) -> dict:
         "ms_100_words": ms_per_text(engine, block100), "block_words": len(block100.split()),
         "routing_description_only": route(make, lab["labels"], lab["tests"], False),
         "routing_with_anchors": route(make, lab["labels"], lab["tests"], True),
-        "retrieval": {"blocks": len(blocks), "questions": len(r["questions"]), "top1": top1, "top3": top3,
-                      "misses": misses},
+        "routing_noisy_with_anchors": route(make, lab["labels"], DATA["noisy"]["routing"], True),
+        "retrieval": {"blocks": len(blocks), **clean},
+        "retrieval_noisy": noisy,
         "out_of_domain": {"auc": auc(pos, neg), "best_threshold": best_threshold(pos, neg),
                           "guide_top1_median": round(statistics.median(pos), 4),
                           "outside_top1_median": round(statistics.median(neg), 4)},

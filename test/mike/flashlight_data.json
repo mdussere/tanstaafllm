@@ -2,90 +2,908 @@
  "_about": "Mike Step 14.1 (flashlight embedding), English. 'routing': zero-shot labels with a description and three anchor examples, and test sentences that never appear among the anchors. 'retrieval': questions over Luna's guide blocks (flashlight_blocks.py), each with its acceptable block ids; 'outside': questions the guide does not answer.",
  "routing": {
   "labels": {
-   "small_talk": {"description": "casual chat, greetings, feelings and opinions, with no task to do",
-                  "anchors": ["Hi Mike, how are you today?", "I had a long day at work.", "What is your favourite colour?"]},
-   "guide_question": {"description": "a question about how Luna, its desktop, its voice dictation or its agents work",
-                      "anchors": ["How does dictation work on Luna?", "What is the Slate?", "Which model does Mike use?"]},
-   "luna_action": {"description": "an order to do something on the desktop: open, close, move or focus a window or an app",
-                   "anchors": ["Open the terminal.", "Close this window.", "Put the calculator on the left."]},
-   "weather": {"description": "the weather: rain, sun, temperature, forecast",
-               "anchors": ["Will it rain tomorrow?", "How hot is it outside?", "Is it going to snow this weekend?"]},
-   "cooking": {"description": "cooking, recipes, food and ingredients",
-               "anchors": ["How do I make pancakes?", "How long should I boil an egg?", "What goes well with rice?"]},
-   "music": {"description": "music, songs, bands and instruments",
-             "anchors": ["Play some jazz.", "Who sang Bohemian Rhapsody?", "How do I tune a guitar?"]}
+   "small_talk": {
+    "description": "casual chat, greetings, feelings and opinions, with no task to do",
+    "anchors": [
+     "Hi Mike, how are you today?",
+     "I had a long day at work.",
+     "What is your favourite colour?"
+    ]
+   },
+   "guide_question": {
+    "description": "a question about how Luna, its desktop, its voice dictation or its agents work",
+    "anchors": [
+     "How does dictation work on Luna?",
+     "What is the Slate?",
+     "Which model does Mike use?"
+    ]
+   },
+   "luna_action": {
+    "description": "an order to do something on the desktop: open, close, move or focus a window or an app",
+    "anchors": [
+     "Open the terminal.",
+     "Close this window.",
+     "Put the calculator on the left."
+    ]
+   },
+   "weather": {
+    "description": "the weather: rain, sun, temperature, forecast",
+    "anchors": [
+     "Will it rain tomorrow?",
+     "How hot is it outside?",
+     "Is it going to snow this weekend?"
+    ]
+   },
+   "cooking": {
+    "description": "cooking, recipes, food and ingredients",
+    "anchors": [
+     "How do I make pancakes?",
+     "How long should I boil an egg?",
+     "What goes well with rice?"
+    ]
+   },
+   "music": {
+    "description": "music, songs, bands and instruments",
+    "anchors": [
+     "Play some jazz.",
+     "Who sang Bohemian Rhapsody?",
+     "How do I tune a guitar?"
+    ]
+   }
   },
   "tests": [
-   ["Good morning! Did you sleep well?", "small_talk"],
-   ["I'm feeling a bit tired.", "small_talk"],
-   ["Tell me something nice.", "small_talk"],
-   ["Do you like cats or dogs?", "small_talk"],
-   ["Thanks, that was fun.", "small_talk"],
-   ["What do you think about Mondays?", "small_talk"],
-   ["How much memory does Wyoh's desktop leave free?", "guide_question"],
-   ["Why does Luna run Arch Linux ARM?", "guide_question"],
-   ["What does Mannie do on Luna?", "guide_question"],
-   ["Which speech model does Mycroft use?", "guide_question"],
-   ["How do I fix a game's buttons?", "guide_question"],
-   ["What is the cell?", "guide_question"],
-   ["Launch the file manager.", "luna_action"],
-   ["Switch to the browser.", "luna_action"],
-   ["Make this window full screen.", "luna_action"],
-   ["Quit Wolfenstein.", "luna_action"],
-   ["Move the terminal to the right.", "luna_action"],
-   ["Open the calculator please.", "luna_action"],
-   ["Should I take an umbrella?", "weather"],
-   ["What's the forecast for Lyon?", "weather"],
-   ["Is it windy today?", "weather"],
-   ["Will it be sunny on Sunday?", "weather"],
-   ["How cold will it get tonight?", "weather"],
-   ["Is there a storm coming?", "weather"],
-   ["What can I cook with potatoes and leeks?", "cooking"],
-   ["How do you make a quiche?", "cooking"],
-   ["Is olive oil good for frying?", "cooking"],
-   ["How long does bread dough need to rise?", "cooking"],
-   ["Give me a quick dinner idea.", "cooking"],
-   ["What spices go in a curry?", "cooking"],
-   ["Put on some classical music.", "music"],
-   ["Who wrote Hey Jude?", "music"],
-   ["What is a C major chord?", "music"],
-   ["Recommend a good rock band.", "music"],
-   ["How many keys does a piano have?", "music"],
-   ["Turn up the song.", "music"]
+   [
+    "Good morning! Did you sleep well?",
+    "small_talk"
+   ],
+   [
+    "I'm feeling a bit tired.",
+    "small_talk"
+   ],
+   [
+    "Tell me something nice.",
+    "small_talk"
+   ],
+   [
+    "Do you like cats or dogs?",
+    "small_talk"
+   ],
+   [
+    "Thanks, that was fun.",
+    "small_talk"
+   ],
+   [
+    "What do you think about Mondays?",
+    "small_talk"
+   ],
+   [
+    "How much memory does Wyoh's desktop leave free?",
+    "guide_question"
+   ],
+   [
+    "Why does Luna run Arch Linux ARM?",
+    "guide_question"
+   ],
+   [
+    "What does Mannie do on Luna?",
+    "guide_question"
+   ],
+   [
+    "Which speech model does Mycroft use?",
+    "guide_question"
+   ],
+   [
+    "How do I fix a game's buttons?",
+    "guide_question"
+   ],
+   [
+    "What is the cell?",
+    "guide_question"
+   ],
+   [
+    "Launch the file manager.",
+    "luna_action"
+   ],
+   [
+    "Switch to the browser.",
+    "luna_action"
+   ],
+   [
+    "Make this window full screen.",
+    "luna_action"
+   ],
+   [
+    "Quit Wolfenstein.",
+    "luna_action"
+   ],
+   [
+    "Move the terminal to the right.",
+    "luna_action"
+   ],
+   [
+    "Open the calculator please.",
+    "luna_action"
+   ],
+   [
+    "Should I take an umbrella?",
+    "weather"
+   ],
+   [
+    "What's the forecast for Lyon?",
+    "weather"
+   ],
+   [
+    "Is it windy today?",
+    "weather"
+   ],
+   [
+    "Will it be sunny on Sunday?",
+    "weather"
+   ],
+   [
+    "How cold will it get tonight?",
+    "weather"
+   ],
+   [
+    "Is there a storm coming?",
+    "weather"
+   ],
+   [
+    "What can I cook with potatoes and leeks?",
+    "cooking"
+   ],
+   [
+    "How do you make a quiche?",
+    "cooking"
+   ],
+   [
+    "Is olive oil good for frying?",
+    "cooking"
+   ],
+   [
+    "How long does bread dough need to rise?",
+    "cooking"
+   ],
+   [
+    "Give me a quick dinner idea.",
+    "cooking"
+   ],
+   [
+    "What spices go in a curry?",
+    "cooking"
+   ],
+   [
+    "Put on some classical music.",
+    "music"
+   ],
+   [
+    "Who wrote Hey Jude?",
+    "music"
+   ],
+   [
+    "What is a C major chord?",
+    "music"
+   ],
+   [
+    "Recommend a good rock band.",
+    "music"
+   ],
+   [
+    "How many keys does a piano have?",
+    "music"
+   ],
+   [
+    "Turn up the song.",
+    "music"
+   ],
+   [
+    "Hey, what's up?",
+    "small_talk"
+   ],
+   [
+    "I just got back from a walk.",
+    "small_talk"
+   ],
+   [
+    "You're funny.",
+    "small_talk"
+   ],
+   [
+    "Do you ever get bored?",
+    "small_talk"
+   ],
+   [
+    "Have a nice evening.",
+    "small_talk"
+   ],
+   [
+    "What makes you happy?",
+    "small_talk"
+   ],
+   [
+    "I'm in a good mood today.",
+    "small_talk"
+   ],
+   [
+    "Do you have a favourite movie?",
+    "small_talk"
+   ],
+   [
+    "Long time no see!",
+    "small_talk"
+   ],
+   [
+    "I can't decide what to do tonight.",
+    "small_talk"
+   ],
+   [
+    "That's interesting, tell me more.",
+    "small_talk"
+   ],
+   [
+    "Are you a morning person?",
+    "small_talk"
+   ],
+   [
+    "I missed you.",
+    "small_talk"
+   ],
+   [
+    "Guess what happened to me today.",
+    "small_talk"
+   ],
+   [
+    "What does the Slate do?",
+    "guide_question"
+   ],
+   [
+    "How does Luna boot?",
+    "guide_question"
+   ],
+   [
+    "Why is Mannie not run on Luna all the time?",
+    "guide_question"
+   ],
+   [
+    "What is Kroko?",
+    "guide_question"
+   ],
+   [
+    "How do the agents get a green light?",
+    "guide_question"
+   ],
+   [
+    "What are Wyoh's known limits?",
+    "guide_question"
+   ],
+   [
+    "How many buttons modes does the desktop have?",
+    "guide_question"
+   ],
+   [
+    "Why are the apps so light?",
+    "guide_question"
+   ],
+   [
+    "How much RAM does Luna have?",
+    "guide_question"
+   ],
+   [
+    "Who coordinates the cell?",
+    "guide_question"
+   ],
+   [
+    "Why did the Panfrost driver give a black screen?",
+    "guide_question"
+   ],
+   [
+    "What does the gamepad daemon grab?",
+    "guide_question"
+   ],
+   [
+    "How does Mike choose an action?",
+    "guide_question"
+   ],
+   [
+    "What is the R36 Ultra?",
+    "guide_question"
+   ],
+   [
+    "Open a terminal window.",
+    "luna_action"
+   ],
+   [
+    "Close the calculator.",
+    "luna_action"
+   ],
+   [
+    "Focus the browser window.",
+    "luna_action"
+   ],
+   [
+    "Start the dino game.",
+    "luna_action"
+   ],
+   [
+    "Put the terminal on the right side.",
+    "luna_action"
+   ],
+   [
+    "Kill this app.",
+    "luna_action"
+   ],
+   [
+    "Show me the commander.",
+    "luna_action"
+   ],
+   [
+    "Open NetSurf.",
+    "luna_action"
+   ],
+   [
+    "Maximise the window.",
+    "luna_action"
+   ],
+   [
+    "Bring the calculator to the front.",
+    "luna_action"
+   ],
+   [
+    "Exit full screen.",
+    "luna_action"
+   ],
+   [
+    "Launch Wolfenstein.",
+    "luna_action"
+   ],
+   [
+    "Swap the two windows.",
+    "luna_action"
+   ],
+   [
+    "Hide the Slate.",
+    "luna_action"
+   ],
+   [
+    "Is it raining in Paris?",
+    "weather"
+   ],
+   [
+    "What's the temperature right now?",
+    "weather"
+   ],
+   [
+    "Do I need a coat today?",
+    "weather"
+   ],
+   [
+    "Will there be frost tomorrow morning?",
+    "weather"
+   ],
+   [
+    "How humid is it?",
+    "weather"
+   ],
+   [
+    "Is the weekend going to be nice?",
+    "weather"
+   ],
+   [
+    "When will the rain stop?",
+    "weather"
+   ],
+   [
+    "Is it foggy outside?",
+    "weather"
+   ],
+   [
+    "What's the weather like in London?",
+    "weather"
+   ],
+   [
+    "Will it be hot next week?",
+    "weather"
+   ],
+   [
+    "Is there a heatwave coming?",
+    "weather"
+   ],
+   [
+    "Should I expect thunder tonight?",
+    "weather"
+   ],
+   [
+    "How much snow fell last night?",
+    "weather"
+   ],
+   [
+    "Is it a good day for a picnic?",
+    "weather"
+   ],
+   [
+    "How do I cook rice?",
+    "cooking"
+   ],
+   [
+    "What's a good vegetarian lasagna recipe?",
+    "cooking"
+   ],
+   [
+    "How long do I roast a chicken?",
+    "cooking"
+   ],
+   [
+    "Can I freeze cooked pasta?",
+    "cooking"
+   ],
+   [
+    "What is a roux?",
+    "cooking"
+   ],
+   [
+    "How do I make a vinaigrette?",
+    "cooking"
+   ],
+   [
+    "What can I bake with apples?",
+    "cooking"
+   ],
+   [
+    "How do I keep herbs fresh?",
+    "cooking"
+   ],
+   [
+    "Is it safe to eat raw cookie dough?",
+    "cooking"
+   ],
+   [
+    "How much salt goes in bread?",
+    "cooking"
+   ],
+   [
+    "What is the best way to cook salmon?",
+    "cooking"
+   ],
+   [
+    "How do I make soup from leftovers?",
+    "cooking"
+   ],
+   [
+    "What dessert can I make in ten minutes?",
+    "cooking"
+   ],
+   [
+    "How do I sharpen a kitchen knife?",
+    "cooking"
+   ],
+   [
+    "Who is the lead singer of Queen?",
+    "music"
+   ],
+   [
+    "Play my favourite playlist.",
+    "music"
+   ],
+   [
+    "What is a minor scale?",
+    "music"
+   ],
+   [
+    "Recommend some calm piano music.",
+    "music"
+   ],
+   [
+    "When did the Beatles split up?",
+    "music"
+   ],
+   [
+    "How do I read sheet music?",
+    "music"
+   ],
+   [
+    "Skip this track.",
+    "music"
+   ],
+   [
+    "What instrument does a cellist play?",
+    "music"
+   ],
+   [
+    "Who composed the Four Seasons?",
+    "music"
+   ],
+   [
+    "Is the ukulele easy to learn?",
+    "music"
+   ],
+   [
+    "What genre is Daft Punk?",
+    "music"
+   ],
+   [
+    "Pause the music.",
+    "music"
+   ],
+   [
+    "How many strings does a violin have?",
+    "music"
+   ],
+   [
+    "What's a good song to sing at karaoke?",
+    "music"
+   ]
   ]
  },
  "retrieval": {
   "questions": [
-   ["How much memory is left free when Wyoh's session runs?", ["docs/10_wyoh.md#What it costs (measured on Luna)#0"]],
-   ["How do I deploy Wyoh to Luna?", ["docs/10_wyoh.md#Where it lives#0"]],
-   ["Why is Sway not modified?", ["docs/10_wyoh.md#Why it is like this#0"]],
-   ["Why are the apps terminal programs and not GTK?", ["docs/10_wyoh.md#Why it is like this#1"]],
-   ["Why does ArchR's brightness shortcut not work?", ["docs/10_wyoh.md#Status and limits#1"]],
-   ["What does the daemon do with the gamepad?", ["docs/10_wyoh.md#How it talks to the others#0", "docs/10_wyoh.md#How it talks to the others#1"]],
-   ["What does Mycroft do?", ["docs/11_mycroft.md#In one sentence#0", "docs/11_mycroft.md#11 · Mycroft, voice to text#0"]],
-   ["Why was Kroko chosen for speech?", ["docs/11_mycroft.md#Why it is like this#0"]],
-   ["How was the model's loading time halved on ARM?", ["docs/11_mycroft.md#Why it is like this#1"]],
-   ["Who starts the dictation provider?", ["docs/11_mycroft.md#How it talks to the others#0"]],
-   ["Where does dictated text go, and how are drafts shown?", ["docs/11_mycroft.md#How it talks to the others#1"]],
-   ["What does Mike do with a request?", ["docs/12_mike.md#In one sentence#0", "docs/12_mike.md#12 · Mike, the local brain#0"]],
-   ["Why does Mike call tools instead of chatting?", ["docs/12_mike.md#Why it is like this#0"]],
-   ["What does the lean setting change?", ["docs/12_mike.md#What it costs (desk host, x86)#0"]],
-   ["What is Mannie?", ["docs/13_mannie.md#In one sentence#0", "docs/13_mannie.md#13 · Mannie, the frontier model#0"]],
-   ["How many tokens does a simple pong cost?", ["docs/13_mannie.md#Why it is like this#0"]],
-   ["How much RAM does Anthropic say Claude Code needs?", ["docs/13_mannie.md#What it costs (`luna-pi`, Raspberry Pi 4)#0"]],
-   ["What is the R36 Ultra?", ["docs/14_luna.md#In one sentence#0", "docs/14_luna.md#14 · Luna, the device#0"]],
-   ["What does ArchR provide at boot?", ["docs/14_luna.md#The system#0"]],
-   ["How do I get to the text console?", ["docs/14_luna.md#The system#1"]],
-   ["Why was ArchR replaced by Arch Linux ARM above the kernel?", ["docs/14_luna.md#Why we had to#0", "docs/14_luna.md#Why we had to#1"]],
-   ["What was gained by moving to Arch Linux ARM?", ["docs/14_luna.md#What it changed#0"]],
-   ["Why did the Panfrost driver matter?", ["docs/14_luna.md#What we did#1"]],
-   ["How is the work organised between the agents?", ["docs/15_the-cell.md#In one sentence#0", "docs/15_the-cell.md#How a piece of work flows#0"]],
-   ["Where are the running sessions listed?", ["docs/15_the-cell.md#Who is in it#0"]],
-   ["What can Professor do when the user is away?", ["docs/15_the-cell.md#The rules that keep it sane#1"]],
-   ["How many layers does a button press cross before the game sees it?", ["docs/howto/01_fix-a-game-gamepad-mapping.md#1. The chain, and the one rule#0"]],
-   ["How often does the daemon scan for a new input device?", ["docs/howto/01_fix-a-game-gamepad-mapping.md#2. Before you touch anything#1"]],
-   ["How do I check what SDL makes of the pad?", ["docs/howto/01_fix-a-game-gamepad-mapping.md#5. Measure layer 5: what SDL makes of the pad#0"]],
-   ["What went wrong with Wolfenstein's buttons on 30 October?", ["docs/howto/01_fix-a-game-gamepad-mapping.md#8. The 2026-10-30 case: what went wrong, and the lessons#0"]]
+   [
+    "How much memory is left free when Wyoh's session runs?",
+    [
+     "docs/10_wyoh.md#What it costs (measured on Luna)#0"
+    ]
+   ],
+   [
+    "How do I deploy Wyoh to Luna?",
+    [
+     "docs/10_wyoh.md#Where it lives#0"
+    ]
+   ],
+   [
+    "Why is Sway not modified?",
+    [
+     "docs/10_wyoh.md#Why it is like this#0"
+    ]
+   ],
+   [
+    "Why are the apps terminal programs and not GTK?",
+    [
+     "docs/10_wyoh.md#Why it is like this#1"
+    ]
+   ],
+   [
+    "Why does ArchR's brightness shortcut not work?",
+    [
+     "docs/10_wyoh.md#Status and limits#1"
+    ]
+   ],
+   [
+    "What does the daemon do with the gamepad?",
+    [
+     "docs/10_wyoh.md#How it talks to the others#0",
+     "docs/10_wyoh.md#How it talks to the others#1"
+    ]
+   ],
+   [
+    "What does Mycroft do?",
+    [
+     "docs/11_mycroft.md#In one sentence#0",
+     "docs/11_mycroft.md#11 · Mycroft, voice to text#0"
+    ]
+   ],
+   [
+    "Why was Kroko chosen for speech?",
+    [
+     "docs/11_mycroft.md#Why it is like this#0"
+    ]
+   ],
+   [
+    "How was the model's loading time halved on ARM?",
+    [
+     "docs/11_mycroft.md#Why it is like this#1"
+    ]
+   ],
+   [
+    "Who starts the dictation provider?",
+    [
+     "docs/11_mycroft.md#How it talks to the others#0"
+    ]
+   ],
+   [
+    "Where does dictated text go, and how are drafts shown?",
+    [
+     "docs/11_mycroft.md#How it talks to the others#1"
+    ]
+   ],
+   [
+    "What does Mike do with a request?",
+    [
+     "docs/12_mike.md#In one sentence#0",
+     "docs/12_mike.md#12 · Mike, the local brain#0"
+    ]
+   ],
+   [
+    "Why does Mike call tools instead of chatting?",
+    [
+     "docs/12_mike.md#Why it is like this#0"
+    ]
+   ],
+   [
+    "What does the lean setting change?",
+    [
+     "docs/12_mike.md#What it costs (desk host, x86)#0"
+    ]
+   ],
+   [
+    "What is Mannie?",
+    [
+     "docs/13_mannie.md#In one sentence#0",
+     "docs/13_mannie.md#13 · Mannie, the frontier model#0"
+    ]
+   ],
+   [
+    "How many tokens does a simple pong cost?",
+    [
+     "docs/13_mannie.md#Why it is like this#0"
+    ]
+   ],
+   [
+    "How much RAM does Anthropic say Claude Code needs?",
+    [
+     "docs/13_mannie.md#What it costs (`luna-pi`, Raspberry Pi 4)#0"
+    ]
+   ],
+   [
+    "What is the R36 Ultra?",
+    [
+     "docs/14_luna.md#In one sentence#0",
+     "docs/14_luna.md#14 · Luna, the device#0"
+    ]
+   ],
+   [
+    "What does ArchR provide at boot?",
+    [
+     "docs/14_luna.md#The system#0"
+    ]
+   ],
+   [
+    "How do I get to the text console?",
+    [
+     "docs/14_luna.md#The system#1"
+    ]
+   ],
+   [
+    "Why was ArchR replaced by Arch Linux ARM above the kernel?",
+    [
+     "docs/14_luna.md#Why we had to#0",
+     "docs/14_luna.md#Why we had to#1"
+    ]
+   ],
+   [
+    "What was gained by moving to Arch Linux ARM?",
+    [
+     "docs/14_luna.md#What it changed#0"
+    ]
+   ],
+   [
+    "Why did the Panfrost driver matter?",
+    [
+     "docs/14_luna.md#What we did#1"
+    ]
+   ],
+   [
+    "How is the work organised between the agents?",
+    [
+     "docs/15_the-cell.md#In one sentence#0",
+     "docs/15_the-cell.md#How a piece of work flows#0"
+    ]
+   ],
+   [
+    "Where are the running sessions listed?",
+    [
+     "docs/15_the-cell.md#Who is in it#0"
+    ]
+   ],
+   [
+    "What can Professor do when the user is away?",
+    [
+     "docs/15_the-cell.md#The rules that keep it sane#1"
+    ]
+   ],
+   [
+    "How many layers does a button press cross before the game sees it?",
+    [
+     "docs/howto/01_fix-a-game-gamepad-mapping.md#1. The chain, and the one rule#0"
+    ]
+   ],
+   [
+    "How often does the daemon scan for a new input device?",
+    [
+     "docs/howto/01_fix-a-game-gamepad-mapping.md#2. Before you touch anything#1"
+    ]
+   ],
+   [
+    "How do I check what SDL makes of the pad?",
+    [
+     "docs/howto/01_fix-a-game-gamepad-mapping.md#5. Measure layer 5: what SDL makes of the pad#0"
+    ]
+   ],
+   [
+    "What went wrong with Wolfenstein's buttons on 30 October?",
+    [
+     "docs/howto/01_fix-a-game-gamepad-mapping.md#8. The 2026-10-30 case: what went wrong, and the lessons#0"
+    ]
+   ],
+   [
+    "What happens when you remove Wyoh's session?",
+    [
+     "docs/10_wyoh.md#Where it lives#0"
+    ]
+   ],
+   [
+    "Who is Wyoh in the novel?",
+    [
+     "docs/10_wyoh.md#10 · Wyoh, the desktop#0"
+    ]
+   ],
+   [
+    "What does Wyoh turn the Sway compositor into?",
+    [
+     "docs/10_wyoh.md#In one sentence#0"
+    ]
+   ],
+   [
+    "What does FN+B do in an app?",
+    [
+     "docs/10_wyoh.md#How it talks to the others#1"
+    ]
+   ],
+   [
+    "What already works live in Wyoh's desktop?",
+    [
+     "docs/10_wyoh.md#Status and limits#0"
+    ]
+   ],
+   [
+    "How much memory does a GTK editor take?",
+    [
+     "docs/10_wyoh.md#Why it is like this#1"
+    ]
+   ],
+   [
+    "Who is Mycroft in the novel?",
+    [
+     "docs/11_mycroft.md#11 · Mycroft, voice to text#0"
+    ]
+   ],
+   [
+    "Is Kroko resident on Luna yet?",
+    [
+     "docs/11_mycroft.md#Status and limits#0"
+    ]
+   ],
+   [
+    "Does dictation need the network?",
+    [
+     "docs/11_mycroft.md#In one sentence#0"
+    ]
+   ],
+   [
+    "How many desktop actions can Mike choose from?",
+    [
+     "docs/12_mike.md#In one sentence#0"
+    ]
+   ],
+   [
+    "Where does Mike's input text come from?",
+    [
+     "docs/12_mike.md#How it talks to the others#0"
+    ]
+   ],
+   [
+    "What has Mike finished so far?",
+    [
+     "docs/12_mike.md#Status and limits#0"
+    ]
+   ],
+   [
+    "Who is Mike in the novel?",
+    [
+     "docs/12_mike.md#12 · Mike, the local brain#0"
+    ]
+   ],
+   [
+    "Who is Mannie in the novel?",
+    [
+     "docs/13_mannie.md#13 · Mannie, the frontier model#0"
+    ]
+   ],
+   [
+    "What is the Tunnel?",
+    [
+     "docs/13_mannie.md#How it talks to the others#0"
+    ]
+   ],
+   [
+    "What is Mannie waiting for from the user?",
+    [
+     "docs/13_mannie.md#Status and limits#0"
+    ]
+   ],
+   [
+    "Why is a cheap handheld called a harsh mistress?",
+    [
+     "docs/14_luna.md#14 · Luna, the device#0"
+    ]
+   ],
+   [
+    "Where is the story of the first bring-up told?",
+    [
+     "docs/14_luna.md#The system#2"
+    ]
+   ],
+   [
+    "Why keep ArchR's kernel and Wi-Fi?",
+    [
+     "docs/14_luna.md#Why it is like this#0"
+    ]
+   ],
+   [
+    "What works live on Luna today?",
+    [
+     "docs/14_luna.md#Status and limits#0"
+    ]
+   ],
+   [
+    "Does the desktop run as root?",
+    [
+     "docs/14_luna.md#Status and limits#1"
+    ]
+   ],
+   [
+    "How was the card backed up before the change?",
+    [
+     "docs/14_luna.md#What we did#0"
+    ]
+   ],
+   [
+    "Why was Mannie sent to live on Luna?",
+    [
+     "docs/14_luna.md#Why we had to#1"
+    ]
+   ],
+   [
+    "What is a cell in the novel?",
+    [
+     "docs/15_the-cell.md#15 · The cell, how the agents build Luna#0"
+    ]
+   ],
+   [
+    "What comes after the green light?",
+    [
+     "docs/15_the-cell.md#How a piece of work flows#0",
+     "docs/15_the-cell.md#How a piece of work flows#1"
+    ]
+   ],
+   [
+    "Where are a step's figures written up?",
+    [
+     "docs/15_the-cell.md#How a piece of work flows#1"
+    ]
+   ],
+   [
+    "Where are the skills committed?",
+    [
+     "docs/15_the-cell.md#The rules that keep it sane#0"
+    ]
+   ],
+   [
+    "Why one agent per part of Luna?",
+    [
+     "docs/15_the-cell.md#Why it is like this#0"
+    ]
+   ],
+   [
+    "How do I check that the virtual pad sends events?",
+    [
+     "docs/howto/01_fix-a-game-gamepad-mapping.md#4. Check layer 4: does the virtual pad send?#0"
+    ]
+   ],
+   [
+    "How do I find which window has the focus and its app id?",
+    [
+     "docs/howto/01_fix-a-game-gamepad-mapping.md#3. Check layers 1 to 3: the daemon and the profile#0"
+    ]
+   ]
   ],
   "outside": [
    "What is the capital of Australia?",
@@ -97,7 +915,236 @@
    "Recommend a good science-fiction film.",
    "How far is the Moon from the Earth?",
    "What is the price of a Raspberry Pi 5?",
-   "How do I renew my passport?"
+   "How do I renew my passport?",
+   "What time is it in Tokyo?",
+   "How do I change a car tyre?",
+   "Who painted the Mona Lisa?",
+   "What's a good name for a cat?",
+   "How many calories are in an apple?",
+   "How do I learn Spanish fast?",
+   "What is Apple's share price?",
+   "When is the next solar eclipse?",
+   "How do I unclog a sink?",
+   "What is quantum computing?"
+  ]
+ },
+ "noisy": {
+  "_about": "ASR-like variants of routing and retrieval items: lower case, no question mark, homophones, split names, numbers in words, dropped small words.",
+  "routing": [
+   [
+    "good morning did you sleep well",
+    "small_talk"
+   ],
+   [
+    "im feeling a bit tired",
+    "small_talk"
+   ],
+   [
+    "do you like cats or dogs",
+    "small_talk"
+   ],
+   [
+    "hey whats up",
+    "small_talk"
+   ],
+   [
+    "have a nice evening",
+    "small_talk"
+   ],
+   [
+    "how much memory does why oh's desktop leave free",
+    "guide_question"
+   ],
+   [
+    "why does luna run arch linux arm",
+    "guide_question"
+   ],
+   [
+    "what does manny do on luna",
+    "guide_question"
+   ],
+   [
+    "which speech model does my croft use",
+    "guide_question"
+   ],
+   [
+    "what does the slate do",
+    "guide_question"
+   ],
+   [
+    "open net surf",
+    "luna_action"
+   ],
+   [
+    "start the dyno game",
+    "luna_action"
+   ],
+   [
+    "launch wolf and stein",
+    "luna_action"
+   ],
+   [
+    "put the terminal on the right side",
+    "luna_action"
+   ],
+   [
+    "close the calculator",
+    "luna_action"
+   ],
+   [
+    "should i take an umbrella",
+    "weather"
+   ],
+   [
+    "whats the forecast for leon",
+    "weather"
+   ],
+   [
+    "will it be sunny on sunday",
+    "weather"
+   ],
+   [
+    "is it foggy outside",
+    "weather"
+   ],
+   [
+    "do i need a coat to day",
+    "weather"
+   ],
+   [
+    "how do you make a keish",
+    "cooking"
+   ],
+   [
+    "what spices go in a curry",
+    "cooking"
+   ],
+   [
+    "how long do i roast a chicken",
+    "cooking"
+   ],
+   [
+    "what can i cook with potatoes and leaks",
+    "cooking"
+   ],
+   [
+    "how do i cook rice",
+    "cooking"
+   ],
+   [
+    "who wrote hey jude",
+    "music"
+   ],
+   [
+    "play some jazz",
+    "music"
+   ],
+   [
+    "skip this track",
+    "music"
+   ],
+   [
+    "who composed the four seasons",
+    "music"
+   ],
+   [
+    "how many strings does a violin have",
+    "music"
+   ]
+  ],
+  "retrieval": [
+   [
+    "how much memory is left free when why oh's session runs",
+    [
+     "docs/10_wyoh.md#What it costs (measured on Luna)#0"
+    ]
+   ],
+   [
+    "why was crow co chosen for speech",
+    [
+     "docs/11_mycroft.md#Why it is like this#0"
+    ]
+   ],
+   [
+    "what does mike do with a request",
+    [
+     "docs/12_mike.md#In one sentence#0",
+     "docs/12_mike.md#12 · Mike, the local brain#0"
+    ]
+   ],
+   [
+    "how many tokens does a simple pong cost",
+    [
+     "docs/13_mannie.md#Why it is like this#0"
+    ]
+   ],
+   [
+    "what does arc r provide at boot",
+    [
+     "docs/14_luna.md#The system#0"
+    ]
+   ],
+   [
+    "how do i get to the text console",
+    [
+     "docs/14_luna.md#The system#1"
+    ]
+   ],
+   [
+    "where are the running sessions listed",
+    [
+     "docs/15_the-cell.md#Who is in it#0"
+    ]
+   ],
+   [
+    "how often does the demon scan for a new input device",
+    [
+     "docs/howto/01_fix-a-game-gamepad-mapping.md#2. Before you touch anything#1"
+    ]
+   ],
+   [
+    "how many layers does a button press cross before the game sees it",
+    [
+     "docs/howto/01_fix-a-game-gamepad-mapping.md#1. The chain, and the one rule#0"
+    ]
+   ],
+   [
+    "why did the pan frost driver matter",
+    [
+     "docs/14_luna.md#What we did#1"
+    ]
+   ],
+   [
+    "what is manny",
+    [
+     "docs/13_mannie.md#In one sentence#0",
+     "docs/13_mannie.md#13 · Mannie, the frontier model#0"
+    ]
+   ],
+   [
+    "what does the lean setting change",
+    [
+     "docs/12_mike.md#What it costs (desk host, x86)#0"
+    ]
+   ],
+   [
+    "who starts the dictation provider",
+    [
+     "docs/11_mycroft.md#How it talks to the others#0"
+    ]
+   ],
+   [
+    "what was gained by moving to arch linux arm",
+    [
+     "docs/14_luna.md#What it changed#0"
+    ]
+   ],
+   [
+    "what went wrong with wolfenstein's buttons on thirty october",
+    [
+     "docs/howto/01_fix-a-game-gamepad-mapping.md#8. The 2026-10-30 case: what went wrong, and the lessons#0"
+    ]
+   ]
   ]
  }
 }

@@ -12,43 +12,43 @@
   </style>
   <rect width="960" height="600" fill="url(#stars)"/>
   <text x="30" y="46" class="title">FLASHLIGHT EMBEDDING · WHO SEES BEST?</text>
-  <text x="30" y="68" class="sub">routing 36 sentences into 6 labels · finding the right guide block (30 questions) · Termidor</text>
+  <text x="30" y="68" class="sub">routing 120 sentences into 6 labels · finding the right guide block (60 questions) · Termidor</text>
   <text x="250" y="100" class="h">quality, %</text><text x="640" y="100" class="h">memory · disk · ms per sentence</text>
   <line x1="250.0" y1="108" x2="250.0" y2="520" stroke="#1d2a4f"/><text x="240.0" y="536" class="axis">0</text>
   <line x1="420.0" y1="108" x2="420.0" y2="520" stroke="#1d2a4f"/><text x="410.0" y="536" class="axis">50</text>
   <line x1="590.0" y1="108" x2="590.0" y2="520" stroke="#1d2a4f"/><text x="580.0" y="536" class="axis">100</text>
   <text x="30" y="142" class="t">BM25</text>
-  <rect x="250" y="116" width="189.0" height="16" fill="#ffb347"/><text x="444.0" y="128" class="v">56</text>
+  <rect x="250" y="116" width="201.3" height="16" fill="#ffb347"/><text x="456.3" y="128" class="v">59</text>
   <rect x="250" y="136" width="249.3" height="16" fill="#3ee6e0"/><text x="504.3" y="148" class="v">73</text>
-  <rect x="250" y="156" width="294.8" height="16" fill="#b48cff"/><text x="549.8" y="168" class="v">87</text>
+  <rect x="250" y="156" width="307.0" height="16" fill="#b48cff"/><text x="562.0" y="168" class="v">90</text>
   <text x="640" y="142" class="v">27 MiB · 0 MB · 0.13 ms</text>
   <text x="30" y="210" class="t">TF-IDF</text>
-  <rect x="250" y="184" width="198.2" height="16" fill="#ffb347"/><text x="453.2" y="196" class="v">58</text>
+  <rect x="250" y="184" width="212.5" height="16" fill="#ffb347"/><text x="467.5" y="196" class="v">62</text>
   <rect x="250" y="204" width="260.7" height="16" fill="#3ee6e0"/><text x="515.7" y="216" class="v">77</text>
-  <rect x="250" y="224" width="233.6" height="16" fill="#b48cff"/><text x="488.6" y="236" class="v">69</text>
-  <text x="640" y="210" class="v">27 MiB · 0 MB · 0.21 ms</text>
+  <rect x="250" y="224" width="228.5" height="16" fill="#b48cff"/><text x="483.5" y="236" class="v">67</text>
+  <text x="640" y="210" class="v">27 MiB · 0 MB · 0.20 ms</text>
   <text x="30" y="278" class="t">POTION-2M</text>
-  <rect x="250" y="252" width="217.3" height="16" fill="#ffb347"/><text x="472.3" y="264" class="v">64</text>
-  <rect x="250" y="272" width="238.0" height="16" fill="#3ee6e0"/><text x="493.0" y="284" class="v">70</text>
-  <rect x="250" y="292" width="305.0" height="16" fill="#b48cff"/><text x="560.0" y="304" class="v">90</text>
-  <text x="640" y="278" class="v">85 MiB · 8 MB · 0.14 ms</text>
+  <rect x="250" y="252" width="238.0" height="16" fill="#ffb347"/><text x="493.0" y="264" class="v">70</text>
+  <rect x="250" y="272" width="204.0" height="16" fill="#3ee6e0"/><text x="459.0" y="284" class="v">60</text>
+  <rect x="250" y="292" width="292.7" height="16" fill="#b48cff"/><text x="547.7" y="304" class="v">86</text>
+  <text x="640" y="278" class="v">85 MiB · 8 MB · 0.13 ms</text>
   <text x="30" y="346" class="t">POTION-4M</text>
-  <rect x="250" y="320" width="274.0" height="16" fill="#ffb347"/><text x="529.0" y="332" class="v">81</text>
-  <rect x="250" y="340" width="272.0" height="16" fill="#3ee6e0"/><text x="527.0" y="352" class="v">80</text>
-  <rect x="250" y="360" width="319.6" height="16" fill="#b48cff"/><text x="574.6" y="372" class="v">94</text>
-  <text x="640" y="346" class="v">92 MiB · 15 MB · 0.14 ms</text>
+  <rect x="250" y="320" width="274.7" height="16" fill="#ffb347"/><text x="529.7" y="332" class="v">81</text>
+  <rect x="250" y="340" width="238.0" height="16" fill="#3ee6e0"/><text x="493.0" y="352" class="v">70</text>
+  <rect x="250" y="360" width="308.4" height="16" fill="#b48cff"/><text x="563.4" y="372" class="v">91</text>
+  <text x="640" y="346" class="v">92 MiB · 15 MB · 0.13 ms</text>
   <text x="30" y="414" class="t">POTION-8M</text>
-  <rect x="250" y="388" width="274.0" height="16" fill="#ffb347"/><text x="529.0" y="400" class="v">81</text>
-  <rect x="250" y="408" width="260.7" height="16" fill="#3ee6e0"/><text x="515.7" y="420" class="v">77</text>
-  <rect x="250" y="428" width="324.0" height="16" fill="#b48cff"/><text x="579.0" y="440" class="v">95</text>
+  <rect x="250" y="388" width="274.7" height="16" fill="#ffb347"/><text x="529.7" y="400" class="v">81</text>
+  <rect x="250" y="408" width="232.3" height="16" fill="#3ee6e0"/><text x="487.3" y="420" class="v">68</text>
+  <rect x="250" y="428" width="314.2" height="16" fill="#b48cff"/><text x="569.2" y="440" class="v">92</text>
   <text x="640" y="414" class="v">106 MiB · 30 MB · 0.14 ms</text>
   <text x="30" y="482" class="t">POTION-retr-32M</text>
-  <rect x="250" y="456" width="274.0" height="16" fill="#ffb347"/><text x="529.0" y="468" class="v">81</text>
-  <rect x="250" y="476" width="283.3" height="16" fill="#3ee6e0"/><text x="538.3" y="488" class="v">83</text>
-  <rect x="250" y="496" width="326.4" height="16" fill="#b48cff"/><text x="581.4" y="508" class="v">96</text>
-  <text x="640" y="482" class="v">218 MiB · 125 MB · 0.15 ms</text>
+  <rect x="250" y="456" width="257.7" height="16" fill="#ffb347"/><text x="512.7" y="468" class="v">76</text>
+  <rect x="250" y="476" width="272.0" height="16" fill="#3ee6e0"/><text x="527.0" y="488" class="v">80</text>
+  <rect x="250" y="496" width="331.5" height="16" fill="#b48cff"/><text x="586.5" y="508" class="v">98</text>
+  <text x="640" y="482" class="v">219 MiB · 125 MB · 0.15 ms</text>
   <rect x="30" y="552" width="14" height="10" fill="#ffb347"/><text x="50" y="561" class="s">routing, description + 3 anchors</text>
   <rect x="250" y="552" width="14" height="10" fill="#3ee6e0"/><text x="270" y="561" class="s">right block in the top 3</text>
   <rect x="440" y="552" width="14" height="10" fill="#b48cff"/><text x="460" y="561" class="s">guide vs outside questions, AUC</text>
-  <text x="30" y="586" class="s">Memory: the whole Python process after loading (python + numpy alone ≈ 27 MiB). Disk 0 for lexical: no model. Source: results/mike/flashlight/20261101T163351Z.</text>
+  <text x="30" y="586" class="s">Memory: the whole Python process after loading (python + numpy alone ≈ 27 MiB). Disk 0 for lexical: no model. Source: results/mike/flashlight/20261101T163724Z.</text>
 </svg>
