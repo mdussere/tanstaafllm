@@ -93,11 +93,11 @@ Done means: the trailer and the first story videos are published, they read as o
 - [ ] 4.1 A public page presenting the trailer and the episodes, after the user's go on its content and links (LinkedIn, YouTube).
 
 ### Step 5 — A library of sequence templates
-**Status**: 🧪 In progress (5.1 asked by the user, 2026-11-01)
+**Status**: ✅ Done (2026-11-01)
 - [x] 5.1 Analyse the templates used in the trailer, Story 1 and Story 2: what each does, how often, who made it; propose a plain-file structure (`docs/0501_01_sequence-library-analysis.md`). Reason (user): the sub-agents copy the previous video, so Story 2 reads like Story 1; a template box keeps unity and makes change deliberate.
 - [x] 5.2 The user agrees on the structure (2026-11-01: "Vas-y, fais la librairie des templates.").
 - [x] 5.3 (built by a sub-agent, reviewed by Hazel, 2026-11-01; 23 template folders, 2.5 MB; the sub-agent hit the session limit during its final checks, Hazel checked every folder has its card, snippet and still) Build `worklines/hazel/video/library/`: one card per template (concept, effect, dynamics in beats, graphic elements, text slots sized for the phone, music cue, variants with stills, code snippet), plus `uses.md` for the three videos.
-- [ ] 5.4 Put the episode rules into the series template: frame templates mandatory; at least three library templates in the body, none filling more than half the scenes; at least one new template per episode, added to the library after review; briefs name the templates.
+- [x] 5.4 Put the episode rules into the series template (§6b phone text, §6c library rules, 2026-11-01): frame templates mandatory; at least three library templates in the body, none filling more than half the scenes; at least one new template per episode, added to the library after review; briefs name the templates.
 
 ## Progress tracking ✅
 

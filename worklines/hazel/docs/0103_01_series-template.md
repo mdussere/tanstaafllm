@@ -1,6 +1,6 @@
 # The series template
 
-> **Freshness:** 🟡 historical · **Written:** 2026-10-31 · **Checked:** 2026-10-31 · **Step:** hazel 1.3 ✅
+> **Freshness:** 🟢 current · **Written:** 2026-10-31 · **Checked:** 2026-11-01 · **Step:** hazel 1.3 ✅, 5.4
 
 **Workline:** hazel · **Step:** 1.3 · **Date:** 2026-10-31 · **Status:** draft for the user's review
 
@@ -75,6 +75,31 @@ The trailer has the same open and close but no "STORY n" (it opens on INSERT COI
 - **Phone:** the video is watched on a phone held sideways. That gives the minimum sizes above: nothing smaller than 28 px Press Start 2P or 48 px VT323 on the 1080-line canvas. The text should not fill the screen: give each screen one new element at a time, so that the eye can follow it. Keep text out of the outer 5 % of the frame.
 - There are no voice-over and no burnt-in subtitles: the on-screen text is the narration. A video must be understandable with the sound off.
 - **Check:** before an episode goes on the private page, Hazel inspects the contact sheets (`contact.py`) and at least one still per screen at phone scale.
+
+## 6b. Text size on a phone (user, 2026-11-01)
+
+The user watches on a phone held upright, so the 1920-px frame spans only the phone's width. The measured reference: VT323 at 90 px (about 52 px glyph height) is comfortable, and Press Start 2P at 28 px (about 24 px) is borderline. VT323 renders small for its size, and Press Start 2P renders large.
+
+The rules, per screen:
+
+- **One key message**, short (about 6 words per line, 2 lines at most), at least 50 px glyph height: VT323 ≥ 90 px or Press Start 2P ≥ 56 px.
+- **At most one secondary message**, at least 35 px: Press Start 2P ≥ 40 or VT323 ≥ 64.
+- **Everything else** (units, machine labels, dates, list items) is glance text: the story must not depend on it. Otherwise, cut it. Fewer words beat smaller words.
+- **The episode's lesson** on the result screen is the largest text after the title stamp. PRESS START is at least Press Start 2P 40.
+- **Check:** look at the stills at phone scale before the full render.
+
+## 6c. The sequence library (user, 2026-11-01)
+
+Videos are built from the templates in `worklines/hazel/video/library/`. Each template card gives the concept, the beats, the text slots, the music cue and the code.
+
+1. **The frame templates are mandatory:**
+   - T01, the title card;
+   - T22, the result screen;
+   - T23, the end card;
+   - T21, the payoff reprise, when the episode has a payoff.
+2. **The body uses at least three library templates,** and no template fills more than half of the body's scenes. The stage frame (T05) is capped.
+3. **Each episode brings at least one new template,** or a clearly new variant. After the user's review, it joins the library with its card, its stills and its snippet, and `uses.md` gets the episode's rows.
+4. **A brief to a sub-agent names the templates to use,** gives their slots, and names the new one to invent. The sub-agent picks from the library instead of copying the previous video.
 
 ## 7. Thumbnails
 
