@@ -1,6 +1,6 @@
 # A voice for Luna: English text-to-speech on the desk host (plan steps 11.1 and 11.2)
 
-> **Freshness:** 🟢 current · **Written:** 2026-11-01 · **Checked:** 2026-11-01 · **Step:** mycroft 11.2
+> **Freshness:** 🟢 current · **Written:** 2026-11-01 · **Checked:** 2026-11-01 · **Step:** mycroft 11.2–11.3
 
 **Date:** 2026-11-01
 **Go:** the user, relayed by Professor on 2026-11-01: "first text-to-speech tests… small offline TTS for English on the desk first… record samples for the user to judge".
@@ -41,3 +41,20 @@ Not taken this round: Matcha (needs a separate vocoder), Supertonic and Pocket T
 The four voices, the same five sentences each, were sent to the user as `tts-<model>.m4a` to judge how natural they sound. Their choice, plus the round-trip check, decides which voice goes to a Luna measure (11.3, with Mannie's go).
 
 **The user's choice (2026-11-01):** by ear, Kokoro and Piper Lessac sound best. Kokoro costs about 7× Piper's CPU and 3× its model memory, and neither Alan nor Kitten nano is much lighter than Lessac, so **Piper Lessac is the voice for Luna**. Its licence (Blizzard 2013) must be checked before any redistribution.
+
+## 11.3 Piper Lessac on Luna (2026-11-01)
+
+The user's go ("measure, only Piper"), Professor's slot. Mannie on Luna stopped; the user's Mike window was open and idle (llama-server ~285 MiB resident, no request), so MemAvailable started at ~500 MiB instead of ~640. No reboot, no service touched. Sherpa's aarch64 `sherpa-onnx-offline-tts` (same libraries as the speech-to-text runtime already on Luna) and the Piper files (~40 MB) were installed under `/storage/.local`. `test_luna_footprint.py::test_luna_11_3_piper_lessac`: one fresh process per sentence, 2 threads, the five sentences above. Evidence: `results/mycroft/luna-footprint/20261101T192549Z/` (WAVs included).
+
+| Measure | Luna |
+| --- | --- |
+| Load (process start to model ready, wall minus synthesis) | ~20 s |
+| Synthesis time / audio time | 3.0–3.9 (about 10 s for a 3.0–3.4 s sentence) |
+| Peak RSS (the binary, no Python) | 103–147 MiB |
+| Lowest MemAvailable during a run | 352 MiB |
+| CPU used | ~1.27 cores of 4 |
+
+- **Close to the projection** (4–5×): Luna is about 11–13× slower than the desk host here.
+- **For Mike, Piper must be resident** (load once, ~20 s) and speak sentence by sentence: the first sentence is heard about 3× its own length after the text is ready, and each next sentence can be synthesised while the previous one plays. Short first sentences matter.
+- **Memory fits** beside resident Kroko English (162 MiB) and an idle Mike, with ~350 MiB left; not measured all three at once.
+- **For the tutor**, model sentences can be synthesised ahead of time and kept.

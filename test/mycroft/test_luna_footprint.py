@@ -15,6 +15,7 @@ import hashlib
 import io
 import json
 import os
+import shlex
 import subprocess
 import tarfile
 import time
@@ -464,3 +465,51 @@ def test_luna_11_5_zipa_phones() -> None:
     )
     (EVIDENCE / "step-11-5-zipa.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     assert all(run["exit_status"] == 0 for run in report["runs"])
+
+
+# --- Step 11.3: Piper Lessac (the user's voice), synthesis cost on Luna ---
+
+PIPER = "vits-piper-en_US-lessac-medium-int8"
+TTS_BINARY = f"{REMOTE_OPT}/{RUNTIME}/bin/sherpa-onnx-offline-tts"  # same libraries as the offline binary
+PIPER_SENTENCES = [
+    "Good morning. The battery is at eighty percent and charging.",
+    "I opened the calculator. Twelve and thirty make forty-two.",
+    "Say it after me: there ain't no such thing as a free lunch.",
+    "Mycroft is listening, and Wyoh has arranged the windows on Luna.",
+    "Close, but the vowel in 'ship' is shorter than in 'sheep'. Try again.",
+]
+
+
+def _bundle_piper() -> dict[str, Path]:
+    root = Path(os.environ["MYCROFT_TTS_ROOT"]) / PIPER
+    files = {TTS_BINARY: Path(os.environ["MYCROFT_ASSET_ROOT"]) / FULL_RUNTIME / "bin" / "sherpa-onnx-offline-tts"}
+    for path in sorted(root.rglob("*")):
+        if path.is_file():
+            files[f"{REMOTE_OPT}/{PIPER}/{path.relative_to(root)}"] = path
+    files[f"{REMOTE_SHARE}/luna_footprint_probe.py"] = Path(__file__).with_name("luna_footprint_probe.py")
+    return files
+
+
+@pytest.mark.timeout(3600)
+def test_luna_11_3_piper_lessac() -> None:
+    """Step 11.3: one fresh process per sentence at 2 threads (load + synthesis),
+    peak RAM, and the binary's own synthesis time; the WAVs come back for listening."""
+    _install(_bundle_piper(), "install-piper")
+    _ssh(f"chmod +x {TTS_BINARY}")
+    _save("piper-before.txt", _ssh("grep -E 'MemTotal|MemAvailable' /proc/meminfo; cat /proc/loadavg"))
+    piper = f"{REMOTE_OPT}/{PIPER}"
+    reports = []
+    for index, sentence in enumerate(PIPER_SENTENCES):
+        wav = f"{REMOTE_SHARE}/piper-{index:02d}.wav"
+        report = _json_lines(
+            f"piper-{index:02d}",
+            f"cd {REMOTE_SHARE} && python3 luna_footprint_probe.py --raw --runs 1 --timeout 600 -- {TTS_BINARY} "
+            f"--vits-model={piper}/en_US-lessac-medium.onnx --vits-tokens={piper}/tokens.txt "
+            f"--vits-data-dir={piper}/espeak-ng-data --num-threads=2 --output-filename={wav} {shlex.quote(sentence)}",
+            timeout=900,
+        )
+        reports.append({"sentence": sentence, **report})
+        (EVIDENCE / f"piper-{index:02d}.wav").write_bytes(_ssh(f"cat {wav}").stdout)
+    _save("piper-after.txt", _ssh("grep -E 'MemTotal|MemAvailable' /proc/meminfo; cat /proc/loadavg"))
+    (EVIDENCE / "step-11-3-piper.json").write_text(json.dumps(reports, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    assert all(run["exit_status"] == 0 for report in reports for run in report["runs"])
