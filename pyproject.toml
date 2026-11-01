@@ -42,6 +42,9 @@ video = [
 embed = [
     "model2vec>=0.10.0",
 ]
+camp-currie = [
+    "pygame-ce==2.5.6",
+]
 
 [tool.uv]
 # The repository is a collection of scripts, tests, and workline evidence, not
