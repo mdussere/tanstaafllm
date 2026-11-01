@@ -306,7 +306,7 @@ Why: the review found two real problems in the client, both reproduced on Termid
 
 ### Step 17 — Small-talk quality, assessed with nothing changed (runs before Steps 14–16)
 
-**Status**: ⏳ green-lit by the user via Professor (2026-11-01); run done on Termidor, transcripts with Professor for grading (17.4).
+**Status**: ✅ done 2026-11-01; verdict in [`docs/1704_01`](docs/1704_01_smalltalk-assessment-verdict.md). Next steps are the user's decision.
 **Why:** the user finds talking to Mike "hallucination all the time, almost psychedelic" and wants reproducible evidence of where Mike stands before any tooling, decider or RAG work.
 **Rules (Professor, from the user):** Termidor only, for quality; Luna later, perhaps a subset, for timing. No change to Mike: the same client code, system prompt, LFM2.5-350M Q4_0 and sampling. No project knowledge: common knowledge and small talk only. LFM2.5-350M only (the user dropped the 1.2B and Qwen3-4B references, 2026-11-01). Professor grades: correct, approximate, wrong, invented or incoherent, plus memory and grounding. Mike does not grade and tunes nothing.
 
@@ -319,7 +319,7 @@ Why: the review found two real problems in the client, both reproduced on Termid
   - S6, a novel that does not exist, then the 2031 football World Cup (a future fact, added by Professor).
 - [x] 17.2 **Professor's review** of the files: OK, 2026-11-01, with S6 turn 2 added.
 - [x] 17.3 (done 2026-11-01, `results/mike/assessment/20261101T111535Z/lfm2.5-350m/`: 360 turns in 7 min 40 s; 2 rollovers, both in S4 English at turn 18, greedy and seed 2, so turn 20 is asked after the early turns were dropped; 5 answers cut at 120 tokens) **Run on Termidor:** one greedy run and seeds 1–3, all recorded in `results/mike/assessment/<timestamp>/` (`turns.jsonl` plus one Markdown transcript per scenario, language and run). The transcript paths go to Professor.
-- [ ] 17.4 **Professor's verdict** (written by Professor).
+- [x] 17.4 **Professor's verdict** (done 2026-11-01, [`docs/1704_01`](docs/1704_01_smalltalk-assessment-verdict.md)): not good enough as a French companion; usable for light English small talk, with reliable memory within a conversation; it extracts facts from a supplied text well (24/24) but never abstains (0/24); its own facts must not be trusted. The user decides the next steps; nothing changed in Mike.
 
 ### Step 14 — Local retrieval over Luna's guide (Adam's priority, 2026-10-31)
 **Status**: 📝 Proposed, not green-lit. Source: Adam's review § 10 (`worklines/adam/2026-10-31_mike_incremental-capabilities_research.md`).
@@ -403,7 +403,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
 - 🧪 Step 10 — Qualify a model: 90 % stable (green-lit 2026-10-29; priority)
 - ✅ Step 11 — Train tiny models on natural language → shell (done 2026-10-31: 0–1/300 exact)
 - 🧪 Step 12 — Small talk, made fluid (12.1–12.5 done 2026-10-31; first word in about 2.5 s on Luna)
-- ⏳ Step 17 — Small-talk assessment (run done; Professor grades)
+- ✅ Step 17 — Small-talk assessment (verdict `docs/1704_01`; the user decides next)
 - 🧪 Step 13 — Small-talk harness fixes (13.1–13.5, 13.7–13.9 done; 13.9 on Luna waits for Mannie 6.7c and Wyoh 6.12; 13.6 open)
 - 📝 Step 14 — Local retrieval over Luna's guide (proposed, Adam's priority)
 - 📝 Step 15 — Shared benchmark (proposed)
@@ -491,6 +491,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
 - [`docs/1201_01_smalltalk-desk-result.md`](docs/1201_01_smalltalk-desk-result.md) — Step 12.1–12.2: small talk on the desk; history kept as tokens, 14–26 tokens read per question; Luna estimate 2–4 s before the first word.
 - [`docs/1205_01_smalltalk-on-luna.md`](docs/1205_01_smalltalk-on-luna.md) — Step 12.5: small talk measured on Luna: first word in about 2.5 s, answer streamed at about 5 tokens/s, about 300 MiB.
 - [`docs/1305_01_graceful-uncertainty.md`](docs/1305_01_graceful-uncertainty.md) — Step 13.5: a prompt asking to admit doubt changes nothing; the 350M model invents (0/6 doubts on unknowable questions).
+- [`docs/1704_01_smalltalk-assessment-verdict.md`](docs/1704_01_smalltalk-assessment-verdict.md) — Step 17.4 (Professor): the 350M as shipped is poor in French, usable in light English small talk, reads a supplied text well, and never abstains.
 - [`docs/1007_01_speech-to-command-line-survey.md`](docs/1007_01_speech-to-command-line-survey.md) — speech/NL to command line: existing projects (Vox, NL2Shell, BashGemma), the MIT NL2SH data and results; training helps small models but open bash stays far from 90 %.
 - [`docs/1006_01_chat-gbc-on-the-desk.md`](docs/1006_01_chat-gbc-on-the-desk.md) — 10.6: Chat-GBC's shipped models reproduce their own numbers on Termidor; a trained specialist that generalises to 32–40 % of new phrasings.
 - [`docs/0902_01_prestac-desk-result.md`](docs/0902_01_prestac-desk-result.md) — Step 9.2: PreStaC on the desk: 98.3 % restored, 18 tokens read per question, same answers; the layer order costs accuracy.
