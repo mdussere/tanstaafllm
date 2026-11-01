@@ -123,7 +123,7 @@ def raw_run(command: list[str], timeout: float) -> dict:
         "system_cpu_s": round(usage.ru_stime, 3),
         "cpu_share_of_one_core": round((usage.ru_utime + usage.ru_stime) / wall, 3) if wall else None,
         "lowest_mem_available_mib": round(lowest_available / 1024, 1),
-        "output": output.decode("utf-8", "replace")[-4000:],
+        "output": output.decode("utf-8", "replace")[-12000:],
     }
 
 

@@ -391,3 +391,76 @@ def test_luna_8_8_slate_session() -> None:
     assert "error" not in report, report.get("error")
     assert report["provider_alive_at_end"]
     assert report["listening_samples"] > 0, "no dictation seen during the window"
+
+
+# --- Step 10.6: Kroko English, resident, beside the French one ---
+
+KROKO_EN_PREPARED = "sherpa-onnx-streaming-zipformer-en-kroko-2025-08-06-ort-extended"
+EN_CLIPS = "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17"
+REMOTE_EN_WAV = f"{REMOTE_OPT}/en-clips/0.wav"  # LibriSpeech, 6.625 s
+EN_WAV_SECONDS = 6.625
+
+
+def _bundle_kroko_en() -> dict[str, Path]:
+    root = Path(os.environ["MYCROFT_ASSET_ROOT"])
+    files = {f"{REMOTE_OPT}/{KROKO_EN_PREPARED}/{name}": root / KROKO_EN_PREPARED / name
+             for name in ("encoder.onnx", "decoder.onnx", "joiner.onnx", "tokens.txt", "bpe.vocab", "README.md")}
+    files[REMOTE_EN_WAV] = root / EN_CLIPS / "test_wavs" / "0.wav"
+    scripts = REPO / "worklines/mycroft/scripts"
+    for name in ("mycroft_console.py", "mycroft_dictate.py"):
+        files[f"{REMOTE_SHARE}/{name}"] = scripts / name
+    files[f"{REMOTE_SHARE}/luna_footprint_probe.py"] = Path(__file__).with_name("luna_footprint_probe.py")
+    return files
+
+
+@pytest.mark.timeout(3600)
+def test_luna_10_6_resident_kroko_english() -> None:
+    """Step 10.6: one load, three start/final cycles, prepared Kroko English at 2 threads.
+    No reboot: Mannie on Luna is stopped for the slot, not restarted by this test."""
+    _install(_bundle_kroko_en(), "install-kroko-en")
+    report = _json_lines(
+        "resident-kroko-en",
+        f"cd {REMOTE_SHARE} && python3 luna_footprint_probe.py --runs 1 --resident 3 --audio-seconds {EN_WAV_SECONDS} -- "
+        f"python3 mycroft_dictate.py --resident --model kroko-en-2025 --threads 2 --assets {REMOTE_OPT} --input {REMOTE_EN_WAV}",
+        timeout=1200,
+    )
+    (EVIDENCE / "step-10-6-resident-kroko-en.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    run = report["runs"][0]
+    assert run["exit_status"] == 0 and "error" not in run
+    assert all(utterance["final_text"].strip() for utterance in run["utterances"])
+
+
+# --- Step 11.5: ZIPA-T small (INT8), offline phone scoring of one short sentence ---
+
+ZIPA = "zipa-small-noncausal-500k"
+ZIPA_INT8 = "epoch-999-avg-1.int8.onnx"
+OFFLINE_BINARY = f"{REMOTE_OPT}/{RUNTIME}/bin/sherpa-onnx-offline"  # its RPATH finds ../lib
+
+
+def _bundle_zipa() -> dict[str, Path]:
+    root = Path(os.environ["MYCROFT_ASSET_ROOT"])
+    files = {OFFLINE_BINARY: root / FULL_RUNTIME / "bin" / "sherpa-onnx-offline"}
+    for part in ("encoder", "decoder", "joiner"):
+        files[f"{REMOTE_OPT}/{ZIPA}/{part}-{ZIPA_INT8}"] = root / ZIPA / f"{part}-{ZIPA_INT8}"
+    files[f"{REMOTE_OPT}/{ZIPA}/tokens.txt"] = root / ZIPA / "tokens.txt"
+    files[REMOTE_EN_WAV] = root / EN_CLIPS / "test_wavs" / "0.wav"
+    files[f"{REMOTE_SHARE}/luna_footprint_probe.py"] = Path(__file__).with_name("luna_footprint_probe.py")
+    return files
+
+
+@pytest.mark.timeout(3600)
+def test_luna_11_5_zipa_phones() -> None:
+    """Step 11.5: peak RAM, load and seconds per second of audio for one 6.6 s sentence,
+    two runs at 2 threads. Offline scoring: no real-time requirement."""
+    _install(_bundle_zipa(), "install-zipa")
+    _ssh(f"chmod +x {OFFLINE_BINARY}")
+    zipa = f"{REMOTE_OPT}/{ZIPA}"
+    report = _json_lines(
+        "zipa",
+        f"cd {REMOTE_SHARE} && python3 luna_footprint_probe.py --raw --runs 2 --timeout 900 -- {OFFLINE_BINARY} "
+        f"--tokens={zipa}/tokens.txt --encoder={zipa}/encoder-{ZIPA_INT8} --decoder={zipa}/decoder-{ZIPA_INT8} "
+        f"--joiner={zipa}/joiner-{ZIPA_INT8} --num-threads=2 --provider=cpu {REMOTE_EN_WAV}",
+        timeout=2000,
+    )
+    (EVIDENCE / "step-11-5-zipa.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    assert all(run["exit_status"] == 0 for run in report["runs"])
