@@ -306,7 +306,7 @@ Why: the review found two real problems in the client, both reproduced on Termid
 
 ### Step 17 — Small-talk quality, assessed with nothing changed (runs before Steps 14–16)
 
-**Status**: ⏳ green-lit by the user via Professor (2026-11-01); scenario files written, waiting for Professor's review before any run.
+**Status**: ⏳ green-lit by the user via Professor (2026-11-01); run done on Termidor, transcripts with Professor for grading (17.4).
 **Why:** the user finds talking to Mike "hallucination all the time, almost psychedelic" and wants reproducible evidence of where Mike stands before any tooling, decider or RAG work.
 **Rules (Professor, from the user):** Termidor only, for quality; Luna later, perhaps a subset, for timing. No change to Mike: the same client code, system prompt, LFM2.5-350M Q4_0 and sampling. No project knowledge: common knowledge and small talk only. LFM2.5-350M only (the user dropped the 1.2B and Qwen3-4B references, 2026-11-01). Professor grades: correct, approximate, wrong, invented or incoherent, plus memory and grounding. Mike does not grade and tunes nothing.
 
@@ -316,9 +316,9 @@ Why: the review found two real problems in the client, both reproduced on Termid
   - S3, a followed conversation on holidays, 5 turns;
   - S4, a long conversation of 20 turns, with the dog "Rex" and "Lyon" asked again at turns 15 and 20;
   - S5, grounding: a short paragraph, then 4 questions, one not answered by it;
-  - S6, a novel that does not exist.
-- [ ] 17.2 **Professor's review** of the files.
-- [ ] 17.3 **Run on Termidor:** one greedy run and seeds 1–3, all recorded in `results/mike/assessment/<timestamp>/` (`turns.jsonl` plus one Markdown transcript per scenario, language and run). The transcript paths go to Professor.
+  - S6, a novel that does not exist, then the 2031 football World Cup (a future fact, added by Professor).
+- [x] 17.2 **Professor's review** of the files: OK, 2026-11-01, with S6 turn 2 added.
+- [x] 17.3 (done 2026-11-01, `results/mike/assessment/20261101T111535Z/lfm2.5-350m/`: 360 turns in 7 min 40 s; 2 rollovers, both in S4 English at turn 18, greedy and seed 2, so turn 20 is asked after the early turns were dropped; 5 answers cut at 120 tokens) **Run on Termidor:** one greedy run and seeds 1–3, all recorded in `results/mike/assessment/<timestamp>/` (`turns.jsonl` plus one Markdown transcript per scenario, language and run). The transcript paths go to Professor.
 - [ ] 17.4 **Professor's verdict** (written by Professor).
 
 ### Step 14 — Local retrieval over Luna's guide (Adam's priority, 2026-10-31)
@@ -403,7 +403,7 @@ Why: Mike invents facts. The first source of truth to give it is bounded, local 
 - 🧪 Step 10 — Qualify a model: 90 % stable (green-lit 2026-10-29; priority)
 - ✅ Step 11 — Train tiny models on natural language → shell (done 2026-10-31: 0–1/300 exact)
 - 🧪 Step 12 — Small talk, made fluid (12.1–12.5 done 2026-10-31; first word in about 2.5 s on Luna)
-- ⏳ Step 17 — Small-talk assessment (scenarios written; waiting for Professor's review)
+- ⏳ Step 17 — Small-talk assessment (run done; Professor grades)
 - 🧪 Step 13 — Small-talk harness fixes (13.1–13.5, 13.7–13.9 done; 13.9 on Luna waits for Mannie 6.7c and Wyoh 6.12; 13.6 open)
 - 📝 Step 14 — Local retrieval over Luna's guide (proposed, Adam's priority)
 - 📝 Step 15 — Shared benchmark (proposed)
