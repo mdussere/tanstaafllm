@@ -65,6 +65,14 @@ Duolingo inspires short drills, immediate feedback, progress and spaced repetiti
 
 **Acceptance criteria for prototype:** the learner can traverse an environment with gamepad controls, trigger five distinct verbal exchanges, retry misunderstood utterances, and reach a final results screen only after five validated interactions. Evaluation uses a simulated scorer first; later Mycroft/phonetic scoring is integrated behind the same contract.
 
+## Cross-platform model parity (user decision, 2026-11-01)
+
+**The same model assets must run on Luna and Android.** Android is a portability target, not a reason to substitute larger or platform-specialised models. This applies to speech-to-text, text-to-speech and pronunciation/acoustic assessment, with identical weights, vocabulary, model revisions and scoring rules. Do not silently substitute another model on Android.
+
+Keep the native game and deterministic pedagogy shared; isolate platform audio, display and packaging code. Backends may be rebuilt per platform, but benchmark output equivalence and regression-test small numerical differences; prefer the same CPU runtime where practical. Record model version, hash, feature pre-processing, and thresholds in a shared manifest. Memory, CPU and latency selection gates are set by Luna, the stricter device; Android must pass the same behaviour tests.
+
+**Acceptance:** given the same fixed audio test corpus, both platforms use the same model asset hashes and yield comparable transcripts, phonetic scores, uncertainty decisions and lesson progress. Report all platform-induced differences rather than concealing them.
+
 ## Technical direction (candidate, not yet selected)
 - **Native 2D application**, no browser, HTML or DOM in the Luna runtime. Evaluate C + SDL2/SDL3 against C + raylib, on desk first and then through the agreed Luna operator. Python may help prototype tools but need not be the shipping runtime.
 - Fixed-timestep or frame-based game loop, scene/state machine, sprite atlas, bitmap text, simple particle and palette effects; avoid unnecessary 3D / Wolfenstein raycasting.
