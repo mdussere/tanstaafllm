@@ -95,8 +95,8 @@ Done means: the trailer and the first story videos are published, they read as o
 ### Step 5 — A library of sequence templates
 **Status**: 🧪 In progress (5.1 asked by the user, 2026-11-01)
 - [x] 5.1 Analyse the templates used in the trailer, Story 1 and Story 2: what each does, how often, who made it; propose a plain-file structure (`docs/0501_01_sequence-library-analysis.md`). Reason (user): the sub-agents copy the previous video, so Story 2 reads like Story 1; a template box keeps unity and makes change deliberate.
-- [ ] 5.2 The user agrees on the structure (or amends it).
-- [ ] 5.3 Build `worklines/hazel/video/library/`: one card per template (concept, effect, dynamics in beats, graphic elements, text slots sized for the phone, music cue, variants with stills, code snippet), plus `uses.md` for the three videos.
+- [x] 5.2 The user agrees on the structure (2026-11-01: "Vas-y, fais la librairie des templates.").
+- [x] 5.3 (built by a sub-agent, reviewed by Hazel, 2026-11-01; 23 template folders, 2.5 MB; the sub-agent hit the session limit during its final checks, Hazel checked every folder has its card, snippet and still) Build `worklines/hazel/video/library/`: one card per template (concept, effect, dynamics in beats, graphic elements, text slots sized for the phone, music cue, variants with stills, code snippet), plus `uses.md` for the three videos.
 - [ ] 5.4 Put the episode rules into the series template: frame templates mandatory; at least three library templates in the body, none filling more than half the scenes; at least one new template per episode, added to the library after review; briefs name the templates.
 
 ## Progress tracking ✅
@@ -124,6 +124,8 @@ Done means: the trailer and the first story videos are published, they read as o
 | dim. 01 nov 2026 12:38:24 CET | Wyoh's fact check applied; title subtitle at 90 px approved by the user; phone readability analysis; sub-agent reworks Story 2's text sizes. |
 | dim. 01 nov 2026 12:46:45 CET | User: build a library of sequence templates (Step 5). Analysis and proposed structure written (5.1); waiting for the user's agreement. |
 | dim. 01 nov 2026 12:54:10 CET | Story 2 reworked for phone reading (sub-agent), reviewed, delivered, private page updated. |
+| dim. 01 nov 2026 13:00:54 CET | User agreed on the library structure (5.2); a sub-agent builds `video/library/` (5.3). |
+| dim. 01 nov 2026 17:22:52 CET | Library built (5.3): README index, uses.md, 23 template cards with stills and snippets. 5.4 (episode rules in the series template) next. |
 
 ## Workline artifacts
 
@@ -133,6 +135,7 @@ Done means: the trailer and the first story videos are published, they read as o
 - Private phone page (Professor's): https://claude.ai/artifact/Wqpg9wD9Ew5MunsYFhxqLn, links both videos.
 - `worklines/hazel/video/trailer/` — the trailer's sources (moved from Professor, 2026-10-31).
 - `docs/0103_01_series-template.md` — the series template (draft).
+- `video/library/` — the sequence template library (index, uses, 23 cards).
 - `docs/0501_01_sequence-library-analysis.md` — templates in the three videos, and the proposed library structure.
 - `docs/0302_01_wyoh-story-brief.md` — Story 2 brief; `docs/0302_02_note-from-wyoh-story.md` — Wyoh's story (from Wyoh).
 - `worklines/hazel/video/story2-ask-the-desktop/` — Story 2 "Ask the desktop" (Wyoh) sources, first version 2026-11-01.
