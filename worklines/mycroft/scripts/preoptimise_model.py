@@ -77,12 +77,31 @@ def ort_arm(assets: Path, out: Path) -> None:
             print(f"ort-arm: {part} {converted.stat().st_size} bytes")
 
 
+def extend_dir(source: Path, target: Path) -> None:
+    """Re-save every ONNX file of one model folder at the portable "extended" level
+    (used for Kroko, plan steps 9.8 and 10.6); tokens and other files are copied."""
+    target.mkdir(parents=True, exist_ok=True)
+    for path in sorted(source.iterdir()):
+        if path.suffix == ".onnx":
+            options = ort.SessionOptions()
+            options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_EXTENDED
+            options.optimized_model_filepath = str(target / path.name)
+            ort.InferenceSession(str(path), options, providers=["CPUExecutionProvider"])
+            print(f"onnx-extended: {path.name} {(target / path.name).stat().st_size} bytes")
+        elif path.is_file():
+            shutil.copy2(path, target / path.name)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--assets", required=True, type=Path)
-    parser.add_argument("--out", required=True, type=Path)
+    parser.add_argument("--assets", type=Path)
+    parser.add_argument("--out", type=Path)
+    parser.add_argument("--model-dir", type=Path, help="prepare this one model folder instead (extended level only)")
     args = parser.parse_args()
     print(f"onnxruntime {ort.__version__}")
+    if args.model_dir:
+        extend_dir(args.model_dir, args.out or args.model_dir.with_name(args.model_dir.name + "-ort-extended"))
+        return 0
     onnx_extended(args.assets, args.out)
     ort_arm(args.assets, args.out)
     return 0
