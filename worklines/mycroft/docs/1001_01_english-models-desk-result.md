@@ -57,4 +57,26 @@ The user sent a 13 s phone recording (M4A, private, outside the repository): one
 
 One sentence proves little, but it is the first sign that Kroko English understands the user's accent.
 
+## 10.3 The scripted reading (2026-11-01)
+
+The user read the 14 sentences of `1003_01` on their phone (94 s, M4A, private). Evidence: `results/mycroft/english-candidates/20261101T115520Z/` (ignored by Git; it holds the transcripts). The user also read the sentence numbers aloud, so the harness's WER (0.215 and 0.407) counts them as insertions; the table removes them first.
+
+| | Kroko English | Zipformer 20M |
+| --- | --- | --- |
+| WER, spoken numbers removed (134 words) | **0.119** | ≈ 0.35 (some numbers merged into words, so slightly overstated) |
+| RTF on the desk host | 0.047 | 0.039 |
+| Peak RSS | 159 MiB | 105 MiB |
+
+For comparison, Kroko French made 0.091 on the user's French reading (`0903_01`).
+
+**What Kroko English got wrong**, sentence by sentence:
+
+- **Ordinary words, sound-alikes:** "Luna guide" → "lunar guide", "dino" → "dyno", "git status" → "git statues", "files changed" → "file changed", "delete" → "delight", "free lunch" → "freelanch", "that was quick" → "but what was quick".
+- **Project names, the real gap:** Mycroft → "Minecraft", Wyoh → "you", Mannie → "Many". Wolfenstein, NetSurf (once "NetSuff" through Mycroft's adapter), Mike, Luna and Professor came out right.
+- **Everything else** (calculator, terminal, commander window, music folder, memory, battery, log file, small talk) was right, and punctuated.
+
+The Zipformer 20M lost much more: "terminal full screen" → "DAMNOL FOO STREAM", "run git status" → "RANDHIST STATUES", "battery charging" → "BETTERY SHOUTING", "files" → "FIRES". It is ruled out for this use.
+
+**Reading:** Kroko English understands the user's French-accented English about as well as Kroko French understands their French. Its weak point is the project's own names, which is what known words (proposed 9.10) are for: a per-dictation list with Mycroft, Wyoh and Mannie, mapped from how the user pronounces them. Meanwhile Mike could also tolerate "Minecraft" or "Many" in its own lookup.
+
 **Next:** the user's English reading (`1003_01`), then the same comparison on it. No Luna measure before the user decides.

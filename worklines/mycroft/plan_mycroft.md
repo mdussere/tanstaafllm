@@ -219,7 +219,7 @@ User direction: voice input in Wyoh's Slate (dictate, correct, send). The Slate 
 
 - [x] 10.1 **Find Kroko English and alternatives of similar size** — **Result ([`1001_01`](docs/1001_01_english-models-desk-result.md)):** `sherpa-onnx-streaming-zipformer-en-kroko-2025-08-06` (57 MB, ~18 M parameters, punctuated; same unconfirmed CC-BY-SA as Kroko French) and the English Zipformer 20M (Apache-2.0, int8, upper case, no punctuation). Moonshine Tiny is offline in Sherpa; the other English streaming models are larger.
 - [x] 10.2 **Desk measures, as in 9.3** — **Result ([`1001_01`](docs/1001_01_english-models-desk-result.md)):** on two LibriSpeech clips (which favour the Zipformer 20M), Kroko English WER 0 and 0.083, mostly spelling; Zipformer 20M 0.056 and 0.042. Zipformer 20M: about half the CPU, 93 against 158 MiB, load 0.8–1.5 s against 4.8 s, but bare upper-case words.
-- [ ] 10.3 **The user's French-accented English reading** — script ready ([`1003_01`](docs/1003_01_english-reading-script.md)): Luna app names, commands, project words, small talk. **Waits for the user's recording**, consented and kept private; then `test_english_candidates` with `MYCROFT_PRIVATE_READING_EN`.
+- [x] 10.3 **The user's French-accented English reading** — script [`1003_01`](docs/1003_01_english-reading-script.md), recorded by the user on their phone (94 s, private). **Result ([`1001_01`](docs/1001_01_english-models-desk-result.md)):** Kroko English WER 0.119 (spoken numbers removed; Kroko French made 0.091 on the French reading), punctuated; it misses the project names (Mycroft → "Minecraft", Wyoh → "you", Mannie → "Many"), which is 9.10's job. The Zipformer 20M, ≈ 0.35, is ruled out.
 - [x] 10.4 **`--model` choice for English** — `kroko-en-2025` and `zipformer-en-20M` in `MODEL_PROFILES`, so the console and the Slate provider can switch (`--model kroko-en-2025`). Default unchanged; nothing deployed. Tests: profile test in `test_console.py`, `test_kroko_english_profile_streams_punctuated_text` (integration; last word kept through the adapter).
 
 ### Recorded for later (not authorised)
@@ -315,6 +315,7 @@ date
 | 2026-10-31 | Mike answered on 9.9: partials only through Wyoh's daemon while FN+B targets Mike, for reversible lookups only, plain text enough. Mike's side is its proposed 14.7. Added to 9.9: measure how much the final differs from the last partial on Luna. |
 
 | 2026-11-01 | Professor relays the user: Mike works in English, not French (Mike `1704_01`), so try English speech-to-text. Added Step 10 (go on the user's mandate, desk only). 10.1, 10.2 and 10.4 done (`1001_01`): Kroko English and Zipformer 20M measured, `--model kroko-en-2025` and `zipformer-en-20M` added. 10.3 script ready (`1003_01`); the recording waits for the user. |
+| 2026-11-01 | 10.3: the user recorded the English script on their phone. Kroko English WER 0.119 against 0.35 for the Zipformer 20M; the misses are project names (Mycroft, Wyoh, Mannie). Results in `1001_01`. |
 ---
 
 ## Workline artifacts
