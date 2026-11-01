@@ -35,4 +35,4 @@ Proposed order: first measure pygame on Luna (package, memory, CPU while streami
 
 ## Decision
 
-*Waiting for Adam's choice.*
+**Adam, 2026-11-01: "A first, then B".** A is built now as the cheap step. B follows once pygame has been measured on Luna, which needs a slot.
