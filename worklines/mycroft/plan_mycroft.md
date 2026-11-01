@@ -31,7 +31,7 @@ TANSTAAFL applies to model weights, RAM, shared GPU memory, battery, storage, de
 
 ## Non-goals ❌
 
-- Text-to-speech, spoken replies, or a voice assistant persona.
+- Text-to-speech, spoken replies, or a voice assistant persona. *(Lifted for research on 2026-11-01: the user added proposed Step 11, finding a text-to-speech model.)*
 - Context biasing, CLI/project vocabulary injection, speaker adaptation, or fine-tuning.
 - Intent classification, tool calling, command execution, or routing to Mike.
 - Wyoh UI/status/action work and Mannie/Codex development workflow work.
@@ -223,6 +223,15 @@ User direction: voice input in Wyoh's Slate (dictate, correct, send). The Slate 
 - [x] 10.4 **`--model` choice for English** — `kroko-en-2025` and `zipformer-en-20M` in `MODEL_PROFILES`, so the console and the Slate provider can switch (`--model kroko-en-2025`). Default unchanged; nothing deployed. Tests: profile test in `test_console.py`, `test_kroko_english_profile_streams_punctuated_text` (integration; last word kept through the adapter).
 - [x] 10.5 **Known words on Kroko English** (user's go, 2026-11-01: "try hotwords on Kroko and rerun the test") — **Result ([`1001_01`](docs/1001_01_english-models-desk-result.md)):** `bpe.vocab` rebuilt from Kroko's tokens (`scripts/vocab_from_tokens.py`, fewest-pieces scoring). With beam search and a boost of 3.0, WER 0.111 → 0.089 and 5 of 7 names right (Mycroft, NetSurf, Luna fixed). Wyoh ("you") and Mannie ("Many") are not fixable by boosting; a context-limited replacement table or Mike's tolerance remains. Not wired into the console or the provider yet; Luna cost of beam search not measured.
 
+### Step 11 — Find a text-to-speech model (proposed)
+**Status**: 📝 Proposed — the user, 2026-11-01: "il va falloir trouver un modèle de text-to-speech". Needs a 🟩 go.
+**Why:** Luna should be able to speak: Mike's and Mannie's answers, and the English tutor the user proposed as a side project (relayed to Professor, 2026-11-01: Luna gives sentences to say, listens, corrects).
+**Boundary:** research and desk measures first; nothing on Luna, and no wiring into Mike, Mannie, Wyoh or the tutor without their own decisions.
+
+- [ ] 11.1 **Shortlist** offline TTS models small enough for Luna, in English first and French second: size, licence, ARM runtime, and whether they share Sherpa-ONNX's runtime (Sherpa has TTS, but Mycroft uses its `no-tts` build). Piper's French "siwis" voice (CC-BY 4.0) is already on the desk host from 9.1.
+- [ ] 11.2 **Desk measures:** load, real-time factor, memory, and how natural the voice sounds to the user (listening test).
+- [ ] 11.3 **Luna cost**, with Mannie's go: memory beside resident Kroko, and the time to the first sound.
+
 ### Recorded for later (not authorised)
 
 - **Re-format action:** one press finishes sentences and adds punctuation and capitals. Candidates are rules, a French punctuation model (existence unverified), or Mike.
@@ -318,6 +327,7 @@ date
 | 2026-11-01 | Professor relays the user: Mike works in English, not French (Mike `1704_01`), so try English speech-to-text. Added Step 10 (go on the user's mandate, desk only). 10.1, 10.2 and 10.4 done (`1001_01`): Kroko English and Zipformer 20M measured, `--model kroko-en-2025` and `zipformer-en-20M` added. 10.3 script ready (`1003_01`); the recording waits for the user. |
 | 2026-11-01 | 10.3: the user recorded the English script on their phone. Kroko English WER 0.119 against 0.35 for the Zipformer 20M; the misses are project names (Mycroft, Wyoh, Mannie). Results in `1001_01`. |
 | 2026-11-01 | 10.5 at the user's go: known words on Kroko English with a rebuilt `bpe.vocab`; WER 0.089 and 5 of 7 names; Wyoh and Mannie need a mapping. The user proposes a side project: Luna as their English tutor (sentences to say, corrections, avatar in the videos' look); passed to Professor. |
+| 2026-11-01 | The user: add finding a text-to-speech model, for Mike and Mannie and for the English tutor. Proposed Step 11 (shortlist, desk measures, Luna cost); the non-goal on text-to-speech is lifted for research. |
 ---
 
 ## Workline artifacts
