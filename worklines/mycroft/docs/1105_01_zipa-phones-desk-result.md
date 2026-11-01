@@ -1,10 +1,10 @@
 # ZIPA-T small: phone recognition against eSpeak, on the desk host (plan step 11.5)
 
-> **Freshness:** 🟢 current · **Written:** 2026-11-01 · **Checked:** 2026-11-01 · **Step:** mycroft 11.5
+> **Freshness:** 🟢 current · **Written:** 2026-11-01 · **Checked:** 2026-11-01 · **Step:** mycroft 11.5 (desk and Luna)
 
 **Date:** 2026-11-01
 **Go:** the user, relayed by Professor on 2026-11-01. Phoneme assessment is offline scoring, not live. It must fit in Luna's memory, with Mannie and Mike stopped, and finish a few seconds after a short sentence.
-**Scope:** desk host Termidor (x86_64, i5-4590), 2 threads. Luna comes later, through Mannie on Luna.
+**Scope:** desk host Termidor (x86_64, i5-4590), 2 threads; then Luna, at the end of this record.
 
 ## Setup
 
@@ -37,6 +37,16 @@
 - **Memory grows with length.** ZIPA here is non-streaming: it encodes the whole file at once. A short sentence costs ~280 MiB, 17 s costs 363 MiB, and 94 s in one piece costs 3.2 GB. **On Luna, it must score one sentence at a time.** That suits the tutor anyway.
 - **Time:** decoding is fast (0.04 s per second of audio on the desk host). Most of the cost is the load: about 3.5 s of CPU per run. With the usual desk-to-Luna ratio (15–20×, to verify), that would be about a minute to load on Luna. The tutor would load ZIPA once per session, with Mike and Mannie stopped, then score each sentence in seconds.
 
-## Next
+## On Luna (2026-11-01)
 
-On Luna, with Mannie's go: one short clip and one ~6 s sentence, measuring peak RAM, load time, and seconds per second of audio.
+Professor's go, Mannie stopped, no reboot. `test/mycroft/test_luna_footprint.py::test_luna_11_5_zipa_phones` installed Sherpa's `sherpa-onnx-offline` beside the aarch64 runtime under `/storage/.local` and decoded LibriSpeech clip 0 (6.6 s) at 2 threads. Evidence: `results/mycroft/luna-footprint/20261101T171306Z/`.
+
+| | Desk host | Luna |
+| --- | --- | --- |
+| Load | ~3.5 s CPU | **34.5 s** |
+| Decode, 6.6 s clip | 0.25 s | **4.0 s** (0.6 s per second of audio) |
+| Peak RSS | 282 MiB | **306 MiB** |
+
+- **It meets the go's bar:** a short sentence is scored about 4 s after it is said, in about 300 MiB, with Mannie and Mike stopped. MemAvailable stayed at 640 MiB afterwards.
+- **The load is the cost:** about 35 s, so ZIPA must be loaded once per tutor session and kept, never per sentence. A resident ZIPA beside resident Kroko English (162 MiB) is not measured yet.
+- **The desk-to-Luna ratio** came out at about 10× for load and 16× for decoding.

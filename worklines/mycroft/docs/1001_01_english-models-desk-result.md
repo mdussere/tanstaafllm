@@ -1,6 +1,6 @@
 # English speech-to-text for Mike in English (plan steps 10.1 and 10.2, desk host)
 
-> **Freshness:** 🟢 current · **Written:** 2026-11-01 · **Checked:** 2026-11-01 · **Step:** mycroft 10.2
+> **Freshness:** 🟢 current · **Written:** 2026-11-01 · **Checked:** 2026-11-01 · **Step:** mycroft 10.2–10.6
 
 **Date:** 2026-11-01
 **Why:** Mike's assessment (`worklines/mike/docs/1704_01`) finds LFM2.5-350M usable in English but not in French. The user wants to try talking to Mike in English, with their French accent (relayed by Professor, 2026-11-01).
@@ -98,4 +98,14 @@ Kroko ships no `bpe.vocab`, which Sherpa needs to split a known word into tokens
 
 Not yet measured: beam search's extra CPU on Luna (here the four settings decode in a few seconds each on the desk host).
 
-**Next:** the user's English reading (`1003_01`), then the same comparison on it. No Luna measure before the user decides.
+## 10.6 On Luna (2026-11-01)
+
+Professor's go, Mannie stopped, no reboot. Kroko English, prepared at ONNX Runtime's "extended" level, was installed under `/storage/.local` beside Kroko French and measured resident through Mycroft's adapter at 2 threads (`test_luna_footprint.py::test_luna_10_6_resident_kroko_english`). Evidence: `results/mycroft/luna-footprint/20261101T171148Z/`.
+
+| | Kroko English on Luna |
+| --- | --- |
+| Ready (recogniser loaded) | 22.5 s |
+| Resident memory, idle / peak | 162 MiB / 188 MiB |
+| Final text after the end of the audio | 0.7–0.8 s |
+
+It costs what Kroko French costs on Luna. **The Slate still runs French:** Wyoh's `dictate_command` names `--model kroko-fr-2025`, and Wyoh is paused, so the switch waits. Beam search with known words (10.5) is not yet measured on Luna.
