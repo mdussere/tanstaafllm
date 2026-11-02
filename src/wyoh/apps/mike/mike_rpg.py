@@ -14,11 +14,13 @@ them); on Mike's question, Return = yes, Escape = no.
 
 from __future__ import annotations
 
+import json
 import math
 import os
 import pty
 import re
 import select
+import shlex
 import signal
 import sys
 import time
@@ -117,6 +119,67 @@ class Client:
             pass
 
 
+class Dictation:
+    """Mycroft's resident dictation provider (worklines/mycroft/scripts/mycroft_dictate.py,
+    protocol in its docstring): loaded once; start/stop per utterance; the final text is sent to Mike.
+    Adam, 2026-11-03: L1 or L2 (keyboard F1 or F2) starts dictating; the same again sends."""
+
+    def __init__(self, command: list[str]) -> None:
+        import subprocess
+        self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                        text=True, bufsize=1)
+        self.state, self.text, self._buffer = "loading", "", ""   # loading idle listening finishing error
+
+    def _send(self, op: str) -> None:
+        try:
+            self.process.stdin.write(json.dumps({"op": op}) + "\n")
+            self.process.stdin.flush()
+        except OSError:
+            self.state = "error"
+
+    def toggle(self) -> None:
+        if self.state == "idle":
+            self.text, self.state = "", "listening"
+            self._send("start")
+        elif self.state == "listening":
+            self.state = "finishing"
+            self._send("stop")
+
+    def pump(self) -> str | None:
+        """Read the provider's lines; returns the final text once an utterance ends."""
+        final = None
+        fd = self.process.stdout.fileno()
+        while select.select([fd], [], [], 0)[0]:
+            chunk = os.read(fd, 4096).decode("utf-8", "replace")
+            if not chunk:
+                self.state = "error"
+                break
+            self._buffer += chunk
+            while "\n" in self._buffer:
+                line, self._buffer = self._buffer.split("\n", 1)
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    continue
+                op = event.get("op")
+                if op == "ready":
+                    self.state = "idle"
+                elif op == "partial":
+                    self.text = event.get("text", "")
+                elif op == "final":
+                    self.text, self.state, final = "", "idle", event.get("text", "")
+                elif op == "error":
+                    self.state = "idle" if self.state != "loading" else "error"
+        return final
+
+    def stop(self) -> None:
+        try:
+            self.process.stdin.close()
+            self.process.wait(timeout=3)
+        except Exception:
+            self.process.kill()
+
+
 # --- drawing -----------------------------------------------------------------
 
 NAVY, DEEP, PANEL = (11, 16, 38), (42, 22, 80), (16, 22, 52)
@@ -171,7 +234,7 @@ class View:
         self.box(surf, rect, WHITE, VIOLET)
         surf.blit(self.label.render(word, True, colour), (x + 14, y + 9))
 
-    def draw(self, surf, t: Transcript, typing: str, now: float) -> None:
+    def draw(self, surf, t: Transcript, typing: str, now: float, dictation: str = "", heard: str = "") -> None:
         pg = self.pg
         dt, self.last = now - self.last, now
         if t.mode == "echo" or (t.answer and self.shown > len(t.answer)):
@@ -179,11 +242,15 @@ class View:
         self.shown = min(len(t.answer), self.shown + dt * CPS * (3 if len(t.answer) - self.shown > 120 else 1))
         surf.blit(self.sky, (0, 0))
         # the question (or what FN+B is typing)
-        q = typing or t.question
+        listening = dictation in ("listening", "finishing")
+        q = heard if listening else (typing or t.question)
         top = pg.Rect(24, 24, 672, 96)
-        self.box(surf, top, CYAN, PANEL)
-        surf.blit(self.label.render("YOU" if q else "MIKE", True, CYAN), (44, 38))
-        line = (self.wrap(q, self.small, 630) or [""])[-1] if q else "L2 dictate · FN+B send · /new · /quit"
+        self.box(surf, top, AMBER if listening else CYAN, PANEL)
+        label = ("LISTENING" if dictation == "listening" else "...") if listening else ("YOU" if q else "MIKE")
+        surf.blit(self.label.render(label, True, AMBER if listening else CYAN), (44, 38))
+        if listening and int(now * 2) % 2 == 0:
+            pg.draw.circle(surf, (232, 96, 90), (660, 46), 9)
+        line = (self.wrap(q, self.small, 630) or [""])[-1] if q else "L1/L2 (F1/F2) dictate, again to send"
         surf.blit(self.small.render(line + ("_" if typing and int(now * 2) % 2 == 0 else ""), True, WHITE if q else DIM), (44, 70))
         # Mike's portrait, with a small life of its own
         phase = t.phase
@@ -211,7 +278,9 @@ class View:
             surf.blit(self.body.render(row, True, colour), (44, 474 + i * 38))
         if t.answer and int(self.shown) >= len(t.answer) and phase == "ready" and int(now * 2) % 2 == 0:
             pg.draw.polygon(surf, AMBER, ((662, 650), (682, 650), (672, 662)))
-        hint = "A yes · B no" if phase == "asks" else "L2 dictate · FN+B send"
+        hint = ("A yes · B no" if phase == "asks" else "L1/L2 (F1/F2) again to send" if listening
+                else "L1/L2 (F1/F2) dictate" if dictation == "idle" else "dictation loading..." if dictation == "loading"
+                else "type and Return")
         surf.blit(self.small.render(hint, True, DIM), (24, 684))
 
 
@@ -225,6 +294,10 @@ def main(argv: list[str]) -> int:
     screen = pygame.display.set_mode((720, 720))
     client, view = Client(command), View(pygame)
     typing, caption = "", ""
+    dictate = os.environ.get("MIKE_RPG_DICTATE", "")
+    dictation = Dictation(shlex.split(dictate)) if dictate else None
+    pygame.joystick.init()
+    pads = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]  # a pad on the desk; on Luna Wyoh owns it
     pygame.key.start_text_input()
     try:
         while True:
@@ -233,9 +306,19 @@ def main(argv: list[str]) -> int:
             if t.title != caption:
                 caption = t.title
                 pygame.display.set_caption(caption)  # Sway reads it: FN+B waits for "Mike — ready"
+            if dictation is not None:
+                heard = dictation.pump()
+                if heard and heard.strip() and t.phase in ("ready", "thinking"):
+                    client.send(heard.strip())
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return 0
+                dictate_key = ((event.type == pygame.KEYDOWN and event.key in (pygame.K_F1, pygame.K_F2))
+                               or (event.type == pygame.JOYBUTTONDOWN and event.button in (4, 6)))  # L1, L2 on common pads
+                if dictate_key:
+                    if dictation is not None:
+                        dictation.toggle()
+                    continue
                 if event.type == pygame.TEXTINPUT and t.phase != "asks":
                     typing += event.text
                 elif event.type == pygame.KEYDOWN:
@@ -250,11 +333,14 @@ def main(argv: list[str]) -> int:
                         typing = typing[:-1]
             if not client.alive():
                 return 0
-            view.draw(screen, t, typing, time.monotonic())
+            view.draw(screen, t, typing, time.monotonic(), dictation.state if dictation else "", dictation.text if dictation else "")
             pygame.display.flip()
             pygame.time.wait(33)
     finally:
         client.stop()
+        if dictation is not None:
+            dictation.stop()
+        del pads
         pygame.quit()
 
 

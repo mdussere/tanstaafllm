@@ -79,12 +79,16 @@ wyoh-luna-disable:
 # Mike runs from MIKE_HOME (~/.local/opt/mike: mike.py, llama-b11429/, the model).
 MIKE_HOME ?= $(HOME)/.local/opt/mike
 MIKE_LANG ?= en
+# Dictation in Mike's RPG window (F1/F2, or L1/L2 on a pad): Mycroft's resident English model, desk microphone.
+MYCROFT_ASSETS ?= /data/michael/tanstaafllm/mycroft-assets
+MIKE_MIC ?= /dev/snd/pcmC0D0c
+MIKE_RPG_DICTATE ?= python3 $(CURDIR)/worklines/mycroft/scripts/mycroft_dictate.py --resident --model kroko-en-2025 --assets $(MYCROFT_ASSETS) --input $(MIKE_MIC)
 
 .PHONY: help run-mike run-mike-rpg run-mike-rpg-fake run-camp-currie run-mannie
 
 help:
 	@echo "make run-mike           Mike in this terminal (MIKE_LANG=fr for French)"
-	@echo "make run-mike-rpg       Mike in the RPG dialogue window (Wyoh 6.13, look B)"
+	@echo "make run-mike-rpg       Mike in the RPG dialogue window (Wyoh 6.13, look B); F1/F2 or L1/L2 dictate, again to send"
 	@echo "make run-mike-rpg-fake  the RPG window with a fake Mike (no model needed)"
 	@echo "make run-camp-currie    the Camp Currie game (arrows, Return = A, Escape = B)"
 	@echo "make run-mannie         Mannie: Claude Code in this repository"
@@ -93,10 +97,10 @@ run-mike:
 	MIKE_HOME=$(MIKE_HOME) MIKE_LANG=$(MIKE_LANG) python3 $(MIKE_HOME)/mike.py
 
 run-mike-rpg:
-	MIKE_HOME=$(MIKE_HOME) MIKE_LANG=$(MIKE_LANG) uv run --group camp-currie python src/wyoh/apps/mike/mike_rpg.py
+	MIKE_HOME=$(MIKE_HOME) MIKE_LANG=$(MIKE_LANG) MIKE_RPG_DICTATE="$(MIKE_RPG_DICTATE)" uv run --group camp-currie python src/wyoh/apps/mike/mike_rpg.py
 
 run-mike-rpg-fake:
-	uv run --group camp-currie python src/wyoh/apps/mike/mike_rpg.py -- python3 test/wyoh/fixtures/fake_mike.py
+	MIKE_RPG_DICTATE="$(MIKE_RPG_DICTATE)" uv run --group camp-currie python src/wyoh/apps/mike/mike_rpg.py -- python3 test/wyoh/fixtures/fake_mike.py
 
 run-camp-currie:
 	cd src/camp-currie && uv run --group camp-currie python -m camp_currie

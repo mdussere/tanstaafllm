@@ -90,3 +90,27 @@ def test_a_rendered_session_with_a_fake_mike(monkeypatch):
         os.environ.pop("FAKE_MIKE_ASK")
         client.stop()
         pygame.quit()
+
+
+def test_dictation_starts_then_stops_and_returns_the_final_text():
+    from mike_rpg import Dictation
+    script = ROOT / "worklines/mycroft/scripts/mycroft_dictate.py"
+    d = Dictation([sys.executable, str(script), "--resident", "--fake", "hello mike", "--fake-interval", "0.05"])
+    try:
+        deadline = time.monotonic() + 20
+        while d.state != "idle":
+            assert time.monotonic() < deadline and d.state != "error", d.state
+            d.pump(); time.sleep(0.02)
+        d.toggle()                                   # F1 / L1: start
+        assert d.state == "listening"
+        while d.text != "hello mike":
+            assert time.monotonic() < deadline, d.text
+            d.pump(); time.sleep(0.02)
+        d.toggle()                                   # again: stop and send
+        final = None
+        while final is None:
+            assert time.monotonic() < deadline
+            final = d.pump(); time.sleep(0.02)
+        assert final == "hello mike" and d.state == "idle"
+    finally:
+        d.stop()
