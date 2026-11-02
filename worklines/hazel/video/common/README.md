@@ -8,8 +8,10 @@ An AI writes a short **episode script** (about 150 lines of YAML); the CPU build
 cd worklines/hazel/video
 uv run --project <repo> python common/build.py episodes/story2-ask-the-desktop.yaml --preview   # 640x360 @ 10 fps, seconds
 uv run --project <repo> python common/build.py episodes/story2-ask-the-desktop.yaml --full      # 1920x1080 @ 30 fps, ~7 min
-# options: --out DIR (default <repo>/results/hazel/<episode>/<timestamp>/)  --no-video  --lint-step 0.5
+# options: --out DIR (default <repo>/results/hazel/<episode>/<timestamp>/)  --no-video  --lint-step 0.5  --strict
 ```
+
+`--strict` makes the build exit 2 when the layout lint finds a problem (overflow, margin, overlap, CLEAR! zone, a text squeezed below 90 % of its width, the phone rule) or the reading audit adds a hold; every output is written either way. Tests: `uv run pytest test/hazel` (the two integration tests need Playwright's Chromium and ffmpeg; `-m "not integration"` skips them).
 
 It writes, into the output directory: `index.html` (runtime + templates + the generated timeline; open it with `?t=12.5` for one frame or `?play`), `fonts/`, `art/`, `music.wav`, `hits.json`, `audit.md` (reading audit), `lint.txt`, `NOTES.md` (structure table, facts with sources, audit, lint), `contact.png` (12 thumbnails, 960 px wide), `stills/`, and the MP4. The preview is the same picture scaled down, so a preview that is clean is clean at full size. The model's loop: write the script, read `lint.txt` and `audit.md`, look at `contact.png` once.
 
@@ -27,6 +29,7 @@ The script no longer reproduces the hand-written Story 2, so a pixel diff agains
 | `cues.py` | the 2A03 score: helpers, `MOODS` and `STYLE`, one cue per template placed from the layout's marks, `FX` table for raw events |
 | `nes.py` | the 2A03 chip emulation |
 | `lint.py` | the text layout lint |
+| `timemap.py` | source time (the script's) and output time (the video's) around the reading holds; `runtime.js` `sourceTime` mirrors it |
 | `build.py`, `capture.py`, `contact.py`, `diff_stills.py` | generator, frame capture (Playwright + ffmpeg), contact sheet, regression check |
 | `fonts/`, `art/` | Press Start 2P, VT323, the key art (copied once) |
 
@@ -35,7 +38,7 @@ The script no longer reproduces the hand-written Story 2, so a pixel diff agains
 ```yaml
 episode: story2-ask-the-desktop
 title: ASK THE DESKTOP
-bpm: 120                       # 4 beats per bar: 2 s per bar; every time below is a multiple of a beat
+bpm: 120                       # optional, and only 120: layout, page and score are written for 0.5 s beats (2 s per bar)
 motif: [[beat, midi, beats], ...]    # optional: the episode's own theme, reused by the player card, the result screen
 scenes:
 - id: stage1
@@ -52,7 +55,7 @@ scenes:
 
 **Phone rule** (the templates apply it): `key` is the one key message, VT323 90 (default) or Press Start 2P 56 (`key_font: P`), at most 2 lines, and the only text of that size on screen at a time. `secondary` is Press Start 2P 40 or VT323 64. `glance` labels are 28 px and never carry the story. Texts the audit counts are only `key` and `secondary`; the generator turns a shortfall of reading time into holds (rounded up to whole beats) and silence in the score.
 
-**Timing.** Stage scenes put the CLEAR! stamp 1.5 s before the end. Each template spreads its elements on the beat: the visual early, then the key, then the secondary about 3 beats before the stamp. Overrides (rare): `at: {name: seconds}` moves a named element (`key`, `secondary`, `visual`, `works`, `tiles`, `victory`, `cut`, `chips`, `claim`, `resume`, `nodes`, `pipe`, `packets`, `first`, `subject`; see `layout.py`), `content: [...]` appends raw stage items (KINDS below), `events: [...]` appends raw score events (below).
+**Timing.** Stage scenes put the CLEAR! stamp 1.5 s before the end. Each template spreads its elements on the beat: the visual early, then the key, then the secondary about 3 beats before the stamp. A scene too short for its template is refused: every cue mark and read text must fall between the scene start and its CLEAR! stamp (a frame template: its end), and a missing slot is reported with the scene and the template. Overrides (rare): `at: {name: seconds}` moves a named element (`key`, `secondary`, `visual`, `works`, `tiles`, `victory`, `cut`, `chips`, `claim`, `resume`, `nodes`, `pipe`, `packets`, `first`, `subject`; see `layout.py`), `content: [...]` appends raw stage items (KINDS below), `events: [...]` appends raw score events (below).
 
 ### Templates and their slots
 
@@ -107,7 +110,7 @@ Raw score events (`events:`) play after the generated cues: `{fx, at, ...argumen
 
 ## Layout lint (`lint.txt`)
 
-Every `txt()`/`runs()` call records its box (font, size, glyph height from the cap height, bounding box including rotation and scale) per frame. `build.py` samples every 0.5 s and reports overflow outside the frame, text in the outer 5 %, overlaps between texts, text inside the CLEAR! zone, and the phone rule: key >= 50 px glyph height (VT323 >= 90, Press Start 2P >= 56), secondary >= 35 px, everything smaller listed as glance text. Texts fading in (alpha < 0.5) or sliding in (scale > 1.02) are skipped. Key messages are counted as messages (stacked lines of one font and size are one): a scene must have at least one and never two at once (CLEAR! and the HUD title are not counted).
+Every `txt()`/`runs()` call records its box (font, size, glyph height from the cap height, bounding box including rotation and scale) per frame. `build.py` samples every 0.5 s and reports overflow outside the frame, text in the outer 5 %, overlaps between texts, text inside the CLEAR! zone, and the phone rule: key >= 50 px glyph height (VT323 >= 90, Press Start 2P >= 56), secondary >= 35 px, everything smaller listed as glance text. Texts fading in (alpha < 0.5) or sliding in (scale > 1.02) are skipped. The CLEAR! zone follows the stage's label (a longer `clear_text` moves left) and the stamp's rotation. A text that `txt()` narrowed to fit its `maxW` is listed as a squeeze. Texts drawn with the same `group` option count as one message (the metric tiles: one block of figures, every tile an audit slot). Key messages are counted as messages (stacked lines of one font and size are one): a scene must have at least one and never two at once (CLEAR! and the HUD title are not counted).
 
 ## Known limits
 

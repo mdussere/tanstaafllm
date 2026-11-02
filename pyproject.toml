@@ -32,10 +32,12 @@ mike = [
     "llama-cpp-python==0.3.36",
 ]
 # Professor video: soundtrack synthesis, audio analysis, SVG rendering
-# (`worklines/hazel/video/trailer/`).
+# (`worklines/hazel/video/trailer/`); PyYAML reads the episode scripts of
+# the script-to-video pipeline (`worklines/hazel/video/common/`).
 video = [
     "cairosvg>=2.9.1",
     "numpy>=2.5.3",
+    "pyyaml>=6.0.3",
     "scipy>=1.18.1",
     "soundfile>=0.14.0",
 ]

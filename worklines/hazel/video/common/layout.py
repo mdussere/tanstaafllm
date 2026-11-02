@@ -184,7 +184,8 @@ def t_metrics(b):
         b.add('packet', at=ti - 0.3, dur=0.3, x0=760, x1=780, y=582, color='cyan')
         b.mark('reveal', ti, i=i)
     b.add('tiles', x=800, y=485, tiles=rows)
-    b.slot(rows[-1][0] + 0.1, f'{rows[-1][1]} {rows[-1][2]}', 'P')
+    for r in rows:                                  # every figure is read: each tile is an audit slot
+        b.slot(r[0] + 0.1, f'{r[1]} {r[2]}', 'P')
     b.texts['secondary'] += [f'{r[1]} {r[2]}' for r in rows]
     return {}
 
@@ -394,16 +395,40 @@ def f_end_card(b):
 FRAME_FN = {'title_card': f_title_card, 'player_card': f_player_card, 'tree': f_tree, 'result': f_result, 'end_card': f_end_card}
 
 
+def check_times(sc, end):
+    """Every cue mark and audit slot of a resolved scene must fall in 0..end (a stage: its CLEAR! stamp; a frame: its
+    length). A template spreads its elements from the scene length; a scene too short for them would place some before
+    its start or after its stamp, where they are never drawn or never read."""
+    eps = 1e-6
+    bad = [f"{m['k']} at {m['at']:g}" for m in sc['marks'] if not -eps <= m['at'] <= end + eps]
+    bad += [f"{text[:32]!r} at {at:g}" for at, text, _ in sc['slots'] if not -eps <= at <= end + eps]
+    if bad:
+        raise ValueError(f"scene {sc['id']} ({sc['bars']} bars): elements outside 0..{end:g} s: {', '.join(bad)}; "
+                         "lengthen the scene or move them with `at:`")
+
+
 def resolve(ep, scenes):
     out, n = [], 0
     for sc in scenes:
         tpl = sc['template']
         b = Build(sc)
+        try:
+            if tpl in STAGE_FN:
+                n += 1
+                fields = STAGE_FN[tpl](b)
+            elif tpl in FRAME_FN:
+                fields = FRAME_FN[tpl](b)
+            else:
+                raise ValueError(f'unknown template {tpl!r} in scene {sc["id"]}')
+        except (KeyError, IndexError, TypeError) as e:     # a missing or malformed slot in the script
+            raise ValueError(f"scene {sc['id']}: template {tpl!r} cannot read its slots ({type(e).__name__}: {e}); "
+                             "see the slot table in common/README.md") from e
         if tpl in STAGE_FN:
-            n += 1
-            out.append(b.finish('T05', stage=n, clear=b.z, clear_text=sc.get('clear_text', 'CLEAR!'), clear_color=sc.get('clear_color', 'green'), **STAGE_FN[tpl](b)))
-        elif tpl in FRAME_FN:
-            out.append(b.finish(INTERNAL[tpl], **FRAME_FN[tpl](b)))
+            r = b.finish('T05', stage=n, clear=b.z, clear_text=sc.get('clear_text', 'CLEAR!'),
+                         clear_color=sc.get('clear_color', 'green'), **fields)
+            check_times(r, r['clear'])
         else:
-            raise ValueError(f'unknown template {tpl!r} in scene {sc["id"]}')
+            r = b.finish(INTERNAL[tpl], **fields)
+            check_times(r, b.len)
+        out.append(r)
     return out
