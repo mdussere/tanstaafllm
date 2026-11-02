@@ -306,8 +306,23 @@ def t_checklist(b):
     return {}
 
 
+def t_compare_table(b):
+    """A two-column comparison built row by row on the beat: `columns` [left, right] (header pair), `rows` [[left, right]];
+    `key` above the table (2 lines)."""
+    sc = b.sc
+    cols, rows = _l(sc['columns']), sc['rows']
+    b.key(sc['key'], b.at('key', 0.5), 120, 300, 'cyan')
+    t0 = b.at('rows', 1.5)
+    items = [[t0 + BEAT * i, r[0], r[1]] for i, r in enumerate([cols] + [list(r) for r in rows])]
+    b.add('table', x=120, y=450, w=1680, rh=75, rows=items)
+    for i, r in enumerate(items):
+        b.mark('enter', r[0], i=i)
+        b.texts['glance'].append(f'{r[1]} {r[2]}')
+    return {}
+
+
 STAGE_FN = {'guess': t_guess, 'two_boxes': t_two_boxes, 'metrics': t_metrics, 'flow': t_flow, 'boss': t_boss,
-            'handheld': t_handheld, 'checklist': t_checklist}
+            'handheld': t_handheld, 'checklist': t_checklist, 'compare_table': t_compare_table}
 
 
 # ====================================================================== frame templates (their own full-screen layouts)

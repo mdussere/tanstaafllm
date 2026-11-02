@@ -27,6 +27,16 @@ scenes:
   key: ["Observe and operate", "the desktop without pixels."]
   sources: ["Note beat 1; worklines/wyoh/docs/0000_04_desktop-automation-model.md"]
 
+- id: stage7
+  template: compare_table
+  bars: 5
+  mood: bright
+  title: "LIKE PLAYWRIGHT, FOR A DESKTOP"
+  key: ["Playwright reads the page.", "Wyoh reads the desktop."]
+  columns: [BROWSER, DESKTOP]
+  rows: [[PLAYWRIGHT, WYOH], [THE DOM, "SWAY'S WINDOW TREE"], ["CLICK, TYPE", "NAMED ACTIONS, BUTTONS"], ["WAIT FOR…", "WAIT FOR AN EVENT"]]
+  sources: ["worklines/wyoh/docs/0000_04_desktop-automation-model.md (Playwright | Wyoh table)"]
+
 - id: stage1
   template: guess
   bars: 3
@@ -104,20 +114,6 @@ scenes:
     secondary: ["MIKE STARTS,", "ANSWERS IN 13 s"]
   machine: Luna
   sources: ["0506_01_buttons-only-result.md (button map)", "Note beat 6; 0605_01_slate-result.md (L1 opens it, floating rule)", "Note beat 6 (uinput device); Wyoh check 2026-11-01 (dev agent through the dev-only MCP server, not Mike)", "Note beat 6; plan_wyoh.md 6.11; Wyoh check 2026-11-01"]
-
-- id: stage7
-  template: checklist
-  bars: 5
-  mood: tense
-  title: "SEVEN LAYERS"
-  glance: ["LUNA, 2026-10-30:", "A GAME'S BUTTONS DIED."]
-  items: ["REAL PAD", "WYOH DAEMON", "APP PROFILE", "VIRTUAL PAD", "SDL", "GAME BINDINGS", "THE GAME MOVES"]
-  claim: 4
-  fail: 7
-  secondary: ["FIX \"VERIFIED\".", ["THE GAME DID", "NOT MOVE."]]
-  key: ["ONLY THE LAST LAYER", "PROVES THE FIX."]
-  machine: Luna
-  sources: ["Note beat 7; docs/howto/01_fix-a-game-gamepad-mapping.md (layer table, section 8)", "docs/howto/01_fix-a-game-gamepad-mapping.md section 1; docs/howto/img/game-input-chain.svg; confirmed by Wyoh 2026-11-01"]
 
 - id: payoff
   template: tree

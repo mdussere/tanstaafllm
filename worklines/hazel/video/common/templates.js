@@ -124,6 +124,19 @@ KINDS.tiles = (t, p, it) => {
   });
 };
 
+// compare_table: two columns, one row per beat; rows: [[at, left, right]], the first row is the header
+KINDS.table = (t, p, it) => {
+  const half = it.w / 2;
+  it.rows.forEach(([t0r, l, r], i) => {
+    const t0 = p.t0 + t0r;
+    if (t < t0) return;
+    const a = seg(t, t0, t0 + 0.1), y = it.y + i * it.rh, head = i === 0;
+    box(it.x, y, it.w, it.rh - 8, { edge: head ? C.amber : C.cyan, alpha: 0.92 * a });
+    tag(l, it.x + 30, y + 46, head ? C.amber : C.dim, a, { maxW: half - 50 });
+    tag(r, it.x + half + 30, y + 46, head ? C.amber : C.chrome, a, { maxW: half - 50 });
+  });
+};
+
 // T14 flow / pipe: a pipe from x0 to x1 at height y with moving dashes and centred labels [{s, dy, color, at}]
 KINDS.pipe = (t, p, it) => {
   const P0 = it.x0, P1x = it.x1, PY = it.y;

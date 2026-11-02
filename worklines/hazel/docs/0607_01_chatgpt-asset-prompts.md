@@ -25,7 +25,30 @@ When I ask for "pixel art", I mean true pixel art: a visible pixel grid, a limit
 Just reply "ready".
 ```
 
+## A0. Recommended path for the characters: clean the crops, don't redraw (user, 2026-11-02)
+
+To keep the characters undistorted, ChatGPT does not redraw them. Hazel crops each character out of `wallpaper.png` on the CPU, and ChatGPT only removes what is not the character and rebuilds what was hidden.
+
+- **The crops,** in `worklines/hazel/video/common/assets/crops/`:
+  - `crop-<name>-portrait.png`: chest-up, with neighbours and sky around;
+  - `crop-<name>-face.png`: the face box used by the renderer.
+- **Hazel then makes the sprites on the CPU** from the cleaned cut-outs: a 64 × 64 downscale, snapped to the series palette, with no dithering. A first CPU-only try, made straight from the uncleaned crops, is in `assets/sprites-cpu/`. It is recognisable, but the sky and the neighbours leak into it, which is why the crops are cleaned first.
+
+**A0 prompt, for each character.** Attach `crop-<name>-portrait.png` and `wallpaper.png`.
+
+```
+The first image is a crop of the second (my project's key art). Keep the main character in the crop, <Mannie, the rugged man with brown hair / Wyoh, the blonde woman / Mike, the robot / the Professor, the man with glasses and a headset>, EXACTLY as painted: same face, same features, same proportions, same pose, same colours, same brush style. Do not redraw, beautify, restyle or re-light the face.
+Only:
+1. remove the background (sky, moon, stars), the title, and every part of the other characters that overlaps this one;
+2. where the other characters or the frame hid parts of this character (shoulder, hair, suit, antenna…), rebuild those parts so that they match the visible ones;
+3. give back a PNG with a real transparent background, at the same size as the crop, with the character in the same position.
+```
+
+Save the result as `char-<name>-cutout.png`. If the face changed at all, say "the face changed: keep it pixel-identical to the crop" and regenerate.
+
 ## A. The four characters, painted like the key art (transparent background)
+
+These prompts are a fallback: use them only if A0 fails for a character.
 
 These are portraits from the chest up, in the key art's painted style, facing three-quarters to the viewer's right as in the poster unless stated. They are used on the player cards and in dialogue.
 
@@ -55,6 +78,8 @@ The four characters of the reference together, in the same arrangement (Mannie, 
 ```
 
 ## B. The characters as pixel-art sprites (transparent background)
+
+The preferred sprites come from the A0 cut-outs, through the CPU (64 × 64, palette snap). Use B1 and B2 when you want a hand-drawn pixel-art look, or the animation frames, which the CPU cannot make.
 
 These are used in the stages: small, readable on a phone, and animated by swapping frames.
 
