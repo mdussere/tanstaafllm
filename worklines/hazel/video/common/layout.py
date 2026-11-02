@@ -401,7 +401,7 @@ def resolve(ep, scenes):
         b = Build(sc)
         if tpl in STAGE_FN:
             n += 1
-            out.append(b.finish('T05', stage=n, clear=b.z, clear_text=sc.get('clear_text', 'CLEAR!'), **STAGE_FN[tpl](b)))
+            out.append(b.finish('T05', stage=n, clear=b.z, clear_text=sc.get('clear_text', 'CLEAR!'), clear_color=sc.get('clear_color', 'green'), **STAGE_FN[tpl](b)))
         elif tpl in FRAME_FN:
             out.append(b.finish(INTERNAL[tpl], **FRAME_FN[tpl](b)))
         else:

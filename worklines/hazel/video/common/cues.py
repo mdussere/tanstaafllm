@@ -502,7 +502,10 @@ def cue_T05(sc, ctx):
         hit(t, k)
     for ev in sc.get('events', []):
         run_event(ev, t0, ctx)
-    clear(t0 + z)
+    if sc.get('clear_color', 'green') == 'red':      # a refusal: a failure buzz and a drop, not the CLEAR! jingle
+        buzz(t0 + z, 0.45, 40, 13); tri_drop(t0 + z, 40, 28, 6); hit(t0 + z, sc.get('clear_text', 'NO GO!'))
+    else:
+        clear(t0 + z)
     roll(t1 - 0.5, t1 - 0.02, 4, 11)
 
 

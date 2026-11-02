@@ -29,6 +29,8 @@ scenes:
 
 - id: stage1
   template: guess
+  clear_text: NO GO!
+  clear_color: red
   bars: 3
   mood: tense
   title: "THE SCREENSHOT TRAP"

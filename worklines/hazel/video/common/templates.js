@@ -219,7 +219,7 @@ function drawItems(t, p) {
 TPL.T05 = (t, p) => {
   stageBg(t, p.stage); hud(t, p.stage, p.t0, p.title);
   drawItems(t, p);
-  if (p.clear !== undefined) clearStamp(t, p.t0 + p.clear, p.clear_text);
+  if (p.clear !== undefined) clearStamp(t, p.t0 + p.clear, p.clear_text, C[p.clear_color] || C.green);
   (p.flashes || [[0, 0, 0.3]]).forEach(([at, up, down, c]) => flash(t, p.t0 + at, up, down, c ? col(c) : '#fff'));
 };
 

@@ -150,6 +150,7 @@ Done means: the trailer and the first story videos are published, they read as o
 | lun. 02 nov 2026 01:38:50 CET | User: prepare graphic assets upstream (cut-out characters, logo, moon, starfield, pixel art). Proposed as 6.7; preview/full render folders to be suffixed. |
 | lun. 02 nov 2026 01:42:46 CET | 6.6 done: Story 2 revised through the script for ≈ 54 k tokens (target ≤ 145 k met). Character crops and CPU sprites prepared for 6.7; prompts doc gained the crop-and-clean path. |
 | lun. 02 nov 2026 02:06:34 CET | User's edits to Story 2, made by Hazel in the script, no sub-agent: screenshot trap first, then the Playwright analogy, which ends on "LET'S DO IT!" (new generic `clear_text`). Pipeline fixes: two-pass loudness normalisation (−15.0 LUFS, −1.5 dBTP), render folders suffixed `-full`/`-preview`, lint reads each stage's stamp text. Full render `20261102T015755-full`, delivered to ~/Videos and the private page. |
+| lun. 02 nov 2026 02:24:58 CET | User: the screenshot-trap stage ends on a refusal, "NO GO!" in red with a failure buzz (new generic `clear_color`). Full render `20261102T021609-full`: 90.0 s, −15.0 LUFS, −1.2 dBTP, lint clean; delivered to ~/Videos and the private page. |
 
 ## Workline artifacts
 

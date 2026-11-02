@@ -118,4 +118,4 @@ Every `txt()`/`runs()` call records its box (font, size, glyph height from the c
 
 ### Stage end stamp
 
-Every stage ends on a green stamp, `CLEAR!` by default. A scene can set `clear_text` to say something else, for example `LET'S DO IT!` when the stage ends on a choice rather than a success.
+Every stage ends on a green stamp, `CLEAR!` by default. A scene can set `clear_text` to say something else, for example `LET'S DO IT!` when the stage ends on a choice rather than a success. `clear_color` picks its palette token (`green` by default, `red` for a refusal such as `NO GO!`).
