@@ -31,6 +31,19 @@ REPO = HERE.parents[3]
 META = ('events', 'facts', 'picture', 'music_note', 'marks', 'slots', 'texts', 'sources')
 
 
+def loudnorm(src, dst, I=-15.0, TP=-1.5, LRA=11.0):
+    """Two-pass EBU R128 loudness normalisation with ffmpeg: measure, then apply linearly, keeping the 2-channel 48 kHz WAV."""
+    import json
+    f = f'loudnorm=I={I}:TP={TP}:LRA={LRA}'
+    r = subprocess.run(['ffmpeg', '-hide_banner', '-i', str(src), '-af', f + ':print_format=json', '-f', 'null', '-'],
+                       capture_output=True, text=True)
+    m = json.loads(r.stderr[r.stderr.rindex('{'):r.stderr.rindex('}') + 1])
+    f2 = (f + f":measured_I={m['input_i']}:measured_TP={m['input_tp']}:measured_LRA={m['input_lra']}"
+          f":measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
+    subprocess.run(['ffmpeg', '-hide_banner', '-v', 'error', '-y', '-i', str(src), '-af', f2, '-ar', '48000', '-ac', '2',
+                    '-c:a', 'pcm_s16le', str(dst)], check=True)
+
+
 def timeline(ep):
     beat = 60.0 / ep.get('bpm', 120)
     t, scenes = 0.0, []
@@ -136,7 +149,7 @@ def main():
 
     ep = yaml.safe_load(pathlib.Path(a.episode).read_text())
     size, fps = ((1920, 1080), 30) if a.full else ((640, 360), 10)
-    stamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
+    stamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S') + ('-full' if a.full else '-preview')   # say which kind of render
     out = pathlib.Path(a.out) if a.out else REPO / 'results' / 'hazel' / ep['episode'] / stamp
     out.mkdir(parents=True, exist_ok=True)
 
@@ -150,7 +163,8 @@ def main():
     make_page(ep, scenes, holds, out)
     ctx = dict(motif=ep.get('motif', []), riffs=ep.get('riffs', {}), stages=stage_count(scenes))
     x = cues.render(scenes, ctx, holds)
-    cues.write_wav(out / 'music.wav', x)
+    cues.write_wav(out / 'music_raw.wav', x)
+    loudnorm(out / 'music_raw.wav', out / 'music.wav')   # the series' loudness: -15 LUFS, true peak <= -1.5 dBTP
     (out / 'hits.json').write_text(cues.hits_json())
     print(f'score: {len(x) / cues.SR:.3f} s, peak {20 * np.log10(np.abs(x).max()):.2f} dBFS')
 

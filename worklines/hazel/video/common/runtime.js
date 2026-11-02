@@ -380,11 +380,12 @@ function hud(t, n, t0, title) {
     if (i === BOSS) rect(x + 10, 90, 14, 14, i < n ? '#1d4a2c' : C.red);
   }
 }
-function clearStamp(t, tc, x = W - M - 220, y = 980) {
+function clearStamp(t, tc, label = 'CLEAR!', x = W - M - 220, y = 980) {   // label: the stage's end stamp (default CLEAR!)
   const q = seg(t, tc, tc + 0.15);
   if (q <= 0) return;
+  x = Math.min(x, W - M - measure(label, 72) * 0.55);   // a longer label moves left to stay inside the frame
   const shake = t < tc + 0.35 ? Math.sin(t * 90) * 8 * (1 - seg(t, tc, tc + 0.35)) : 0;
-  txt('CLEAR!', x + shake, y, 72, C.green, { align: 'center', rot: -0.08, scale: lerp(2.2, 1, easeOut(q)), alpha: q * 3 });
+  txt(label, x + shake, y, 72, C.green, { align: 'center', rot: -0.08, scale: lerp(2.2, 1, easeOut(q)), alpha: q * 3 });
 }
 function termBox(x, y, w, h, edge = C.chrome) { box(x, y, w, h, { fill: '#05060f', edge, alpha: 0.95 }); }
 function cursor(t, x, y, h, c = C.green) { if (Math.floor(TA * 4) % 2 === 0) rect(x + 4, y - h * 0.8, h * 0.5, h * 0.9, c); }

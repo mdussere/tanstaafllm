@@ -115,3 +115,7 @@ Every `txt()`/`runs()` call records its box (font, size, glyph height from the c
 - The lint samples every 0.5 s: a 0.2 s overlap between samples can be missed (use `--lint-step 0.1`).
 - Only the templates Story 2 uses are converted (the table above; library T01, T04, T05, T06, T08, T11, T12, T13, T14, T18, T19, T20, T21, T22, T23). T02, T03, T07, T09, T10, T15, T17 are converted when an episode needs them.
 - `metrics` shows at most 4 tiles; `tree` is laid out for about 8 nodes; `checklist` for about 9 items.
+
+### Stage end stamp
+
+Every stage ends on a green stamp, `CLEAR!` by default. A scene can set `clear_text` to say something else, for example `LET'S DO IT!` when the stage ends on a choice rather than a success.

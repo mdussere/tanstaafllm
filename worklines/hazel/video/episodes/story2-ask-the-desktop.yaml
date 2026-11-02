@@ -27,16 +27,6 @@ scenes:
   key: ["Observe and operate", "the desktop without pixels."]
   sources: ["Note beat 1; worklines/wyoh/docs/0000_04_desktop-automation-model.md"]
 
-- id: stage7
-  template: compare_table
-  bars: 5
-  mood: bright
-  title: "LIKE PLAYWRIGHT, FOR A DESKTOP"
-  key: ["Playwright reads the page.", "Wyoh reads the desktop."]
-  columns: [BROWSER, DESKTOP]
-  rows: [[PLAYWRIGHT, WYOH], [THE DOM, "SWAY'S WINDOW TREE"], ["CLICK, TYPE", "NAMED ACTIONS, BUTTONS"], ["WAIT FOR…", "WAIT FOR AN EVENT"]]
-  sources: ["worklines/wyoh/docs/0000_04_desktop-automation-model.md (Playwright | Wyoh table)"]
-
 - id: stage1
   template: guess
   bars: 3
@@ -46,6 +36,17 @@ scenes:
   key: ["An agent guesses from pixels", "and pays for every image."]
   secondary: "ON PAPER: A DESKTOP DOM."
   sources: ["Note beat 1 (no cost figure shown, as the brief asks)", "Note beat 1 (the DWOM idea); shown as a design only (must-not-say)"]
+
+- id: stage7
+  template: compare_table
+  clear_text: LET'S DO IT!
+  bars: 5
+  mood: bright
+  title: "LIKE PLAYWRIGHT, FOR A DESKTOP"
+  key: ["Playwright reads the page.", "Wyoh reads the desktop."]
+  columns: [BROWSER, DESKTOP]
+  rows: [[PLAYWRIGHT, WYOH], [THE DOM, "SWAY'S WINDOW TREE"], ["CLICK, TYPE", "NAMED ACTIONS, BUTTONS"], ["WAIT FOR…", "WAIT FOR AN EVENT"]]
+  sources: ["worklines/wyoh/docs/0000_04_desktop-automation-model.md (Playwright | Wyoh table)"]
 
 - id: stage2
   template: two_boxes

@@ -72,7 +72,7 @@ def analyse(rec, scenes, holds):
                 g = glyphs[sc['id']].get(r['s'], (0, '', 0))
                 if r['glyph'] > g[0]:
                     glyphs[sc['id']][r['s']] = (r['glyph'], r['font'], r['size'])
-            if sc.get('clear') is not None and r['s'] != 'CLEAR!':
+            if sc.get('clear') is not None and r['s'] != sc.get('clear_text', 'CLEAR!'):
                 z = dict(x0=CLEAR_ZONE[0], y0=CLEAR_ZONE[1], x1=CLEAR_ZONE[2], y1=CLEAR_ZONE[3])
                 if hit(r, z):
                     found[('clear', sc['id'], r['s'], box_s(r))].append(T)
@@ -84,7 +84,7 @@ def analyse(rec, scenes, holds):
                       and not (r['s'].startswith('STAGE ') or r['s'] == sc.get('title'))), key=lambda r: r['y0'])
         groups = messages(sec)
         keys = messages(sorted((r for r in vis if r['alpha'] >= 0.9 and r['glyph'] >= KEY_PX
-                                and not (r['s'].startswith('STAGE ') or r['s'] == 'CLEAR!' or r['s'] == sc.get('title'))), key=lambda r: r['y0']))
+                                and not (r['s'].startswith('STAGE ') or r['s'] == sc.get('clear_text', 'CLEAR!') or r['s'] == sc.get('title'))), key=lambda r: r['y0']))
         nkey[sc['id']] = max(nkey[sc['id']], len(keys))
         if len(groups) > 1:
             nsec[sc['id']].append((T, [' / '.join(r['s'] for r in g) for g in groups]))
@@ -105,7 +105,7 @@ def analyse(rec, scenes, holds):
     for s in scenes:
         g = glyphs.get(s['id'], {})
         hud_t = {s.get('title', '')}
-        body = {k: v for k, v in g.items() if not (k.startswith('STAGE ') or k == 'CLEAR!' or k in hud_t)}
+        body = {k: v for k, v in g.items() if not (k.startswith('STAGE ') or k == s.get('clear_text', 'CLEAR!') or k in hud_t)}
         key = sorted(k for k, v in body.items() if v[0] >= KEY_PX)
         sec = sorted(k for k, v in body.items() if SECOND_PX <= v[0] < KEY_PX)
         gl = sorted(k for k, v in body.items() if v[0] < SECOND_PX)
