@@ -193,8 +193,8 @@ def typing(t0, cps, text, fn):
 
 
 # ------------------------------------------------------------- harmony
-ROOT = {'Am': 33, 'F': 29, 'C': 36, 'G': 31, 'E': 28, 'Dm': 38, 'B': 35, 'D': 38}
-IVS = {'Am': (0, 3, 7), 'F': (0, 4, 7), 'C': (0, 4, 7), 'G': (0, 4, 7), 'E': (0, 4, 7), 'Dm': (0, 3, 7),
+ROOT = {'A': 33, 'Am': 33, 'F': 29, 'C': 36, 'G': 31, 'E': 28, 'Dm': 38, 'B': 35, 'D': 38}
+IVS = {'A': (0, 4, 7), 'D': (0, 4, 7), 'Am': (0, 3, 7), 'F': (0, 4, 7), 'C': (0, 4, 7), 'G': (0, 4, 7), 'E': (0, 4, 7), 'Dm': (0, 3, 7),
        'Esus4': (0, 5, 7), 'Asus2': (0, 2, 7)}
 
 
@@ -325,7 +325,29 @@ MOODS = {
     'lift': [('F', 1), ('G', 1), ('Am', 1)],
     'theme': [('Am', 2), ('F', 1), ('G', 1)],
     'calm': [('F', 2), ('G', 2), ('Am', 1)],
+    'tense': [('Am', 2), ('Dm', 2), ('E', 2)],
+    'victory': [('A', 2), ('E', 1), ('A', 1)],
+    'boss': [('Am', 2), ('F', 2)],
 }
+# What a mood adds to its chord progression for the stage cues: `scale` is the pitches of the entry blips (element i plays
+# scale[i % len]), `stamp` = (m1, m2, root) of the hit on the key message, `after` is the mood after a turn (a failure
+# resolved, a boss beaten), `drums` the groove's drums. Moods not listed here use DEFAULT.
+DEFAULT = dict(scale=(72, 74, 76, 79, 81, 84), stamp=(69, 76, 33), after='resolve', drums='full')
+STYLE = {
+    'calm': dict(scale=(72, 74, 76, 79, 81, 84), drums='light', after='calm'),
+    'bright': dict(scale=(72, 76, 79, 84, 88, 91), stamp=(72, 79, 36), after='bright'),
+    'tense': dict(scale=(64, 67, 69, 71, 72, 76), stamp=(57, 64, 33)),
+    'driving': dict(scale=(69, 72, 76, 79, 81, 84), after='driving'),
+    'climb': dict(scale=(69, 72, 74, 76, 79, 81), after='agent'),
+    'resolve': dict(after='resolve'),
+    'boss': dict(scale=(64, 65, 67, 69, 71, 76), stamp=(53, 64, 29), after='victory', boss=True),
+    'victory': dict(scale=(69, 73, 76, 81, 85, 88), stamp=(69, 76, 33), after='victory'),
+}
+
+
+def style(mood):
+    return dict(DEFAULT, **STYLE.get(mood, {}))
+
 # The series' trailer theme (score A), as [seconds from a bar line, midi, seconds]; the opener and the payoff play it.
 THEME = [(1.25, 76, 0.75), (2.0, 69, 0.25), (2.25, 72, 0.5), (2.75, 76, 0.5),
          (3.25, 77, 0.5), (3.75, 76, 0.25), (4.0, 76, 0.25), (4.25, 72, 0.25), (4.5, 74, 0.45)]
@@ -402,72 +424,150 @@ def run_event(ev, t0, ctx):
 
 
 # ============================================================= template cues
+def groove_span(t0, t1, mood, drums='full', arp=5):
+    """The mood's groove, repeated from t0 and cut at t1."""
+    prog, t = [], t0
+    while t < t1 - 1e-6:
+        for ch, d in MOODS[mood]:
+            if t >= t1 - 1e-6:
+                break
+            d = min(d, t1 - t)
+            prog.append((ch, d))
+            t += d
+    groove(t0, prog, drums=drums, arp_v=arp)
+
+
+BOSS_RIFF = [(0, 64, 0.5), (0.5, 64, 0.5), (1, 65, 0.5), (1.5, 64, 0.5), (2, 62, 0.5), (2.5, 64, 1), (3.5, 59, 0.5)]
+
+
+def boss_ground(t0, t1):
+    """The boss: a phrygian ostinato on the triangle, a riff on the lead, a double-time beat, a held E / F arpeggio."""
+    stamp(t0, 52, 53, 28, 15)
+    ostinato(t0, t1, 28)
+    k = 0
+    while t0 + k * 2.0 < t1 - 1e-6:
+        melody(t0 + k * 2.0, BOSS_RIFF, 9 + k % 2, duty=0)
+        chord_arp(P2, t0 + k * 2.0, min(t1, t0 + k * 2.0 + 2.0), 64 + k % 2, (0, 4, 7), 4, 0, rate=2)
+        k += 1
+    double_time(t0, t1 - 1.0, 12, False)
+
+
 def cue_T05(sc, ctx):
-    """Stage scene: stage-start jingle, the mood groove, the scripted events, the CLEAR! jingle, the end roll."""
+    """Stage scene: the mood's ground (stage-start jingle and groove, or the boss ground), one cue per mark the layout
+    placed at an element time, the scripted `events` (raw overrides), the CLEAR! jingle, a noise roll into the next scene."""
     t0, t1 = sc['t0'], sc['t1']
-    if sc.get('stage_start', True):
+    mood = sc.get('mood', 'calm')
+    st = style(mood)
+    marks = sc.get('marks', [])
+    z = sc['clear']
+    turn = next((m['at'] for m in marks if m['k'] in ('turn', 'victory')), None)
+    first = turn if turn is not None else z
+    if st.get('boss'):
+        boss_ground(t0, t0 + first)
+    else:
         stage_start(t0)
-    if sc.get('mood'):
-        groove(t0, [tuple(x) for x in MOODS[sc['mood']]], arp_v=sc.get('arp', 5))
+        groove_span(t0 + 0.5, t0 + first, mood, st['drums'])
+    if turn is not None:
+        groove_span(t0 + turn, t0 + z, st['after'], 'full' if st.get('boss') else st['drums'])
+    sc_, (m1, m2, root) = st['scale'], st['stamp']
+    for m in marks:
+        t, k, i = t0 + m['at'], m['k'], m.get('i', 0)
+        if k == 'enter':
+            blip(P2, t, sc_[i % len(sc_)], 3, 8, 1)
+        elif k == 'reveal':
+            blip(P1, t, sc_[i % len(sc_)], 4, 11, 2)
+        elif k == 'ok':
+            blip(P1, t, sc_[i % len(sc_)] - 12, 3, 10, 2)
+        elif k in ('key', 'hit'):
+            stamp(t, m1, m2, root, 13)
+        elif k == 'second':
+            ding(t, sc_[-1])
+        elif k == 'coin':
+            coin(P2, t, 9); blip(P1, t + 0.1, 64, 6, 9, 0, slide=5)
+        elif k == 'packet':
+            blip(P2, t, 72 if m['dir'] > 0 else 84, 10, 9, 1, slide=12 * m['dir'])
+        elif k == 'press':
+            key(t, 11); blip(P2, t, 81, 3, 7, 1)
+        elif k == 'fail':
+            buzz(t, 0.4, 40); tri_drop(t, 40, 24, 8)
+        elif k == 'cut':
+            stamp(t, m1, m2, root, 13)
+        elif k == 'victory':
+            if st.get('boss'):
+                roll(t - 1.0, t - 0.02, 4, 14, 5, 1); noise_sweep(t - 1.0, t - 0.02, 14, 4, 2, 8)
+            hit_all(t, m1 + 4, m2 + 12, 33, 12, tau=20, dur=0.9, cym='crash', tri_hold=0.8)
+            for j, n in enumerate((69, 73, 76, 81, 76, 81, 85)):
+                note(P1, t + 0.4 + j * 0.125, 0.11, n, 12, 2, env=E_exp(6), release=0)
+            ding(t + 0.3, 88)
+        hit(t, k)
     for ev in sc.get('events', []):
         run_event(ev, t0, ctx)
-    if sc.get('clear') is not None:
-        clear(t0 + sc['clear'])
-    v0, v1 = sc.get('roll', (4, 11))
-    roll(t1 - 0.5, t1 - 0.02, v0, v1)
+    clear(t0 + z)
+    roll(t1 - 0.5, t1 - 0.02, 4, 11)
+
+
+def _theme(t0, t1, shift, v):
+    """The series' trailer theme, `shift` seconds after t0; notes that would run past t1 - 0.5 are left out."""
+    for t, m, d in THEME:
+        if t0 + t + shift + d < t1 - 0.5:
+            note(P1, t0 + t + shift, d - 0.02, m, v, 2, vib=0.2 if d >= 0.5 else 0.0)
 
 
 def cue_T01(sc, ctx):
-    """Title card: a coin, the stamp, the trailer theme over the opener chords, a roll into the next scene."""
-    t0, t1, ta = sc['t0'], sc['t1'], sc['title_at']
-    blip(P2, t0 + 0.3, 88, 3, 7, 1); blip(P2, t0 + 0.35, 93, 4, 7, 1); hit(t0 + 0.3, 'series line')
-    note(P1, t0 + 0.62, 0.36, 86, 3, 1, env=E_sus, slide=-10, release=0)
-    stamp(t0 + ta, 57, 64, 33); hit(t0 + ta, 'STAMP title')
-    groove(t0 + ta, MOODS[sc.get('mood', 'opener')], drums='light', arp_v=5)
-    for t, m, d in THEME + [(5.0, 71, 0.5), (5.5, 68, 0.45)]:
-        note(P1, t0 + t, d - 0.02, m, 12, 2, vib=0.2 if d >= 0.5 else 0.0)
+    """Title card: a coin on the series line, the stamp on the key, the theme over the mood, a roll into the next scene."""
+    t0, t1, ka = sc['t0'], sc['t1'], sc['key_at']
+    blip(P2, t0 + sc['glance_at'] + 0.3, 88, 3, 7, 1); blip(P2, t0 + sc['glance_at'] + 0.35, 93, 4, 7, 1)
+    note(P1, t0 + ka - 0.38, 0.36, 86, 3, 1, env=E_sus, slide=-10, release=0)
+    stamp(t0 + ka, 57, 64, 33); hit(t0 + ka, 'STAMP key')
+    groove_span(t0 + ka, t1 - 0.5, sc.get('mood', 'opener'), 'light')
+    _theme(t0, t1, ka - 1.0, 12)
     roll(t1 - 0.5, t1 - 0.02, 5, 12, gap0=3, gap1=2)
 
 
 def cue_T04(sc, ctx):
-    """Player card: stamp, groove, the episode motif, two stat blips, the quest tick, a noise sweep out."""
+    """Player card: stamp, groove, the motif, a blip per role line, a tick on the key, a noise sweep out."""
     t0, t1 = sc['t0'], sc['t1']
-    stamp(t0, 69, 76, 33); hit(t0, 'flash, PLAYER card')
-    groove(t0, MOODS[sc.get('mood', 'driving')])
-    melody(t0 + 0.5, ctx['motif'], 10)
+    stamp(t0, 69, 76, 33); hit(t0, 'flash, card')
+    groove_span(t0, t1 - 1.0, sc.get('mood', 'driving'))
+    if ctx['motif']:
+        melody(t0 + 0.5, ctx['motif'], 10)
     for i in range(2):
-        blip(P2, t0 + 1.4 + i * 0.4, 81 + i * 2, 3, 8, 1); hit(t0 + 1.4 + i * 0.4, 'stat row')
-    nz(t0 + 2.2, [10, 7, 4], 2); hit(t0 + 2.2, 'QUEST')
+        blip(P2, t0 + sc['secondary_at'] + i * 0.4, 81 + i * 2, 3, 8, 1); hit(t0 + sc['secondary_at'] + i * 0.4, 'role line')
+    nz(t0 + sc['key_at'], [10, 7, 4], 2); hit(t0 + sc['key_at'], 'key')
     noise_sweep(t1 - 1.0, t1 - 0.02, 12, 3, 2, 8)
 
 
 def cue_T21(sc, ctx):
-    """Payoff: the call, one blip per tree node, the theme at full voice on the stamp."""
-    t0, t1 = sc['t0'], sc['t1']
-    sa = sc.get('stamp_at', 1.5)
+    """Payoff: the call, one blip per tree node climbing the major scale, the theme at full voice on the key."""
+    t0, t1, ka = sc['t0'], sc['t1'], sc['key_at']
     stamp(t0, 69, 76, 33, 12); hit(t0, 'payoff')
-    blip(P2, t0 + 0.3, 72, 12, 9, 1, slide=12); hit(t0 + 0.3, 'tool call')
-    for i in range(len(sc['tree'])):
-        blip(P1, t0 + 0.9 + i * 0.12, 76 + (0, 3, 5, 7, 12, 14, 16)[i], 3, 10, 2); hit(t0 + 0.9 + i * 0.12, 'tree node')
-    hit_all(t0 + sa, 69, 76, 33, 15, tau=20, dur=0.8, cym='crash', tri_hold=0.3); hit(t0 + sa, 'STAMP payoff')
-    groove(t0 + sa, MOODS[sc.get('mood', 'theme')])
-    for t, m, d in THEME:
-        note(P1, t + t0 + sa - 1.0, d - 0.02, m, 13, 2, vib=0.2 if d >= 0.5 else 0.0)
+    blip(P2, t0 + sc['call_at'], 72, 12, 9, 1, slide=12); hit(t0 + sc['call_at'], 'tool call')
+    for i in range(len(sc['nodes'])):
+        t = t0 + sc['nodes_at'] + i * 0.12
+        blip(P1, t, 76 + SCALE[(i * 2) % 7] + 12 * ((i * 2) // 7), 3, 10, 2); hit(t, 'tree node')
+    hit_all(t0 + ka, 69, 76, 33, 15, tau=20, dur=0.8, cym='crash', tri_hold=0.3); hit(t0 + ka, 'STAMP key')
+    groove_span(t0 + ka, t1 - 0.5, sc.get('mood', 'theme'))
+    _theme(t0, t1, ka - 1.0, 13)
     noise_sweep(t1 - 0.75, t1 - 0.02, 10, 2, 3, 9)
 
 
+SCALE = (0, 2, 4, 5, 7, 9, 11)
+
+
 def cue_T22(sc, ctx):
-    """Result: level-clear fanfare, one blip per pip, a quiet bed with the motif head."""
+    """Result: level-clear fanfare, one blip per stage pip, a quiet bed, the motif head on the closing line."""
     t0, t1 = sc['t0'], sc['t1']
     for i, m in enumerate((72, 76, 79, 84)):
         note(P1, t0 + i * 0.1, 0.1, m, 13, 2, env=E_sus, release=0)
     note(P1, t0 + 0.4, 0.55, 84, 13, 2, env=E_exp(20), vib=0.2, release=0)
     note(P2, t0, 0.9, 76, 9, 1, env=E_exp(25), arp=[0, 3, 7], release=0)
-    tri(t0, 0.9, 36); crash(t0, 12); kick(t0, 13, drop=False); hit(t0, 'CLEAR headline')
+    tri(t0, 0.9, 36); crash(t0, 12); kick(t0, 13, drop=False); hit(t0, 'CLEAR title')
     for i in range(ctx['stages']):
-        blip(P2, t0 + 0.6 + i * 0.08, 72 + (0, 2, 4, 5, 7, 9, 11, 12, 14)[i], 3, 8, 2); hit(t0 + 0.6 + i * 0.08, 'pip')
-    groove(t0 + 1.0, MOODS[sc.get('mood', 'calm')], drums='light', arp_v=4, hat_v=3)
-    melody(t0 + 2.0, [(0, 76, 1), (1, 81, 0.5), (1.5, 83, 0.5), (2, 84, 2), (4, 81, 2)], 7)
+        t = t0 + 0.6 + i * 0.08
+        blip(P2, t, 72 + SCALE[i % 7] + 12 * (i // 7), 3, 8, 2); hit(t, 'pip')
+    groove_span(t0 + 1.0, t1 - 1.0, sc.get('mood', 'calm'), 'light', 4)
+    if ctx['motif']:
+        melody(t0 + sc['secondary_at'] - 0.5, ctx['motif'][:6], 7)
     roll(t1 - 1.0, t1 - 0.02, 4, 12)
 
 
@@ -506,7 +606,9 @@ def render(scenes, ctx, holds=()):
     x = A.render()
     n = int(round(dur * SR))
     x = np.concatenate([x, np.zeros(max(0, n - len(x)))])[:n]
-    x *= 10 ** (-1.1 / 20) / np.abs(x).max()
+    x /= np.abs(x).max()
+    x = np.tanh(0.8 * x) / np.tanh(0.8)                 # soft knee: a little more body (about +1.6 dB LUFS) at the same peak
+    x *= 10 ** (-1.1 / 20)
     ramp = min(n, 480)
     x[-ramp:] *= np.linspace(1, 0, ramp)
     for cut, d in sorted(holds, reverse=True):          # a hold freezes the picture: the music waits too

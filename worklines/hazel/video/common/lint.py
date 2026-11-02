@@ -35,10 +35,27 @@ def box_s(r):
     return f"x {r['x0']:.0f}..{r['x1']:.0f}, y {r['y0']:.0f}..{r['y1']:.0f}"
 
 
+def messages(rs):
+    """Group text boxes (sorted by y) into messages: lines of one message have the same font and size, the same left edge
+    or centre, and are stacked closely."""
+    groups = []
+    for r in rs:
+        for g in groups:
+            q = g[-1]
+            if q['font'] == r['font'] and q['size'] == r['size'] and r['y0'] - q['y1'] < r['size'] and \
+                    (abs(q['x0'] - r['x0']) < 3 or abs((q['x0'] + q['x1']) - (r['x0'] + r['x1'])) < 6):
+                g.append(r)
+                break
+        else:
+            groups.append([r])
+    return groups
+
+
 def analyse(rec, scenes, holds):
     found = defaultdict(list)        # (kind, scene, text, detail) -> [times]
     glyphs = defaultdict(dict)       # scene -> text -> (glyph px, font, size)
     nsec = defaultdict(list)         # scene -> [(T, [texts])]
+    nkey = defaultdict(int)          # scene -> most key messages on screen at once
     frames = 0
     for T, boxes in sorted(rec.items(), key=lambda kv: float(kv[0])):
         T = float(T)
@@ -65,16 +82,10 @@ def analyse(rec, scenes, holds):
                     found[('overlap', sc['id'], f"{a['s']!r} x {b['s']!r}", box_s(a))].append(T)
         sec = sorted((r for r in vis if r['alpha'] >= 0.9 and SECOND_PX <= r['glyph'] < KEY_PX
                       and not (r['s'].startswith('STAGE ') or r['s'] == sc.get('title'))), key=lambda r: r['y0'])
-        groups = []          # lines of one message: same font and size, same left edge or centre, stacked closely
-        for r in sec:
-            for g in groups:
-                q = g[-1]
-                if q['font'] == r['font'] and q['size'] == r['size'] and r['y0'] - q['y1'] < r['size'] and \
-                        (abs(q['x0'] - r['x0']) < 3 or abs((q['x0'] + q['x1']) - (r['x0'] + r['x1'])) < 6):
-                    g.append(r)
-                    break
-            else:
-                groups.append([r])
+        groups = messages(sec)
+        keys = messages(sorted((r for r in vis if r['alpha'] >= 0.9 and r['glyph'] >= KEY_PX
+                                and not (r['s'].startswith('STAGE ') or r['s'] == 'CLEAR!' or r['s'] == sc.get('title'))), key=lambda r: r['y0']))
+        nkey[sc['id']] = max(nkey[sc['id']], len(keys))
         if len(groups) > 1:
             nsec[sc['id']].append((T, [' / '.join(r['s'] for r in g) for g in groups]))
 
@@ -90,18 +101,20 @@ def analyse(rec, scenes, holds):
             lines.append(f'  {k[1]:8s} {k[2]!r:48.48s} {k[3]}  t={ts[0]:g}..{ts[-1]:g} ({len(ts)} samples)')
         lines.append('')
     lines.append('== phone: glyph height by scene (key >= 50 px, secondary >= 35 px, glance below) ==')
-    nokey, glance_total = [], 0
+    nokey, multi, glance_total = [], [], 0
     for s in scenes:
         g = glyphs.get(s['id'], {})
         hud_t = {s.get('title', '')}
-        body = {k: v for k, v in g.items() if not (k.startswith('STAGE ') or k in hud_t)}
+        body = {k: v for k, v in g.items() if not (k.startswith('STAGE ') or k == 'CLEAR!' or k in hud_t)}
         key = sorted(k for k, v in body.items() if v[0] >= KEY_PX)
         sec = sorted(k for k, v in body.items() if SECOND_PX <= v[0] < KEY_PX)
         gl = sorted(k for k, v in body.items() if v[0] < SECOND_PX)
         glance_total += len(gl)
         if not key:
             nokey.append(s['id'])
-        lines.append(f"  {s['id']:8s} key {len(key)}, secondary {len(sec)}, glance {len(gl)}"
+        elif nkey[s['id']] > 1:
+            multi.append(s['id'])
+        lines.append(f"  {s['id']:8s} key {len(key)} texts / {nkey[s['id']]} at once, secondary {len(sec)}, glance {len(gl)}"
                      + (f"  [glance: {', '.join(repr(x) for x in gl)}]" if gl else '')
                      + ('' if key else '  ** NO KEY MESSAGE >= 50 px **'))
     lines.append('')
@@ -110,7 +123,7 @@ def analyse(rec, scenes, holds):
     for sid, lst in nsec.items():
         lines.append(f"  {sid:8s} t={lst[0][0]:g}..{lst[-1][0]:g} ({len(lst)} samples): {lst[0][1]}")
     summary = (f"lint: overflow {counts['overflow']}, margin {counts['margin']}, overlap {counts['overlap']}, "
-               f"clear-zone {counts['clear']}, scenes without a 50 px key {len(nokey)} {nokey}, "
+               f"clear-zone {counts['clear']}, scenes without a 50 px key {len(nokey)} {nokey}, scenes with 2+ keys at once {len(multi)} {multi}, "
                f"frames with 2+ secondaries {n2}, glance texts {glance_total}")
     lines += ['', summary]
     return '\n'.join(lines) + '\n', summary

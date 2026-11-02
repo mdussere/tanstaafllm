@@ -23,11 +23,12 @@ import audit as AU          # noqa: E402
 import capture as CAP       # noqa: E402
 import contact as CT        # noqa: E402
 import cues                 # noqa: E402
+import layout as LY         # noqa: E402
 import lint as LN           # noqa: E402
 import slots as SL          # noqa: E402
 
 REPO = HERE.parents[3]
-META = ('events', 'facts', 'picture', 'music_note')
+META = ('events', 'facts', 'picture', 'music_note', 'marks', 'slots', 'texts', 'sources')
 
 
 def timeline(ep):
@@ -40,10 +41,33 @@ def timeline(ep):
     return scenes
 
 
+def stage_count(scenes):
+    return sum(1 for s in scenes if s['template'] == 'T05')
+
+
+def boss_stage(scenes):
+    return next((s['stage'] for s in scenes if s['template'] == 'T05' and s.get('mood') == 'boss'), 0)
+
+
+def describe(s):
+    """The NOTES.md picture and music cells, generated from the slots and the cue marks."""
+    tx = s['texts']
+    pic = f"key: {' / '.join(tx['key'])}"
+    if tx['secondary']:
+        pic += f"; secondary: {' / '.join(tx['secondary'])}"
+    if tx['glance']:
+        pic += f"; glance: {', '.join(tx['glance'])}"
+    kinds = {}
+    for m in s.get('marks', []):
+        kinds[m['k']] = kinds.get(m['k'], 0) + 1
+    music = f"mood {s.get('mood', '-')}" + (': ' + ', '.join(f'{v} {k}' for k, v in kinds.items()) if kinds else '')
+    return pic, music
+
+
 def make_page(ep, scenes, holds, out):
     page_scenes = [{'template': s['template'], 't0': s['t0'], 't1': s['t1'], 'p': {k: v for k, v in s.items() if k not in META}}
                    for s in scenes]
-    data = dict(scenes=page_scenes, holds=holds, base=scenes[-1]['t1'], stages=ep.get('stages', 7), boss_stage=ep.get('boss_stage', 0))
+    data = dict(scenes=page_scenes, holds=holds, base=scenes[-1]['t1'], stages=stage_count(scenes), boss_stage=boss_stage(scenes))
     html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -77,11 +101,13 @@ def notes_md(ep, scenes, rows, lint_summary, out_name, meta):
          f"{meta['duration']:.1f} s, {meta['size']} at {meta['fps']} fps. Built by common/build.py; do not edit by hand, edit the script.", '',
          '## Structure (seconds of the cut, before reading holds)', '', '| Time | Template | Picture | Music |', '|---|---|---|---|']
     for s in scenes:
-        L.append(f"| {s['t0']:g}-{s['t1']:g} | {s['template']} {s['id']} ({s['bars']} bars) | {s.get('picture', '')} | {s.get('music_note', '')} |")
+        pic, music = describe(s)
+        L.append(f"| {s['t0']:g}-{s['t1']:g} | {s['template']} {s['id']} ({s['bars']} bars) | {s.get('picture', pic)} | {s.get('music_note', music)} |")
     L += ['', '## Every on-screen fact and its source', '', '| Scene | On screen | Source | Machine shown |', '|---|---|---|---|']
     for s in scenes:
-        for f in s.get('facts', []):
-            L.append(f"| {s['id']} | {f['on_screen']} | {f['source']} | {f.get('machine', '-')} |")
+        shown = ' / '.join(s['texts']['key'] + s['texts']['secondary'] + s['texts']['glance'])
+        for f in s.get('facts', []) or [dict(on_screen=shown, source=src) for src in ([s['sources']] if isinstance(s.get('sources'), str) else s.get('sources', []))]:
+            L.append(f"| {s['id']} | {f['on_screen']} | {f['source']} | {f.get('machine', s.get('machine', '-'))} |")
     L += ['', '## Reading audit', '', AU.table(rows)[0], '', '## Layout lint', '', lint_summary, '', '## Files', '',
           f'`{out_name}`, `music.wav`, `hits.json`, `audit.md`, `lint.txt`, `contact.png`, `index.html`.']
     return '\n'.join(L) + '\n'
@@ -90,7 +116,7 @@ def notes_md(ep, scenes, rows, lint_summary, out_name, meta):
 def contact_times(scenes, ep):
     ts = []
     for s in scenes:
-        sl = SL.SLOTS[s['template']](s, ep)
+        sl = SL.slots_of(s, ep)
         lead = s.get('cut_lead', SL.LEAD.get(s['template'], 0.0))
         r = s.get('still', (max(x[0] for x in sl) + 0.3) if sl else (s['t1'] - s['t0']) * 0.6)
         ts.append(round(min(s['t0'] + r, s['t1'] - lead - 0.05), 2))
@@ -114,7 +140,7 @@ def main():
     out = pathlib.Path(a.out) if a.out else REPO / 'results' / 'hazel' / ep['episode'] / stamp
     out.mkdir(parents=True, exist_ok=True)
 
-    scenes = timeline(ep)
+    scenes = LY.resolve(ep, timeline(ep))
     rows = AU.audit(scenes, ep)
     table, extra = AU.table(rows)
     holds = [[r['cut'], r['hold']] for r in rows if r['hold'] > 0]
@@ -122,7 +148,7 @@ def main():
     print(f'audit: holds +{extra:.1f} s, duration {scenes[-1]["t1"] + extra:.1f} s')
 
     make_page(ep, scenes, holds, out)
-    ctx = dict(motif=ep.get('motif', []), riffs=ep.get('riffs', {}), stages=ep.get('stages', 7))
+    ctx = dict(motif=ep.get('motif', []), riffs=ep.get('riffs', {}), stages=stage_count(scenes))
     x = cues.render(scenes, ctx, holds)
     cues.write_wav(out / 'music.wav', x)
     (out / 'hits.json').write_text(cues.hits_json())

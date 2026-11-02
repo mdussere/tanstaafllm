@@ -21,7 +21,7 @@ def screens(scenes, ep):
     """[(name, cut_abs, [(readable_abs, text, font)])]"""
     out = []
     for i, sc in enumerate(scenes):
-        sl = [(sc['t0'] + r, s, f) for r, s, f in S.SLOTS[sc['template']](sc, ep)]
+        sl = [(sc['t0'] + r, s, f) for r, s, f in S.slots_of(sc, ep)]
         end = sc['t1'] - sc.get('cut_lead', S.LEAD.get(sc['template'], 0.0))
         parts = sc.get('screens') or [{'name': f"{i} {sc['id']}"}]
         cuts = [sc['t0'] + p['cut'] for p in parts[:-1]] + [end]

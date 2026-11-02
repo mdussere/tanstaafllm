@@ -1,358 +1,145 @@
-# Story 2, "Ask the desktop" (Wyoh), as a script. Times are seconds RELATIVE to the scene start; x / y are
-# canvas pixels (1920 x 1080, margin 120). Format: common/README.md. Build: uv run python common/build.py <this file> --preview
+# Story 2, "Ask the desktop" (Wyoh), as a script: only what a writer decides. The templates place, size, colour and time
+# everything (on the beat, over the scene length in bars) and put the music on it. Format: common/README.md.
+# Build: uv run python common/build.py <this file> --preview
 episode: story2-ask-the-desktop
 title: ASK THE DESKTOP
 bpm: 120
-stages: 7          # stage pips on the HUD and on the result screen
-boss_stage: 5      # this stage number is the boss (red background, no pips)
-
-# The episode's motif (Wyoh: E A B C, rising): [beat, midi, beats]; riffs are named note lists for events.
-motif: [[0, 76, 1], [1, 81, 0.5], [1.5, 83, 0.5], [2, 84, 1.5], [3.5, 83, 0.5], [4, 81, 1], [5, 77, 1],
-        [6, 79, 1], [7, 79, 0.5], [7.5, 76, 0.5], [8, 72, 1.5], [9.5, 74, 0.5], [10, 76, 2], [12, 74, 1], [13, 71, 1]]
-riffs:
-  boss: [[0, 64, 0.5], [0.5, 64, 0.5], [1, 65, 0.5], [1.5, 64, 0.5], [2, 62, 0.5], [2.5, 64, 1], [3.5, 59, 0.5]]
+motif: [[0, 76, 1], [1, 81, 0.5], [1.5, 83, 0.5], [2, 84, 1.5], [3.5, 83, 0.5], [4, 81, 1], [5, 77, 1], [6, 79, 2]]   # Wyoh: E A B C, rising
 
 scenes:
 - id: title
-  template: T01
+  template: title_card
   bars: 3
-  series: "TANSTAAFLLM · STORY 2"
-  title: ASK THE DESKTOP
-  title_at: 1.0
-  sub: ["How an agent learned to work", "a desktop without looking at it."]
   mood: opener
-  picture: 'Title: starfield, moon; series line, stamp, cyan subtitle, PRESS START'
-  music_note: 'Coin, stamp, trailer theme over Am F G E'
-  facts:
-  - {on_screen: 'Episode title and subtitle', source: 'Note beat 1 (worklines/hazel/docs/0302_02_note-from-wyoh-story.md)'}
+  series: "TANSTAAFLLM · STORY 2"
+  key: ASK THE DESKTOP
+  secondary: ["How an agent learned to work", "a desktop without looking at it."]
+  sources: ["Note beat 1 (worklines/hazel/docs/0302_02_note-from-wyoh-story.md)"]
 
 - id: player
-  template: T04
+  template: player_card
   bars: 4
-  face: wyoh
-  label: "PLAYER 2"
-  name: WYOH
-  role: ["THE DESKTOP LAYER", "OF LUNA"]
-  quest_label: "QUEST:"
-  quest: ["Observe and operate", "the desktop without pixels."]
   mood: driving
-  picture: "Player 2: Wyoh's key-art face, role, quest sentence"
-  music_note: 'Groove Am F C G, the Wyoh motif'
-  facts:
-  - {on_screen: 'Quest: "Observe and operate the desktop without pixels."', source: 'Note beat 1; worklines/wyoh/docs/0000_04_desktop-automation-model.md'}
+  face: wyoh
+  glance: ["PLAYER 2", "QUEST:"]
+  name: WYOH
+  secondary: ["THE DESKTOP LAYER", "OF LUNA"]
+  key: ["Observe and operate", "the desktop without pixels."]
+  sources: ["Note beat 1; worklines/wyoh/docs/0000_04_desktop-automation-model.md"]
 
 - id: stage1
-  template: T05
+  template: guess
   bars: 3
-  stage: 1
+  mood: tense
   title: "THE SCREENSHOT TRAP"
-  clear: 4.5
-  mood: uneasy
-  arp: 4
-  content:
-  - {kind: pixel_grid_guess, at: 0.4, agent_at: 0.6, guesses: [[1.0, "A BUTTON?"], [1.5, "A WINDOW?"], [2.0, "WHICH ONE?"]]}
-  - {kind: text, font: V, size: 90, color: chrome, x: 120, y: 740, dy: 90, at: 0.9, fade: 0.2, read: true,
-     lines: ["An agent guesses from pixels", "and pays for every image."]}
-  - {kind: text, size: 40, color: cyan, x: 120, y: 945, at: 3.0, fade: 0.15, read: true, lines: ["ON PAPER: A DESKTOP DOM."]}
-  events:
-  - {fx: guess_coin, at: [1.0, 1.5, 2.0]}
-  - {fx: nz, at: 0.9, v: [8, 5, 3], per: 2}
-  - {fx: ding, at: 3.0, m: 81}
-  - {fx: melody, at: 3.5, notes: [[0, 76, 1], [1, 75, 1], [2, 76, 1]], v: 8}
-  picture: 'Stage 1: a drawn desktop pixelated into blocks, a squinting robot, three guesses each costing a coin; "ON PAPER: A DESKTOP DOM."'
-  music_note: 'Am Dm E, coin + falling blip per guess, ding'
-  facts:
-  - {on_screen: '"An agent guesses from pixels and pays for every image."', source: 'Note beat 1 (no cost figure shown, as the brief asks)'}
-  - {on_screen: '"ON PAPER: A DESKTOP DOM."', source: 'Note beat 1 (the DWOM idea); shown as a design only (must-not-say)'}
+  guesses: ["A BUTTON?", "A WINDOW?", "WHICH ONE?"]
+  key: ["An agent guesses from pixels", "and pays for every image."]
+  secondary: "ON PAPER: A DESKTOP DOM."
+  sources: ["Note beat 1 (no cost figure shown, as the brief asks)", "Note beat 1 (the DWOM idea); shown as a design only (must-not-say)"]
 
 - id: stage2
-  template: T05
+  template: two_boxes
   bars: 4
-  stage: 2
+  mood: tense
   title: "ONE SCENE IS NOT A DESKTOP"
-  clear: 6.5
-  mood: wary
-  arp: 4
-  content:
-  - {kind: scene_spill, label: HIOM, at: 0.4, gone_at: 2.5, spill_at: 1.6, spill_step: 0.15}
-  - {kind: text, color: dim, x: 980, y: 330, at: 0.6, lines: ["FIRST IDEA: ONE SCENE"]}
-  - {kind: text, color: dim, x: 980, y: 380, at: 2.8, lines: ["A DESKTOP DID NOT FIT."]}
-  - {kind: stamp, size: 48, color: red, x: 980, y: 500, at: 2.5, rot: -0.05, lines: ["REOPENED"], read: true}
-  - {kind: box, x: 140, y: 650, w: 1640, h: 230, edge: green, alpha: 0.95, at: 3.2, fade: 0.2}
-  - {kind: text, color: amber, x: 190, y: 705, at: 3.2, lines: ["KEPT FROM IT:"]}
-  - {kind: stamp, size: 56, color: green, x: 960, y: 785, dy: 70, at: 3.5, align: center, from: 1.4,
-     lines: ["WAIT FOR A NAMED CONDITION,", "NEVER A FIXED DELAY."], read: "KEPT FROM IT: WAIT FOR A NAMED CONDITION, NEVER A FIXED DELAY."}
-  events:
-  - {fx: blip, ch: p2, at: 1.6, step: 0.15, n: 5, each: {m: [72, 75, 77, 79, 82]}, frames: 3, v: 8, duty: 1}
-  - {fx: buzz, at: 2.5, dur: 0.4, m: 40}
-  - {fx: tri_drop, at: 2.5, m0: 40, m1: 26, frames: 6}
-  - {fx: groove, at: 4.0, mood: resolve}
-  - {fx: stamp, at: 3.5, m1: 69, m2: 76, root: 33, v: 12}
-  - {fx: melody, at: 4.0, notes: [[0, 76, 1], [1, 74, 0.5], [1.5, 72, 0.5], [2, 71, 1]], v: 9}
-  picture: 'Stage 2, HIOM: one scene with A/B/X actions, windows spill out, "REOPENED"; kept lesson stamp'
-  music_note: 'F G, rising blips, buzz + drop, stamp at 3.5'
-  facts:
-  - {on_screen: 'HIOM: first idea, one scene; a desktop did not fit; REOPENED', source: 'Note beat 2; 0101_01_hiom_v0_contract.md (status note 2026-09-25)'}
-  - {on_screen: '"WAIT FOR A NAMED CONDITION, NEVER A FIXED DELAY."', source: 'Note beat 2 ("waits for a named predicate ... never a fixed delay")'}
+  fail: {label: HIOM, glance: ["FIRST IDEA: ONE SCENE", "A DESKTOP DID NOT FIT."], stamp: REOPENED}
+  works: "KEPT FROM IT:"
+  key: ["WAIT FOR A NAMED CONDITION,", "NEVER A FIXED DELAY."]
+  sources: ["Note beat 2; 0101_01_hiom_v0_contract.md (status note 2026-09-25)", "Note beat 2 (\"waits for a named predicate ... never a fixed delay\")"]
 
 - id: stage3
-  template: T05
+  template: metrics
   bars: 4
-  stage: 3
-  title: "ASK THE ONE THAT EXISTS"
-  clear: 6.5
   mood: bright
-  content:
-  - {kind: text, font: V, size: 90, color: cyan, x: 120, y: 300, dy: 85, at: 0.4, fade: 0.2, read: true,
-     lines: ["Don't build a compositor.", "Ask the one that exists."]}
-  - {kind: box, x: 120, y: 430, w: 560, h: 440, edge: green, from: 0.9}
-  - {kind: minidesk, x: 150, y: 460, w: 500, h: 240, focus: cycle, from: 0.9}
-  - {kind: text, size: 32, color: chrome, x: 150, y: 760, at: 0.9, fade: 0, lines: ["SWAY"]}
-  - {kind: text, color: green, x: 150, y: 805, at: 1.3, fade: 0.1, lines: ["UNMODIFIED"]}
-  - {kind: text, color: amber, x: 150, y: 845, at: 1.7, fade: 0.1, lines: ["NO FORK"]}
-  - {kind: rects, from: 2.2, rects: [[680, 570, 60, 24, "#8e97cc"], [740, 560, 20, 44, "#cfd6ff"]]}
-  - {kind: text, color: cyan, x: 690, y: 650, at: 2.2, fade: 0, lines: ["IPC"]}
-  - {kind: packet, at: 2.7, dur: 0.3, x0: 760, x1: 780, y: 582, color: cyan}
-  - {kind: packet, at: 3.2, dur: 0.3, x0: 760, x1: 780, y: 582, color: cyan}
-  - {kind: packet, at: 3.7, dur: 0.3, x0: 760, x1: 780, y: 582, color: cyan}
-  - {kind: packet, at: 4.2, dur: 0.3, x0: 760, x1: 780, y: 582, color: cyan}
-  - {kind: runs, x: 800, y: 460, size: 28, at: 2.3, fade: 0.1, read: "MEASURED ON luna-pi, A RASPBERRY PI",
-     parts: [["MEASURED ON ", amber], ["luna-pi", cyan], [", A RASPBERRY PI", dim]]}
-  - {kind: tiles, x: 800, y: 485, badge: luna-pi, read: true,
-     tiles: [[3.0, "SOCKET READY", "42 ms"], [3.5, "FOCUS EVENT", "0.6 ms"], [4.0, "SWAY MEMORY", "~20 MiB"], [4.5, "KILLED, BACK IN", "7.5 ms"]]}
-  events:
-  - {fx: blip, ch: p2, at: 0.9, m: 84, frames: 3, v: 8, duty: 1}
-  - {fx: ding, at: 1.3, m: 84}
-  - {fx: blip, ch: p2, at: 1.7, m: 79, frames: 3, v: 8, duty: 1}
-  - {fx: nz, at: 2.3, v: [9, 6, 3], per: 2}
-  - {fx: melody, at: 1.0, notes: motif_head, v: 9}
-  - {fx: blip, ch: p1, at: 3.0, step: 0.5, n: 4, each: {m: [76, 79, 81, 84]}, frames: 4, v: 11, duty: 2}
-  - {fx: ding, at: 4.5, m: 88}
-  - {fx: melody, at: 5.0, notes: [[0, 84, 1], [1, 83, 1]], v: 9}
-  picture: 'Stage 3: unmodified Sway, IPC socket, four tiles 42 ms / 0.6 ms / ~20 MiB / 7.5 ms, each labelled luna-pi'
-  music_note: 'Bright C G Am F, motif head, four rising blips'
-  facts:
-  - {on_screen: '"Don''t build a compositor. Ask the one that exists." UNMODIFIED, NO FORK, IPC', source: 'Note beat 3'}
-  - {on_screen: '42 ms socket ready, 0.6 ms focus event, ~20 MiB, killed -> back in 7.5 ms; measured on luna-pi, a Raspberry Pi', source: 'Note beat 3; 0201_01_sway-ipc-proof.md, 0301_01_luna-pi-sway-result.md', machine: luna-pi}
+  title: "ASK THE ONE THAT EXISTS"
+  key: ["Don't build a compositor.", "Ask the one that exists."]
+  subject: {label: SWAY, tags: [UNMODIFIED, NO FORK], link: IPC}
+  glance: "MEASURED ON luna-pi, A RASPBERRY PI"
+  machine: luna-pi
+  tiles:
+  - {label: SOCKET READY, value: 42 ms}
+  - {label: FOCUS EVENT, value: 0.6 ms}
+  - {label: SWAY MEMORY, value: "~20 MiB"}
+  - {label: "KILLED, BACK IN", value: 7.5 ms}
+  sources: ["Note beat 3; 0201_01_sway-ipc-proof.md, 0301_01_luna-pi-sway-result.md"]
 
 - id: stage4
-  template: T05
+  template: flow
   bars: 4
-  stage: 4
-  title: "HAND IT TO AGENTS"
-  clear: 6.5
   mood: driving
-  roll: [5, 12]
-  content:
-  - {kind: agent, x: 140, y: 280, s: 9, mode: ask}
-  - {kind: pipe, x0: 350, x1: 1380, y: 400, from: 0.3, read: "MCP OVER SSH DEVELOPMENT ONLY",
-     labels: [{s: "MCP OVER SSH", dy: -40, color: cyan, at: 0.3}, {s: "DEVELOPMENT ONLY", dy: 70, color: amber, at: 0.6}]}
-  - {kind: box, x: 1400, y: 250, w: 400, h: 300, edge: green}
-  - {kind: minidesk, x: 1424, y: 274, w: 352, h: 220, focus: [[0, 0], [2.4, 2]]}
-  - {kind: text, color: chrome, x: 1600, y: 535, align: center, at: 0, fade: 0, lines: ["SWAY"]}
-  - {kind: packet, at: 1.0, dur: 0.4, x0: 350, x1: 1380, y: 400, color: cyan}
-  - {kind: packet, at: 1.45, dur: 0.4, x0: 1380, x1: 350, y: 400, color: green}
-  - {kind: packet, at: 2.0, dur: 0.4, x0: 350, x1: 1380, y: 400, color: amber}
-  - {kind: packet, at: 3.0, dur: 0.4, x0: 1380, x1: 350, y: 400, color: green}
-  - {kind: text, font: V, size: 90, color: chrome, x: 120, y: 700, dy: 90, fade: 0.15, read: true,
-     lines: [{s: "Query the tree, act,", at: 1.0}, {s: "wait for the event.", at: 3.0}]}
-  - {kind: stamp, size: 48, color: amber, x: 1580, y: 700, at: 4.0, align: center, rot: -0.04, lines: ["26 TOOLS"], read: true}
-  - {kind: text, color: cyan, x: 1580, y: 765, align: center, at: 4.3, fade: 0.1, lines: ["luna-pi, THEN LUNA"], read: true}
-  events:
-  - {fx: blip, ch: p2, at: 1.0, m: 72, frames: 10, v: 9, duty: 1, slide: 12}
-  - {fx: blip, ch: p2, at: 1.45, m: 84, frames: 10, v: 9, duty: 1, slide: -12}
-  - {fx: blip, ch: p2, at: 2.0, m: 76, frames: 10, v: 9, duty: 1, slide: 12}
-  - {fx: blip, ch: p2, at: 3.0, m: 88, frames: 10, v: 9, duty: 1, slide: -12}
-  - {fx: key, at: 2.4, v: 10}
-  - {fx: stamp, at: 4.0, m1: 72, m2: 79, root: 36}
-  - {fx: melody, at: 4.5, notes: [[0, 76, 1], [1, 77, 1], [2, 79, 1]], v: 8}
-  picture: 'Stage 4: robot, "MCP OVER SSH" pipe ("DEVELOPMENT ONLY"), Sway; query, tree back, act, confirming event; stamp "26 TOOLS"'
-  music_note: 'Am F C G, four sliding blips, stamp at 4.0'
-  facts:
-  - {on_screen: 'MCP over SSH; "Query the tree, act, wait for the event."', source: 'Note beat 4; 0305_01_mcp-over-ssh-validation-result.md'}
-  - {on_screen: 'DEVELOPMENT ONLY', source: 'Note section 4 (--full-ipc-development, no capability policy)'}
-  - {on_screen: '26 TOOLS; luna-pi, then Luna', source: 'Note beat 4; src/wyoh/wyoh_mcp_server.py', machine: 'luna-pi, then Luna'}
+  title: "HAND IT TO AGENTS"
+  via: ["MCP OVER SSH", "DEVELOPMENT ONLY"]
+  target: SWAY
+  key: ["Query the tree, act,", "wait for the event."]
+  secondary: "26 TOOLS"
+  glance: "luna-pi, THEN LUNA"
+  machine: "luna-pi, then Luna"
+  sources: ["Note beat 4; 0305_01_mcp-over-ssh-validation-result.md", "Note section 4 (--full-ipc-development, no capability policy)", "Note beat 4; src/wyoh/wyoh_mcp_server.py"]
 
 - id: boss
-  template: T05
+  template: boss
   bars: 4
-  stage: 5
+  mood: boss
   title: "BOSS: THE BLACK PANEL"
-  clear: 6.5
-  stage_start: false
-  flashes: [[4.5, 0, 0.25], [0, 0, 0.4, red]]
-  screens: [{name: "6a Boss: black panel", cut: 4.5}, {name: "6b Boss: lit"}]
-  roll: [4, 12]
-  content:
-  - {kind: boss_hud, hit1: 2.5, fix: 4.5, labels: [BLACK, LIT]}
-  - {kind: handheld, x: 170, y: 250, s: 5.5, bob: true, focus: cycle, states: [[0, black], [4.5, flash], [4.6, desk]]}
-  - {kind: text, color: cyan, x: 760, y: 300, at: 0.3, fade: 0.1, lines: ["LUNA'S REAL 720 × 720 PANEL"]}
-  - {kind: stamp, size: 64, color: red, x: 760, y: 440, at: 1.0, rot: -0.04, until: 4.5, lines: ["BLACK."], read: true}
-  - {kind: text, font: V, size: 64, color: chrome, x: 760, y: 560, dy: 65, maxW: 1040, at: 1.6, fade: 0.2, until: 4.5, read: true,
-     lines: ["Sway's own screenshots", "looked right."]}
-  - {kind: runs, x: 760, y: 740, size: 32, at: 2.5, fade: 0.1, until: 4.5, read: "MALI GPU DRIVER: NOT LOADED",
-     parts: [["MALI GPU DRIVER: ", dim], ["NOT LOADED", red]]}
-  - {kind: text, size: 56, color: chrome, x: 760, y: 440, at: 4.5, fade: 0, read_at: 4.6, read: "GPU DRIVER LOADED.", lines: ["GPU DRIVER"]}
-  - {kind: text, size: 56, color: green, x: 760, y: 520, at: 4.5, fade: 0, lines: ["LOADED."]}
-  - {kind: box, x: 760, y: 600, w: 460, h: 130, edge: green, fill: "#05060f", alpha: 0.95, from: 4.8}
-  - {kind: text, font: V, size: 64, color: green, x: 800, y: 690, shadow: 0, at: 4.8, fade: 0, read: true, lines: ["1 passed"]}
-  events:
-  - {fx: stamp, at: 0, m1: 52, m2: 53, root: 28, v: 15}
-  - {fx: ostinato, at: 0, dur: 4.5, root: 28}
-  - {fx: melody, at: 0, notes: boss, v: 9, duty: 0}
-  - {fx: melody, at: 2.0, notes: boss, v: 10, duty: 0}
-  - {fx: chord_arp, at: 0, dur: 2, root: 64, ivs: [0, 4, 7], v: 4, duty: 0, rate: 2}
-  - {fx: chord_arp, at: 2, dur: 2, root: 65, ivs: [0, 4, 7], v: 4, duty: 0, rate: 2}
-  - {fx: chord_arp, at: 4, dur: 0.5, root: 64, ivs: [0, 4, 7], v: 4, duty: 0, rate: 2}
-  - {fx: double_time, at: 0, dur: 3.5, v: 12, snare: false}
-  - {fx: boom, at: 1.0, v: 15}
-  - {fx: tri_drop, at: 1.0, m0: 40, m1: 21, frames: 8}
-  - {fx: blip, ch: p2, at: 1.6, m: 76, frames: 4, v: 9, duty: 1}
-  - {fx: stamp, at: 2.5, m1: 53, m2: 64, root: 29, v: 13}
-  - {fx: roll, at: 3.5, dur: 0.98, v0: 4, v1: 14, gap0: 5, gap1: 1}
-  - {fx: noise_sweep, at: 3.5, dur: 0.98, per0: 14, per1: 4, v0: 2, v1: 8}
-  - {fx: hit_all, at: 4.5, m1: 73, m2: 76, root: 33, v: 12, tau: 20, dur: 0.9, cym: crash, tri_hold: 0.8}
-  - {fx: note, ch: p1, at: 4.9, step: 0.125, n: 7, each: {m: [69, 73, 76, 81, 76, 81, 85]}, dur: 0.11, v: 12, duty: 2, env: exp, tau: 6, release: 0}
-  - {fx: ding, at: 4.8, m: 88}
-  - {fx: bass8, at: 5.5, dur: 1.0, root: 26}
-  - {fx: chord_arp, at: 5.5, dur: 1.0, root: 62, ivs: [0, 4, 7], v: 5, duty: 1, rate: 2}
-  - {fx: bass8, at: 6.5, dur: 1.5, root: 28}
-  - {fx: chord_arp, at: 6.5, dur: 1.5, root: 64, ivs: [0, 4, 7], v: 5, duty: 1, rate: 2}
-  - {fx: hats, at: 5.5, dur: 2.0, step: 0.25, v_on: 4, v_off: 2}
-  picture: 'Stage 5, boss: the handheld''s panel black, "BLACK.", "Sway''s own screenshots looked right.", "MALI GPU DRIVER: NOT LOADED" -> LOADED, the panel lights, "1 passed"'
-  music_note: 'E phrygian ostinato, boom, two hits, A-major victory at 4.5'
-  facts:
-  - {on_screen: 'Luna 720 x 720 panel; BLACK.; GPU DRIVER LOADED.; "1 passed" once loaded', source: 'Note beat 5; 0407_01_luna-real-display-session.md, plan_wyoh.md 4.8.3', machine: Luna}
-  - {on_screen: '"Sway''s own screenshots looked right."', source: '0407_01_luna-real-display-session.md l.123; confirmed by Wyoh 2026-11-01', machine: Luna}
+  panel: "LUNA'S REAL 720 × 720 PANEL"
+  phases:
+  - {key: BLACK., secondary: ["Sway's own screenshots", "looked right."], glance: "MALI GPU DRIVER: NOT LOADED"}
+  - {key: ["GPU DRIVER", "LOADED."], secondary: "1 passed"}
+  machine: Luna
+  sources: ["Note beat 5; 0407_01_luna-real-display-session.md, plan_wyoh.md 4.8.3", "0407_01_luna-real-display-session.md l.123; confirmed by Wyoh 2026-11-01"]
 
 - id: stage6
-  template: T05
+  template: handheld
   bars: 5
-  stage: 6
-  title: "17 BUTTONS, NO KEYBOARD"
-  clear: 8.5
   mood: climb
-  screens: [{name: "7a Stage 6 buttons", cut: 5.5}, {name: "7b Stage 6 agent and Mike"}]
-  content:
-  - kind: handheld
-    x: 170
-    y: 250
-    s: 5.5
-    bob: true
-    focus: [[0, 0], [1.5, 1]]
-    ws: [[0, 0], [2.25, 1], [5.0, 0]]
-    states: [[0, desk], [2.8, slate], [6.9, mike]]
-    answer_at: 7.1
-    presses: [{actions: acts, len: 0.2}, {from: 2.6, to: 2.8, btns: [L1]}, {from: 6.5, to: 6.8, btns: [FN, B]}]
-  - {kind: text, font: V, size: 90, color: chrome, x: 760, y: 330, maxW: 1040, at: 0.6, fade: 0.2, until: 5.5, read: true, lines: ["Buttons drive the desktop."]}
-  - {kind: actions, id: acts, x: 760, y: 380, until: 5.5,
-     actions: [[1.5, "FN+PAD", FOCUS, RIGHT], [1.75, "FN+A", "FULL SCREEN", A], [2.0, "FN+B", CLOSE, B], [2.25, "FN+R1", WORKSPACE, R1]]}
-  - {kind: text, color: dim, x: 760, y: 580, at: 2.5, fade: 0.1, until: 5.5, lines: ["BUTTONS ONLY, ON LUNA, 2026-10-07"]}
-  - {kind: text, size: 40, color: amber, x: 760, y: 700, dy: 60, at: 2.8, fade: 0.15, until: 5.5, read: true, lines: ["THE SLATE TAKES", "THE TEXT."]}
-  - {kind: text, color: dim, x: 760, y: 830, at: 3.1, fade: 0.2, until: 5.5, lines: ["L1 OPENS IT"]}
-  - {kind: text, size: 56, color: chrome, x: 680, y: 330, dy: 75, at: 5.6, fade: 0.15, from: 5.5, read: true, lines: ["A DEV AGENT PRESSES", "THE SAME BUTTONS"]}
-  - {kind: agent, x: 1660, y: 365, s: 5, mode: ask, from: 5.5}
-  - {kind: text, color: dim, x: 680, y: 470, at: 5.9, fade: 0.15, from: 5.5, lines: ["VIA A VIRTUAL GAMEPAD, NOT PIXELS"]}
-  - {kind: key_combo, x: 680, at: 6.5, result_at: 6.8, label: "ON LUNA, IN THE SLATE:", keys: [FN, B], face: mike, from: 5.5}
-  - {kind: text, size: 40, color: green, x: 680, y: 790, dy: 60, at: 7.0, fade: 0.15, from: 5.5, read: true, lines: ["MIKE STARTS,", "ANSWERS IN 13 s"]}
-  - {kind: flash, at: 5.5, up: 0, down: 0.25, from: 5.5}
-  events:
-  - {fx: key_blip, at: 1.5, step: 0.25, n: 4}
-  - {fx: key, at: 2.6, v: 11}
-  - {fx: ding, at: 2.8, m: 84}
-  - {fx: nz, at: 2.5, v: [8, 5, 3], per: 2}
-  - {fx: stamp, at: 5.5, m1: 72, m2: 79, root: 36, v: 13}
-  - {fx: groove, at: 5.5, mood: agent}
-  - {fx: melody, at: 6.0, notes: motif_head, v: 9}
-  - {fx: key, at: 6.5, v: 13}
-  - {fx: key, at: 6.6, v: 13}
-  - {fx: blip, ch: p2, at: 6.8, step: 0.07, n: 3, each: {m: [81, 84, 88]}, frames: 3, v: 9, duty: 1}
-  - {fx: ding, at: 7.0, m: 86}
-  picture: 'Stage 6a: FN+button chips, "BUTTONS ONLY, ON LUNA, 2026-10-07", the Slate opened with L1; 6b: a dev agent presses FN+B through a virtual gamepad, Mike answers'
-  music_note: 'Am F G, key clicks; stamp, C G Am, motif head, ding'
-  facts:
-  - {on_screen: '"Buttons drive the desktop." FN+pad focus, FN+A full screen, FN+B close, FN+R1 workspace', source: '0506_01_buttons-only-result.md (button map)', machine: Luna}
-  - {on_screen: 'Buttons only, on Luna, 2026-10-07', source: 'Note beat 6; 0506_01_buttons-only-result.md', machine: Luna}
-  - {on_screen: 'THE SLATE TAKES THE TEXT; L1 OPENS IT', source: 'Note beat 6; 0605_01_slate-result.md (L1 opens it, floating rule)', machine: Luna}
-  - {on_screen: 'A DEV AGENT PRESSES THE SAME BUTTONS, via a virtual gamepad, not pixels', source: 'Note beat 6 (uinput device); Wyoh check 2026-11-01 (dev agent through the dev-only MCP server, not Mike)'}
-  - {on_screen: 'In the Slate, FN + B -> MIKE STARTS, ANSWERS IN 13 s (cold start)', source: 'Note beat 6; plan_wyoh.md 6.11; Wyoh check 2026-11-01', machine: Luna}
+  title: "17 BUTTONS, NO KEYBOARD"
+  parts:
+  - key: "Buttons drive the desktop."
+    chips: [[FN+PAD, FOCUS, RIGHT], [FN+A, FULL SCREEN, A], [FN+B, CLOSE, B], [FN+R1, WORKSPACE, R1]]
+    glance: ["BUTTONS ONLY, ON LUNA, 2026-10-07", "L1 OPENS IT"]
+    secondary: ["THE SLATE TAKES", "THE TEXT."]
+  - key: ["A DEV AGENT PRESSES", "THE SAME BUTTONS"]
+    glance: "VIA A VIRTUAL GAMEPAD, NOT PIXELS"
+    combo: {label: "ON LUNA, IN THE SLATE:", keys: [FN, B], face: mike}
+    secondary: ["MIKE STARTS,", "ANSWERS IN 13 s"]
+  machine: Luna
+  sources: ["0506_01_buttons-only-result.md (button map)", "Note beat 6; 0605_01_slate-result.md (L1 opens it, floating rule)", "Note beat 6 (uinput device); Wyoh check 2026-11-01 (dev agent through the dev-only MCP server, not Mike)", "Note beat 6; plan_wyoh.md 6.11; Wyoh check 2026-11-01"]
 
 - id: stage7
-  template: T05
+  template: checklist
   bars: 5
-  stage: 7
+  mood: tense
   title: "SEVEN LAYERS"
-  clear: 8.5
-  mood: layers
-  content:
-  - {kind: text, color: dim, x: 120, y: 290, at: 0.4, fade: 0.2, lines: ["LUNA, 2026-10-30:"]}
-  - {kind: text, color: chrome, x: 120, y: 335, at: 0.4, fade: 0.2, lines: ["A GAME'S BUTTONS DIED."]}
-  - {kind: text, size: 40, color: amber, x: 120, y: 470, at: 2.5, fade: 0.15, read: true, lines: ["FIX \"VERIFIED\"."]}
-  - {kind: text, size: 40, color: red, x: 120, y: 550, dy: 60, at: 3.0, fade: 0.15, read: true, lines: ["THE GAME DID", "NOT MOVE."]}
-  - kind: layers
-    from: 0.9
-    x: 1000
-    y: 230
-    w: 800
-    names: ["REAL PAD", "WYOH DAEMON", "APP PROFILE", "VIRTUAL PAD", "SDL", "GAME BINDINGS", "THE GAME MOVES"]
-    ok: [1.5, 1.75, 2.0, 2.25, 5.0, 5.5, 6.0]
-    fail: {layer: 6, at: 3.0}
-    highlight: {layer: 3, from: 2.5, until: 5.0}
-    unknown_from: {layer: 4, at: 2.5}
-  - {kind: stamp, size: 56, color: chrome, x: 120, y: 840, dy: 75, at: 6.5, from: 1.4, read: true, lines: ["ONLY THE LAST LAYER", "PROVES THE FIX."]}
-  events:
-  - {fx: blip, ch: p1, at: 1.5, step: 0.25, n: 4, each: {m: [72, 74, 76, 77]}, frames: 3, v: 10, duty: 2}
-  - {fx: ding, at: 2.5, m: 84}
-  - {fx: buzz, at: 3.0, dur: 0.5, m: 40, v: 13}
-  - {fx: tri_drop, at: 3.0, m0: 40, m1: 21, frames: 10}
-  - {fx: chord_arp, at: 3.5, dur: 1.0, root: 62, ivs: [0, 5, 7, 12], v: 4, duty: 0, rate: 3, env: swell, swell: [2, 5]}
-  - {fx: tick, at: 3.5, v: 5}
-  - {fx: tick, at: 4.0, v: 5}
-  - {fx: groove, at: 4.5, mood: stoptime, drums: light}
-  - {fx: blip, ch: p1, at: 5.0, step: 0.5, n: 2, each: {m: [77, 79]}, frames: 4, v: 11, duty: 2}
-  - {fx: roll, at: 5.5, dur: 0.48, v0: 4, v1: 12}
-  - {fx: ding, at: 6.0, m: 88}
-  - {fx: stamp, at: 6.5, m1: 69, m2: 76, root: 33}
-  - {fx: groove, at: 7.0, mood: lift}
-  - {fx: melody, at: 7.0, notes: [[0, 72, 1], [1, 74, 1], [2, 76, 2]], v: 9}
-  picture: 'Stage 7: seven layer rows; layers 1-4 tick, FIX "VERIFIED", layer 7 crossed "THE GAME DID NOT MOVE.", then 5-7 tick in turn; "ONLY THE LAST LAYER PROVES THE FIX."'
-  music_note: 'Checks, ding, buzz, Dsus4 stop-time, Dm E, stamp'
-  facts:
-  - {on_screen: 'Luna, 2026-10-30, a game''s buttons died; FIX "VERIFIED"; THE GAME DID NOT MOVE; seven layers; only the last layer proves the fix', source: 'Note beat 7; docs/howto/01_fix-a-game-gamepad-mapping.md (layer table, section 8)', machine: Luna}
-  - {on_screen: 'Layer names: real pad, Wyoh daemon, app profile, virtual pad, SDL, game bindings, the game moves', source: 'docs/howto/01_fix-a-game-gamepad-mapping.md section 1; docs/howto/img/game-input-chain.svg; confirmed by Wyoh 2026-11-01'}
+  glance: ["LUNA, 2026-10-30:", "A GAME'S BUTTONS DIED."]
+  items: ["REAL PAD", "WYOH DAEMON", "APP PROFILE", "VIRTUAL PAD", "SDL", "GAME BINDINGS", "THE GAME MOVES"]
+  claim: 4
+  fail: 7
+  secondary: ["FIX \"VERIFIED\".", ["THE GAME DID", "NOT MOVE."]]
+  key: ["ONLY THE LAST LAYER", "PROVES THE FIX."]
+  machine: Luna
+  sources: ["Note beat 7; docs/howto/01_fix-a-game-gamepad-mapping.md (layer table, section 8)", "docs/howto/01_fix-a-game-gamepad-mapping.md section 1; docs/howto/img/game-input-chain.svg; confirmed by Wyoh 2026-11-01"]
 
 - id: payoff
-  template: T21
+  template: tree
   bars: 3
-  call: sway_get_tree
-  tree: [[0, root], [1, "output DSI-1"], [2, "workspace 1"], [3, "window: foot"], [3, "window: mike"]]
-  stamp: "ASK THE DESKTOP."
-  aside: "Screenshots stay, as evidence for humans."
   mood: theme
-  picture: 'Payoff: the robot calls sway_get_tree, a window tree comes back, stamp "ASK THE DESKTOP.", aside'
-  music_note: 'Trailer theme at full voice on the stamp (1.5)'
-  facts:
-  - {on_screen: '`sway_get_tree`', source: 'src/wyoh/wyoh_mcp_server.py (tool name)'}
-  - {on_screen: '"Screenshots stay, as evidence for humans."', source: 'Note section 2 and section 4'}
+  glance: sway_get_tree
+  nodes: [[0, root], [1, "output DSI-1"], [2, "workspace 1"], [3, "window: foot"], [3, "window: mike"]]
+  key: "ASK THE DESKTOP."
+  secondary: "Screenshots stay, as evidence for humans."
+  sources: ["src/wyoh/wyoh_mcp_server.py (tool name)", "Note section 2 and section 4"]
 
 - id: result
-  template: T22
+  template: result
   bars: 3
-  headline: "STORY 2 CLEAR"
-  lesson: ["DON'T LOOK AT THE DESKTOP,", "ASK IT."]
-  sub: ["The compositor already knows", "what a screenshot can only guess."]
   mood: calm
-  picture: 'Result: STORY 2 CLEAR, seven pips, the lesson, the closing line'
-  music_note: 'Level-clear fanfare, seven pip blips, quiet motif head'
-  facts:
-  - {on_screen: '"DON''T LOOK AT THE DESKTOP, ASK IT." / "The compositor already knows what a screenshot can only guess."', source: 'Note section 3'}
+  title: "STORY 2 CLEAR"
+  key: ["DON'T LOOK AT THE DESKTOP,", "ASK IT."]
+  secondary: ["The compositor already knows", "what a screenshot can only guess."]
+  sources: ["Note section 3"]
 
 - id: end
-  template: T23
+  template: end_card
   bars: 3
-  motto: "There Ain't No Such Thing As A Free LLM."
-  url: "github.com/mdussere/tanstaafllm"
-  credit: "A personal engineering project by Michael Dussere"
-  picture: 'End card, the trailer''s: logo, motto, address, credit, PRESS START, fade over the last 0.5 s'
-  music_note: 'Trailer cadence, A-minor chord fading in 4-bit steps'
-  facts: []
+  key: ["There Ain't No Such Thing", "As A Free LLM."]
+  glance: ["github.com/mdussere/tanstaafllm", "A personal engineering project by Michael Dussere"]

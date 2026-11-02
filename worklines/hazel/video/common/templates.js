@@ -24,7 +24,6 @@ function steps(t, p, v, def = 0) {
   if (Array.isArray(v)) { let r = def; for (const [f, val] of v) if (t >= p.t0 + f) r = val; return r; }
   return v === undefined ? def : v;
 }
-const findItem = (p, id) => (p.content || []).find(i => i.id === id);
 
 // ======================================================================= content kinds
 // text: lines of one font at one place. font 'P' (Press Start 2P) or 'V' (VT323, shadow 3 like V()).
@@ -112,16 +111,16 @@ KINDS.scene_spill = (t, p, it) => {
   });
 };
 
-// T13 metric tiles: four (or fewer) boxes, each with a caption, a figure and a badge. tiles: [[at, caption, figure], ...]
+// T13 metric tiles: up to four boxes, each with a caption, a figure and the machine badge. tiles: [[at, caption, figure, badge], ...]
 KINDS.tiles = (t, p, it) => {
-  it.tiles.forEach(([t0r, k, v], i) => {
+  it.tiles.forEach(([t0r, k, v, bd], i) => {
     const t0 = p.t0 + t0r;
     if (t < t0) return;
     const x = it.x + (i % 2) * 510, y = it.y + Math.floor(i / 2) * 200, a = seg(t, t0, t0 + 0.1);
     box(x, y, 490, 185, { edge: C.cyan, alpha: 0.92 * a });
     tag(k, x + 30, y + 58, C.dim, a, { maxW: 430 });
     txt(v, x + 30, y + 120, 40, C.chrome, { alpha: a, scale: lerp(1.5, 1, easeOut(seg(t, t0, t0 + 0.15))) });
-    tag(it.badge, x + 460, y + 160, C.cyan, a, { align: 'right' });
+    tag(bd, x + 460, y + 160, C.cyan, a, { align: 'right' });
   });
 };
 
@@ -134,17 +133,13 @@ KINDS.pipe = (t, p, it) => {
 };
 
 // T12 handheld with screen states. states: [[from, 'black'|'flash'|'desk'|'slate'|'mike'|'moon'|'none']], focus / ws: steps or 'cycle',
-// presses: [{from, to, btns: [...]}] or {actions: id, len} (lights FN + the button of each action of an `actions` item)
+// presses: [{from, to, btns: [...]}] (lights the buttons in the window)
 KINDS.handheld = (t, p, it) => {
   const A = x => p.t0 + x, s = dflt(it.s, 5.5), ox = it.x, oy = it.y + (it.bob ? Math.round(Math.sin(t * Math.PI) * 2) * 4 : 0);
   let scr = 'desk';
   for (const [f, st] of it.states) if (t >= A(f)) scr = st;
   luna(ox, oy, s, t, scr, { focus: steps(t, p, it.focus), ws: steps(t, p, it.ws), answerAt: it.answer_at === undefined ? undefined : A(it.answer_at) });
-  (it.presses || []).forEach(pr => {
-    if (pr.actions) {
-      findItem(p, pr.actions).actions.forEach(([t0r, , , b]) => { if (t >= A(t0r) && t < A(t0r) + dflt(pr.len, 0.2)) { press(ox, oy, s, 'FN'); press(ox, oy, s, b); } });
-    } else if (t >= A(pr.from) && t < A(pr.to)) pr.btns.forEach(b => press(ox, oy, s, b));
-  });
+  (it.presses || []).forEach(pr => { if (t >= A(pr.from) && t < A(pr.to)) pr.btns.forEach(b => press(ox, oy, s, b)); });
 };
 
 // actions chips: two rows of two, [[at, button label, action label, device button]]
@@ -159,17 +154,17 @@ KINDS.actions = (t, p, it) => {
 
 // key combo: a label, two keycaps with a plus, an arrow and the answering face (after `result_at`)
 KINDS.key_combo = (t, p, it) => {
-  const A = x => p.t0 + x, X = it.x;
+  const A = x => p.t0 + x, X = it.x, Y = dflt(it.y, 545);
   if (t > A(it.at)) {
     let x = X;
-    tag(it.label, X, 545, C.amber);
-    x += keycap(x, 570, it.keys[0], t < A(it.result_at)) + 20;
-    txt('+', x + 10, 642, 40, C.chrome); x += 70;
-    x += keycap(x, 570, it.keys[1], t < A(it.result_at)) + 40;
+    tag(it.label, X, Y, C.amber);
+    x += keycap(x, Y + 25, it.keys[0], t < A(it.result_at)) + 20;
+    txt('+', x + 10, Y + 97, 32, C.chrome); x += 70;
+    x += keycap(x, Y + 25, it.keys[1], t < A(it.result_at)) + 40;
     if (t > A(it.result_at)) {
-      rect(x, 622, 120, 12, C.cyan); arrowHead(x + 140, 628, 1, C.cyan);
-      box(x + 170, 550, 150, 150, { edge: C.green });
-      face(it.face, x + 185, 565, 120);
+      rect(x, Y + 77, 120, 12, C.cyan); arrowHead(x + 140, Y + 83, 1, C.cyan);
+      box(x + 170, Y + 5, 150, 150, { edge: C.green });
+      face(it.face, x + 185, Y + 20, 120);
     }
   }
 };
@@ -215,23 +210,21 @@ TPL.T05 = (t, p) => {
   (p.flashes || [[0, 0, 0.3]]).forEach(([at, up, down, c]) => flash(t, p.t0 + at, up, down, c ? col(c) : '#fff'));
 };
 
-// T01 series title card: series line, stamped title, two-line subtitle, PRESS START
+// T01 title card: `series` (glance), the stamped `key` title, a two-line `secondary` subtitle, PRESS START
 TPL.T01 = (t, p) => {
   const A = x => p.t0 + x;
   rect(0, 0, W, H, C.ink); stars(t, 20, seg(t, A(0), A(1)) * 0.9);
   moon(W / 2, 1080 + 260, 1100, 0.35 * seg(t, A(0), A(1.5)));
-  const sa = dflt(p.series_at, 0.3);
-  txt(p.series, W / 2, 330, 36, C.amber, { align: 'center', alpha: seg(t, A(sa), A(sa + 0.2)) });
-  stampTxt(p.title, W / 2, 520, 100, C.chrome, t, A(p.title_at), { align: 'center', from: 2.0 });
-  const ua = dflt(p.sub_at, 1.4);
-  V(p.sub[0], W / 2, 635, 90, C.cyan, seg(t, A(ua), A(ua + 0.2)), { align: 'center' });
-  V(p.sub[1], W / 2, 725, 90, C.cyan, seg(t, A(ua), A(ua + 0.2)), { align: 'center' });
-  if (t > A(dflt(p.press_at, 2.4)) && Math.floor(TA * 2.5) % 2 === 0) txt('PRESS START', W / 2, 885, 40, C.amber, { align: 'center' });
-  flash(t, A(p.title_at), 0, 0.25);
+  txt(p.series, W / 2, 330, 32, C.amber, { align: 'center', alpha: seg(t, A(p.glance_at), A(p.glance_at + 0.2)) });
+  stampTxt(p.key, W / 2, 520, 100, C.chrome, t, A(p.key_at), { align: 'center', from: 2.0 });
+  const ua = seg(t, A(p.secondary_at), A(p.secondary_at + 0.2));
+  p.secondary.forEach((s, i) => V(s, W / 2, 640 + i * 70, 64, C.cyan, ua, { align: 'center' }));
+  if (t > A(p.press_at) && Math.floor(TA * 2.5) % 2 === 0) txt('PRESS START', W / 2, 900, 28, C.amber, { align: 'center' });
+  flash(t, A(p.key_at), 0, 0.25);
   flash(t, p.t1, 0.2, 0);
 };
 
-// T04 player card: the character box slides up, name, role, quest
+// T04 player card: the character box slides up; label + name, role lines (secondary), quest label (glance) + quest (key)
 TPL.T04 = (t, p) => {
   const A = x => p.t0 + x;
   sky(C.navy, '#1a0f45'); stars(t, 25, 0.8);
@@ -240,79 +233,80 @@ TPL.T04 = (t, p) => {
   box(M, by, 560, 560, { edge: C.cyan });
   face(p.face, M + 24, by + 24, 512);
   const X = 780, hp = easeOut(seg(t, A(0.1), A(0.45)));
-  txt(p.label, X + (1 - hp) * 300, 250, 32, C.amber, { alpha: hp });
-  txt(p.name, X + (1 - hp) * 500, 350, 80, C.chrome, { alpha: hp });
-  const ra = seg(t, A(0.8), A(0.95));
-  txt(p.role[0], X, 440, 40, C.cyan, { alpha: ra });
-  txt(p.role[1], X, 500, 40, C.cyan, { alpha: ra });
-  txt(p.quest_label, X, 610, 32, C.amber, { alpha: seg(t, A(2.2), A(2.3)) });
-  const qa = seg(t, A(2.25), A(2.4));
-  V(p.quest[0], X, 705, 90, C.chrome, qa, { maxW: 1020 });
-  V(p.quest[1], X, 790, 90, C.chrome, qa, { maxW: 1020 });
+  txt(p.glance[0], X + (1 - hp) * 300, 250, 32, C.amber, { alpha: hp });
+  txt(p.name, X + (1 - hp) * 500, 350, 40, C.chrome, { alpha: hp });
+  const ra = seg(t, A(p.secondary_at), A(p.secondary_at + 0.15));
+  p.secondary.forEach((s, i) => txt(s, X, 410 + i * 56, 40, C.cyan, { alpha: ra }));
+  txt(p.glance[1], X, 600, 32, C.amber, { alpha: seg(t, A(p.key_at - 0.05), A(p.key_at + 0.05)) });
+  const qa = seg(t, A(p.key_at), A(p.key_at + 0.15));
+  p.key.forEach((s, i) => V(s, X, 700 + i * 90, 90, C.chrome, qa, { maxW: 1020 }));
   flash(t, A(0), 0, 0.3);
   dissolve(seg(t, p.t1 - 0.25, p.t1), C.ink, dflt(p.seed, 11));
 };
 
-// T21 payoff reprise + T20 tree reveal: the agent calls the tool, the tree comes back, the stamp
+// T21 payoff reprise + tree reveal: the agent calls the tool (glance), the tree of `nodes` [[depth, label]] comes back
+// (leaves green), the `key` is stamped over it, the `secondary` aside follows
 TPL.T21 = (t, p) => {
   const A = x => p.t0 + x;
   sky(C.navy, '#1a0f45'); stars(t, 25, 0.8); grid(t, 900, C.violet2, 0.5);
   agent(M + 40, 300, 10, t, 'ask');
-  const X0 = M + 280, X1 = 760;
-  if (t > A(0.3)) {
-    tag(p.call, X0 + 10, 330, C.cyan, seg(t, A(0.3), A(0.4)));
-    packet(t, A(0.3), A(0.8), X0, X1 + 300, 360, C.cyan);
+  const X0 = M + 280, X1 = 760, n = p.nodes.length, step = n <= 6 ? 66 : 360 / n;
+  if (t > A(p.call_at)) {
+    tag(p.glance[0], X0 + 10, 330, C.cyan, seg(t, A(p.call_at), A(p.call_at + 0.1)));
+    packet(t, A(p.call_at), A(p.call_at + 0.5), X0, X1 + 300, 360, C.cyan);
   }
-  p.tree.forEach(([d, s], i) => {
-    const t0 = A(0.9) + i * 0.12;
+  const ys = p.nodes.map((_, i) => 280 + i * step);
+  p.nodes.forEach(([d, s], i) => {
+    const t0 = A(p.nodes_at) + i * 0.12;
     if (t < t0) return;
-    const x = X1 + 300 + d * 80, y = 280 + i * 66;
-    if (d > 0) { rect(x - 56, y - 50 - (i === 4 ? 66 : 0), 6, 50 + (i === 4 ? 66 : 0), C.dim); rect(x - 56, y - 6, 40, 6, C.dim); }
-    rect(x, y - 38, measure(s, 28) + 30, 52, i >= 3 ? C.navy2 : C.violet);
-    tag(s, x + 15, y, i >= 3 ? C.green : C.chrome);
+    const x = X1 + 300 + d * 80, y = ys[i], leaf = i === n - 1 || p.nodes[i + 1][0] <= d;
+    if (d > 0) {
+      let j = i - 1; while (j > 0 && p.nodes[j][0] >= d) j--;
+      rect(x - 56, ys[j] + 16, 6, y - 6 - (ys[j] + 16), C.dim); rect(x - 56, y - 6, 40, 6, C.dim);
+    }
+    rect(x, y - 38, measure(s, 28) + 30, 52, leaf ? C.navy2 : C.violet);
+    tag(s, x + 15, y, leaf ? C.green : C.chrome);
   });
-  const sa = dflt(p.stamp_at, 1.5), q = seg(t, A(sa), A(sa + 0.15));
+  const q = seg(t, A(p.key_at), A(p.key_at + 0.15));
   if (q > 0) rect(0, 630, W, 140, C.ink, 0.7 * q);
-  stampTxt(p.stamp, W / 2, 745, 96, C.chrome, t, A(sa), { align: 'center', from: 2.0 });
-  const aa = dflt(p.aside_at, 2.6);
-  V(p.aside, W / 2, 860, 64, C.cyan, seg(t, A(aa), A(aa + 0.2)), { align: 'center' });
+  stampTxt(p.key, W / 2, 745, 96, C.chrome, t, A(p.key_at), { align: 'center', from: 2.0 });
+  V(p.secondary, W / 2, 860, 64, C.cyan, seg(t, A(p.secondary_at), A(p.secondary_at + 0.2)), { align: 'center' });
   flash(t, A(0), 0, 0.3);
-  flash(t, A(sa), 0, 0.3);
+  flash(t, A(p.key_at), 0, 0.3);
   dissolve(seg(t, p.t1 - 0.25, p.t1), C.ink, dflt(p.seed, 13));
 };
 
-// T22 result screen: headline, one pip per stage, the lesson, the closing line
+// T22 result screen: heading (`title`), one pip per stage, the lesson (`key`), the closing line (`secondary`)
 TPL.T22 = (t, p) => {
   const A = x => p.t0 + x;
   rect(0, 0, W, H, C.ink); stars(t, 18, 0.8);
   moon(W / 2, 1080 + 300, 1100, 0.3);
   const q = seg(t, A(0), A(0.15));
-  if (q > 0) txt(p.headline, W / 2, 230, 72, C.amber, { align: 'center', scale: lerp(1.8, 1, easeOut(q)), alpha: q * 3 });
+  if (q > 0) txt(p.title, W / 2, 230, 72, C.amber, { align: 'center', scale: lerp(1.8, 1, easeOut(q)), alpha: q * 3 });
   for (let i = 0; i < NSTAGES; i++) {
     const t0 = A(0.6) + i * 0.08; if (t < t0) continue;
     const x = W / 2 - NSTAGES * 46 / 2 + i * 46;
     rect(x, 289, 34, 34, C.shadow); rect(x, 285, 34, 34, C.green);
   }
-  const la = dflt(p.lesson_at, 1.2);
-  txt(p.lesson[0], W / 2, 470, 64, C.chrome, { align: 'center', alpha: seg(t, A(la), A(la + 0.15)) });
-  txt(p.lesson[1], W / 2, 560, 64, C.chrome, { align: 'center', alpha: seg(t, A(la), A(la + 0.15)) });
-  const sa = dflt(p.sub_at, 2.4);
-  V(p.sub[0], W / 2, 700, 64, C.cyan, seg(t, A(sa), A(sa + 0.2)), { align: 'center' });
-  V(p.sub[1], W / 2, 775, 64, C.cyan, seg(t, A(sa), A(sa + 0.2)), { align: 'center' });
+  const ka = seg(t, A(p.key_at), A(p.key_at + 0.15)), sa = seg(t, A(p.secondary_at), A(p.secondary_at + 0.2));
+  p.key.forEach((s, i) => txt(s, W / 2, 480 + i * 76, 56, C.chrome, { align: 'center', alpha: ka }));
+  p.secondary.forEach((s, i) => V(s, W / 2, 700 + i * 75, 64, C.cyan, sa, { align: 'center' }));
   flash(t, A(0), 0, 0.3);
 };
 
-// T23 end card: the chrome logo, the motto, the address, the credit, PRESS START, fade to black
+// T23 end card: the chrome logo, the motto (`key`), `glance` [address, credit], PRESS START, fade to black
 TPL.T23 = (t, p) => {
   const A = x => p.t0 + x;
   rect(0, 0, W, H, C.ink); stars(t, 15, 0.8);
   moon(W / 2, 1080 + 200, 1100, 0.35);
   const pp = easeOut(seg(t, A(0), A(0.4)));
   titleLogo(W / 2, 330, lerp(1700, 1500, pp), 1);
-  txt(p.motto, W / 2, 610, 64, C.chrome, { font: 'V', align: 'center', alpha: seg(t, A(0.3), A(0.5)), shadow: 3 });
-  txt(p.url, W / 2, 710, 36, C.cyan, { align: 'center', alpha: seg(t, A(0.6), A(0.8)) });
-  txt(p.credit, W / 2, 795, 48, C.chrome, { font: 'V', align: 'center', alpha: seg(t, A(0.9), A(1.1)), shadow: 3 });
-  if (t > A(1.5) && Math.floor(TA * 3) % 2 === 0) txt('PRESS START', W / 2, 935, 40, C.amber, { align: 'center' });
+  const ka = seg(t, A(p.key_at - 0.2), A(p.key_at));
+  p.key.forEach((s, i) => V(s, W / 2, 610 + i * 90, 90, C.chrome, ka, { align: 'center' }));
+  const ga = p.glance_at;
+  txt(p.glance[0], W / 2, 830, 28, C.cyan, { align: 'center', alpha: seg(t, A(ga), A(ga + 0.2)) });
+  txt(p.glance[1], W / 2, 890, 32, C.chrome, { font: 'V', align: 'center', alpha: seg(t, A(ga + 0.3), A(ga + 0.5)), shadow: 3 });
+  if (t > A(ga + 1.0) && Math.floor(TA * 3) % 2 === 0) txt('PRESS START', W / 2, 960, 28, C.amber, { align: 'center' });
   flash(t, A(0), 0, 0.5);
   if (t > p.t1 - 0.5) rect(0, 0, W, H, '#000', seg(t, p.t1 - 0.5, p.t1));
 };
