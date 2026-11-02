@@ -755,7 +755,7 @@ def test_a_crashed_provider_clears_the_slate_hint():
 
 def test_the_deployed_config_uses_resident_kroko():
     command = g.load_config(ROOT / "src/wyoh/deploy/luna/gamepad.toml").dictate_command
-    assert "--resident" in command and command[command.index("--model") + 1] == "kroko-fr-2025"
+    assert "--resident" in command and command[command.index("--model") + 1] == "kroko-en-2025"
 
 
 

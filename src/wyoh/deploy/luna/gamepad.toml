@@ -65,7 +65,7 @@ zone_preload = true
 
 dictate_command = [
     "/usr/bin/python3", "/storage/.local/share/tanstfaafllm/mycroft/mycroft_dictate.py",
-    "--resident", "--model", "kroko-fr-2025",
+    "--resident", "--model", "kroko-en-2025",  # the user, 2026-11-02: English for Mike (Mycroft 10.6)
     "--input", "{capture}", "--assets", "/storage/.local/opt/mycroft", "--threads", "2",
 ]
 
