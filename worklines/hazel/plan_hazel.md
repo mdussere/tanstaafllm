@@ -161,6 +161,7 @@ Done means: the trailer and the first story videos are published, they read as o
 - `worklines/hazel/video/trailer/` — the trailer's sources (moved from Professor, 2026-10-31).
 - `docs/0103_01_series-template.md` — the series template (draft).
 - `video/common/` (runtime, templates, cues, generator, lint, README) and `video/episodes/` (episode scripts) — the script-to-video pipeline.
+- `docs/0606_01_how-the-video-generator-works.md` — how a script becomes a video, and the measured token balance.
 - `docs/0601_01_token-lean-video-pipeline.md` — where the tokens go; the script-to-video generator proposal.
 - `video/library/` — the sequence template library (index, uses, 23 cards).
 - `docs/0501_01_sequence-library-analysis.md` — templates in the three videos, and the proposed library structure.
