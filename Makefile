@@ -73,3 +73,33 @@ wyoh-luna-enable: wyoh-luna-deploy
 
 wyoh-luna-disable:
 	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) 'cd /storage/.config/system.d && rm -f textmode.target.wants/wyoh-sway.service wyoh-sway.service.wants/wyoh-gamepad.service wyoh-sway.service.wants/wyoh-layout.service && rmdir --ignore-fail-on-non-empty textmode.target.wants wyoh-sway.service.wants && systemctl daemon-reload'
+
+# --- Run the cell's programs on the desk (Termidor) --------------------------
+# Adam, 2026-11-03: "make targets to launch things: run Mike, run Mannie, etc."
+# Mike runs from MIKE_HOME (~/.local/opt/mike: mike.py, llama-b11429/, the model).
+MIKE_HOME ?= $(HOME)/.local/opt/mike
+MIKE_LANG ?= en
+
+.PHONY: help run-mike run-mike-rpg run-mike-rpg-fake run-camp-currie run-mannie
+
+help:
+	@echo "make run-mike           Mike in this terminal (MIKE_LANG=fr for French)"
+	@echo "make run-mike-rpg       Mike in the RPG dialogue window (Wyoh 6.13, look B)"
+	@echo "make run-mike-rpg-fake  the RPG window with a fake Mike (no model needed)"
+	@echo "make run-camp-currie    the Camp Currie game (arrows, Return = A, Escape = B)"
+	@echo "make run-mannie         Mannie: Claude Code in this repository"
+
+run-mike:
+	MIKE_HOME=$(MIKE_HOME) MIKE_LANG=$(MIKE_LANG) python3 $(MIKE_HOME)/mike.py
+
+run-mike-rpg:
+	MIKE_HOME=$(MIKE_HOME) MIKE_LANG=$(MIKE_LANG) uv run --group camp-currie python src/wyoh/apps/mike/mike_rpg.py
+
+run-mike-rpg-fake:
+	uv run --group camp-currie python src/wyoh/apps/mike/mike_rpg.py -- python3 test/wyoh/fixtures/fake_mike.py
+
+run-camp-currie:
+	cd src/camp-currie && uv run --group camp-currie python -m camp_currie
+
+run-mannie:
+	claude
