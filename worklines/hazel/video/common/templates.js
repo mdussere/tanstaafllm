@@ -119,7 +119,7 @@ KINDS.tiles = (t, p, it) => {
     const x = it.x + (i % 2) * 510, y = it.y + Math.floor(i / 2) * 200, a = seg(t, t0, t0 + 0.1);
     box(x, y, 490, 185, { edge: C.cyan, alpha: 0.92 * a });
     tag(k, x + 30, y + 58, C.dim, a, { maxW: 430 });
-    txt(v, x + 30, y + 120, 40, C.chrome, { alpha: a, scale: lerp(1.5, 1, easeOut(seg(t, t0, t0 + 0.15))) });
+    txt(v, x + 30, y + 120, 40, C.chrome, { alpha: a, scale: lerp(1.5, 1, easeOut(seg(t, t0, t0 + 0.15))), group: 'tiles' });   // one message: the figures
     tag(bd, x + 460, y + 160, C.cyan, a, { align: 'right' });
   });
 };

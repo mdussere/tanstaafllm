@@ -1496,6 +1496,7 @@ scrape = [
 video = [
     { name = "cairosvg" },
     { name = "numpy" },
+    { name = "pyyaml" },
     { name = "scipy" },
     { name = "soundfile" },
 ]
@@ -1521,6 +1522,7 @@ scrape = [{ name = "playwright", specifier = "==1.63.0" }]
 video = [
     { name = "cairosvg", specifier = ">=2.9.1" },
     { name = "numpy", specifier = ">=2.5.3" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "scipy", specifier = ">=1.18.1" },
     { name = "soundfile", specifier = ">=0.14.0" },
 ]

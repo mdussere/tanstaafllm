@@ -7,24 +7,33 @@ build.py samples frames and this module reports, per scene:
   phone      glyph heights against the phone rule: key >= 50 px (VT323 >= 90, Press Start 2P >= 56), secondary >= 35 px;
              a scene without any 50 px text, and frames with more than one secondary (HUD excluded), are reported;
              smaller texts are listed as glance text (the story must not depend on them)
+  squeeze    a text that txt() narrowed to fit its maxW (below SQUEEZE_MIN of its natural width)
+Texts drawn with the same `group` (the metric tiles) count as one message. `analyse` also returns the problem counts;
+`build.py --strict` fails on any of them (glance texts and squeezes above SQUEEZE_FAIL are reported, not failed).
 Texts that are still fading in (alpha < 0.5) or sliding in (scale > 1.02) are ignored for the geometric checks.
 """
+import math
 from collections import defaultdict
+
+from timemap import source_time
 
 W, H, M = 1920, 1080, 120
 KEY_PX, SECOND_PX = 50, 35
-CLEAR_ZONE = (W - M - 220 - 6 * 72 / 2 - 8, 910, W - M - 220 + 6 * 72 / 2 + 8, 998)   # x0, y0, x1, y1 of "CLEAR!" at 72 px
+SQUEEZE_MIN, SQUEEZE_FAIL = 0.99, 0.9   # report below 99 % of the natural width; --strict fails below 90 %
+CLEAR_SIZE, CLEAR_Y, CLEAR_ROT = 72, 980, 0.08
 
 
-def source_time(T, holds):
-    acc = 0.0
-    for s, d in sorted(holds):
-        if T < s + acc:
-            break
-        if T < s + acc + d:
-            return s
-        acc += d
-    return T - acc
+def clear_zone(label='CLEAR!'):
+    """(x0, y0, x1, y1) of the stage's end stamp at rest, placed as runtime.js clearStamp() places it: centred on the
+    baseline at (W - M - 220, 980), moved left when a longer label (LET'S DO IT!) would leave the frame, rotated by
+    -0.08 rad (the rotation lifts one end and drops the other by half the width times sin 0.08). Press Start 2P is
+    monospaced, one advance per character equal to the font size, and its capitals stand one size tall; 8 px of slack
+    covers the letter spacing and the glyph overshoot."""
+    w = CLEAR_SIZE * len(label)
+    x = min(W - M - 220, W - M - w * 0.55)
+    s, c = math.sin(CLEAR_ROT), math.cos(CLEAR_ROT)
+    dx, lift = w / 2 * c + CLEAR_SIZE * s + 8, w / 2 * s
+    return (x - dx, CLEAR_Y - CLEAR_SIZE * c - lift - 8, x + dx, CLEAR_Y + lift + 8)
 
 
 def hit(a, b):
@@ -42,6 +51,9 @@ def messages(rs):
     for r in rs:
         for g in groups:
             q = g[-1]
+            if r.get('group') and r.get('group') == q.get('group'):
+                g.append(r)
+                break
             if q['font'] == r['font'] and q['size'] == r['size'] and r['y0'] - q['y1'] < r['size'] and \
                     (abs(q['x0'] - r['x0']) < 3 or abs((q['x0'] + q['x1']) - (r['x0'] + r['x1'])) < 6):
                 g.append(r)
@@ -68,12 +80,14 @@ def analyse(rec, scenes, holds):
                 found[('overflow', sc['id'], r['s'], box_s(r))].append(T)
             elif r['x0'] < 0.05 * W or r['x1'] > 0.95 * W or r['y0'] < 0.05 * H or r['y1'] > 0.95 * H:
                 found[('margin', sc['id'], r['s'], box_s(r))].append(T)
+            if r.get('squeeze', 1) < SQUEEZE_MIN:
+                found[('squeeze', sc['id'], r['s'], f"{r['squeeze']:.2f} of its width")].append(T)
             if r['alpha'] >= 0.9:
                 g = glyphs[sc['id']].get(r['s'], (0, '', 0))
                 if r['glyph'] > g[0]:
                     glyphs[sc['id']][r['s']] = (r['glyph'], r['font'], r['size'])
             if sc.get('clear') is not None and r['s'] != sc.get('clear_text', 'CLEAR!'):
-                z = dict(x0=CLEAR_ZONE[0], y0=CLEAR_ZONE[1], x1=CLEAR_ZONE[2], y1=CLEAR_ZONE[3])
+                z = dict(zip(('x0', 'y0', 'x1', 'y1'), clear_zone(sc.get('clear_text', 'CLEAR!'))))
                 if hit(r, z):
                     found[('clear', sc['id'], r['s'], box_s(r))].append(T)
         for i, a in enumerate(vis):
@@ -92,9 +106,12 @@ def analyse(rec, scenes, holds):
     lines = [f'LAYOUT LINT: {frames} frames sampled', '']
     counts = {}
     for kind, label in (('overflow', 'text outside the frame'), ('margin', 'text in the outer 5 %'),
-                        ('overlap', 'texts overlapping'), ('clear', 'text in the CLEAR! zone')):
+                        ('overlap', 'texts overlapping'), ('clear', 'text in the CLEAR! zone'),
+                        ('squeeze', f'text narrowed below {SQUEEZE_MIN:.0%} to fit')):
         items = sorted((k for k in found if k[0] == kind), key=lambda k: (found[k][0], k))
         counts[kind] = len(items)
+        if kind == 'squeeze':
+            counts['squeeze_fail'] = sum(1 for k in items if float(k[3].split()[0]) < SQUEEZE_FAIL)
         lines.append(f'== {kind}: {label} ({len(items)}) ==')
         for k in items:
             ts = found[k]
@@ -123,7 +140,9 @@ def analyse(rec, scenes, holds):
     for sid, lst in nsec.items():
         lines.append(f"  {sid:8s} t={lst[0][0]:g}..{lst[-1][0]:g} ({len(lst)} samples): {lst[0][1]}")
     summary = (f"lint: overflow {counts['overflow']}, margin {counts['margin']}, overlap {counts['overlap']}, "
-               f"clear-zone {counts['clear']}, scenes without a 50 px key {len(nokey)} {nokey}, scenes with 2+ keys at once {len(multi)} {multi}, "
+               f"clear-zone {counts['clear']}, squeezed {counts['squeeze']} ({counts['squeeze_fail']} below {SQUEEZE_FAIL:.0%}), scenes without a 50 px key {len(nokey)} {nokey}, scenes with 2+ keys at once {len(multi)} {multi}, "
                f"frames with 2+ secondaries {n2}, glance texts {glance_total}")
     lines += ['', summary]
-    return '\n'.join(lines) + '\n', summary
+    problems = dict(overflow=counts['overflow'], margin=counts['margin'], overlap=counts['overlap'], clear=counts['clear'],
+                    squeeze=counts['squeeze_fail'], no_key=len(nokey), two_keys=len(multi), two_secondaries=n2)
+    return '\n'.join(lines) + '\n', summary, problems

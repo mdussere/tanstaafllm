@@ -60,13 +60,15 @@ function txt(s, x, y, size, color, o = {}) {
   if (sh) { ctx.fillStyle = o.shadowColor || C.shadow; ctx.fillText(s, sh, sh); }
   ctx.fillStyle = color;
   ctx.fillText(s, 0, 0);
-  if (LINT.on && !o.noLint) lintRecord(s, x, y, size, o, w * sc, ctx.globalAlpha);
+  if (LINT.on && !o.noLint) lintRecord(s, x, y, size, o, w * sc, ctx.globalAlpha, sc);
   ctx.restore();
   return w * sc;
 }
 // ---------- layout lint (text only): every txt() call records its bounding box when LINT.on ----------
+// squeeze: the horizontal scale txt() applied to fit maxW (1 = natural width). o.group: texts of one message laid out
+// side by side (the metric tiles), counted as one message by the lint.
 const LINT = { on: false, rec: [] };
-function lintRecord(s, x, y, size, o, w, alpha) {
+function lintRecord(s, x, y, size, o, w, alpha, squeeze = 1) {
   const fam = (o.font || 'P') === 'P' ? 'PS2P' : 'VT';
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.font = `${size}px ${fam}`; ctx.letterSpacing = NOLIG;
@@ -78,7 +80,7 @@ function lintRecord(s, x, y, size, o, w, alpha) {
   const pts = [[x0, -asc], [x0 + w * k, -asc], [x0 + w * k, desc], [x0, desc]];
   const c = Math.cos(o.rot || 0), sn = Math.sin(o.rot || 0);
   const xs = pts.map(([px, py]) => x + px * c - py * sn), ys = pts.map(([px, py]) => y + px * sn + py * c);
-  LINT.rec.push({ s, font: fam, size, scale: k, alpha, glyph: cap.actualBoundingBoxAscent * k,
+  LINT.rec.push({ s, font: fam, size, scale: k, alpha, glyph: cap.actualBoundingBoxAscent * k, squeeze, group: o.group || null,
     x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) });
 }
 function measure(s, size, font = 'P') { ctx.save(); ctx.font = `${size}px ${font === 'P' ? 'PS2P' : 'VT'}`; ctx.letterSpacing = NOLIG; const w = ctx.measureText(s).width; ctx.restore(); return w; }

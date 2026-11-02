@@ -609,7 +609,10 @@ def render(scenes, ctx, holds=()):
     x = A.render()
     n = int(round(dur * SR))
     x = np.concatenate([x, np.zeros(max(0, n - len(x)))])[:n]
-    x /= np.abs(x).max()
+    peak = np.abs(x).max()
+    if peak == 0:
+        raise ValueError('the score is silent: no cue wrote a sound')
+    x /= peak
     x = np.tanh(0.8 * x) / np.tanh(0.8)                 # soft knee: a little more body (about +1.6 dB LUFS) at the same peak
     x *= 10 ** (-1.1 / 20)
     ramp = min(n, 480)
