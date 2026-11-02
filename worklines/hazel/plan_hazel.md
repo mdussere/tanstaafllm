@@ -103,11 +103,12 @@ Done means: the trailer and the first story videos are published, they read as o
 ### Step 6 — A token-lean pipeline: the model writes a script, the CPU builds the video
 **Status**: 🧪 In progress (user, 2026-11-02: `🟩 go` 6.2–6.6, "essaie déjà de reproduire la story 2 avec le pipeline"). Rule kept: no new video until the pipeline is done. Scope: the pipeline is built from Story 2; the trailer and Story 1 stay on their own frozen sources (not migrated). Built by one Sonnet sub-agent, reviewed by Hazel; Rive not used (§4b of the analysis)
 - [x] 6.1 Analysis: where the tokens go (≈ 160 k + 129 k sub-agent tokens for Story 2), and what a generator can do instead (`docs/0601_01_token-lean-video-pipeline.md`).
-- [ ] 6.2 `video/common/`: one shared runtime (renderer head, nes.py, capture, contact), extracted from Story 2. The trailer and Story 1 keep their frozen copies.
-- [ ] 6.3 Parametric templates with music cues: the frame and the most used body templates first.
-- [ ] 6.4 The episode script format and the generator (timeline, score cues, reading audit, NOTES.md tables).
-- [ ] 6.5 The layout lint as a text report (overflow, overlap, margins, phone glyph heights) and a low-resolution preview with one small contact sheet.
-- [ ] 6.6 Story 2 rebuilt from an episode script through the pipeline: same picture (pixel diff of stills against the current render), same timing, lint clean. Token count recorded and compared with Story 2's ≈ 290 k. Then Story 2's postponed revision (Playwright opening, no seven-layers stage) as script edits.
+- [x] 6.2 `video/common/`: one shared runtime (renderer head, nes.py, capture, contact), extracted from Story 2. The trailer and Story 1 keep their frozen copies.
+- [x] 6.3 Parametric templates with music cues: the frame and the most used body templates first.
+- [x] 6.4 The episode script format and the generator (timeline, score cues, reading audit, NOTES.md tables).
+- [x] 6.5 The layout lint as a text report (overflow, overlap, margins, phone glyph heights) and a low-resolution preview with one small contact sheet.
+- [ ] 6.4b Make the script high level. Today `episodes/story2-ask-the-desktop.yaml` (358 lines) still carries positions, sizes and notes, because it had to reproduce Story 2 exactly. Templates should place the key and secondary slots by the phone rule and pick music cues from `mood`, so that a scene needs only its template, its texts and its sources; the low-level fields stay as optional overrides.
+- [ ] 6.6 Story 2 rebuilt from an episode script through the pipeline: same picture (pixel diff of stills against the current render), same timing, lint clean. **Rebuild done (2026-11-02):** 144 stills pixel-identical (mean abs diff 0.0000), WAV bit-identical, 90.000 s, −15.3 LUFS, 0 s holds; `lint.txt` reports 0 overflow, 0 overlap, 0 in the CLEAR! zone, 1 text in the 5 % margin, no key message on the end card (`results/hazel/story2-ask-the-desktop/20261102T005909/`). One-time building cost: ≈ 215 k tokens (Sonnet sub-agent). Still to do: the token count of an *edit* through the script (the postponed revision). Token count recorded and compared with Story 2's ≈ 290 k. Then Story 2's postponed revision (Playwright opening, no seven-layers stage) as script edits.
 
 ## Progress tracking ✅
 
@@ -142,6 +143,7 @@ Done means: the trailer and the first story videos are published, they read as o
 | lun. 02 nov 2026 00:34:18 CET | User: Story 2 revision: drop the seven-layers stage, open on the Playwright/browser parallel with a comparison table. Sonnet sub-agent launched. |
 | lun. 02 nov 2026 00:36:40 CET | User: stop; no new video before the pipeline is transformed. Sub-agent stopped, partial edits saved as a patch, Story 2 sources restored. |
 | lun. 02 nov 2026 00:45:40 CET | User: `🟩 go` Step 6 (6.2–6.6), first target: reproduce Story 2 with the pipeline. Sonnet sub-agent launched. |
+| lun. 02 nov 2026 01:08:15 CET | Pipeline built (6.2–6.5) by a Sonnet sub-agent (≈ 215 k tokens, once); Story 2 rebuilt from its script, pixel-identical. 6.4b added: make the script high level. |
 
 ## Workline artifacts
 
@@ -151,6 +153,7 @@ Done means: the trailer and the first story videos are published, they read as o
 - Private phone page (Professor's): https://claude.ai/artifact/Wqpg9wD9Ew5MunsYFhxqLn, links both videos.
 - `worklines/hazel/video/trailer/` — the trailer's sources (moved from Professor, 2026-10-31).
 - `docs/0103_01_series-template.md` — the series template (draft).
+- `video/common/` (runtime, templates, cues, generator, lint, README) and `video/episodes/` (episode scripts) — the script-to-video pipeline.
 - `docs/0601_01_token-lean-video-pipeline.md` — where the tokens go; the script-to-video generator proposal.
 - `video/library/` — the sequence template library (index, uses, 23 cards).
 - `docs/0501_01_sequence-library-analysis.md` — templates in the three videos, and the proposed library structure.
