@@ -251,28 +251,29 @@ class View:
         # the question (or what FN+B is typing)
         listening = dictation in ("listening", "finishing")
         q = heard if listening else (typing or t.question)
-        top = pg.Rect(24, 24, 672, 96)
+        top = pg.Rect(24, 24, 672, 130)
         self.box(surf, top, AMBER if listening else CYAN, PANEL)
         label = ("LISTENING" if dictation == "listening" else "...") if listening else ("YOU" if q else "MIKE")
         surf.blit(self.label.render(label, True, AMBER if listening else CYAN), (44, 38))
         if listening and int(now * 2) % 2 == 0:
             pg.draw.circle(surf, (232, 96, 90), (660, 46), 9)
-        line = (self.wrap(q, self.small, 630) or [""])[-1] if q else ("Space, L1/L2 or F1/F2: dictate, again to send" if dictation
-                                                                    else "L1: dictate, L1 again to send")
-        surf.blit(self.small.render(line + ("_" if typing and int(now * 2) % 2 == 0 else ""), True, WHITE if q else DIM), (44, 70))
+        rows = (self.wrap(q, self.small, 630) or [""])[-2:] if q else [("Space, L1/L2 or F1/F2: dictate, again to send" if dictation
+                                                                        else "L1: dictate, L1 again to send")]
+        for i, row in enumerate(rows):
+            cursor = "_" if typing and i == len(rows) - 1 and int(now * 2) % 2 == 0 else ""
+            surf.blit(self.small.render(row + cursor, True, WHITE if q else DIM), (44, 70 + i * 32))
         # Mike's portrait, with a small life of its own
         phase = t.phase
         bob = int(3 * math.sin(now * 2.2))
-        frame = pg.Rect(252, 140 + bob, 216, 216)
+        frame = pg.Rect(252, 184 + bob, 216, 216)
         self.box(surf, frame.inflate(8, 8), AMBER, PANEL)
         surf.blit(self.portrait, frame.move(4, 4))
         if phase == "thinking" and not t.answer:  # thinking: three dots pulse under the portrait
             for i in range(3):
                 on = int(now * 3) % 3 == i
-                pg.draw.rect(surf, AMBER if on else BORDER, (330 + i * 24, 372 + bob, 14, 14))
+                pg.draw.rect(surf, AMBER if on else BORDER, (330 + i * 24, 412 + bob, 14, 14))
         status = {"ready": "READY", "thinking": "THINKING", "starting": "STARTING", "asks": "ASKS YOU",
                   "waiting": "WAITING FOR MANNIE", "busy": "BUSY"}.get(phase, phase.upper())
-        surf.blit(self.small.render(status, True, CYAN), self.small.render(status, True, CYAN).get_rect(midtop=(360, 396)))
         # the dialogue box: the answer, typed; or Mike's notices
         box = pg.Rect(16, 444, 688, 228)
         self.box(surf, box, WHITE, NAVY, double=True)
@@ -292,7 +293,7 @@ class View:
         surf.blit(self.small.render(hint, True, DIM), (24, 684))
 
 
-_wyoh_seen = [0.0, ""]
+_wyoh_seen = [0.0, "", ""]  # last read, state, live text
 
 
 def wyoh_dictation(path: str = "/run/wyoh/gamepad.json") -> str:
@@ -302,10 +303,12 @@ def wyoh_dictation(path: str = "/run/wyoh/gamepad.json") -> str:
         _wyoh_seen[0] = now
         try:
             with open(path, encoding="utf-8") as status:
-                value = json.load(status).get("direct", "")
+                data = json.load(status)
+            value = data.get("direct", "")
             _wyoh_seen[1] = {"loading": "finishing", "stopping": "finishing"}.get(value, value)
+            _wyoh_seen[2] = data.get("direct_text", "") if value else ""
         except (OSError, ValueError):
-            _wyoh_seen[1] = ""
+            _wyoh_seen[1], _wyoh_seen[2] = "", ""
     return _wyoh_seen[1]
 
 
@@ -369,7 +372,8 @@ def main(argv: list[str]) -> int:
             if dictation is not None:
                 state, heard = dictation.state, dictation.text
             else:  # on Luna, L1 is Wyoh's direct dictation (6.14): show its state, which the daemon publishes
-                state, heard = wyoh_dictation(), ""
+                state = wyoh_dictation()
+                heard = _wyoh_seen[2]
             view.draw(screen, t, typing, time.monotonic(), state, heard)
             pygame.display.flip()
             pygame.time.wait(33)

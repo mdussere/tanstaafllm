@@ -1482,6 +1482,7 @@ class Daemon:
     def deliver_direct(self, text: str) -> None:
         """The direct utterance ended: type it into the focused window and press Return."""
         self.direct = False
+        self.state["direct"] = ""
         text = text.strip()
         if not text:
             self.write_status()
@@ -1609,9 +1610,14 @@ class Daemon:
                 for message in messages:
                     direct_final = self.direct and message.get("op") == "final"
                     failed = self.direct and message.get("op") == "error"
+                    if self.direct and message.get("op") == "partial":
+                        # shown live by Mike's window (6.14); runtime state only, never logged
+                        self.state["direct_text"] = str(message.get("text", ""))
+                    heard = str(message.get("text", "")).strip() or self.state.get("direct_text", "")
                     self.resident_do(self.resident.message(message))
                     if direct_final:
-                        self.deliver_direct(str(message.get("text", "")))
+                        self.state["direct_text"] = ""
+                        self.deliver_direct(heard)  # the final text, or the last partial if final is empty
                     elif failed:
                         self.direct = False
                 return
