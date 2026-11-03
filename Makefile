@@ -32,7 +32,7 @@ WYOH_LUNA_UNIT ?= /storage/.config/system.d/wyoh-sway.service
 WYOH_LUNA_GAMEPAD_UNIT ?= /storage/.config/system.d/wyoh-gamepad.service
 WYOH_LUNA_LAYOUT_UNIT ?= /storage/.config/system.d/wyoh-layout.service
 
-.PHONY: install install-wyoh install-preview status wyoh-luna-app wyoh-luna-apps wyoh-luna-deploy-preview wyoh-luna-deploy wyoh-luna-start wyoh-luna-stop wyoh-luna-status wyoh-luna-enable wyoh-luna-disable
+.PHONY: install install-wyoh luna-stop-all install-preview status wyoh-luna-app wyoh-luna-apps wyoh-luna-deploy-preview wyoh-luna-deploy wyoh-luna-start wyoh-luna-stop wyoh-luna-status wyoh-luna-enable wyoh-luna-disable
 
 wyoh-luna-deploy-preview:
 	rsync -e "$(WYOH_LUNA_SSH)" --archive --no-owner --no-group --checksum --dry-run --itemize-changes --mkpath --exclude '__pycache__/' src/wyoh/ $(WYOH_LUNA_HOST):$(WYOH_LUNA_ROOT)/
@@ -69,12 +69,20 @@ LUNA_STAMP ?= /storage/.local/state/tanstfaafllm/deployed.txt
 install: install-wyoh
 	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) 'mkdir -p $(dir $(LUNA_STAMP)) && echo "$(shell git describe --always --dirty) $(shell date -Iseconds) from $(shell hostname)" > $(LUNA_STAMP)'
 
-# Wyoh, its apps (Mike's window included), menu, Sway rules, gamepad profiles. Adam,
-# 2026-11-03: "when we reinstall, pkill every process we reinstall": Mike's window
-# closes (mike.py stops its server), the Slate and bar scripts end, Wyoh's services
-# restart and Sway reloads (new bars). Mannie is not Wyoh's and is never touched.
-install-wyoh: wyoh-luna-apps
-	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) "swaymsg -s \$$(python3 -c 'import json;print(json.load(open(\"/storage/.local/state/tanstfaafllm/wyoh/sway-vnc-session.json\"))[\"sway_socket\"])') '[app_id=mike] kill' >/dev/null 2>&1; sleep 3; pkill -f '[a]pps/mike/mike_rpg.py' ; pkill -f 'wyoh_[s]late.py' ; pkill -f 'deploy/luna/[s]tatus.sh' ; pkill -f '[d]ictation-indicator.sh' ; systemctl restart wyoh-layout.service wyoh-gamepad.service; swaymsg -s \$$(python3 -c 'import json;print(json.load(open(\"/storage/.local/state/tanstfaafllm/wyoh/sway-vnc-session.json\"))[\"sway_socket\"])') reload >/dev/null; echo restarted"
+# Adam, 2026-11-03: "when we reinstall, kill everyone, Mannie included, whatever its
+# state. What comes back is Wyoh and Mycroft; everything else stays off." So
+# luna-stop-all runs first: every window closes (Mike's too, so mike.py stops its
+# server), Mannie's tmux session and claude end, any Mike or llama-server left is
+# killed. Then Wyoh is installed and only Wyoh's services restart; Mycroft comes
+# back with them (wyoh-gamepad loads its resident dictation). Patterns are bracketed
+# so pkill never matches its own ssh command. Mannie's boot service is not changed.
+SWAY_SOCK_CMD = python3 -c 'import json;print(json.load(open(\"/storage/.local/state/tanstfaafllm/wyoh/sway-vnc-session.json\"))[\"sway_socket\"])'
+
+luna-stop-all:
+	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) "swaymsg -s \$$($(SWAY_SOCK_CMD)) '[all] kill' >/dev/null 2>&1; runuser -u michael -- tmux kill-session -t mannie 2>/dev/null; sleep 3; pkill -x claude; pkill -f '[m]ike_rpg.py'; pkill -f '[m]ike.py'; pkill -f '[l]lama-server'; pkill -f 'MIKE_[H]OME'; pkill -f 'wyoh_[s]late.py'; pkill -f 'deploy/luna/[s]tatus.sh'; pkill -f '[d]ictation-indicator.sh'; sleep 1; pgrep -a -f '[c]laude|[l]lama-server|[m]ike.py' || echo 'all stopped'"
+
+install-wyoh: luna-stop-all wyoh-luna-apps
+	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) "systemctl restart wyoh-layout.service wyoh-gamepad.service; swaymsg -s \$$($(SWAY_SOCK_CMD)) reload >/dev/null; echo 'Wyoh and Mycroft restarted'"
 
 install-preview: wyoh-luna-deploy-preview
 
