@@ -60,6 +60,9 @@ KEYS = {
     "KEY_LEFTALT": 56, "KEY_SPACE": 57,
     "KEY_UP": 103, "KEY_LEFT": 105, "KEY_RIGHT": 106, "KEY_DOWN": 108, "KEY_DELETE": 111,
     "KEY_DOT": 52,  # with Shift on Sway's AZERTY: "/"
+    "KEY_F5": 63, "KEY_F6": 64, "KEY_F7": 65, "KEY_F8": 66,  # stick scrolling (scroll_apps)
+    "KEY_F9": 67, "KEY_F10": 68,  # stick left/right: history back/forward (scroll_apps)
+    "KEY_F11": 87,  # X in Mike's window: new conversation
 }
 
 # Physical key codes (US-labelled positions); Sway applies `xkb_layout fr`.
@@ -145,6 +148,12 @@ class Config:
     # FN+A sends, then clears and hides.
     zone_toggle: str = "BTN_TL"
     zone_dictate: str = "BTN_TL2"
+    # Direct dictation (Step 6.14, Adam 2026-11-03): outside the Slate, this button starts
+    # Mycroft's dictation and stops it; the text is typed into the focused window, then Return.
+    direct_dictate: str = ""
+    # Apps whose sticks scroll instead of moving the pointer (Adam 2026-11-03, Mike's window):
+    # left stick up/down taps F5/F6, right stick F7/F8, repeated while tilted.
+    scroll_apps: tuple[str, ...] = ()
     # FN in the Slate (user, 2026-10-15): B sends to Mike (reserved until Mike
     # runs on Luna), Y sends to Mannie's window, up/down walk the history.
     zone_fn: dict[str, str] = field(default_factory=lambda: {
@@ -270,7 +279,7 @@ def load_config(path: Path | None) -> Config:
 def _validate(config: Config) -> None:
     named = [config.click, config.zone_toggle, config.zone_dictate, *config.zone_fn, config.menu, config.next_window,
              config.modifier, *config.recovery, *config.keys, *config.zone_keys, *config.fn_sway]
-    optional = [config.zone_validate, config.zone_validate_alt, config.zone_discard_alt]
+    optional = [config.zone_validate, config.zone_validate_alt, config.zone_discard_alt, config.direct_dictate]
     if set(config.zone_fn.values()) - ZONE_FN_OPS:
         raise ConfigError(f"zone_fn values must be among {sorted(ZONE_FN_OPS)}")
     for name in named + [name for name in optional if name] + list(config.board_press):
@@ -408,6 +417,8 @@ class GamepadCore:
         self.zone_state = "closed"  # closed | open | hidden | delivering
         self.axes = (ABS_X, ABS_Y) if config.pointer_stick == "left" else (ABS_RX, ABS_RY)
         self.stick = {axis: 0.0 for axis in (ABS_X, ABS_Y, ABS_RX, ABS_RY)}
+        self.scroll = False
+        self.scroll_next = {ABS_X: 0.0, ABS_Y: 0.0, ABS_RX: 0.0, ABS_RY: 0.0}
         # on-screen keyboard selections: per stick, the held direction and next repeat
         self.board_sticks = {0: (ABS_X, ABS_Y), 1: (ABS_RX, ABS_RY)}
         self.board_dir: dict[int, str | None] = {0: None, 1: None}
@@ -444,6 +455,7 @@ class GamepadCore:
     # focus (Step 9.3)
     def focus(self, app_id: str | None) -> list[Action]:
         """The focused window changed: apply its app's gamepad profile."""
+        self.scroll = (app_id or "") in self.config.scroll_apps
         self.app_keys_now = dict(self.config.app_keys.get(app_id or "", {}))
         self.active_keys = {**self.config.keys, **self.app_keys_now}
         profile = self.config.app_profiles.get(app_id or "", "keys")
@@ -648,7 +660,9 @@ class GamepadCore:
             else:
                 result = [Note(f"busy:{name or code}")]
         else:  # closed, or hidden (the Slate keeps its text out of sight)
-            if code == self._b(cfg.zone_toggle):
+            if cfg.direct_dictate and code == self._b(cfg.direct_dictate):
+                result = [Zone("direct")]
+            elif code == self._b(cfg.zone_toggle):
                 result = [Zone("show" if self.zone_state == "hidden" else "open")]
                 self.zone_state = "open"
             elif code == self._b(cfg.menu):
@@ -729,6 +743,8 @@ class GamepadCore:
         pointer = (self.zone_state != "open" and self.pad is None
                    and pointer_speed(x, y, self.config.pointer) != (0.0, 0.0))
         board = self.zone_state == "open" and any(self.board_dir.values())
+        if self.scroll and self.zone_state != "open" and self.pad is None:
+            pointer = any(abs(self.stick[a]) > 0.5 * self.config.pointer.axis_max for a in (ABS_X, ABS_Y, ABS_RX, ABS_RY))
         return pointer or board or self.recovery_since is not None or self.dpad_pending is not None
 
     def tick(self, now: float) -> list[Action]:
@@ -747,6 +763,19 @@ class GamepadCore:
             return actions  # no pointer while the Slate is open
         if self.pad is not None:
             return actions  # the sticks belong to the game
+        if self.scroll:  # sticks scroll: one key tap per repeat while tilted past half way
+            # vertical: scroll (left stick the top text, right stick the bottom one);
+            # horizontal, either stick: history (left goes back, right comes forward), one step per 0.5 s
+            for axis, (minus, plus), slow, fast in ((ABS_Y, ("KEY_F5", "KEY_F6"), 0.25, 0.08), (ABS_RY, ("KEY_F7", "KEY_F8"), 0.25, 0.08),
+                                                    (ABS_X, ("KEY_F9", "KEY_F10"), 0.5, 0.5), (ABS_RX, ("KEY_F9", "KEY_F10"), 0.5, 0.5)):
+                value = self.stick[axis] / self.config.pointer.axis_max
+                if abs(value) <= 0.5:
+                    self.scroll_next[axis] = 0.0
+                elif now >= self.scroll_next[axis]:
+                    code = KEYS[minus if value < 0 else plus]
+                    actions += [Key(code, True), Key(code, False)]
+                    self.scroll_next[axis] = now + (slow if abs(value) < 0.9 else fast)
+            return actions
         vx, vy = pointer_speed(*(self.stick[axis] for axis in self.axes), self.config.pointer)
         if (vx, vy) == (0.0, 0.0):
             self.last_tick = None
@@ -867,7 +896,7 @@ def find_app_con(tree: dict[str, Any], app_id: str) -> int | None:
 
 
 # Mike's chat window (Wyoh 6.11): launcher, and the titles its client sets (OSC 2).
-MIKE_RUN = "/storage/.local/opt/wyoh-mike/run"
+MIKE_RUN = "/storage/.local/share/tanstfaafllm/wyoh/apps/mike/run"  # deployed with Wyoh (make install)
 MIKE_WAIT_S = 90.0
 MIKE_SWITCH_WAIT_S = 900.0  # Mike asked to stop Mannie, which saves first (1-10 min)
 
@@ -1207,6 +1236,9 @@ class Daemon:
         self.zone_submit = False  # Mannie: one prompt, lines joined
         self.mike_deadline: float | None = None  # FN+B waits for Mike's window
         self.mike_hid_slate = False  # the Slate was hidden so that A/B answer Mike
+        self.direct = False  # direct dictation (6.14): the final text goes to the focused window
+        self.direct_stop_since: float | None = None  # L1 pressed again: stop once Mycroft has caught up
+        self.direct_last_partial = 0.0
         self.preload_pending = config.zone_preload or "--resident" in config.dictate_command
         self.zone_start_hidden = False
         # Mycroft's resident mode (Step 12.4) when the command asks for it.
@@ -1351,9 +1383,10 @@ class Daemon:
             if self.pad is not None:
                 self.pad.emit(EV_ABS, action.code, action.value)
         elif isinstance(action, Zone):
-            {"open": self.open_zone, "validate": self.validate_zone, "discard": self.discard_zone,
-             "hide": self.hide_zone, "show": self.show_zone, "clear": lambda: self.tell_zone("clear"),
+            {"open": lambda: self.unless_mike(self.open_zone, "closed"), "validate": self.validate_zone, "discard": self.discard_zone,
+             "hide": self.hide_zone, "show": lambda: self.unless_mike(self.show_zone, "hidden"), "clear": lambda: self.tell_zone("clear"),
              "dictate": self.dictate_zone,
+             "direct": self.direct_dictation,
              "mike": self.mike_zone,
              "mannie": self.mannie_zone,
              "history-prev": lambda: self.tell_zone("history-prev"),
@@ -1447,6 +1480,75 @@ class Daemon:
             except OSError:
                 pass
 
+    def unless_mike(self, open_it, previous: str) -> None:
+        """No Slate over Mike's window for now (6.14, Adam): L1 dictates to Mike directly."""
+        try:
+            focused = con_app_id(self.sway.request(4), self.sway.focused_con_id())
+        except (OSError, ConnectionError, TypeError):
+            focused = None
+        if focused == "mike":
+            self.core.zone_state = previous
+            self.state["zone_result"] = "no-slate-on-mike"
+            self.write_status()
+            return
+        open_it()
+
+    def direct_dictation(self) -> None:
+        """L1 outside the Slate (6.14): start Mycroft's dictation, or stop it; the
+        final text is typed into the focused window, then Return (deliver_direct)."""
+        if self.resident is None:
+            self.state["direct"] = "unavailable"
+            self.write_status()
+            return
+        if not self.direct and self.resident.state in ("listening", "stopping"):
+            return  # the Slate is dictating
+        if self.direct and self.resident.state == "listening":
+            # Adam, 2026-11-03: stopping at once cut Mycroft off before it had decoded what it
+            # already heard. Keep listening until no new text comes for 0.7 s (3 s at most).
+            if self.direct_stop_since is None:
+                self.direct_stop_since = time.monotonic()
+                self.state["direct"] = "stopping"
+                self.write_status()
+            return
+        self.direct = True
+        self.resident_do(self.resident.toggle())
+
+    def direct_catch_up(self, now: float) -> None:
+        """Called from the loop: send the real stop once Mycroft's text has settled."""
+        if self.direct_stop_since is None or self.resident is None:
+            return
+        if self.resident.state != "listening":
+            self.direct_stop_since = None
+            return
+        if now - self.direct_last_partial >= 0.7 or now - self.direct_stop_since >= 3.0:
+            self.direct_stop_since = None
+            self.resident_do(self.resident.toggle())
+
+    def deliver_direct(self, text: str) -> None:
+        """The direct utterance ended: type it into the focused window and press Return."""
+        self.direct = False
+        self.state["direct"] = ""
+        text = text.strip()
+        if not text:
+            self.write_status()
+            return
+        events = type_events(text)
+        try:
+            if events is not None:
+                for code, value in events:
+                    self.keyboard.emit([(EV_KEY, code, value)])
+                    time.sleep(self.config.deliver_key_delay_s)
+            else:
+                subprocess.run([*self.config.deliver_command, text], env=self._env(), timeout=60, check=True,
+                               stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            time.sleep(0.1)
+            self.tap(KEYS["KEY_ENTER"])
+            self.state["direct_deliveries"] = self.state.get("direct_deliveries", 0) + 1
+            self.state["delivered_length"] = len(text)  # never the text itself
+        except (OSError, subprocess.SubprocessError) as error:
+            self.state["error"] = f"direct: {type(error).__name__}"
+        self.write_status()
+
     def dictate_zone(self) -> None:
         """L2 in the Slate: start Mycroft's dictation, or stop it (Step 12)."""
         if self.resident is not None:
@@ -1506,6 +1608,11 @@ class Daemon:
             self.tell_slate(operation)
         if self.resident is not None:
             self.state["dictation"] = self.resident.state + (" (start pending)" if self.resident.pending else "")
+            # the bar's indicator (6.14): what direct dictation is doing, empty when idle
+            busy = self.resident.pending or self.resident.state in ("listening", "stopping")
+            self.state["direct"] = (self.resident.state if not self.resident.pending else "loading") if self.direct and busy else ""
+            if self.direct_stop_since is not None and self.state["direct"] == "listening":
+                self.state["direct"] = "stopping"
         self.write_status()
 
     def stop_dictation(self) -> None:
@@ -1548,7 +1655,19 @@ class Daemon:
             messages, self.dictation_buffer = split_lines(self.dictation_buffer + data)
             if self.resident is not None:
                 for message in messages:
+                    direct_final = self.direct and message.get("op") == "final"
+                    failed = self.direct and message.get("op") == "error"
+                    if self.direct and message.get("op") == "partial":
+                        # shown live by Mike's window (6.14); runtime state only, never logged
+                        self.state["direct_text"] = str(message.get("text", ""))
+                        self.direct_last_partial = time.monotonic()
+                    heard = str(message.get("text", "")).strip() or self.state.get("direct_text", "")
                     self.resident_do(self.resident.message(message))
+                    if direct_final:
+                        self.state["direct_text"] = ""
+                        self.deliver_direct(heard)  # the final text, or the last partial if final is empty
+                    elif failed:
+                        self.direct = False
                 return
             for message in messages:
                 if message.get("op") in ("ready", "error"):
@@ -1881,6 +2000,8 @@ class Daemon:
                 timeout = min(timeout, 0.25)  # notice the menu or the Slate closing by itself
             if self.mike_deadline is not None:
                 timeout = min(timeout, 0.5)
+            if self.direct_stop_since is not None:
+                timeout = min(timeout, 0.1)
             readable, _, _ = select.select(fds, [], [], timeout)
             now = time.monotonic()
             for path, fd in list(self.inputs.items()):
@@ -1902,6 +2023,7 @@ class Daemon:
                 self.menu = None
                 self.write_status()
             self.mike_wait(now)
+            self.direct_catch_up(now)
 
     def close(self) -> None:
         self.apply(self.core.release_all())

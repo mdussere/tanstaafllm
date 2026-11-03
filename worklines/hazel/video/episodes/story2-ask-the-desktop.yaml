@@ -1,0 +1,144 @@
+# Story 2, "Ask the desktop" (Wyoh), as a script: only what a writer decides. The templates place, size, colour and time
+# everything (on the beat, over the scene length in bars) and put the music on it. Format: common/README.md.
+# Build: uv run python common/build.py <this file> --preview
+episode: story2-ask-the-desktop
+title: ASK THE DESKTOP
+bpm: 120
+motif: [[0, 76, 1], [1, 81, 0.5], [1.5, 83, 0.5], [2, 84, 1.5], [3.5, 83, 0.5], [4, 81, 1], [5, 77, 1], [6, 79, 2]]   # Wyoh: E A B C, rising
+
+scenes:
+- id: title
+  template: title_card
+  bars: 3
+  mood: opener
+  series: "TANSTAAFLLM · STORY 2"
+  key: ASK THE DESKTOP
+  secondary: ["How an agent learned to work", "a desktop without looking at it."]
+  sources: ["Note beat 1 (worklines/hazel/docs/0302_02_note-from-wyoh-story.md)"]
+
+- id: player
+  template: player_card
+  bars: 4
+  mood: driving
+  face: wyoh
+  glance: ["PLAYER 2", "QUEST:"]
+  name: WYOH
+  secondary: ["THE DESKTOP LAYER", "OF LUNA"]
+  key: ["Observe and operate", "the desktop without pixels."]
+  sources: ["Note beat 1; worklines/wyoh/docs/0000_04_desktop-automation-model.md"]
+
+- id: stage1
+  template: guess
+  clear_text: NO GO!
+  clear_color: red
+  bars: 3
+  mood: tense
+  title: "THE SCREENSHOT TRAP"
+  guesses: ["A BUTTON?", "A WINDOW?", "WHICH ONE?"]
+  key: ["An agent guesses from pixels", "and pays for every image."]
+  secondary: "ON PAPER: A DESKTOP DOM."
+  sources: ["Note beat 1 (no cost figure shown, as the brief asks)", "Note beat 1 (the DWOM idea); shown as a design only (must-not-say)"]
+
+- id: stage7
+  template: compare_table
+  clear_text: LET'S DO IT!
+  bars: 5
+  mood: bright
+  title: "LIKE PLAYWRIGHT, FOR A DESKTOP"
+  key: ["Playwright reads the page.", "Wyoh reads the desktop."]
+  columns: [BROWSER, DESKTOP]
+  rows: [[PLAYWRIGHT, WYOH], [THE DOM, "SWAY'S WINDOW TREE"], ["CLICK, TYPE", "NAMED ACTIONS, BUTTONS"], ["WAIT FOR…", "WAIT FOR AN EVENT"]]
+  sources: ["worklines/wyoh/docs/0000_04_desktop-automation-model.md (Playwright | Wyoh table)"]
+
+- id: stage2
+  template: two_boxes
+  bars: 4
+  mood: tense
+  title: "ONE SCENE IS NOT A DESKTOP"
+  fail: {label: HIOM, glance: ["FIRST IDEA: ONE SCENE", "A DESKTOP DID NOT FIT."], stamp: REOPENED}
+  works: "KEPT FROM IT:"
+  key: ["WAIT FOR A NAMED CONDITION,", "NEVER A FIXED DELAY."]
+  sources: ["Note beat 2; 0101_01_hiom_v0_contract.md (status note 2026-09-25)", "Note beat 2 (\"waits for a named predicate ... never a fixed delay\")"]
+
+- id: stage3
+  template: metrics
+  bars: 4
+  mood: bright
+  title: "ASK THE ONE THAT EXISTS"
+  key: ["Don't build a compositor.", "Ask the one that exists."]
+  subject: {label: SWAY, tags: [UNMODIFIED, NO FORK], link: IPC}
+  glance: "MEASURED ON luna-pi, A RASPBERRY PI"
+  machine: luna-pi
+  tiles:
+  - {label: SOCKET READY, value: 42 ms}
+  - {label: FOCUS EVENT, value: 0.6 ms}
+  - {label: SWAY MEMORY, value: "~20 MiB"}
+  - {label: "KILLED, BACK IN", value: 7.5 ms}
+  sources: ["Note beat 3; 0201_01_sway-ipc-proof.md, 0301_01_luna-pi-sway-result.md"]
+
+- id: stage4
+  template: flow
+  bars: 4
+  mood: driving
+  title: "HAND IT TO AGENTS"
+  via: ["MCP OVER SSH", "DEVELOPMENT ONLY"]
+  target: SWAY
+  key: ["Query the tree, act,", "wait for the event."]
+  secondary: "26 TOOLS"
+  glance: "luna-pi, THEN LUNA"
+  machine: "luna-pi, then Luna"
+  sources: ["Note beat 4; 0305_01_mcp-over-ssh-validation-result.md", "Note section 4 (--full-ipc-development, no capability policy)", "Note beat 4; src/wyoh/wyoh_mcp_server.py"]
+
+- id: boss
+  template: boss
+  bars: 4
+  mood: boss
+  title: "BOSS: THE BLACK PANEL"
+  panel: "LUNA'S REAL 720 × 720 PANEL"
+  phases:
+  - {key: BLACK., secondary: ["Sway's own screenshots", "looked right."], glance: "MALI GPU DRIVER: NOT LOADED"}
+  - {key: ["GPU DRIVER", "LOADED."], secondary: "1 passed"}
+  machine: Luna
+  sources: ["Note beat 5; 0407_01_luna-real-display-session.md, plan_wyoh.md 4.8.3", "0407_01_luna-real-display-session.md l.123; confirmed by Wyoh 2026-11-01"]
+
+- id: stage6
+  template: handheld
+  bars: 5
+  mood: climb
+  title: "17 BUTTONS, NO KEYBOARD"
+  parts:
+  - key: "Buttons drive the desktop."
+    chips: [[FN+PAD, FOCUS, RIGHT], [FN+A, FULL SCREEN, A], [FN+B, CLOSE, B], [FN+R1, WORKSPACE, R1]]
+    glance: ["BUTTONS ONLY, ON LUNA, 2026-10-07", "L1 OPENS IT"]
+    secondary: ["THE SLATE TAKES", "THE TEXT."]
+  - key: ["A DEV AGENT PRESSES", "THE SAME BUTTONS"]
+    glance: "VIA A VIRTUAL GAMEPAD, NOT PIXELS"
+    combo: {label: "ON LUNA, IN THE SLATE:", keys: [FN, B], face: mike}
+    secondary: ["MIKE STARTS,", "ANSWERS IN 13 s"]
+  machine: Luna
+  sources: ["0506_01_buttons-only-result.md (button map)", "Note beat 6; 0605_01_slate-result.md (L1 opens it, floating rule)", "Note beat 6 (uinput device); Wyoh check 2026-11-01 (dev agent through the dev-only MCP server, not Mike)", "Note beat 6; plan_wyoh.md 6.11; Wyoh check 2026-11-01"]
+
+- id: payoff
+  template: tree
+  bars: 3
+  mood: theme
+  glance: sway_get_tree
+  nodes: [[0, root], [1, "output DSI-1"], [2, "workspace 1"], [3, "window: foot"], [3, "window: mike"]]
+  key: "ASK THE DESKTOP."
+  secondary: "Screenshots stay, as evidence for humans."
+  sources: ["src/wyoh/wyoh_mcp_server.py (tool name)", "Note section 2 and section 4"]
+
+- id: result
+  template: result
+  bars: 3
+  mood: calm
+  title: "STORY 2 CLEAR"
+  key: ["DON'T LOOK AT THE DESKTOP,", "ASK IT."]
+  secondary: ["The compositor already knows", "what a screenshot can only guess."]
+  sources: ["Note section 3"]
+
+- id: end
+  template: end_card
+  bars: 3
+  key: ["There Ain't No Such Thing", "As A Free LLM."]
+  glance: ["github.com/mdussere/tanstaafllm", "A personal engineering project by Michael Dussere"]

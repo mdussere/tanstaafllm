@@ -1,6 +1,6 @@
 # A voice for Luna: English text-to-speech on the desk host (plan steps 11.1 and 11.2)
 
-> **Freshness:** 🟢 current · **Written:** 2026-11-01 · **Checked:** 2026-11-01 · **Step:** mycroft 11.2
+> **Freshness:** 🟢 current · **Written:** 2026-11-01 · **Checked:** 2026-11-01 · **Step:** mycroft 11.2–11.3
 
 **Date:** 2026-11-01
 **Go:** the user, relayed by Professor on 2026-11-01: "first text-to-speech tests… small offline TTS for English on the desk first… record samples for the user to judge".
@@ -34,8 +34,27 @@ Not taken this round: Matcha (needs a separate vocoder), Supertonic and Pocket T
 - **Kokoro is out for Luna:** slower than real time already on the desk host (RTF 1.9), and twice the memory.
 - **Piper and Kitten nano are the Luna candidates.** All three are understood by Kroko almost perfectly; the shared errors are the project names ("McRoft", "Wyo") and "in ship" heard as "and ship".
 - **The RSS includes Python and the wheel** (~100 MiB of it is not the model); Mycroft's ctypes path would be lighter, as it was for Kroko.
-- **Projection to Luna, to verify:** the desk-to-Luna ratio was about 15–20× for speech-to-text. On that basis Piper (RTF ~0.27 here) would be around real time on Luna or slower, so speaking sentence by sentence while the next one is synthesised would matter. Only a Luna run can say.
+- **Projection to Luna, to verify:** the desk-to-Luna ratio was about 16× for Kroko and ZIPA. On that basis Piper (RTF ~0.27 here) would take about 4–5 s per second of speech on Luna, so synthesising the next sentence while one is spoken, or a short wait, would matter; Kokoro would take about 30 s. Only a Luna run can say. (Corrected 2026-11-01: an earlier version said "around real time".)
 
 ## For the user
 
 The four voices, the same five sentences each, were sent to the user as `tts-<model>.m4a` to judge how natural they sound. Their choice, plus the round-trip check, decides which voice goes to a Luna measure (11.3, with Mannie's go).
+
+**The user's choice (2026-11-01):** by ear, Kokoro and Piper Lessac sound best. Kokoro costs about 7× Piper's CPU and 3× its model memory, and neither Alan nor Kitten nano is much lighter than Lessac, so **Piper Lessac is the voice for Luna**. Its licence (Blizzard 2013) must be checked before any redistribution.
+
+## 11.3 Piper Lessac on Luna (2026-11-01)
+
+The user's go ("measure, only Piper"), Professor's slot. Mannie on Luna stopped; the user's Mike window was open and idle (llama-server ~285 MiB resident, no request), so MemAvailable started at ~500 MiB instead of ~640. No reboot, no service touched. Sherpa's aarch64 `sherpa-onnx-offline-tts` (same libraries as the speech-to-text runtime already on Luna) and the Piper files (~40 MB) were installed under `/storage/.local`. `test_luna_footprint.py::test_luna_11_3_piper_lessac`: one fresh process per sentence, 2 threads, the five sentences above. Evidence: `results/mycroft/luna-footprint/20261101T192549Z/` (WAVs included).
+
+| Measure | Luna |
+| --- | --- |
+| Load (process start to model ready, wall minus synthesis) | ~20 s |
+| Synthesis time / audio time | 3.0–3.9 (about 10 s for a 3.0–3.4 s sentence) |
+| Peak RSS (the binary, no Python) | 103–147 MiB |
+| Lowest MemAvailable during a run | 352 MiB |
+| CPU used | ~1.27 cores of 4 |
+
+- **Close to the projection** (4–5×): Luna is about 11–13× slower than the desk host here.
+- **For Mike, Piper must be resident** (load once, ~20 s) and speak sentence by sentence: the first sentence is heard about 3× its own length after the text is ready, and each next sentence can be synthesised while the previous one plays. Short first sentences matter.
+- **Everything at once fits** (2026-11-02, `test_luna_11_3_piper_beside_resident_kroko`, evidence `…/20261101T230250Z/`): with the Slate's resident Kroko provider (149 MiB; French, and English costs the same, 10.6), the user's idle Mike (llama-server 294 MiB plus its 31 MiB client) and Sway, one Piper synthesis peaked at 109 MiB and MemAvailable never fell below **388 MiB**. Synthesis time was unchanged (wall 30.7 s), since Mike and Kroko were idle.
+- **For the tutor**, model sentences can be synthesised ahead of time and kept.

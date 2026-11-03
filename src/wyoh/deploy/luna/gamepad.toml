@@ -22,25 +22,17 @@ zone_command = [
     "/usr/bin/python3", "/storage/.local/share/tanstfaafllm/wyoh/wyoh_slate.py", "--socket", "{socket}",
 ]
 
-# The on-screen keyboard, shown whenever the Slate is open (user, 2026-10-09):
-# wvkbd 0.15 built with Luna's AZERTY letter layer (src/wyoh/wvkbd/), whose
-# second layer is wvkbd's digits and symbols. White background and black
-# keys: wvkbd's 2 px key inset shows as white outlines. The label font fits
-# ten keys across 720 px. Built with luna-cursors.patch: the daemon moves and
-# presses two selections through the keyboard's standard input.
-keyboard_command = [
-    "wvkbd-luna", "-l", "simple,special", "-H", "240",
-    # Luna's square panel makes wvkbd pick its landscape mode: same layers and height.
-    "--landscape-layers", "simple,special", "-L", "240",
-    "--bg", "ffffffff", "--fg", "000000ff", "--fg-sp", "000000ff",
-    "--press", "808080ff", "--press-sp", "808080ff",
-    "--text", "ffffffff", "--text-sp", "ffffffff",
-    "--fn", "Liberation Sans 18",
-    # Two-thumb typing (user, 2026-10-09): a pastel green selection (left stick,
-    # L3) starting on "f" and a pastel red one (right stick, R3) on "j".
-    "--cursors", "--cursor0", "b8e6b8ff", "--cursor1", "f5b5b5ff", "--cursor-text", "1e1e1eff",
-    "--home0", "0.35,0.375", "--home1", "0.65,0.375",
-]
+# Simpler input (Step 6.14, Adam 2026-11-03: "the Slate doesn't work ... forget the
+# virtual keyboard"): no on-screen keyboard. L1 dictates straight into the focused
+# window (Mycroft, then Return); L2 opens and hides the Slate (L1's old role), and
+# inside the Slate L1 still dictates into it. No Slate over Mike's window.
+keyboard_command = []
+direct_dictate = "BTN_TL"
+# Sticks scroll Mike's two texts: left stick the top one, right stick the bottom one.
+scroll_apps = ["mike"]
+zone_toggle = "BTN_TL2"
+zone_dictate = "BTN_TL"
+
 
 # While the Slate is open (it always has the focus), the focused border is
 # white; Sway has one colour for every focused window, so it is restored after.
@@ -65,7 +57,7 @@ zone_preload = true
 
 dictate_command = [
     "/usr/bin/python3", "/storage/.local/share/tanstfaafllm/mycroft/mycroft_dictate.py",
-    "--resident", "--model", "kroko-fr-2025",
+    "--resident", "--model", "kroko-en-2025",  # the user, 2026-11-02: English for Mike (Mycroft 10.6)
     "--input", "{capture}", "--assets", "/storage/.local/opt/mycroft", "--threads", "2",
 ]
 

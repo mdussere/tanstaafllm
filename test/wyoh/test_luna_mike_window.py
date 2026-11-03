@@ -2,7 +2,7 @@
 
 Contract: `luna_mike_window.feature`. Needs Mannie stopped on Luna (agreed with
 Mannie or Professor), Mike's files in /home/michael/.local/opt/mike and
-/storage/.local/opt/wyoh-mike deployed.
+Wyoh deployed (make install).
 
 Run with:
     WYOH_LUNA_LIVE=1 uv run pytest -m live test/wyoh/test_luna_mike_window.py
@@ -112,8 +112,11 @@ def test_fn_b_starts_mike_and_mike_answers() -> None:
                 await until("Mike's window is closed", lambda: _closed(mike), 20)
 
     asyncio.run(exercise())
-    time.sleep(3)
-    left = _ssh("pgrep -a llama-server; cat /tmp/luna-brain.lock 2>/dev/null; grep MemAvailable /proc/meminfo")
+    for _ in range(20):  # Mike stops its server and frees the lock, which can take several seconds
+        time.sleep(1)
+        left = _ssh("pgrep -a llama-server; cat /tmp/luna-brain.lock 2>/dev/null; grep MemAvailable /proc/meminfo")
+        if "llama-server" not in left.stdout and "mike" not in left.stdout.split("MemAvailable")[0]:
+            break
     (result_dir / "run.json").write_text(json.dumps({"log": log, "after": left.stdout}, indent=2, default=str),
                                          encoding="utf-8")
     assert "llama-server" not in left.stdout and "mike" not in left.stdout.split("MemAvailable")[0], left.stdout

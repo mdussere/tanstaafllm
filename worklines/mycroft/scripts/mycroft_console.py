@@ -62,8 +62,9 @@ MODEL_PROFILES = {
                                   "encoder.onnx", "decoder.onnx", "joiner.onnx", False),
     # English, for Mike in English (plan step 10, desk host only): Kroko English as
     # published, and the smaller English Zipformer 20M (upper case, no punctuation).
-    "kroko-en-2025": ModelProfile("kroko-en-community / 2025-08-06 (fp32)",
-                                  "sherpa-onnx-streaming-zipformer-en-kroko-2025-08-06",
+    # Prepared at the "extended" level like the French twin (plan step 10.6).
+    "kroko-en-2025": ModelProfile("kroko-en-community / 2025-08-06 (fp32, ORT-extended)",
+                                  "sherpa-onnx-streaming-zipformer-en-kroko-2025-08-06-ort-extended",
                                   "encoder.onnx", "decoder.onnx", "joiner.onnx", False),
     "zipformer-en-20M": ModelProfile("sherpa-onnx-en-zipformer-20M-int8 / 2023-02-17",
                                      "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17",

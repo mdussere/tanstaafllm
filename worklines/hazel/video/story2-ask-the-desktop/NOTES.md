@@ -55,31 +55,31 @@ Render: `results/hazel/story2-ask-the-desktop/20261101T124410/` — 90.0 s, hold
 
 ## Every on-screen fact and its source
 
+Updated 2026-11-01 for the phone-readable cut: rows describe what is on screen now; lines cut in that rework are gone from the table.
+
 All paths are in the repository. "Note" = `worklines/hazel/docs/0302_02_note-from-wyoh-story.md`.
 
 | On screen | Source | Machine shown |
 |---|---|---|
-| Quest: "Give consumers a structured, inspectable, synchronisable desktop they can observe and operate without pixels." | Note beat 1; `worklines/wyoh/docs/0000_04_desktop-automation-model.md` | none (design) |
-| ENGINE: SWAY, UNMODIFIED | Note beat 3; `0101_06_sway-v0-contract.md` | — |
-| Screenshot agents guess from pixels and pay for every image on a small handheld | Note beat 1 (no cost figure shown, as the brief asks) | — |
-| "ON PAPER: A DOM FOR THE DESKTOP." | Note beat 1 (the DWOM idea); shown as a design only (must-not-say) | none (design) |
-| HIOM: one full-screen scene, only the actions it advertises; reopened; one scene could not hold a real desktop | Note beat 2; `0101_01_hiom_v0_contract.md` (status note 2026-09-25) | none |
+| Quest: "Observe and operate the desktop without pixels." (shortened from the goal sentence) | Note beat 1; `worklines/wyoh/docs/0000_04_desktop-automation-model.md` | none (design) |
+| "An agent guesses from pixels and pays for every image." | Note beat 1 (no cost figure shown, as the brief asks) | — |
+| "ON PAPER: A DESKTOP DOM." | Note beat 1 (the DWOM idea); shown as a design only (must-not-say) | none (design) |
+| HIOM: first idea, one scene; a desktop did not fit; REOPENED | Note beat 2; `0101_01_hiom_v0_contract.md` (status note 2026-09-25) | none |
 | "WAIT FOR A NAMED CONDITION, NEVER A FIXED DELAY." | Note beat 2 ("waits for a named predicate … never a fixed delay") | none |
 | "Don't build a compositor. Ask the one that exists." UNMODIFIED, NO FORK, IPC | Note beat 3 | — |
-| 42 ms socket ready, 0.6 ms focus event, ~20 MiB, killed → back in 7.5 ms; a Raspberry Pi, headless Sway 1.10.1, 2026-09-26 | Note beat 3; `0201_01_sway-ipc-proof.md`, `0301_01_luna-pi-sway-result.md` | luna-pi, on every tile |
-| MCP over SSH; query the window tree, act, wait for the confirming event | Note beat 4; `0305_01_mcp-over-ssh-validation-result.md` | — |
+| 42 ms socket ready, 0.6 ms focus event, ~20 MiB, killed → back in 7.5 ms; measured on luna-pi, a Raspberry Pi | Note beat 3; `0201_01_sway-ipc-proof.md`, `0301_01_luna-pi-sway-result.md` | luna-pi, on every tile |
+| MCP over SSH; "Query the tree, act, wait for the event." | Note beat 4; `0305_01_mcp-over-ssh-validation-result.md` | — |
 | DEVELOPMENT ONLY | Note section 4 (`--full-ipc-development`, no capability policy) | — |
 | 26 TOOLS; luna-pi, then Luna | Note beat 4; `src/wyoh/wyoh_mcp_server.py` | luna-pi, then Luna |
-| Aside: without structured output, a one-item list read as the object itself | Note beat 4; `0307_01_minimal-environment-result.md` finding 5 | — |
-| Luna · 720 × 720 panel; the same agent session went black; Mali GPU driver not loaded; Sway rendering in software; `1 passed` once loaded | Note beat 5; `0407_01_luna-real-display-session.md`, `plan_wyoh.md` 4.8.3 | Luna |
-| "Sway's own screenshots looked right." | `0407_01_luna-real-display-session.md` (closing note: the user saw a black panel while Sway's screenshots were correct) | Luna |
-| FN+pad focus, FN+A full screen, FN+B close, FN+R1 workspace | `0506_01_buttons-only-result.md` (button map) | Luna |
+| Luna · 720 × 720 panel; BLACK.; GPU DRIVER LOADED.; `1 passed` once loaded | Note beat 5; `0407_01_luna-real-display-session.md`, `plan_wyoh.md` 4.8.3 | Luna |
+| "Sway's own screenshots looked right." | `0407_01_luna-real-display-session.md` l.123 (the user saw a black panel while Sway's screenshots were correct), `0408_01`; confirmed by Wyoh 2026-11-01 | Luna |
+| "Buttons drive the desktop." FN+pad focus, FN+A full screen, FN+B close, FN+R1 workspace | `0506_01_buttons-only-result.md` (button map) | Luna |
 | Buttons only, on Luna, 2026-10-07 | Note beat 6; `0506_01_buttons-only-result.md` | Luna |
-| The Slate takes the text; a floating text zone opened with L1 | Note beat 6; `0605_01_slate-result.md` (L1 opens it, floating rule) | Luna |
-| The agent presses the same buttons through a virtual gamepad, not by clicking pixels | Note beat 6 (uinput device) | — |
-| In the Slate, FN + B reaches Mike; answered in 13 s; 6.6 s if Mike is already open | Note beat 6; `plan_wyoh.md` 6.11 | Luna |
-| Luna, 2026-10-30, new system root, a game's buttons died; fix "verified" because the codes were right; the game did not move; seven layers; only the last proves the fix | Note beat 7; `docs/howto/01_fix-a-game-gamepad-mapping.md` (layer table, section 8) | Luna |
-| Layer names: real pad, Wyoh daemon, app profile, virtual pad, SDL, game bindings, the game moves | `docs/howto/01_fix-a-game-gamepad-mapping.md` section 1 | — |
+| THE SLATE TAKES THE TEXT; L1 OPENS IT | Note beat 6; `0605_01_slate-result.md` (L1 opens it, floating rule) | Luna |
+| A DEV AGENT PRESSES THE SAME BUTTONS, via a virtual gamepad, not pixels | Note beat 6 (uinput device); Wyoh's check of 2026-11-01 (a development agent through the dev-only MCP server, not Mike) | — |
+| In the Slate, FN + B → MIKE STARTS, ANSWERS IN 13 s (cold start) | Note beat 6; `plan_wyoh.md` 6.11; Wyoh's check of 2026-11-01 | Luna |
+| Luna, 2026-10-30, a game's buttons died; FIX "VERIFIED"; THE GAME DID NOT MOVE; seven layers; only the last layer proves the fix | Note beat 7; `docs/howto/01_fix-a-game-gamepad-mapping.md` (layer table, section 8) | Luna |
+| Layer names: real pad, Wyoh daemon, app profile, virtual pad, SDL, game bindings, the game moves | `docs/howto/01_fix-a-game-gamepad-mapping.md` section 1; `docs/howto/img/game-input-chain.svg`; confirmed by Wyoh 2026-11-01 | — |
 | `sway_get_tree` | `src/wyoh/wyoh_mcp_server.py` (tool name) | — |
 | "Screenshots stay, as evidence for humans." | Note section 2 and section 4 | — |
 | "DON'T LOOK AT THE DESKTOP, ASK IT." / "The compositor already knows what a screenshot can only guess." | Note section 3 | — |

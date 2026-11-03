@@ -9,11 +9,11 @@ Session names change when a session restarts, so check `ListAgents` before relyi
 
 | Workline | Name | Id | Updated |
 |---|---|---|---|
-| professor | tanstfaafllm-2a | 60e21d | 2026-10-19 |
+| professor | tanstfaafllm-a9 | 20bd83 | 2026-11-01 |
 | mycroft | tanstfaafllm-e6 | 73b1e5 | 2026-10-25 |
 | luna | tanstfaafllm-e0 | 941706 | 2026-10-25 |
-| mike | tanstfaafllm-02 | effb91 | 2026-10-25 |
+| mike | tanstfaafllm-9d | e5c0ca | 2026-11-01 |
 | wyoh | tanstfaafllm-8e | d56a17 | 2026-10-25 |
 | mannie | tanstfaafllm-d3 | 1fd5d4 | 2026-10-25 |
 | mannie (on Luna) | Mannie from Luna | 32d5e1 | 2026-10-30 |
-| hazel | tanstfaafllm-29 | 2a2a0c | 2026-10-31 |
+| hazel | tanstfaafllm-21 | 000287 | 2026-11-01 |

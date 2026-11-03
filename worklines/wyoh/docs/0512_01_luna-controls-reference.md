@@ -34,8 +34,8 @@ Codes come from Luna's device tree (Step 5.1).
 | Y | `BTN_WEST` | `KEY_BACKSPACE` | live |
 | R1 | `BTN_TR` | `KEY_TAB` (next field) | live |
 | R2 | `BTN_TR2` | `KEY_LEFTSHIFT+KEY_TAB` (previous field) | live |
-| L1 | `BTN_TL` | Slate: open, or show it again if hidden. Since 2026-10-15 the Slate is opened hidden when the session starts (`zone_preload`), so L1 shows it and Kroko is already loading or loaded | live (open); core only (show, preload) |
-| L2 | `BTN_TL2` | Slate straight into dictation: opens it (or shows it again) and starts listening (`open`/`show`, then `dictate`). L1 opens it for the keyboard | core only (2026-10-15) |
+| L1 | `BTN_TL` | Direct dictation (`direct`, 6.14): first press listens (Mycroft), second press types the text into the focused window, then Return; the bar shows the indicator | core (2026-11-03) |
+| L2 | `BTN_TL2` | Slate: open, or show it again if hidden (L1's old role, 6.14); not over Mike's window | core (2026-11-03) |
 | Start | `BTN_START` | Application menu (fuzzel). Pressed again while the menu is open, it closes the menu | live |
 | Select | `BTN_SELECT` | Sway `focus next` (next window) | live |
 | Right stick | `ABS_RX`/`ABS_RY` | Pointer: speed grows with deflection; dead zone 0.12 | live |
@@ -66,8 +66,8 @@ Codes come from Luna's device tree (Step 5.1).
 | Y, held | `BTN_WEST` | `KEY_LEFTSHIFT`: selection with the cross | live |
 | R1 | `BTN_TR` | `KEY_LEFTCTRL+KEY_RIGHT`: next word | live |
 | R2 | `BTN_TR2` | `KEY_LEFTCTRL+KEY_LEFT`: previous word | live |
-| L1 | `BTN_TL` | Hides the Slate; the text is kept (`hide`) | live |
-| L2 | `BTN_TL2` | Dictation on or off (`dictate`): Mycroft's resident Kroko, loaded once when the Slate first opens (about 24 s; L2 meanwhile shows "loading…" and starts when ready) and kept while the Slate is hidden or closed. Its text appears underlined at the cursor; L2 again (or any key) inserts it about 1.2 s later | live with the fake provider; real voice is the user's test (12.3) |
+| L1 | `BTN_TL` | Dictation on or off into the Slate (`dictate`) | core (2026-11-03) |
+| L2 | `BTN_TL2` | Hides the Slate; the text is kept (`hide`) | core (2026-11-03) |
 | FN + A | `BTN_MODE` + `BTN_EAST` | Sends the text into the window that had focus and presses Return (a terminal runs it; since 2026-10-15), then clears and hides the Slate (`validate`). While dictating, the dictated text goes in first | live |
 | FN + X | `BTN_MODE` + `BTN_NORTH` | Clears the Slate (`clear`) | live |
 | FN + Y | `BTN_MODE` + `BTN_WEST` | Sends the text to Mannie's window (lines joined) and presses Return, then clears and hides the Slate (`mannie`). If Mannie is not open, the text stays and the hint says so | core only (2026-10-15) |
