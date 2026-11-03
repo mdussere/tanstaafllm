@@ -287,6 +287,7 @@ date
 
 | Timestamp (`date`) | Update |
 |---|---|
+| 2026-11-03 | Adam (via Wyoh): Mannie starts by itself on Luna, and stopping it from Luna seems not to work. **To relay to Mannie:** (1) `mannie.service` starts it at every boot (user decision 2026-10-30); Adam now wants a boot start only if Mannie was running when Luna stopped: `mannie stop` by the user writes a "stopped" marker, a shutdown stop keeps "running", the unit starts only on "running". (2) Mike's handover runs `mannie stop --save` and waits up to 10 min for "● DONE" with only "waiting for Mannie" shown: make the plain stop the default, keep a short timeout and show progress; check whether the Wyoh menu entry (`mannie open`) or Mike's `/mannie` restarted it. |
 | 2026-11-03 | `make install` agreed with Wyoh: a desk-side rsync umbrella (no push needed; Luna's clone stays on `cell/mannie`), each workline owning its `install-<name>` part, `install-preview`, and a stamp shown by `make status` (Wyoh, ad85582). **Pending, to relay when the sessions resume:** Mike adds `install-mike` (Luna still runs a stale French `smalltalk.py`); Mannie adds `install-mannie`. Camp Currie and Mike Android are not yet registered in AGENTS.md (question put to the user). |
 | 2026-09-25 | Created draft coordinating-workline plan; no implementation or specialised workline was initiated. |
 | 2026-09-25T01:24:13+02:00 | Renamed the coordinating workline from `general` to `professor` (Professor de la Paz); updated its role to maintain cross-workline coordination and isolation. No implementation started. |
