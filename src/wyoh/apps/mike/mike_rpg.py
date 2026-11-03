@@ -292,6 +292,23 @@ class View:
         surf.blit(self.small.render(hint, True, DIM), (24, 684))
 
 
+_wyoh_seen = [0.0, ""]
+
+
+def wyoh_dictation(path: str = "/run/wyoh/gamepad.json") -> str:
+    """Wyoh's direct dictation state ("listening", "stopping", "loading" or ""), read at most 4 times a second."""
+    now = time.monotonic()
+    if now - _wyoh_seen[0] >= 0.25:
+        _wyoh_seen[0] = now
+        try:
+            with open(path, encoding="utf-8") as status:
+                value = json.load(status).get("direct", "")
+            _wyoh_seen[1] = {"loading": "finishing", "stopping": "finishing"}.get(value, value)
+        except (OSError, ValueError):
+            _wyoh_seen[1] = ""
+    return _wyoh_seen[1]
+
+
 def main(argv: list[str]) -> int:
     command = argv[argv.index("--") + 1:] if "--" in argv else [sys.executable, str(Path(os.environ.get("MIKE_HOME", "~/.local/opt/mike")).expanduser() / "mike.py")]
     os.environ.setdefault("SDL_VIDEO_WAYLAND_WMCLASS", "mike")
@@ -349,7 +366,11 @@ def main(argv: list[str]) -> int:
                         typing = typing[:-1]
             if not client.alive():
                 return 0
-            view.draw(screen, t, typing, time.monotonic(), dictation.state if dictation else "", dictation.text if dictation else "")
+            if dictation is not None:
+                state, heard = dictation.state, dictation.text
+            else:  # on Luna, L1 is Wyoh's direct dictation (6.14): show its state, which the daemon publishes
+                state, heard = wyoh_dictation(), ""
+            view.draw(screen, t, typing, time.monotonic(), state, heard)
             pygame.display.flip()
             pygame.time.wait(33)
     finally:
