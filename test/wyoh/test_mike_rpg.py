@@ -114,3 +114,35 @@ def test_dictation_starts_then_stops_and_returns_the_final_text():
         assert final == "hello mike" and d.state == "idle"
     finally:
         d.stop()
+
+
+def test_space_dictates_and_sends_to_mike_in_the_real_window(monkeypatch):
+    """The whole window (main loop), a fake Mike and Mycroft's --fake provider; Space is pressed twice."""
+    pygame = pytest.importorskip("pygame")
+    import mike_rpg
+    monkeypatch.setenv("SDL_VIDEODRIVER", "dummy")
+    script = ROOT / "worklines/mycroft/scripts/mycroft_dictate.py"
+    monkeypatch.setenv("MIKE_RPG_DICTATE", f"{sys.executable} {script} --resident --fake 'hello' --fake-interval 0.05")
+    seen, real_get, start = {"sent": None}, pygame.event.get, time.monotonic()
+    original_send = mike_rpg.Client.send
+
+    def send(self, question):
+        seen["sent"] = question
+        original_send(self, question)
+    monkeypatch.setattr(mike_rpg.Client, "send", send)
+    steps = iter([(2.0, pygame.K_SPACE), (3.0, pygame.K_SPACE)])
+    nxt = next(steps)
+
+    def events():
+        nonlocal nxt
+        out = list(real_get())
+        if nxt and time.monotonic() - start > nxt[0]:
+            out.append(pygame.event.Event(pygame.KEYDOWN, key=nxt[1], mod=0, unicode=" "))
+            out.append(pygame.event.Event(pygame.TEXTINPUT, text=" "))
+            nxt = next(steps, None)
+        if seen["sent"] or time.monotonic() - start > 15:
+            out.append(pygame.event.Event(pygame.QUIT))
+        return out
+    monkeypatch.setattr(pygame.event, "get", events)
+    mike_rpg.main(["--", *FAKE])
+    assert seen["sent"] == "hello"

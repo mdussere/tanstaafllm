@@ -250,7 +250,7 @@ class View:
         surf.blit(self.label.render(label, True, AMBER if listening else CYAN), (44, 38))
         if listening and int(now * 2) % 2 == 0:
             pg.draw.circle(surf, (232, 96, 90), (660, 46), 9)
-        line = (self.wrap(q, self.small, 630) or [""])[-1] if q else "L1/L2 (F1/F2) dictate, again to send"
+        line = (self.wrap(q, self.small, 630) or [""])[-1] if q else "Space, L1/L2 or F1/F2: dictate, again to send"
         surf.blit(self.small.render(line + ("_" if typing and int(now * 2) % 2 == 0 else ""), True, WHITE if q else DIM), (44, 70))
         # Mike's portrait, with a small life of its own
         phase = t.phase
@@ -278,9 +278,9 @@ class View:
             surf.blit(self.body.render(row, True, colour), (44, 474 + i * 38))
         if t.answer and int(self.shown) >= len(t.answer) and phase == "ready" and int(now * 2) % 2 == 0:
             pg.draw.polygon(surf, AMBER, ((662, 650), (682, 650), (672, 662)))
-        hint = ("A yes · B no" if phase == "asks" else "L1/L2 (F1/F2) again to send" if listening
-                else "L1/L2 (F1/F2) dictate" if dictation == "idle" else "dictation loading..." if dictation == "loading"
-                else "type and Return")
+        hint = ("A yes · B no" if phase == "asks" else "Space, L1/L2 or F1/F2 again: send" if listening
+                else "Space, L1/L2 or F1/F2: dictate" if dictation == "idle" else "dictation loading..." if dictation == "loading"
+                else "dictation unavailable: type and Return" if dictation == "error" else "type and Return")
         surf.blit(self.small.render(hint, True, DIM), (24, 684))
 
 
@@ -299,6 +299,7 @@ def main(argv: list[str]) -> int:
     pygame.joystick.init()
     pads = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]  # a pad on the desk; on Luna Wyoh owns it
     pygame.key.start_text_input()
+    skip_space = False
     try:
         while True:
             client.pump()
@@ -313,11 +314,18 @@ def main(argv: list[str]) -> int:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return 0
-                dictate_key = ((event.type == pygame.KEYDOWN and event.key in (pygame.K_F1, pygame.K_F2))
+                listening = dictation is not None and dictation.state in ("listening", "finishing")
+                # Space dictates only when nothing is being typed (Adam, 2026-11-03), so it still types spaces
+                space = event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and (not typing or listening)
+                dictate_key = (space or (event.type == pygame.KEYDOWN and event.key in (pygame.K_F1, pygame.K_F2))
                                or (event.type == pygame.JOYBUTTONDOWN and event.button in (4, 6)))  # L1, L2 on common pads
                 if dictate_key:
                     if dictation is not None:
                         dictation.toggle()
+                    skip_space = space
+                    continue
+                if event.type == pygame.TEXTINPUT and skip_space and event.text == " ":
+                    skip_space = False  # the space that started or stopped dictation is not text
                     continue
                 if event.type == pygame.TEXTINPUT and t.phase != "asks":
                     typing += event.text
