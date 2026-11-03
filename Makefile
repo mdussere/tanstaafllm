@@ -32,7 +32,7 @@ WYOH_LUNA_UNIT ?= /storage/.config/system.d/wyoh-sway.service
 WYOH_LUNA_GAMEPAD_UNIT ?= /storage/.config/system.d/wyoh-gamepad.service
 WYOH_LUNA_LAYOUT_UNIT ?= /storage/.config/system.d/wyoh-layout.service
 
-.PHONY: install wyoh-luna-app wyoh-luna-apps wyoh-luna-deploy-preview wyoh-luna-deploy wyoh-luna-start wyoh-luna-stop wyoh-luna-status wyoh-luna-enable wyoh-luna-disable
+.PHONY: install install-wyoh install-preview status wyoh-luna-app wyoh-luna-apps wyoh-luna-deploy-preview wyoh-luna-deploy wyoh-luna-start wyoh-luna-stop wyoh-luna-status wyoh-luna-enable wyoh-luna-disable
 
 wyoh-luna-deploy-preview:
 	rsync -e "$(WYOH_LUNA_SSH)" --archive --no-owner --no-group --checksum --dry-run --itemize-changes --mkpath --exclude '__pycache__/' src/wyoh/ $(WYOH_LUNA_HOST):$(WYOH_LUNA_ROOT)/
@@ -57,9 +57,26 @@ WYOH_LUNA_APPS ?= --apps '/storage/.local/opt/*/wyoh-app.toml' --apps '$(WYOH_LU
 wyoh-luna-apps: wyoh-luna-deploy
 	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) "python3 $(WYOH_LUNA_ROOT)/wyoh_apps.py $(WYOH_LUNA_APPS) --menu $(WYOH_LUNA_ROOT)/deploy/luna/menu.toml --applications-dir $(WYOH_LUNA_ROOT)/deploy/luna/share/applications --out-dir $(WYOH_LUNA_ROOT)/generated --system-dir /usr/share/applications --system-dir /usr/local/share/applications; swaymsg -s \$$(python3 -c 'import json;print(json.load(open(\"/storage/.local/state/tanstfaafllm/wyoh/sway-vnc-session.json\"))[\"sway_socket\"])') reload >/dev/null; systemctl restart wyoh-gamepad.service"
 
-# Adam, 2026-11-03: "pull, then make install". Wyoh, its apps (Mike's window
-# included) and the menu, Sway rules and gamepad profiles on Luna; restarts wyoh-gamepad.
-install: wyoh-luna-apps
+# --- Install on Luna from the desk (Adam, 2026-11-03; shape agreed with Professor) ---
+# `make install` rsyncs each workline's part from this working tree to Luna: no push
+# or pull is needed. It TOUCHES LUNA: run it only with Mannie stopped on Luna, or with
+# Mannie's agreement. No reboot; only a part's own service restarts; no model weights.
+# `install` is an umbrella: each workline owns its target (install-wyoh now; Mike,
+# Mannie and Camp Currie add theirs). A stamp on Luna records what was installed;
+# `make status` prints it next to the desk's HEAD.
+LUNA_STAMP ?= /storage/.local/state/tanstfaafllm/deployed.txt
+
+install: install-wyoh
+	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) 'mkdir -p $(dir $(LUNA_STAMP)) && echo "$(shell git describe --always --dirty) $(shell date -Iseconds) from $(shell hostname)" > $(LUNA_STAMP)'
+
+# Wyoh, its apps (Mike's window included), menu, Sway rules, gamepad profiles; restarts wyoh-gamepad.
+install-wyoh: wyoh-luna-apps
+
+install-preview: wyoh-luna-deploy-preview
+
+status:
+	@echo "desk HEAD:  $$(git describe --always --dirty)"
+	@echo "on Luna:    $$($(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) 'cat $(LUNA_STAMP) 2>/dev/null || echo nothing installed by make install yet')"
 
 wyoh-luna-start: wyoh-luna-deploy
 	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) 'systemctl start wyoh-sway.service wyoh-gamepad.service wyoh-layout.service'
@@ -96,6 +113,9 @@ help:
 	@echo "make run-mike-rpg-fake  the RPG window with a fake Mike (no model needed)"
 	@echo "make run-camp-currie    the Camp Currie game (arrows, Return = A, Escape = B)"
 	@echo "make run-mannie         Mannie: Claude Code in this repository"
+	@echo "make install            install every workline's part on Luna from this tree (Mannie stopped or agreeing)"
+	@echo "make install-preview    what make install would change on Luna (dry run)"
+	@echo "make status             desk HEAD next to what is installed on Luna"
 
 run-mike:
 	MIKE_HOME=$(MIKE_HOME) MIKE_LANG=$(MIKE_LANG) python3 $(MIKE_HOME)/mike.py
