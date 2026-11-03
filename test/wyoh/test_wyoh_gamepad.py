@@ -955,3 +955,17 @@ def test_l1_outside_the_slate_is_direct_dictation_and_l2_opens_the_slate():
     assert press(core, "BTN_TL") == [g.Zone("dictate")]  # inside the Slate, L1 dictates into it
     release(core, "BTN_TL")
     assert press(core, "BTN_TL2") == [g.Zone("hide")] and core.zone_state == "hidden"
+
+
+def test_sticks_scroll_mikes_two_texts():
+    config = g.load_config(ROOT / "src/wyoh/deploy/luna/gamepad.toml")
+    core = g.GamepadCore(config)
+    core.focus("mike")
+    full = int(config.pointer.axis_max)
+    core.axis(g.ABS_Y, -full, 0.0)                      # left stick up: the top text
+    assert core.needs_tick() and core.tick(0.0) == [g.Key(g.KEYS["KEY_F5"], True), g.Key(g.KEYS["KEY_F5"], False)]
+    core.axis(g.ABS_Y, 0, 0.1)
+    core.axis(g.ABS_RY, full, 0.2)                      # right stick down: the bottom text
+    assert core.tick(0.2) == [g.Key(g.KEYS["KEY_F8"], True), g.Key(g.KEYS["KEY_F8"], False)]
+    core.focus("foot")
+    assert not core.scroll                              # elsewhere the sticks keep the pointer

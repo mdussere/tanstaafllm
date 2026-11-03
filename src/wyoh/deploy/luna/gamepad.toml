@@ -28,6 +28,8 @@ zone_command = [
 # inside the Slate L1 still dictates into it. No Slate over Mike's window.
 keyboard_command = []
 direct_dictate = "BTN_TL"
+# Sticks scroll Mike's two texts: left stick the top one, right stick the bottom one.
+scroll_apps = ["mike"]
 zone_toggle = "BTN_TL2"
 zone_dictate = "BTN_TL"
 

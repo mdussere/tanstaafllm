@@ -213,6 +213,26 @@ class View:
             colour = AMBER if rng.random() < 0.25 else WHITE
             self.sky.fill(tuple(int(c * rng.uniform(0.35, 0.9)) for c in colour), (rng.randrange(720), rng.randrange(720), 2, 2))
         self.shown, self.last = 0.0, time.monotonic()
+        self.scroll = {"top": 0, "bottom": 0}  # lines scrolled back from the end; 0 follows the text
+
+    def scrolled(self, zone: str, step: int) -> None:
+        self.scroll[zone] = max(0, self.scroll[zone] + step)
+
+    def window(self, lines: list[str], zone: str, size: int) -> tuple[list[str], int, int]:
+        """The visible slice of `lines`, with the offset clamped; returns (slice, first, total)."""
+        total = len(lines)
+        self.scroll[zone] = min(self.scroll[zone], max(0, total - size))
+        end = total - self.scroll[zone]
+        first = max(0, end - size)
+        return lines[first:end], first, total
+
+    def scrollbar(self, surf, x: int, top: int, height: int, first: int, size: int, total: int) -> None:
+        if total <= size:
+            return
+        self.pg.draw.rect(surf, BORDER, (x, top, 6, height))
+        thumb = max(14, height * size // total)
+        y = top + (height - thumb) * first // max(1, total - size)
+        self.pg.draw.rect(surf, AMBER, (x, y, 6, thumb))
 
     def wrap(self, text: str, font, width: int) -> list[str]:
         lines = []
@@ -246,6 +266,7 @@ class View:
         dt, self.last = now - self.last, now
         if t.mode == "echo" or (t.answer and self.shown > len(t.answer)):
             self.shown = 0.0
+            self.scroll["bottom"] = 0  # a new answer: follow it
         self.shown = min(len(t.answer), self.shown + dt * CPS * (3 if len(t.answer) - self.shown > 120 else 1))
         surf.blit(self.sky, (0, 0))
         # the question (or what FN+B is typing)
@@ -257,8 +278,11 @@ class View:
         surf.blit(self.label.render(label, True, AMBER if listening else CYAN), (44, 38))
         if listening and int(now * 2) % 2 == 0:
             pg.draw.circle(surf, (232, 96, 90), (660, 46), 9)
-        rows = (self.wrap(q, self.small, 630) or [""])[-2:] if q else [("Space, L1/L2 or F1/F2: dictate, again to send" if dictation
-                                                                        else "L1: dictate, L1 again to send")]
+        if q:
+            rows, first, total = self.window(self.wrap(q, self.small, 610) or [""], "top", 2)
+            self.scrollbar(surf, 676, 64, 80, first, 2, total)
+        else:
+            rows = [("Space, L1/L2 or F1/F2: dictate, again to send" if dictation else "L1: dictate, L1 again to send")]
         for i, row in enumerate(rows):
             cursor = "_" if typing and i == len(rows) - 1 and int(now * 2) % 2 == 0 else ""
             surf.blit(self.small.render(row + cursor, True, WHITE if q else DIM), (44, 70 + i * 32))
@@ -282,7 +306,8 @@ class View:
             text, colour = t.answer[: int(self.shown)], WHITE
         else:
             text, colour = "\n".join(t.notices[-2:]), CYAN
-        lines = self.wrap(text, self.body, 640)[-5:]
+        lines, first, total = self.window(self.wrap(text, self.body, 620), "bottom", 5)
+        self.scrollbar(surf, 686, 466, 190, first, 5, total)
         for i, row in enumerate(lines):
             surf.blit(self.body.render(row, True, colour), (44, 474 + i * 38))
         if t.answer and int(self.shown) >= len(t.answer) and phase == "ready" and int(now * 2) % 2 == 0:
@@ -328,6 +353,8 @@ def main(argv: list[str]) -> int:
     pads = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]  # a pad on the desk; on Luna Wyoh owns it
     pygame.key.start_text_input()
     skip_space = False
+    SCROLL_KEYS = {pygame.K_F5: ("top", 1), pygame.K_F6: ("top", -1), pygame.K_F7: ("bottom", 1), pygame.K_F8: ("bottom", -1),
+                   pygame.K_PAGEUP: ("bottom", 3), pygame.K_PAGEDOWN: ("bottom", -3)}
     try:
         while True:
             client.pump()
@@ -351,6 +378,9 @@ def main(argv: list[str]) -> int:
                     if dictation is not None:
                         dictation.toggle()
                     skip_space = space
+                    continue
+                if event.type == pygame.KEYDOWN and event.key in SCROLL_KEYS:
+                    view.scrolled(*SCROLL_KEYS[event.key])  # sticks on Luna (Wyoh sends F5-F8), keys on the desk
                     continue
                 if event.type == pygame.TEXTINPUT and skip_space and event.text == " ":
                     skip_space = False  # the space that started or stopped dictation is not text

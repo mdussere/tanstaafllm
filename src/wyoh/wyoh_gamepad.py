@@ -60,6 +60,7 @@ KEYS = {
     "KEY_LEFTALT": 56, "KEY_SPACE": 57,
     "KEY_UP": 103, "KEY_LEFT": 105, "KEY_RIGHT": 106, "KEY_DOWN": 108, "KEY_DELETE": 111,
     "KEY_DOT": 52,  # with Shift on Sway's AZERTY: "/"
+    "KEY_F5": 63, "KEY_F6": 64, "KEY_F7": 65, "KEY_F8": 66,  # stick scrolling (scroll_apps)
 }
 
 # Physical key codes (US-labelled positions); Sway applies `xkb_layout fr`.
@@ -148,6 +149,9 @@ class Config:
     # Direct dictation (Step 6.14, Adam 2026-11-03): outside the Slate, this button starts
     # Mycroft's dictation and stops it; the text is typed into the focused window, then Return.
     direct_dictate: str = ""
+    # Apps whose sticks scroll instead of moving the pointer (Adam 2026-11-03, Mike's window):
+    # left stick up/down taps F5/F6, right stick F7/F8, repeated while tilted.
+    scroll_apps: tuple[str, ...] = ()
     # FN in the Slate (user, 2026-10-15): B sends to Mike (reserved until Mike
     # runs on Luna), Y sends to Mannie's window, up/down walk the history.
     zone_fn: dict[str, str] = field(default_factory=lambda: {
@@ -411,6 +415,8 @@ class GamepadCore:
         self.zone_state = "closed"  # closed | open | hidden | delivering
         self.axes = (ABS_X, ABS_Y) if config.pointer_stick == "left" else (ABS_RX, ABS_RY)
         self.stick = {axis: 0.0 for axis in (ABS_X, ABS_Y, ABS_RX, ABS_RY)}
+        self.scroll = False
+        self.scroll_next = {ABS_Y: 0.0, ABS_RY: 0.0}
         # on-screen keyboard selections: per stick, the held direction and next repeat
         self.board_sticks = {0: (ABS_X, ABS_Y), 1: (ABS_RX, ABS_RY)}
         self.board_dir: dict[int, str | None] = {0: None, 1: None}
@@ -447,6 +453,7 @@ class GamepadCore:
     # focus (Step 9.3)
     def focus(self, app_id: str | None) -> list[Action]:
         """The focused window changed: apply its app's gamepad profile."""
+        self.scroll = (app_id or "") in self.config.scroll_apps
         self.app_keys_now = dict(self.config.app_keys.get(app_id or "", {}))
         self.active_keys = {**self.config.keys, **self.app_keys_now}
         profile = self.config.app_profiles.get(app_id or "", "keys")
@@ -734,6 +741,8 @@ class GamepadCore:
         pointer = (self.zone_state != "open" and self.pad is None
                    and pointer_speed(x, y, self.config.pointer) != (0.0, 0.0))
         board = self.zone_state == "open" and any(self.board_dir.values())
+        if self.scroll and self.zone_state != "open" and self.pad is None:
+            pointer = any(abs(self.stick[a]) > 0.5 * self.config.pointer.axis_max for a in (ABS_Y, ABS_RY))
         return pointer or board or self.recovery_since is not None or self.dpad_pending is not None
 
     def tick(self, now: float) -> list[Action]:
@@ -752,6 +761,16 @@ class GamepadCore:
             return actions  # no pointer while the Slate is open
         if self.pad is not None:
             return actions  # the sticks belong to the game
+        if self.scroll:  # sticks scroll: one key tap per repeat while tilted past half way
+            for axis, (up, down) in ((ABS_Y, ("KEY_F5", "KEY_F6")), (ABS_RY, ("KEY_F7", "KEY_F8"))):
+                value = self.stick[axis] / self.config.pointer.axis_max
+                if abs(value) <= 0.5:
+                    self.scroll_next[axis] = 0.0
+                elif now >= self.scroll_next[axis]:
+                    code = KEYS[up if value < 0 else down]
+                    actions += [Key(code, True), Key(code, False)]
+                    self.scroll_next[axis] = now + (0.25 if abs(value) < 0.9 else 0.08)
+            return actions
         vx, vy = pointer_speed(*(self.stick[axis] for axis in self.axes), self.config.pointer)
         if (vx, vy) == (0.0, 0.0):
             self.last_tick = None
