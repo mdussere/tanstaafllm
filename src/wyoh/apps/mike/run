@@ -12,4 +12,4 @@ export MALI_WAYLAND_DMABUF_PROTOCOL=1 SDL_VIDEODRIVER=wayland SDL_VIDEO_WAYLAND_
 # (sdl2-compat on SDL3, as Luna's games use) works, so it is preloaded.
 [ -e /usr/lib/libSDL2-2.0.so.0 ] && export LD_PRELOAD=/usr/lib/libSDL2-2.0.so.0
 exec "$venv/bin/python" "$here/mike_rpg.py" -- \
-    runuser -l michael -c 'export MIKE_HOME=$HOME/.local/opt/mike; exec python3 "$MIKE_HOME/mike.py"'
+    runuser -l michael -c 'export MIKE_HOME=$HOME/.local/opt/mike MIKE_LANG=en; exec python3 "$MIKE_HOME/mike.py"'
