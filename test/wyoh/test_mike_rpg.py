@@ -146,3 +146,10 @@ def test_space_dictates_and_sends_to_mike_in_the_real_window(monkeypatch):
     monkeypatch.setattr(pygame.event, "get", events)
     mike_rpg.main(["--", *FAKE])
     assert seen["sent"] == "hello"
+
+
+def test_other_osc_sequences_are_dropped_even_when_split():
+    t = Transcript()
+    t.feed("\x1b]3008;start=baf9;user=michael\x1b")
+    t.feed("\\Mike is starting…\r\n")
+    assert t.notices == ["Mike is starting…"]

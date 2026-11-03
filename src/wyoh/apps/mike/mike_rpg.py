@@ -29,6 +29,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 OSC = re.compile(r"\x1b\]2;(.*?)\x07")
+# every other OSC sequence (e.g. runuser's OSC 3008 session context), ended by BEL or ST
+OTHER_OSC = re.compile(r"\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
 CSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 
 
@@ -41,14 +43,19 @@ class Transcript:
     answer: str = ""
     mode: str = "notice"          # notice | echo | answer
     _pending: str = ""
+    _raw: str = ""
 
     def sent(self, question: str) -> None:
         self.question, self.answer, self.mode = question, "", "echo"
 
     def feed(self, data: str) -> None:
-        for title in OSC.findall(data):
+        for title in OSC.findall(self._raw + data):
             self.title = title
-        text = CSI.sub("", OSC.sub("", data)).replace("\r", "")
+        text = CSI.sub("", OTHER_OSC.sub("", OSC.sub("", self._raw + data))).replace("\r", "")
+        self._raw = ""
+        cut = text.find("\x1b")  # an unfinished sequence (split across reads): keep it for the next one
+        if cut >= 0:
+            self._raw, text = text[cut:], text[:cut]
         self._pending += text
         while self._pending:
             if self.mode == "echo":  # the terminal echoes the question: skip that line
@@ -250,7 +257,8 @@ class View:
         surf.blit(self.label.render(label, True, AMBER if listening else CYAN), (44, 38))
         if listening and int(now * 2) % 2 == 0:
             pg.draw.circle(surf, (232, 96, 90), (660, 46), 9)
-        line = (self.wrap(q, self.small, 630) or [""])[-1] if q else "Space, L1/L2 or F1/F2: dictate, again to send"
+        line = (self.wrap(q, self.small, 630) or [""])[-1] if q else ("Space, L1/L2 or F1/F2: dictate, again to send" if dictation
+                                                                    else "L1: dictate, L1 again to send")
         surf.blit(self.small.render(line + ("_" if typing and int(now * 2) % 2 == 0 else ""), True, WHITE if q else DIM), (44, 70))
         # Mike's portrait, with a small life of its own
         phase = t.phase
@@ -280,7 +288,7 @@ class View:
             pg.draw.polygon(surf, AMBER, ((662, 650), (682, 650), (672, 662)))
         hint = ("A yes · B no" if phase == "asks" else "Space, L1/L2 or F1/F2 again: send" if listening
                 else "Space, L1/L2 or F1/F2: dictate" if dictation == "idle" else "dictation loading..." if dictation == "loading"
-                else "dictation unavailable: type and Return" if dictation == "error" else "type and Return")
+                else "dictation unavailable: type and Return" if dictation == "error" else "L1 dictate · L1 again: send")
         surf.blit(self.small.render(hint, True, DIM), (24, 684))
 
 
