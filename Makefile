@@ -32,7 +32,7 @@ WYOH_LUNA_UNIT ?= /storage/.config/system.d/wyoh-sway.service
 WYOH_LUNA_GAMEPAD_UNIT ?= /storage/.config/system.d/wyoh-gamepad.service
 WYOH_LUNA_LAYOUT_UNIT ?= /storage/.config/system.d/wyoh-layout.service
 
-.PHONY: wyoh-luna-app wyoh-luna-apps wyoh-luna-deploy-preview wyoh-luna-deploy wyoh-luna-start wyoh-luna-stop wyoh-luna-status wyoh-luna-enable wyoh-luna-disable
+.PHONY: install wyoh-luna-app wyoh-luna-apps wyoh-luna-deploy-preview wyoh-luna-deploy wyoh-luna-start wyoh-luna-stop wyoh-luna-status wyoh-luna-enable wyoh-luna-disable
 
 wyoh-luna-deploy-preview:
 	rsync -e "$(WYOH_LUNA_SSH)" --archive --no-owner --no-group --checksum --dry-run --itemize-changes --mkpath --exclude '__pycache__/' src/wyoh/ $(WYOH_LUNA_HOST):$(WYOH_LUNA_ROOT)/
@@ -56,6 +56,10 @@ wyoh-luna-app:
 WYOH_LUNA_APPS ?= --apps '/storage/.local/opt/*/wyoh-app.toml' --apps '$(WYOH_LUNA_ROOT)/apps/*/wyoh-app.toml'
 wyoh-luna-apps: wyoh-luna-deploy
 	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) "python3 $(WYOH_LUNA_ROOT)/wyoh_apps.py $(WYOH_LUNA_APPS) --menu $(WYOH_LUNA_ROOT)/deploy/luna/menu.toml --applications-dir $(WYOH_LUNA_ROOT)/deploy/luna/share/applications --out-dir $(WYOH_LUNA_ROOT)/generated --system-dir /usr/share/applications --system-dir /usr/local/share/applications; swaymsg -s \$$(python3 -c 'import json;print(json.load(open(\"/storage/.local/state/tanstfaafllm/wyoh/sway-vnc-session.json\"))[\"sway_socket\"])') reload >/dev/null; systemctl restart wyoh-gamepad.service"
+
+# Adam, 2026-11-03: "pull, then make install". Wyoh, its apps (Mike's window
+# included) and the menu, Sway rules and gamepad profiles on Luna; restarts wyoh-gamepad.
+install: wyoh-luna-apps
 
 wyoh-luna-start: wyoh-luna-deploy
 	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) 'systemctl start wyoh-sway.service wyoh-gamepad.service wyoh-layout.service'

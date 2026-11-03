@@ -1,8 +1,0 @@
-#!/bin/sh
-# Mike's window, look B (Wyoh 6.13): the RPG dialogue window (pygame) runs
-# Mike's client as michael in a pseudo-terminal and stages it. Same app_id
-# "mike" and the same titles as look A, so FN+B and the Mike <-> Mannie switch
-# do not change. Needs pygame-ce in michael's Python (not yet on Luna).
-here=$(dirname "$(readlink -f "$0")")
-export MALI_WAYLAND_DMABUF_PROTOCOL=1 SDL_VIDEODRIVER=wayland SDL_VIDEO_WAYLAND_WMCLASS=mike
-exec runuser -l michael -c "export MALI_WAYLAND_DMABUF_PROTOCOL=1 SDL_VIDEODRIVER=wayland SDL_VIDEO_WAYLAND_WMCLASS=mike WAYLAND_DISPLAY=$WAYLAND_DISPLAY XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR MIKE_HOME=\$HOME/.local/opt/mike; exec python3 '$here/mike_rpg.py'"

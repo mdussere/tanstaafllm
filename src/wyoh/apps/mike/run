@@ -1,14 +1,15 @@
 #!/bin/sh
-# Mike's window in the Wyoh session (Wyoh 6.11): foot, app_id "mike", running
-# Mike's client as michael (like Mannie), so its state stays in michael's home.
-# The client sets the title "Mike — ready" once it accepts a question; FN+B in
-# the Slate waits for it. Look A (6.13): foot-mike.ini (VT323, the series'
-# palette) and header.sh (portrait, name, keys) before the client.
+# Mike's window in the Wyoh session (Wyoh 6.11, look B since 2026-11-03): the
+# RPG dialogue window (mike_rpg.py, pygame-ce in /storage/.local/opt/mike-rpg-venv)
+# runs as the session user, like foot did, and Mike's client runs as michael in
+# its pseudo-terminal, so its state stays in michael's home. Same app_id "mike"
+# and the same "Mike — ..." titles as before: FN+B and the Mike <-> Mannie switch
+# do not change. Look A (foot) stays available as run-terminal.
 here=$(dirname "$(readlink -f "$0")")
-# VT323 for the skin (look A, 6.13): installed once for the user running foot
-fonts="${XDG_DATA_HOME:-$HOME/.local/share}/fonts"
-if [ ! -e "$fonts/vt323_VT323-Regular.ttf" ]; then
-    mkdir -p "$fonts" && cp "$here/vt323_VT323-Regular.ttf" "$here/vt323_OFL.txt" "$fonts/" && fc-cache "$fonts" >/dev/null 2>&1
-fi
-exec foot --config="$here/foot-mike.ini" -a mike -T "Mike — starting" \
-    runuser -l michael -c "'$here/header.sh'; export MIKE_HOME=\$HOME/.local/opt/mike; exec python3 \"\$MIKE_HOME/mike.py\""
+venv=/storage/.local/opt/mike-rpg-venv
+export MALI_WAYLAND_DMABUF_PROTOCOL=1 SDL_VIDEODRIVER=wayland SDL_VIDEO_WAYLAND_WMCLASS=mike SDL_AUDIODRIVER=dummy
+# pygame's own SDL crashes in Luna's libmali (2026-11-03); the system's SDL2
+# (sdl2-compat on SDL3, as Luna's games use) works, so it is preloaded.
+[ -e /usr/lib/libSDL2-2.0.so.0 ] && export LD_PRELOAD=/usr/lib/libSDL2-2.0.so.0
+exec "$venv/bin/python" "$here/mike_rpg.py" -- \
+    runuser -l michael -c 'export MIKE_HOME=$HOME/.local/opt/mike; exec python3 "$MIKE_HOME/mike.py"'

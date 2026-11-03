@@ -201,5 +201,7 @@ def test_mikes_window_manifest_matches_fn_b():
     app = a.load(ROOT / "src/wyoh/apps/mike")
     assert app.wayland_app_id == "mike" and app.name == "Mike" and app.input == "keys"
     run = (ROOT / "src/wyoh/apps/mike/run").read_text(encoding="utf-8")
-    assert "-a mike" in run and "runuser -l michael" in run and "mike.py" in run
-    assert g.MIKE_RUN == "/storage/.local/opt/wyoh-mike/run"  # where the menu and FN+B both start it
+    assert "mike_rpg.py" in run and "runuser -l michael" in run and "mike.py" in run and "WMCLASS=mike" in run
+    terminal = (ROOT / "src/wyoh/apps/mike/run-terminal").read_text(encoding="utf-8")
+    assert "-a mike" in terminal and "runuser -l michael" in terminal and "mike.py" in terminal
+    assert g.MIKE_RUN == "/storage/.local/share/tanstfaafllm/wyoh/apps/mike/run"  # where the menu and FN+B both start it

@@ -867,7 +867,7 @@ def find_app_con(tree: dict[str, Any], app_id: str) -> int | None:
 
 
 # Mike's chat window (Wyoh 6.11): launcher, and the titles its client sets (OSC 2).
-MIKE_RUN = "/storage/.local/opt/wyoh-mike/run"
+MIKE_RUN = "/storage/.local/share/tanstfaafllm/wyoh/apps/mike/run"  # deployed with Wyoh (make install)
 MIKE_WAIT_S = 90.0
 MIKE_SWITCH_WAIT_S = 900.0  # Mike asked to stop Mannie, which saves first (1-10 min)
 
