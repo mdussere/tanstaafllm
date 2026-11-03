@@ -476,7 +476,8 @@ def test_deployed_config_loads():
     config = g.load_config(ROOT / "src/wyoh/deploy/luna/gamepad.toml")
     assert config.devices == ("r36s_Gamepad", "wyoh-virtual-gamepad")
     assert "{socket}" in config.zone_command and "--app-id=wyoh-slate" in config.zone_command
-    assert config.keyboard_command[0] == "wvkbd-luna"
+    assert config.keyboard_command == ()  # 6.14: no on-screen keyboard
+    assert (config.direct_dictate, config.zone_toggle, config.zone_dictate) == ("BTN_TL", "BTN_TL2", "BTN_TL")
     assert "#ffffff" in config.zone_open_sway and "#5294e2" in config.zone_close_sway
 
 
@@ -938,3 +939,19 @@ def test_the_game_keeps_its_joystick_while_the_preloaded_slate_is_hidden(wolf):
     wolf.zone_state = "hidden"  # zone_preload opens the Slate hidden at session start
     assert press(wolf, "BTN_EAST") == [g.PadButton(0, True)]
     assert wolf.axis(g.ABS_RX, 1200) == [g.PadAxis(g.ABS_RX, 1200)]
+
+
+# --- Direct dictation (6.14, Adam 2026-11-03) -----------------------------------
+
+def test_l1_outside_the_slate_is_direct_dictation_and_l2_opens_the_slate():
+    config = g.load_config(ROOT / "src/wyoh/deploy/luna/gamepad.toml")
+    core = g.GamepadCore(config)
+    assert press(core, "BTN_TL") == [g.Zone("direct")] and core.zone_state == "closed"
+    release(core, "BTN_TL")
+    assert press(core, "BTN_TL") == [g.Zone("direct")]  # the same button stops it
+    release(core, "BTN_TL")
+    assert press(core, "BTN_TL2") == [g.Zone("open")] and core.zone_state == "open"
+    release(core, "BTN_TL2")
+    assert press(core, "BTN_TL") == [g.Zone("dictate")]  # inside the Slate, L1 dictates into it
+    release(core, "BTN_TL")
+    assert press(core, "BTN_TL2") == [g.Zone("hide")] and core.zone_state == "hidden"

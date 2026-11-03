@@ -58,13 +58,13 @@ def test_desktop_cross_is_arrows():
 
 
 def test_desktop_special_buttons():
-    assert CONFIG.zone_toggle == "BTN_TL" and "Slate" in _row("Desktop (no Slate shown)", "`BTN_TL`")
+    assert CONFIG.zone_toggle == "BTN_TL2" and "Slate" in _row("Desktop (no Slate shown)", "`BTN_TL2`")
+    assert CONFIG.direct_dictate == "BTN_TL" and "`direct`" in _row("Desktop (no Slate shown)", "`BTN_TL`")
     assert CONFIG.menu == "BTN_START" and "menu" in _row("Desktop (no Slate shown)", "`BTN_START`")
     assert CONFIG.next_window == "BTN_SELECT"
     assert "`focus next`" in _row("Desktop (no Slate shown)", "`BTN_SELECT`")
     assert CONFIG.click == "BTN_THUMBR" and "click" in _row("Desktop (no Slate shown)", "`BTN_THUMBR`")
     assert CONFIG.pointer_stick == "right" and "Pointer" in _row("Desktop (no Slate shown)", "`ABS_RX`/`ABS_RY`")
-    assert "`dictate`" in _row("Desktop (no Slate shown)", "`BTN_TL2`")
 
 
 @pytest.mark.parametrize("button", ["BTN_EAST", "BTN_SOUTH", "BTN_TR", "BTN_TR2"])

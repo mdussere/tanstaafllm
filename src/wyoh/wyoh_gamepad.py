@@ -145,6 +145,9 @@ class Config:
     # FN+A sends, then clears and hides.
     zone_toggle: str = "BTN_TL"
     zone_dictate: str = "BTN_TL2"
+    # Direct dictation (Step 6.14, Adam 2026-11-03): outside the Slate, this button starts
+    # Mycroft's dictation and stops it; the text is typed into the focused window, then Return.
+    direct_dictate: str = ""
     # FN in the Slate (user, 2026-10-15): B sends to Mike (reserved until Mike
     # runs on Luna), Y sends to Mannie's window, up/down walk the history.
     zone_fn: dict[str, str] = field(default_factory=lambda: {
@@ -270,7 +273,7 @@ def load_config(path: Path | None) -> Config:
 def _validate(config: Config) -> None:
     named = [config.click, config.zone_toggle, config.zone_dictate, *config.zone_fn, config.menu, config.next_window,
              config.modifier, *config.recovery, *config.keys, *config.zone_keys, *config.fn_sway]
-    optional = [config.zone_validate, config.zone_validate_alt, config.zone_discard_alt]
+    optional = [config.zone_validate, config.zone_validate_alt, config.zone_discard_alt, config.direct_dictate]
     if set(config.zone_fn.values()) - ZONE_FN_OPS:
         raise ConfigError(f"zone_fn values must be among {sorted(ZONE_FN_OPS)}")
     for name in named + [name for name in optional if name] + list(config.board_press):
@@ -648,7 +651,9 @@ class GamepadCore:
             else:
                 result = [Note(f"busy:{name or code}")]
         else:  # closed, or hidden (the Slate keeps its text out of sight)
-            if code == self._b(cfg.zone_toggle):
+            if cfg.direct_dictate and code == self._b(cfg.direct_dictate):
+                result = [Zone("direct")]
+            elif code == self._b(cfg.zone_toggle):
                 result = [Zone("show" if self.zone_state == "hidden" else "open")]
                 self.zone_state = "open"
             elif code == self._b(cfg.menu):
@@ -1207,6 +1212,7 @@ class Daemon:
         self.zone_submit = False  # Mannie: one prompt, lines joined
         self.mike_deadline: float | None = None  # FN+B waits for Mike's window
         self.mike_hid_slate = False  # the Slate was hidden so that A/B answer Mike
+        self.direct = False  # direct dictation (6.14): the final text goes to the focused window
         self.preload_pending = config.zone_preload or "--resident" in config.dictate_command
         self.zone_start_hidden = False
         # Mycroft's resident mode (Step 12.4) when the command asks for it.
@@ -1351,9 +1357,10 @@ class Daemon:
             if self.pad is not None:
                 self.pad.emit(EV_ABS, action.code, action.value)
         elif isinstance(action, Zone):
-            {"open": self.open_zone, "validate": self.validate_zone, "discard": self.discard_zone,
-             "hide": self.hide_zone, "show": self.show_zone, "clear": lambda: self.tell_zone("clear"),
+            {"open": lambda: self.unless_mike(self.open_zone, "closed"), "validate": self.validate_zone, "discard": self.discard_zone,
+             "hide": self.hide_zone, "show": lambda: self.unless_mike(self.show_zone, "hidden"), "clear": lambda: self.tell_zone("clear"),
              "dictate": self.dictate_zone,
+             "direct": self.direct_dictation,
              "mike": self.mike_zone,
              "mannie": self.mannie_zone,
              "history-prev": lambda: self.tell_zone("history-prev"),
@@ -1447,6 +1454,55 @@ class Daemon:
             except OSError:
                 pass
 
+    def unless_mike(self, open_it, previous: str) -> None:
+        """No Slate over Mike's window for now (6.14, Adam): L1 dictates to Mike directly."""
+        try:
+            focused = con_app_id(self.sway.request(4), self.sway.focused_con_id())
+        except (OSError, ConnectionError, TypeError):
+            focused = None
+        if focused == "mike":
+            self.core.zone_state = previous
+            self.state["zone_result"] = "no-slate-on-mike"
+            self.write_status()
+            return
+        open_it()
+
+    def direct_dictation(self) -> None:
+        """L1 outside the Slate (6.14): start Mycroft's dictation, or stop it; the
+        final text is typed into the focused window, then Return (deliver_direct)."""
+        if self.resident is None:
+            self.state["direct"] = "unavailable"
+            self.write_status()
+            return
+        if not self.direct and self.resident.state in ("listening", "stopping"):
+            return  # the Slate is dictating
+        self.direct = True
+        self.resident_do(self.resident.toggle())
+
+    def deliver_direct(self, text: str) -> None:
+        """The direct utterance ended: type it into the focused window and press Return."""
+        self.direct = False
+        text = text.strip()
+        if not text:
+            self.write_status()
+            return
+        events = type_events(text)
+        try:
+            if events is not None:
+                for code, value in events:
+                    self.keyboard.emit([(EV_KEY, code, value)])
+                    time.sleep(self.config.deliver_key_delay_s)
+            else:
+                subprocess.run([*self.config.deliver_command, text], env=self._env(), timeout=60, check=True,
+                               stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            time.sleep(0.1)
+            self.tap(KEYS["KEY_ENTER"])
+            self.state["direct_deliveries"] = self.state.get("direct_deliveries", 0) + 1
+            self.state["delivered_length"] = len(text)  # never the text itself
+        except (OSError, subprocess.SubprocessError) as error:
+            self.state["error"] = f"direct: {type(error).__name__}"
+        self.write_status()
+
     def dictate_zone(self) -> None:
         """L2 in the Slate: start Mycroft's dictation, or stop it (Step 12)."""
         if self.resident is not None:
@@ -1506,6 +1562,9 @@ class Daemon:
             self.tell_slate(operation)
         if self.resident is not None:
             self.state["dictation"] = self.resident.state + (" (start pending)" if self.resident.pending else "")
+            # the bar's indicator (6.14): what direct dictation is doing, empty when idle
+            busy = self.resident.pending or self.resident.state in ("listening", "stopping")
+            self.state["direct"] = (self.resident.state if not self.resident.pending else "loading") if self.direct and busy else ""
         self.write_status()
 
     def stop_dictation(self) -> None:
@@ -1548,7 +1607,13 @@ class Daemon:
             messages, self.dictation_buffer = split_lines(self.dictation_buffer + data)
             if self.resident is not None:
                 for message in messages:
+                    direct_final = self.direct and message.get("op") == "final"
+                    failed = self.direct and message.get("op") == "error"
                     self.resident_do(self.resident.message(message))
+                    if direct_final:
+                        self.deliver_direct(str(message.get("text", "")))
+                    elif failed:
+                        self.direct = False
                 return
             for message in messages:
                 if message.get("op") in ("ready", "error"):
