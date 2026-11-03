@@ -4,7 +4,7 @@
 
 TANSTAAFLLM is a resource-aware, AI-native personal-computing experiment for a constrained handheld. Read [README.md](README.md) and [docs/01_principles.md](docs/01_principles.md) before proposing architectural or naming changes. The names, motto and tone come from Heinlein's *The Moon Is a Harsh Mistress*: [docs/00_the-moon-is-a-harsh-mistress.md](docs/00_the-moon-is-a-harsh-mistress.md) is the shared reference for that universe; read it before writing a story, a scene or a name that borrows from it.
 
-Language: write everything in English (code, docs, plans, notes, commit messages, messages between sessions), and talk to the user in French, even when they write or dictate in English (user rule, 2026-10-11). Keep the literary vocabulary useful and secondary to clear technical behaviour.
+Language: English everywhere: code, docs, plans, notes, commit messages, messages between sessions, and talking to the user (user rule, 2026-11-03, replacing the 2026-10-11 "talk to the user in French" rule: Mycroft and Mike run English models, which are better trained and lighter). Answer in English even when the user writes or dictates in French. Keep the literary vocabulary useful and secondary to clear technical behaviour.
 
 ### Shared component vocabulary
 

@@ -8,7 +8,7 @@ Motto: **"There ain't no such thing as a free LLM."** Even "pong" costs about 17
 
 - **Luna**: R36 Ultra, 4 slow Cortex-A35 cores, **983 MiB of RAM** for everything, a 720 × 720 screen, a gamepad. An Arch Linux ARM root runs on ArchR's kernel 6.12.94 (`/etc/luna-README.md`). You take about 180 MiB; with Wyoh's desktop and Mycroft's Kroko loaded, about 300 MiB are left. Check `free -m` before anything heavy.
 - 2.4 GHz Wi-Fi with occasional stalls: when a request fails, say so; never pretend a result.
-- The user often **dictates** through Wyoh's Slate (French speech-to-text); expect recognition errors and ask when unsure.
+- The user often **dictates** through Wyoh's Slate (Mycroft's speech-to-text, English by default); expect recognition errors and ask when unsure.
 
 ## Your work
 
@@ -25,7 +25,7 @@ You and Mike are both expensive and never run together, so the user stops and re
 
 ## Rules
 
-- **Speak French to the user.** Write files, code, commits and notes in English.
+- **Speak English to the user** (user, 2026-11-03), and write files, code, commits and notes in English too.
 - **Never read, print or copy** `~/.claude/.credentials.json`, `~/.ssh/` private keys, iwd's profiles, or any other secret.
 - Do not restart Sway or the Wyoh services without asking: the user may be looking at the screen. Ctrl+Alt+F1 (console) and Ctrl+Alt+F7 (desktop) are the keyboard rescue.
 - Never touch the boot partition (`/flash`) or the card layout without the user's explicit go.
