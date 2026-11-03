@@ -287,6 +287,7 @@ date
 
 | Timestamp (`date`) | Update |
 |---|---|
+| 2026-11-03 | `make install` agreed with Wyoh: a desk-side rsync umbrella (no push needed; Luna's clone stays on `cell/mannie`), each workline owning its `install-<name>` part, `install-preview`, and a stamp shown by `make status` (Wyoh, ad85582). **Pending, to relay when the sessions resume:** Mike adds `install-mike` (Luna still runs a stale French `smalltalk.py`); Mannie adds `install-mannie`. Camp Currie and Mike Android are not yet registered in AGENTS.md (question put to the user). |
 | 2026-09-25 | Created draft coordinating-workline plan; no implementation or specialised workline was initiated. |
 | 2026-09-25T01:24:13+02:00 | Renamed the coordinating workline from `general` to `professor` (Professor de la Paz); updated its role to maintain cross-workline coordination and isolation. No implementation started. |
 | 2026-09-25T02:22:12+02:00 | Green-lit Sections 1 and 2 produced a complete-source decision ledger and a review-ready v0 charter. No subsystem implementation, hardware operation, model download, or benchmark was run. |
