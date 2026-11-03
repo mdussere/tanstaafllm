@@ -1237,6 +1237,8 @@ class Daemon:
         self.mike_deadline: float | None = None  # FN+B waits for Mike's window
         self.mike_hid_slate = False  # the Slate was hidden so that A/B answer Mike
         self.direct = False  # direct dictation (6.14): the final text goes to the focused window
+        self.direct_stop_since: float | None = None  # L1 pressed again: stop once Mycroft has caught up
+        self.direct_last_partial = 0.0
         self.preload_pending = config.zone_preload or "--resident" in config.dictate_command
         self.zone_start_hidden = False
         # Mycroft's resident mode (Step 12.4) when the command asks for it.
@@ -1500,8 +1502,27 @@ class Daemon:
             return
         if not self.direct and self.resident.state in ("listening", "stopping"):
             return  # the Slate is dictating
+        if self.direct and self.resident.state == "listening":
+            # Adam, 2026-11-03: stopping at once cut Mycroft off before it had decoded what it
+            # already heard. Keep listening until no new text comes for 0.7 s (3 s at most).
+            if self.direct_stop_since is None:
+                self.direct_stop_since = time.monotonic()
+                self.state["direct"] = "stopping"
+                self.write_status()
+            return
         self.direct = True
         self.resident_do(self.resident.toggle())
+
+    def direct_catch_up(self, now: float) -> None:
+        """Called from the loop: send the real stop once Mycroft's text has settled."""
+        if self.direct_stop_since is None or self.resident is None:
+            return
+        if self.resident.state != "listening":
+            self.direct_stop_since = None
+            return
+        if now - self.direct_last_partial >= 0.7 or now - self.direct_stop_since >= 3.0:
+            self.direct_stop_since = None
+            self.resident_do(self.resident.toggle())
 
     def deliver_direct(self, text: str) -> None:
         """The direct utterance ended: type it into the focused window and press Return."""
@@ -1590,6 +1611,8 @@ class Daemon:
             # the bar's indicator (6.14): what direct dictation is doing, empty when idle
             busy = self.resident.pending or self.resident.state in ("listening", "stopping")
             self.state["direct"] = (self.resident.state if not self.resident.pending else "loading") if self.direct and busy else ""
+            if self.direct_stop_since is not None and self.state["direct"] == "listening":
+                self.state["direct"] = "stopping"
         self.write_status()
 
     def stop_dictation(self) -> None:
@@ -1637,6 +1660,7 @@ class Daemon:
                     if self.direct and message.get("op") == "partial":
                         # shown live by Mike's window (6.14); runtime state only, never logged
                         self.state["direct_text"] = str(message.get("text", ""))
+                        self.direct_last_partial = time.monotonic()
                     heard = str(message.get("text", "")).strip() or self.state.get("direct_text", "")
                     self.resident_do(self.resident.message(message))
                     if direct_final:
@@ -1976,6 +2000,8 @@ class Daemon:
                 timeout = min(timeout, 0.25)  # notice the menu or the Slate closing by itself
             if self.mike_deadline is not None:
                 timeout = min(timeout, 0.5)
+            if self.direct_stop_since is not None:
+                timeout = min(timeout, 0.1)
             readable, _, _ = select.select(fds, [], [], timeout)
             now = time.monotonic()
             for path, fd in list(self.inputs.items()):
@@ -1997,6 +2023,7 @@ class Daemon:
                 self.menu = None
                 self.write_status()
             self.mike_wait(now)
+            self.direct_catch_up(now)
 
     def close(self) -> None:
         self.apply(self.core.release_all())
