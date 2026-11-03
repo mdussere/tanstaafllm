@@ -69,8 +69,12 @@ LUNA_STAMP ?= /storage/.local/state/tanstfaafllm/deployed.txt
 install: install-wyoh
 	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) 'mkdir -p $(dir $(LUNA_STAMP)) && echo "$(shell git describe --always --dirty) $(shell date -Iseconds) from $(shell hostname)" > $(LUNA_STAMP)'
 
-# Wyoh, its apps (Mike's window included), menu, Sway rules, gamepad profiles; restarts wyoh-gamepad.
+# Wyoh, its apps (Mike's window included), menu, Sway rules, gamepad profiles. Adam,
+# 2026-11-03: "when we reinstall, pkill every process we reinstall": Mike's window
+# closes (mike.py stops its server), the Slate and bar scripts end, Wyoh's services
+# restart and Sway reloads (new bars). Mannie is not Wyoh's and is never touched.
 install-wyoh: wyoh-luna-apps
+	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) "swaymsg -s \$$(python3 -c 'import json;print(json.load(open(\"/storage/.local/state/tanstfaafllm/wyoh/sway-vnc-session.json\"))[\"sway_socket\"])') '[app_id=mike] kill' >/dev/null 2>&1; sleep 3; pkill -f '[a]pps/mike/mike_rpg.py' ; pkill -f 'wyoh_[s]late.py' ; pkill -f 'deploy/luna/[s]tatus.sh' ; pkill -f '[d]ictation-indicator.sh' ; systemctl restart wyoh-layout.service wyoh-gamepad.service; swaymsg -s \$$(python3 -c 'import json;print(json.load(open(\"/storage/.local/state/tanstfaafllm/wyoh/sway-vnc-session.json\"))[\"sway_socket\"])') reload >/dev/null; echo restarted"
 
 install-preview: wyoh-luna-deploy-preview
 
