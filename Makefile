@@ -79,7 +79,7 @@ install: install-wyoh
 SWAY_SOCK_CMD = python3 -c 'import json;print(json.load(open(\"/storage/.local/state/tanstfaafllm/wyoh/sway-vnc-session.json\"))[\"sway_socket\"])'
 
 luna-stop-all:
-	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) "swaymsg -s \$$($(SWAY_SOCK_CMD)) '[all] kill' >/dev/null 2>&1; runuser -u michael -- tmux kill-session -t mannie 2>/dev/null; sleep 3; pkill -x claude; pkill -f '[m]ike_rpg.py'; pkill -f '[m]ike.py'; pkill -f '[l]lama-server'; pkill -f 'MIKE_[H]OME'; pkill -f 'wyoh_[s]late.py'; pkill -f 'deploy/luna/[s]tatus.sh'; pkill -f '[d]ictation-indicator.sh'; sleep 1; pgrep -a -f '[c]laude|[l]lama-server|[m]ike.py' || echo 'all stopped'"
+	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) "swaymsg -s \$$($(SWAY_SOCK_CMD)) '[all] kill' >/dev/null 2>&1; runuser -u michael -- tmux kill-session -t mannie 2>/dev/null; sleep 3; pkill -x claude; pkill -f '[m]ike_rpg.py'; pkill -f '[m]ike.py'; pkill -f '[l]lama-server'; pkill -f 'MIKE_[H]OME'; pkill -f 'wyoh_[s]late.py'; pkill -f 'deploy/luna/[s]tatus.sh'; pkill -f '[d]ictation-indicator.sh'; sleep 1; pgrep -a -f '[c]laude|[l]lama-server|[m]ike.py' | grep -v 'bash -c' || echo 'all stopped'"
 
 install-wyoh: luna-stop-all wyoh-luna-apps
 	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) "systemctl restart wyoh-layout.service wyoh-gamepad.service; swaymsg -s \$$($(SWAY_SOCK_CMD)) reload >/dev/null; echo 'Wyoh and Mycroft restarted'"
