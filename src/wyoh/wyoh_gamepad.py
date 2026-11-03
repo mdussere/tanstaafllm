@@ -61,6 +61,7 @@ KEYS = {
     "KEY_UP": 103, "KEY_LEFT": 105, "KEY_RIGHT": 106, "KEY_DOWN": 108, "KEY_DELETE": 111,
     "KEY_DOT": 52,  # with Shift on Sway's AZERTY: "/"
     "KEY_F5": 63, "KEY_F6": 64, "KEY_F7": 65, "KEY_F8": 66,  # stick scrolling (scroll_apps)
+    "KEY_F9": 67, "KEY_F10": 68,  # stick left/right: history back/forward (scroll_apps)
 }
 
 # Physical key codes (US-labelled positions); Sway applies `xkb_layout fr`.
@@ -416,7 +417,7 @@ class GamepadCore:
         self.axes = (ABS_X, ABS_Y) if config.pointer_stick == "left" else (ABS_RX, ABS_RY)
         self.stick = {axis: 0.0 for axis in (ABS_X, ABS_Y, ABS_RX, ABS_RY)}
         self.scroll = False
-        self.scroll_next = {ABS_Y: 0.0, ABS_RY: 0.0}
+        self.scroll_next = {ABS_X: 0.0, ABS_Y: 0.0, ABS_RX: 0.0, ABS_RY: 0.0}
         # on-screen keyboard selections: per stick, the held direction and next repeat
         self.board_sticks = {0: (ABS_X, ABS_Y), 1: (ABS_RX, ABS_RY)}
         self.board_dir: dict[int, str | None] = {0: None, 1: None}
@@ -742,7 +743,7 @@ class GamepadCore:
                    and pointer_speed(x, y, self.config.pointer) != (0.0, 0.0))
         board = self.zone_state == "open" and any(self.board_dir.values())
         if self.scroll and self.zone_state != "open" and self.pad is None:
-            pointer = any(abs(self.stick[a]) > 0.5 * self.config.pointer.axis_max for a in (ABS_Y, ABS_RY))
+            pointer = any(abs(self.stick[a]) > 0.5 * self.config.pointer.axis_max for a in (ABS_X, ABS_Y, ABS_RX, ABS_RY))
         return pointer or board or self.recovery_since is not None or self.dpad_pending is not None
 
     def tick(self, now: float) -> list[Action]:
@@ -762,14 +763,17 @@ class GamepadCore:
         if self.pad is not None:
             return actions  # the sticks belong to the game
         if self.scroll:  # sticks scroll: one key tap per repeat while tilted past half way
-            for axis, (up, down) in ((ABS_Y, ("KEY_F5", "KEY_F6")), (ABS_RY, ("KEY_F7", "KEY_F8"))):
+            # vertical: scroll (left stick the top text, right stick the bottom one);
+            # horizontal, either stick: history (left goes back, right comes forward), one step per 0.5 s
+            for axis, (minus, plus), slow, fast in ((ABS_Y, ("KEY_F5", "KEY_F6"), 0.25, 0.08), (ABS_RY, ("KEY_F7", "KEY_F8"), 0.25, 0.08),
+                                                    (ABS_X, ("KEY_F9", "KEY_F10"), 0.5, 0.5), (ABS_RX, ("KEY_F9", "KEY_F10"), 0.5, 0.5)):
                 value = self.stick[axis] / self.config.pointer.axis_max
                 if abs(value) <= 0.5:
                     self.scroll_next[axis] = 0.0
                 elif now >= self.scroll_next[axis]:
-                    code = KEYS[up if value < 0 else down]
+                    code = KEYS[minus if value < 0 else plus]
                     actions += [Key(code, True), Key(code, False)]
-                    self.scroll_next[axis] = now + (0.25 if abs(value) < 0.9 else 0.08)
+                    self.scroll_next[axis] = now + (slow if abs(value) < 0.9 else fast)
             return actions
         vx, vy = pointer_speed(*(self.stick[axis] for axis in self.axes), self.config.pointer)
         if (vx, vy) == (0.0, 0.0):

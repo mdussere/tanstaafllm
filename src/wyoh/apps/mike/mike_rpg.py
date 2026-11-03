@@ -42,6 +42,7 @@ class Transcript:
     question: str = ""
     answer: str = ""
     mode: str = "notice"          # notice | echo | answer
+    history: list[tuple[str, str]] = field(default_factory=list)  # finished (question, answer) pairs
     _pending: str = ""
     _raw: str = ""
 
@@ -72,6 +73,7 @@ class Transcript:
                     return
                 self.answer += self._pending[:end]
                 self._pending, self.mode = self._pending[end + 3:], "notice"
+                self.history.append((self.question, self.answer.strip()))
             else:  # notice lines; a lone "> " is the prompt
                 if "\n" not in self._pending:
                     if self._pending in ("> ", ">"):
@@ -214,6 +216,14 @@ class View:
             self.sky.fill(tuple(int(c * rng.uniform(0.35, 0.9)) for c in colour), (rng.randrange(720), rng.randrange(720), 2, 2))
         self.shown, self.last = 0.0, time.monotonic()
         self.scroll = {"top": 0, "bottom": 0}  # lines scrolled back from the end; 0 follows the text
+        self.back = 0  # history: 0 is the live exchange, n the n-th finished one before it
+
+    def browse(self, step: int, t: Transcript) -> None:
+        """Stick left (+1) goes back in the history, right (-1) comes forward."""
+        self.back = max(0, min(len(t.history), self.back + step))
+        self.scroll = {"top": 0, "bottom": 0}
+        if self.back == 0:
+            self.shown = float(len(t.answer))  # back to the live exchange: no retyping
 
     def scrolled(self, zone: str, step: int) -> None:
         self.scroll[zone] = max(0, self.scroll[zone] + step)
@@ -263,6 +273,7 @@ class View:
 
     def draw(self, surf, t: Transcript, typing: str, now: float, dictation: str = "", heard: str = "") -> None:
         pg = self.pg
+        t_history = t.history
         dt, self.last = now - self.last, now
         if t.mode == "echo" or (t.answer and self.shown > len(t.answer)):
             self.shown = 0.0
@@ -271,10 +282,18 @@ class View:
         surf.blit(self.sky, (0, 0))
         # the question (or what FN+B is typing)
         listening = dictation in ("listening", "finishing")
+        if t.mode == "echo":
+            self.back = 0  # a new question: back to the live exchange
+        if self.back and not listening:  # browsing the history: a finished exchange, shown whole
+            past_q, past_a = t.history[-self.back]
+            t = Transcript(title=t.title, question=past_q, answer=past_a)
+            self.shown = len(past_a)
         q = heard if listening else (typing or t.question)
         top = pg.Rect(24, 24, 672, 130)
         self.box(surf, top, AMBER if listening else CYAN, PANEL)
         label = ("LISTENING" if dictation == "listening" else "...") if listening else ("YOU" if q else "MIKE")
+        if self.back and not listening:
+            label = f"YOU  {len(t_history) - self.back + 1}/{len(t_history)}"
         surf.blit(self.label.render(label, True, AMBER if listening else CYAN), (44, 38))
         if listening and int(now * 2) % 2 == 0:
             pg.draw.circle(surf, (232, 96, 90), (660, 46), 9)
@@ -381,6 +400,9 @@ def main(argv: list[str]) -> int:
                     continue
                 if event.type == pygame.KEYDOWN and event.key in SCROLL_KEYS:
                     view.scrolled(*SCROLL_KEYS[event.key])  # sticks on Luna (Wyoh sends F5-F8), keys on the desk
+                    continue
+                if event.type == pygame.KEYDOWN and event.key in (pygame.K_F9, pygame.K_F10):
+                    view.browse(1 if event.key == pygame.K_F9 else -1, t)  # stick left: back; right: forward
                     continue
                 if event.type == pygame.TEXTINPUT and skip_space and event.text == " ":
                     skip_space = False  # the space that started or stopped dictation is not text

@@ -967,5 +967,9 @@ def test_sticks_scroll_mikes_two_texts():
     core.axis(g.ABS_Y, 0, 0.1)
     core.axis(g.ABS_RY, full, 0.2)                      # right stick down: the bottom text
     assert core.tick(0.2) == [g.Key(g.KEYS["KEY_F8"], True), g.Key(g.KEYS["KEY_F8"], False)]
+    core.axis(g.ABS_RY, 0, 0.3)
+    core.axis(g.ABS_RX, -full, 0.4)                     # right stick left: history back
+    assert core.tick(0.4) == [g.Key(g.KEYS["KEY_F9"], True), g.Key(g.KEYS["KEY_F9"], False)]
+    core.axis(g.ABS_RX, 0, 0.5)
     core.focus("foot")
     assert not core.scroll                              # elsewhere the sticks keep the pointer

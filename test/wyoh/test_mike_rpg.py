@@ -153,3 +153,18 @@ def test_other_osc_sequences_are_dropped_even_when_split():
     t.feed("\x1b]3008;start=baf9;user=michael\x1b")
     t.feed("\\Mike is starting…\r\n")
     assert t.notices == ["Mike is starting…"]
+
+
+def test_finished_exchanges_go_to_the_history_and_can_be_browsed():
+    pygame = pytest.importorskip("pygame")
+    t = Transcript()
+    for q, a in (("one", "first answer"), ("two", "second answer")):
+        t.sent(q)
+        t.feed(f"{q}\r\n{a}\r\n> ")
+    assert t.history == [("one", "first answer"), ("two", "second answer")]
+    view = View.__new__(View)
+    view.back, view.scroll, view.shown = 0, {"top": 0, "bottom": 0}, 0.0
+    view.browse(1, t); view.browse(1, t); view.browse(1, t)   # stick left three times: stops at the oldest
+    assert view.back == 2
+    view.browse(-1, t)                                        # stick right: forward
+    assert view.back == 1
