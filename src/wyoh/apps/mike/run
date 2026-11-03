@@ -8,6 +8,7 @@
 here=$(dirname "$(readlink -f "$0")")
 venv=/storage/.local/opt/mike-rpg-venv
 export MALI_WAYLAND_DMABUF_PROTOCOL=1 SDL_VIDEODRIVER=wayland SDL_VIDEO_WAYLAND_WMCLASS=mike SDL_AUDIODRIVER=dummy
+export MIKE_RPG_STATS=/home/michael/.local/state/mike/chat.jsonl  # token counter (Mike logs each turn there)
 # pygame's own SDL crashes in Luna's libmali (2026-11-03); the system's SDL2
 # (sdl2-compat on SDL3, as Luna's games use) works, so it is preloaded.
 [ -e /usr/lib/libSDL2-2.0.so.0 ] && export LD_PRELOAD=/usr/lib/libSDL2-2.0.so.0

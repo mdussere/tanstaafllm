@@ -62,6 +62,7 @@ KEYS = {
     "KEY_DOT": 52,  # with Shift on Sway's AZERTY: "/"
     "KEY_F5": 63, "KEY_F6": 64, "KEY_F7": 65, "KEY_F8": 66,  # stick scrolling (scroll_apps)
     "KEY_F9": 67, "KEY_F10": 68,  # stick left/right: history back/forward (scroll_apps)
+    "KEY_F11": 87,  # X in Mike's window: new conversation
 }
 
 # Physical key codes (US-labelled positions); Sway applies `xkb_layout fr`.

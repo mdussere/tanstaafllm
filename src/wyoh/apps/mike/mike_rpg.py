@@ -73,7 +73,8 @@ class Transcript:
                     return
                 self.answer += self._pending[:end]
                 self._pending, self.mode = self._pending[end + 3:], "notice"
-                self.history.append((self.question, self.answer.strip()))
+                if not self.question.startswith("/"):
+                    self.history.append((self.question, self.answer.strip()))
             else:  # notice lines; a lone "> " is the prompt
                 if "\n" not in self._pending:
                     if self._pending in ("> ", ">"):
@@ -271,6 +272,8 @@ class View:
         self.box(surf, rect, WHITE, VIOLET)
         surf.blit(self.label.render(word, True, colour), (x + 14, y + 9))
 
+    stats: list[str] = []
+
     def draw(self, surf, t: Transcript, typing: str, now: float, dictation: str = "", heard: str = "") -> None:
         pg = self.pg
         t_history = t.history
@@ -332,9 +335,51 @@ class View:
         if t.answer and int(self.shown) >= len(t.answer) and phase == "ready" and int(now * 2) % 2 == 0:
             pg.draw.polygon(surf, AMBER, ((662, 650), (682, 650), (672, 662)))
         hint = ("A yes · B no" if phase == "asks" else "Space, L1/L2 or F1/F2 again: send" if listening
-                else "Space, L1/L2 or F1/F2: dictate" if dictation == "idle" else "dictation loading..." if dictation == "loading"
-                else "dictation unavailable: type and Return" if dictation == "error" else "L1 dictate · L1 again: send")
+                else "Space/L1: dictate · X: new" if dictation == "idle" else "dictation loading..." if dictation == "loading"
+                else "dictation unavailable: type and Return" if dictation == "error" else "L1 dictate · X new")
         surf.blit(self.small.render(hint, True, DIM), (24, 684))
+        line = ""
+        if self.stats:
+            line = self.stats[-self.back] if self.back and self.back <= len(self.stats) else self.stats[-1]
+        if line:
+            counter = self.small.render(line, True, AMBER if self.back else DIM)
+            surf.blit(counter, counter.get_rect(topright=(696, 684)))
+
+
+def token_stats(path: Path) -> list[str]:
+    """The token counter (Adam, 2026-11-03), one line per answered turn of this session, in order:
+    input and output tokens since the conversation began (or since /new), and the context's size
+    after that answer, from the turns mike.py logs. The last line is the live one; browsing the
+    history shows the line of the exchange shown, so question, answer and counts stay together."""
+    try:
+        with open(path, "rb") as log:
+            log.seek(0, os.SEEK_END)
+            log.seek(max(0, log.tell() - 65536))
+            lines = log.read().decode("utf-8", "replace").splitlines()[1:]
+    except OSError:
+        return []
+    records = []
+    for line in lines:
+        try:
+            records.append(json.loads(line))
+        except ValueError:
+            continue
+    if not records:
+        return []
+    session = records[-1].get("session")
+    read = wrote = context = 0
+    lines_out = []
+    for record in records:
+        if record.get("session") != session:
+            continue
+        if record.get("event") == "new":
+            read = wrote = context = 0
+        elif "predicted_n" in record:
+            read += record.get("prompt_n") or 0
+            wrote += record.get("predicted_n") or 0
+            context = (record.get("prompt_tokens") or 0) + (record.get("predicted_n") or 0)
+            lines_out.append(f"in {read} · out {wrote} · ctx {context}")
+    return lines_out
 
 
 _wyoh_seen = [0.0, "", ""]  # last read, state, live text
@@ -372,6 +417,8 @@ def main(argv: list[str]) -> int:
     pads = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]  # a pad on the desk; on Luna Wyoh owns it
     pygame.key.start_text_input()
     skip_space = False
+    stats_path = Path(os.environ.get("MIKE_RPG_STATS", Path.home() / ".local/state/mike/chat.jsonl"))
+    stats_read = 0.0
     SCROLL_KEYS = {pygame.K_F5: ("top", 1), pygame.K_F6: ("top", -1), pygame.K_F7: ("bottom", 1), pygame.K_F8: ("bottom", -1),
                    pygame.K_PAGEUP: ("bottom", 3), pygame.K_PAGEDOWN: ("bottom", -3)}
     try:
@@ -401,6 +448,10 @@ def main(argv: list[str]) -> int:
                 if event.type == pygame.KEYDOWN and event.key in SCROLL_KEYS:
                     view.scrolled(*SCROLL_KEYS[event.key])  # sticks on Luna (Wyoh sends F5-F8), keys on the desk
                     continue
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_F11 and t.phase == "ready":
+                    client.send("/new")  # X on Luna: a new conversation
+                    view.back, view.scroll = 0, {"top": 0, "bottom": 0}
+                    continue
                 if event.type == pygame.KEYDOWN and event.key in (pygame.K_F9, pygame.K_F10):
                     view.browse(1 if event.key == pygame.K_F9 else -1, t)  # stick left: back; right: forward
                     continue
@@ -421,6 +472,8 @@ def main(argv: list[str]) -> int:
                         typing = typing[:-1]
             if not client.alive():
                 return 0
+            if time.monotonic() - stats_read > 2:
+                stats_read, view.stats = time.monotonic(), token_stats(stats_path)
             if dictation is not None:
                 state, heard = dictation.state, dictation.text
             else:  # on Luna, L1 is Wyoh's direct dictation (6.14): show its state, which the daemon publishes

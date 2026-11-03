@@ -6,6 +6,7 @@ The transcript parser runs in the default suite; the rendered session needs pyga
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 import time
@@ -168,3 +169,16 @@ def test_finished_exchanges_go_to_the_history_and_can_be_browsed():
     assert view.back == 2
     view.browse(-1, t)                                        # stick right: forward
     assert view.back == 1
+
+
+def test_the_token_counter_sums_the_conversation_and_restarts_on_new(tmp_path):
+    from mike_rpg import token_stats
+    log = tmp_path / "chat.jsonl"
+    rows = [{"session": "a", "prompt_n": 99, "predicted_n": 9, "prompt_tokens": 120},          # an older session
+            {"session": "b", "event": "start"},
+            {"session": "b", "prompt_n": 30, "predicted_n": 40, "prompt_tokens": 180},
+            {"session": "b", "event": "new"},
+            {"session": "b", "prompt_n": 25, "predicted_n": 88, "prompt_tokens": 188},
+            {"session": "b", "prompt_n": 20, "predicted_n": 12, "prompt_tokens": 300}]
+    log.write_text("\n" + "\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    assert token_stats(log) == ["in 30 · out 40 · ctx 220", "in 25 · out 88 · ctx 276", "in 45 · out 100 · ctx 312"]
