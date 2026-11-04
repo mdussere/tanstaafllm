@@ -205,6 +205,56 @@ KINDS.boss_hud = (t, p, it) => {
   tag(fixed ? it.labels[1] : it.labels[0], W - M - 140, 110, fixed ? C.green : C.red, 1, { align: 'right' });
 };
 
+
+// T24 — Template wall: the old hand-made episodes become a reusable card library.
+// Every episode is required to bring at least one new card; here two amber slots join the 23.
+KINDS.template_wall = (t, p, it) => {
+  const T0 = p.t0 + it.at, fresh = p.t0 + it.special_at;
+  if (t < T0) return;
+  const count = it.count || 23, total = count + 2;
+  for (let i = 0; i < total; i++) {
+    const isNew = i >= count, when = isNew ? fresh + (i - count) * 0.35 : T0 + i * 0.12;
+    if (t < when) continue;
+    const x = it.x + (i % 8) * 205, y = it.y + Math.floor(i / 8) * 90;
+    const a = seg(t, when, when + 0.22);
+    const edge = isNew ? C.amber : (i % 3 === 0 ? C.cyan : C.dim);
+    rect(x + 5, y + 5, 182, 69, C.shadow, a);
+    rect(x, y, 180, 68, C.navy2, a);
+    rect(x, y, 180, 6, edge, a);
+    rect(x + 14, y + 19, 34 + (i % 4) * 17, 8, isNew ? C.amber : C.violet2, a);
+    rect(x + 14, y + 38, 115, 7, C.violet2, a);
+    tag(isNew ? ('NEW ' + (i - count + 1)) : ('T' + String(i + 1).padStart(2, '0')),
+        x + 166, y + 57, edge, a, {align: 'right'});
+  }
+};
+
+// T25 — The video production ledger turns into its own second, payback video.
+// Data remains explicitly indicative until this entire new film's token cost is measured.
+KINDS.payback_meter = (t, p, it) => {
+  const A = s => p.t0 + s, x = it.x, invested = it.investment, saved = it.saving;
+  const width = 1600, fill = Math.min(1, saved / invested), a = seg(t, A(it.at), A(it.at + 0.25));
+  if (a <= 0) return;
+  const cards = [0, 1];
+  cards.forEach((i) => {
+    const y = it.y + i * 167;
+    rect(x + 9, y + 9, width, 144, C.shadow, a);
+    rect(x, y, width, 144, C.navy2, a);
+    rect(x, y, 10, 144, i === 0 ? C.cyan : C.amber, a);
+    tag('VIDEO ' + (i + 1), x + 35, y + 49, i === 0 ? C.cyan : C.amber, a);
+    const amount = i === 0 ? Math.min(saved, invested) : Math.min(invested, Math.max(0, saved * 2 - saved));
+    const start = i === 0 ? A(1.0) : A(it.reveal_at);
+    const q = seg(t, start, start + 0.8);
+    rect(x + 35, y + 76, 1500, 28, C.ink, a);
+    rect(x + 35, y + 76, 1500 * fill * q, 28, i === 0 ? C.cyan : C.green, a);
+    for (let z = 1; z <= 10; z++) rect(x + 35 + z * 150, y + 76, 3, 28, C.ink, a * 0.85);
+    tag(i === 0 ? 'REUSE THE PIPELINE' : 'THIS FILM MAKES IT TWO',
+        x + 35, y + 133, i === 0 ? C.dim : C.green, a * (i === 0 ? 1 : seg(t, A(it.reveal_at), A(it.reveal_at + 0.25))));
+  });
+  // The real investment ledger, deliberately in glance-sized annotations.
+  tag('408 K TO BUILD', x + 1200, it.y + 49, C.chrome, a);
+  tag('~236 K PER USE*', x + 1150, it.y + 216, C.chrome, a * seg(t, A(it.reveal_at), A(it.reveal_at + 0.25)));
+};
+
 function drawItems(t, p) {
   for (const it of p.content || []) {
     if (it.from !== undefined && !(t >= p.t0 + it.from)) continue;
