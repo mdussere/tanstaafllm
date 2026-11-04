@@ -1,0 +1,19 @@
+# Minimal integration smoke test: exactly two Hazel sequence templates.
+episode: adam-two-sequences-smoke
+title: HAZEL ENGINE SMOKE TEST
+bpm: 120
+scenes:
+  - id: title
+    template: title_card
+    bars: 3
+    mood: opener
+    series: "TANSTAAFLLM · ENGINE TEST"
+    key: "INSERT COIN"
+    secondary: ["Two scenes.", "One video engine."]
+    sources: ["Adam smoke-test request, 2026-11-04"]
+  - id: end
+    template: end_card
+    bars: 3
+    key: ["CPU BUILDS THE VIDEO.", "TOKENS WRITE THE STORY."]
+    glance: ["github.com/mdussere/tanstaafllm", "HAZEL · TWO-SEQUENCE TEST"]
+    sources: ["Hazel script-to-video pipeline, common/README.md"]
