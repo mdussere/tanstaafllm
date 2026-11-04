@@ -273,6 +273,8 @@ TPL.T05 = (t, p) => {
   (p.flashes || [[0, 0, 0.3]]).forEach(([at, up, down, c]) => flash(t, p.t0 + at, up, down, c ? col(c) : '#fff'));
 };
 
+TPL.T24 = (t,p) => cinemaFrame(t,p);
+
 // T01 title card: `series` (glance), the stamped `key` title, a two-line `secondary` subtitle, PRESS START
 TPL.T01 = (t, p) => {
   const A = x => p.t0 + x;
