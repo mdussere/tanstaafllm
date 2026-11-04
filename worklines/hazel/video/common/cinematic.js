@@ -93,7 +93,7 @@ function cinemaStageEffect(t,p) {
     }
     if(local>5.5) {
       ctx.fillStyle='#100e2b';ctx.fillRect(655,435,625,103);
-      txt('STORY 3',960,511,76,C.amber,{align:'center'});
+      tag('STORY 3',884,499,C.amber,1,{align:'center'});
     }
   }
   if(effect==='receipts') {
