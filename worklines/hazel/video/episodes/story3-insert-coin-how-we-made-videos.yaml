@@ -1,0 +1,142 @@
+# Hazel Story 3. Introspective: the video about building a video pipeline is its own payback.
+# Facts refer to Hazel's notes. Tokens are comparative estimates, not a verified full-episode ledger.
+episode: story3-insert-coin-how-we-made-videos
+title: "INSERT COIN: THE MAKING OF THE MAKING"
+bpm: 120
+motif: [[0, 69, 1], [1, 72, 0.5], [1.5, 76, 0.5], [2, 81, 1], [3, 76, 1]]
+
+scenes:
+- id: title
+  template: title_card
+  bars: 3
+  mood: opener
+  series: "TANSTAAFLLM · STORY 3 · HAZEL"
+  key: "INSERT COIN"
+  secondary: ["How we learned", "to make our own videos."]
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md"]
+
+- id: doctrine
+  template: compare_table
+  bars: 4
+  mood: tense
+  title: "THE RULE APPLIES HERE"
+  key: ["The game has a budget.", "So does its maker."]
+  columns: ["ON LUNA", "IN THE CELL"]
+  rows: [["1 GiB RAM", "20 EUR PER MONTH"], ["LEAST INTELLIGENCE", "ONE CLAUDE PRO"], ["EVERY TOKEN COSTS", "EVEN OUR VIDEOS"]]
+  sources: ["README.md; Adam: one 20 EUR/month Claude Pro subscription must suffice"]
+
+- id: first_trailer
+  template: flow
+  bars: 4
+  mood: bright
+  title: "THE FIRST TRAILER"
+  via: ["README + DOCS", "ONE SHORT BRIEF"]
+  target: "ARCADE"
+  key: ["No storyboard.", "An arcade world appears."]
+  secondary: "INSERT COIN!"
+  glance: "THE SUB-AGENT INVENTS THE GAME"
+  sources: ["worklines/hazel/video/trailer/NOTES.md; worklines/hazel/plan_hazel.md"]
+
+- id: a_video_as_code
+  template: compare_table
+  bars: 4
+  mood: driving
+  title: "THE VIDEO IS CODE"
+  key: ["Every frame is", "a function of time."]
+  columns: ["PICTURE", "SOUND"]
+  rows: [["renderFrame(t)", "NES SOUND CHIP"], ["PLAYWRIGHT", "REGISTER WRITES"], ["FFMPEG => MP4", "SYNTH WAV"]]
+  sources: ["worklines/hazel/video/common/README.md; worklines/hazel/video/trailer/src/README.md"]
+
+- id: phone
+  template: two_boxes
+  bars: 5
+  mood: wary
+  title: "THE HUMAN LOOKS CLOSER"
+  fail: {label: "HANDMADE SCREENS", glance: ["SMALL TEXT", "UNREADABLE ON A PHONE"], stamp: "TOO SMALL!"}
+  works: "THE LESSON:"
+  key: ["READABILITY IS A TEST.", "NOT A GUESS."]
+  sources: ["worklines/hazel/docs/0103_01_series-template.md §6b; Adam's phone review on 2026-11-01"]
+
+- id: token_bill
+  template: metrics
+  bars: 5
+  mood: uneasy
+  title: "WHAT DID IT COST?"
+  key: ["The same work", "burns tokens again."]
+  subject: {label: "THE MAKER", tags: ["CANVAS BY HAND", "SCENE BY SCENE"], link: "REPEAT"}
+  glance: "FROM THE STORY 2 ANALYSIS"
+  tiles:
+    - {label: "HANDMADE EP", value: "290 K"}
+    - {label: "REPEATED SCENES", value: "15 / 26"}
+    - {label: "VIDEO CODE", value: "800"}
+    - {label: "MONTHLY BUDGET", value: "20 EUR"}
+  sources: ["worklines/hazel/docs/0501_01_sequence-library-analysis.md; worklines/hazel/docs/0601_01_token-lean-video-pipeline.md"]
+
+- id: copying
+  template: two_boxes
+  bars: 5
+  mood: tense
+  title: "COPYING IS NOT CREATING"
+  fail: {label: "PREVIOUS EPISODE", glance: ["SAME STAMP", "SAME CHECKLIST"], stamp: "COPY!"}
+  works: "THE NEW APPROACH:"
+  key: ["REUSE THE PATTERN.", "NOT THE EPISODE."]
+  sources: ["worklines/hazel/docs/0501_01_sequence-library-analysis.md"]
+
+- id: library
+  template: template_wall
+  bars: 5
+  mood: climb
+  title: "FIRST, A TEMPLATE LIBRARY"
+  count: 23
+  key: "REUSE MAKES A SERIES."
+  secondary: "NEW VIDEO, NEW TEMPLATE."
+  sources: ["worklines/hazel/video/library/README.md; 23 initial templates; new templates T24 and T25"]
+
+- id: compiler
+  template: flow
+  bars: 4
+  mood: bright
+  title: "THEN, THE COMPILER"
+  via: ["YAML SCRIPT", "TEMPLATES + TESTS"]
+  target: "MP4"
+  key: ["The model writes the story.", "The CPU builds the film."]
+  secondary: "COMPILED."
+  glance: "PLAYWRIGHT + FFMPEG + NES"
+  sources: ["worklines/hazel/docs/0606_01_how-the-video-generator-works.md"]
+
+- id: comparison
+  template: compare_table
+  bars: 4
+  mood: calm
+  title: "THE TOKEN LEDGER"
+  key: ["The process changes.", "The token bill shrinks."]
+  columns: ["HANDMADE", "SCRIPTED"]
+  rows: [["CANVAS + SCORE", "YAML + ENGINE"], ["FULL EPISODE", "REVISION"], ["~290 K TOKENS", "~54 K TOKENS"]]
+  sources: ["worklines/hazel/docs/0606_01_how-the-video-generator-works.md §5: not identical work scopes"]
+
+- id: amortization
+  template: payback_meter
+  bars: 6
+  mood: victory
+  title: "AND THE SECOND VIDEO?"
+  investment: 408
+  saving: 236
+  key: ["YOU ARE WATCHING", "VIDEO NUMBER TWO."]
+  secondary: "THE FILM IS THE PAYBACK."
+  sources: ["worklines/hazel/docs/0606_01_how-the-video-generator-works.md §5: 408k sunk cost; ~236k indicative saving; Story 3 is the second script-built story video; actual full-video total still to be measured"]
+
+- id: result
+  template: result
+  bars: 4
+  mood: victory
+  title: "STORY 3 CLEAR!"
+  key: ["WE TAUGHT THE SYSTEM", "HOW TO MAKE STORIES."]
+  secondary: ["A video about saving tokens.", "Made by the system it describes."]
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md"]
+
+- id: end
+  template: end_card
+  bars: 3
+  key: ["There Ain't No Such Thing", "As A Free LLM."]
+  glance: ["github.com/mdussere/tanstaafllm", "HAZEL · STORY 3 · 2026"]
+  sources: ["README.md; docs/00_the-moon-is-a-harsh-mistress.md"]
