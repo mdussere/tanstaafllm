@@ -14,7 +14,7 @@ Phone rule: `key` is the one key message (VT323 90, or Press Start 2P 56 with `k
 import math
 
 BEAT = 0.5
-INTERNAL = {'title_card': 'T01', 'player_card': 'T04', 'tree': 'T21', 'result': 'T22', 'end_card': 'T23'}
+INTERNAL = {'title_card': 'T01', 'player_card': 'T04', 'tree': 'T21', 'result': 'T22', 'end_card': 'T23', 'cinema': 'T24'}
 
 
 def _l(v):
@@ -427,7 +427,25 @@ def f_end_card(b):
     return dict(key=_l(sc['key']), glance=_l(sc.get('glance')), key_at=ka, glance_at=ka + 0.5)
 
 
-FRAME_FN = {'title_card': f_title_card, 'player_card': f_player_card, 'tree': f_tree, 'result': f_result, 'end_card': f_end_card}
+
+def f_cinema(b):
+    """Reusable sprite-layer composition. The script names assets, staging and motion; the engine owns the typography."""
+    sc = b.sc
+    length = b.len
+    key_at = b.at('key', min(1.3, max(0.6, length * .15)))
+    secondary_at = b.at('secondary', max(key_at + 1.5, length - 2.5))
+    lines = _l(sc['key'])
+    b.texts['key'].append(' '.join(lines))
+    b.slot(key_at + .3, ' '.join(lines), 'V')
+    if sc.get('secondary'):
+        ss = ' '.join(_l(sc['secondary']))
+        b.texts['secondary'].append(ss)
+        b.slot(secondary_at + .3, ss, 'V')
+    if sc.get('caption'):
+        b.texts['glance'].append(sc['caption'])
+    return dict(key_at=key_at, secondary_at=secondary_at)
+
+FRAME_FN = {'title_card': f_title_card, 'player_card': f_player_card, 'tree': f_tree, 'result': f_result, 'end_card': f_end_card, 'cinema': f_cinema}
 
 
 def check_times(sc, end):
