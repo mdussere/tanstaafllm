@@ -20,7 +20,7 @@ scenes:
   bars: 4
   mood: tense
   title: "THE RULE APPLIES HERE"
-  key: ["The game has a budget.", "So does its maker."]
+  key: ["ONE CLAUDE PRO.", "20 EUR PER MONTH."]
   columns: ["ON LUNA", "IN THE CELL"]
   rows: [["1 GiB RAM", "20 EUR PER MONTH"], ["LEAST INTELLIGENCE", "ONE CLAUDE PRO"], ["EVERY TOKEN COSTS", "EVEN OUR VIDEOS"]]
   sources: ["README.md; Adam: one 20 EUR/month Claude Pro subscription must suffice"]
@@ -33,8 +33,8 @@ scenes:
   via: ["README + DOCS", "ONE SHORT BRIEF"]
   target: "ARCADE"
   key: ["No storyboard.", "An arcade world appears."]
-  secondary: "INSERT COIN!"
-  glance: "THE SUB-AGENT INVENTS THE GAME"
+  secondary: "COIN!"
+  glance: "NO STORYBOARD"
   sources: ["worklines/hazel/video/trailer/NOTES.md; worklines/hazel/plan_hazel.md"]
 
 - id: a_video_as_code
@@ -101,7 +101,7 @@ scenes:
   target: "MP4"
   key: ["The model writes the story.", "The CPU builds the film."]
   secondary: "COMPILED."
-  glance: "PLAYWRIGHT + FFMPEG + NES"
+  glance: "PLAYWRIGHT + NES"
   sources: ["worklines/hazel/docs/0606_01_how-the-video-generator-works.md"]
 
 - id: comparison
