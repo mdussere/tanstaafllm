@@ -606,6 +606,8 @@
 
 ## 2026-11-04
 
+- **Hazel Story 3 full first cut (2026-11-04, Adam):** user requested full production and two new templates. The Hazel pipeline generated 112 s, 1920×1080/30 fps H.264/AAC with NES music, strict reading and layout audits clean. New T24 template wall and T25 self-payback ledger are candidate library additions. [Successful CI render and downloadable MP4](https://github.com/mdussere/tanstaafllm/actions/runs/41813180077). Proposed on `cell/adam`; awaiting creative review, not published. End-to-end Story 3 token cost is not measured yet.
+
 - **Hazel Story 3 narrative refinement (Adam, 2026-11-04):** open with the principle that TANSTAAFLLM also applies to the project workflow: one €20/month Claude Pro subscription should suffice. End with two-video amortization of the script-to-video pipeline: ~408k tokens invested, indicative ~236k saved per episode (290k versus 54k), ~1.73-video break-even. Story 3 is intended as the second pipeline episode and the narrative victory; verify actual whole-episode cost before presenting amortization as measured, as initial figures compare a revision and a full episode. Brief and Hazel Step 3.3 updated; no production green light.
 
 - **Hazel's next story (Adam, 2026-11-04):** *Insert coin — the video production story* is chosen as the next episode, with an explicitly **introspective** angle: Hazel and the cell reflect on how they themselves made the trailer and episodes, learned from repetition and token costs, and consolidated that experience into a deterministic script-to-video pipeline. Story brief `worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md`; Hazel plan Step 3.3. This approves planning/editorial direction only, not generation or publication.
