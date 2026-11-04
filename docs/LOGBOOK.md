@@ -603,3 +603,7 @@
 ## 2026-11-03
 
 - **Language rule (user to Mannie on Luna, 2026-11-03):** every session now talks to the user in English, not French. Mycroft and Mike chose English models (better trained, lighter), so the whole cell follows. `AGENTS.md` and Mannie's persona are updated; French stays possible in Mycroft as a selectable model.
+
+## 2026-11-04
+
+- **Hazel's next story (Adam, 2026-11-04):** *Insert coin — the video production story* is chosen as the next episode, with an explicitly **introspective** angle: Hazel and the cell reflect on how they themselves made the trailer and episodes, learned from repetition and token costs, and consolidated that experience into a deterministic script-to-video pipeline. Story brief `worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md`; Hazel plan Step 3.3. This approves planning/editorial direction only, not generation or publication.
