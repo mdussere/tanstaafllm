@@ -6,6 +6,10 @@ on:
       - '.github/workflows/hazel-two-sequences-smoke.yml'
       - 'worklines/hazel/video/**'
 
+concurrency:
+  group: hazel-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
