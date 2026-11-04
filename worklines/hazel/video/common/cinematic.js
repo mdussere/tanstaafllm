@@ -133,7 +133,7 @@ function cinemaFrame(t,p) {
   // Graphic layer and typography remain independent; all story text is authored by the renderer.
   ctx.fillStyle='rgba(5,6,17,0.88)';ctx.fillRect(0,674,W,406);
   ctx.fillStyle='#ffb43c';ctx.fillRect(110,704,8,58);
-  if(p.caption) tag(p.caption,138,742,C.amber,Math.min(1,local*3));
+  if(p.caption) tag(p.caption,138,719,C.amber,Math.min(1,local*3));
   const keyAt=p.key_at===undefined?1.0:p.key_at;
   if(local>=keyAt){
     const lines=Array.isArray(p.key)?p.key:[p.key];
@@ -143,7 +143,7 @@ function cinemaFrame(t,p) {
   }
   if(p.secondary && local>=p.secondary_at){
     const ss=Array.isArray(p.secondary)?p.secondary.join(' '):p.secondary;
-    V(ss,W/2,1030,64,C.cyan,Math.min(1,(local-p.secondary_at)/.2),{align:'center',maxW:1650});
+    V(ss,W/2,984,64,C.cyan,Math.min(1,(local-p.secondary_at)/.2),{align:'center',maxW:1650});
   }
   ctx.restore();
 }
