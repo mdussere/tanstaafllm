@@ -1,6 +1,6 @@
 # Story 3 — V3/V3b production checkpoint (bitmap sprites and music regression)
 
-> **Recorded:** 2026-11-04 · **Workline:** Adam/ChatGPT → Hazel · **Status:** creative previews generated locally, repository source integration **not finished** · **Review boundary:** PREVIEW ONLY, no full render or public release without Adam's approval.
+> **Recorded:** 2026-11-04 · **Workline:** Adam/ChatGPT → Hazel · **Status:** source PNGs committed to GitHub; bitmap renderer integration **not finished** · **Review boundary:** PREVIEW ONLY, no full render or public release without Adam's approval.
 
 ## Human review: preserve this feedback verbatim in intent
 
@@ -17,7 +17,7 @@
 
 | Local file | Contents | Git commit? |
 |---|---|---|
-| `/mnt/data/hazel_story3_sprite_pack_v3.zip` | 51-entry 3.5 MB package: 6 Hazel poses, 12 props, 4 320×180 backgrounds, 5 frame-series loops, `manifest.json`, `README.md`, contact sheet | **NO** (binary remains local) |
+| `/mnt/data/hazel_story3_sprite_pack_v3.zip` | 51-entry 3.5 MB package: 6 Hazel poses, 12 props, 4 320×180 backgrounds, 5 frame-series loops, `manifest.json`, `README.md`, contact sheet | **YES** (50 source entries committed, excluding generated contact) |
 | `/mnt/data/hazel_story3_pixel_sprite_pilot.mp4` | ~20 s experimental sprite animation | **NO** |
 | `/mnt/data/hazel_story3_layout_previews/02_budget.png` | Approved layout mockup, compact Hazel scene + message board | **NO** |
 | `/mnt/data/hazel_story3_layout_previews/09_library.png` | Approved library mockup | **NO** |
@@ -49,10 +49,14 @@ These filesystem paths identify **conversation-local artifacts**, not GitHub lin
 
 ## Remaining actions (not done by this checkpoint)
 
-1. Transfer/commit the *actual PNG byte assets* and the exact local `manifest.json`, after checking backgrounds/alpha. Do **not** substitute notes or SVG for missing binary content.
+1. ✅ Commit the *actual PNG byte assets* and `manifest.json`: done on `cell/adam` in commit `13fde527`. Verify their proper alpha and anchors in the next rendering stage.
 2. Implement the frame-switching asset loader and 4 scene framing families in the Hazel engine. Reuse original T01 title and NES score cues where artistically correct, but keep shot-specific cue timing.
 3. Render an entire preview at 640×360/10fps, with the correct 13-scene narrative and named beat/stamp events.
 4. Inspect contact sheet and listen to the score versus the hand-authored Story 2, then deliver preview for **Adam's approval**.
 5. Only after approval render the 1080p final; no merge or public upload yet.
 
 **Checkpoint scope:** documentation + recoverable inventory, not a completed asset ingestion or final film.
+
+## Repository follow-up (2026-11-04)
+
+The 50 source files are stored at `worklines/hazel/video/common/art/sprites-v3/` in commit `13fde527` and the preview-only CI constraint was enforced in `.github/workflows/hazel-story3-render.yml` commit `29cbbb8`. Earlier local transfer instructions are superseded. This does **not** mean the SVG-based renderer has been migrated or that a valid V3b preview has been created.

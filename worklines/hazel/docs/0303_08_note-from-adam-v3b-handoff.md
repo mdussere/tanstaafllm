@@ -18,34 +18,13 @@ GitHub Actions [#41869289272](https://github.com/mdussere/tanstaafllm/actions/ru
 
 ## Pixel-art assets and actual Git transfer state
 
-The **source PNG sprite pack exists locally only**. It contains 6 character poses, 12 props, 4 backgrounds, the original illustrated frame sequences for reel (8), coin (6) and Hazel reaction/work/walk (4 each), and their exact manifest (`manifest.json`). Local source archive: `/mnt/data/hazel_story3_sprite_pack_v3.zip` (3.5 MB). Detailed inventory and checksum: [0303_07](0303_07_v3b_production_checkpoint.md).
+**Update 2026-11-04, verified:** the complete source PNG pack is now directly committed on GitHub, branch `cell/adam`, at [commit `13fde527`](https://github.com/mdussere/tanstaafllm/commit/13fde5270fe96c5d8db32b2ea5829036d8ac7c5b). The transfer used GitHub's binary `create_blob` API and SHA verification; no workstation patch is needed. The source directory is [`worklines/hazel/video/common/art/sprites-v3/`](https://github.com/mdussere/tanstaafllm/tree/cell/adam/worklines/hazel/video/common/art/sprites-v3), containing **50 files** (artist-created PNG assets and animation frames, plus `manifest.json` and README). The auto-generated contact sheet was intentionally excluded. The old local patch and bundle are **obsolete and must not be applied**.
 
-A complete binary Git commit was prepared in the ChatGPT execution container:
-- local Git commit: `cbc3d127961eeb27d07d1331cd5a525c5c52a922`;
-- local mbox patch: `/mnt/data/hazel-story3-v3-sprite-pack-commit.patch` (~4.5 MB);
-- compressed patch: `/mnt/data/hazel-story3-v3-sprite-pack-commit.patch.gz`;
-- self-contained Git bundle: `/mnt/data/hazel-story3-v3-sprites.bundle` (~3 MB).
-
-**IMPORTANT:** The GitHub connector cannot access those container filesystem bytes, and the container has no DNS access to github.com. Therefore the local binary commit is **not pushed to GitHub**. The notes and plan are pushed; the PNGs remain the transfer blocker. Never claim that the PNGs are committed to remote `cell/adam` unless the tree includes `worklines/hazel/video/common/art/sprites-v3/*.png`.
-
-### Applying the exact prepared asset commit on an authenticated development workstation
-
-From a clean clone of `mdussere/tanstaafllm` with `cell/adam` checked out, after copying the attached full mbox patch to the machine:
-
-```sh
-git switch cell/adam
-git status --short          # must be clean
-git am --3way /path/to/hazel-story3-v3-sprite-pack-commit.patch
-git status --short
-git log -1 --oneline
-git push origin cell/adam
-```
-
-Use **either** the mbox patch **or** the bundle, not both. The mbox applies as a new commit without rewriting prior branch history and preserves binary files and the source manifest; if the branch has new unrelated changes it should still apply, but inspect conflicts. All generated MP4/WAV/frame outputs remain outside Git, in CI artifacts.
+The pre-existing Story 3 renderer still uses SVG V2 and has *not* been migrated to use these PNGs. Also, the Story 3 workflow was switched to **preview only** in [commit `29cbbb8`](https://github.com/mdussere/tanstaafllm/commit/29cbbb80f0ba6975078ddb8121ee9ba994c967fd), so user approval still gates any future full-resolution render.
 
 ## Next actions for Hazel
 
-1. Ingest actual bitmap asset bytes into the remote `cell/adam` branch. Verify all 51 source files and manifest SHA against the local archive. Prevent accidental source-asset omissions.
+1. ✅ Source PNG asset bytes and the exact manifest already ingested and verified on `cell/adam` (commit `13fde527`): 50 committed source files; no generated contact sheet. Use the committed assets, not the obsolete local transfer patch.
 2. Swap raster frame sequences in a dedicated sprite renderer without using live SVG rotation; integer nearest-neighbour scaling and fixed pivots.
 3. Reuse the original series opener/theme and compose event-specific score cues, not one global groove.
 4. Render **13-scene preview only** at 640×360 / 10fps. Inspect the contact sheet and compare against original Story 2's shot rhythm and scores.
