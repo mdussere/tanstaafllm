@@ -43,4 +43,9 @@ Times are seconds of the final cut. The trailer's cut includes its reading holds
 | Story 2 | 78–84 | `sResult` | T22 | seven pips; lesson at P 64 | S2 sub-agents |
 | Story 2 | 84–90 | `sEnd` | T23 | motto VT 64, PRESS START P 40 | S2 sub-agents |
 
+## Story 3 — new pipeline episode (2026-11-04; awaiting visual approval)
+
+| Story 3 | 60–70 | `template_wall` | **T24** | 23 reusable patterns; two amber new cards; novelty rule | Adam's ChatGPT workline, Hazel pipeline |
+| Story 3 | 86–98 | `payback_meter` | **T25** | The film visibly amortizes the engine used to make it | Adam's ChatGPT workline, Hazel pipeline |
+
 Note: the analysis counts 13 scenes in Story 1; its renderer has 12 scene functions (the boss's three phases live in one function). Story 2's NOTES table has 13 rows (stage 6 in two); here the boss's two phases are split too.
