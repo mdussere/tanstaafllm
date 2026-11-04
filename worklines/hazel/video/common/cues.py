@@ -595,7 +595,24 @@ def cue_T23(sc, ctx):
         blip(P2, t0 + t, 88, 3, max(2, 9 - 2 * j), 1); blip(P2, t0 + t + 0.05, 93, 4, max(2, 9 - 2 * j), 1)
 
 
-CUES = {'T01': cue_T01, 'T04': cue_T04, 'T05': cue_T05, 'T21': cue_T21, 'T22': cue_T22, 'T23': cue_T23}
+
+def cue_T24(sc, ctx):
+    """Sprite-layer scenes use the NES sound palette, without repetitive stage clear stamps."""
+    t0, t1 = sc['t0'], sc['t1']
+    groove_span(t0 + 0.5, t1 - 0.5, sc.get('mood', 'calm'), 'light', 4)
+    coin(P2, t0 + 0.1, 8)
+    blip(P1, t0 + sc.get('key_at', 1), 76, 5, 10, 2)
+    hit(t0 + sc.get('key_at', 1), 'cinema key')
+    if sc.get('secondary'):
+        ding(t0 + sc['secondary_at'], 88)
+        hit(t0 + sc['secondary_at'], 'cinema secondary')
+    if sc.get('effect') == 'recursion':
+        stamp(t0 + 5.4, 69, 76, 33, 15)
+    if sc.get('effect') == 'coin-return':
+        note(P1, t1 - 2, 1.8, 69, 10, 2, env=E_fade(55, 0), release=0)
+    roll(t1 - 0.4, t1 - 0.02, 4, 9)
+
+CUES = {'T01': cue_T01, 'T04': cue_T04, 'T05': cue_T05, 'T21': cue_T21, 'T22': cue_T22, 'T23': cue_T23, 'T24': cue_T24}
 
 
 # ============================================================= the episode score
