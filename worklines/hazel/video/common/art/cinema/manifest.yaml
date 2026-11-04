@@ -1,0 +1,126 @@
+# Source art registry for the Story 3 cinematic compositor.
+# Each SVG is authored in the repo and rasterized by Chromium when rendered.
+# `cinematic.js` supports non-destructive RGBA layering, anchoring by center, alpha and motion presets.
+revision: 1
+license: Apache-2.0
+assets:
+  - id: workshop
+    file: workshop.svg
+    type: background
+    native_size: [960, 540]
+    pivot: [480, 270]
+    alpha: opaque
+  - id: screening
+    file: screening.svg
+    type: background
+    native_size: [960, 540]
+    pivot: [480, 270]
+    alpha: opaque
+  - id: factory
+    file: factory.svg
+    type: background
+    native_size: [960, 540]
+    pivot: [480, 270]
+    alpha: opaque
+  - id: arcade
+    file: arcade.svg
+    type: background
+    native_size: [960, 540]
+    pivot: [480, 270]
+    alpha: opaque
+  - id: hazel-idle
+    file: hazel-idle.svg
+    type: character
+    native_size: [340, 330]
+    pivot: [170, 165]
+    alpha: transparent
+  - id: hazel-work
+    file: hazel-work.svg
+    type: character
+    native_size: [340, 330]
+    pivot: [170, 165]
+    alpha: transparent
+  - id: hazel-hold
+    file: hazel-hold.svg
+    type: character
+    native_size: [340, 330]
+    pivot: [170, 165]
+    alpha: transparent
+  - id: hazel-point
+    file: hazel-point.svg
+    type: character
+    native_size: [340, 330]
+    pivot: [170, 165]
+    alpha: transparent
+  - id: projector
+    file: projector.svg
+    type: prop
+    native_size: [490, 340]
+    pivot: [245, 170]
+    alpha: transparent
+  - id: reel
+    file: reel.svg
+    type: prop
+    native_size: [184, 184]
+    pivot: [92, 92]
+    alpha: transparent
+  - id: coin
+    file: coin.svg
+    type: prop
+    native_size: [180, 190]
+    pivot: [90, 95]
+    alpha: transparent
+  - id: purse
+    file: purse.svg
+    type: prop
+    native_size: [300, 260]
+    pivot: [150, 130]
+    alpha: transparent
+  - id: filmstrip
+    file: filmstrip.svg
+    type: prop
+    native_size: [780, 170]
+    pivot: [390, 85]
+    alpha: transparent
+  - id: cartridge
+    file: cartridge.svg
+    type: prop
+    native_size: [340, 260]
+    pivot: [170, 130]
+    alpha: transparent
+  - id: yaml
+    file: yaml.svg
+    type: prop
+    native_size: [290, 360]
+    pivot: [145, 180]
+    alpha: transparent
+  - id: phone
+    file: phone.svg
+    type: prop
+    native_size: [290, 510]
+    pivot: [145, 255]
+    alpha: transparent
+  - id: paper
+    file: paper.svg
+    type: prop
+    native_size: [270, 340]
+    pivot: [135, 170]
+    alpha: transparent
+  - id: magnifier
+    file: magnifier.svg
+    type: prop
+    native_size: [290, 290]
+    pivot: [145, 145]
+    alpha: transparent
+  - id: desk
+    file: desk.svg
+    type: prop
+    native_size: [900, 200]
+    pivot: [450, 100]
+    alpha: transparent
+  - id: beam
+    file: beam.svg
+    type: fx
+    native_size: [600, 220]
+    pivot: [300, 110]
+    alpha: transparent
