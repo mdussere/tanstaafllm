@@ -8,6 +8,10 @@ on:
       - 'worklines/hazel/video/episodes/story3-insert-coin-how-we-made-videos.yaml'
   workflow_dispatch:
 
+concurrency:
+  group: hazel-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
