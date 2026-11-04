@@ -1,4 +1,4 @@
-name: Hazel Story 3 full video
+name: Hazel Story 3 preview only
 
 on:
   pull_request:
@@ -39,27 +39,13 @@ jobs:
         run: |
           ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 results/hazel/story3/preview/tanstaafllm-story3-insert-coin-how-we-made-videos.mp4
           tail -n 12 results/hazel/story3/preview/lint.txt
-      - name: Render 1080p master
-        run: |
-          cd worklines/hazel/video
-          uv run --project ../../.. python common/build.py episodes/story3-insert-coin-how-we-made-videos.yaml --full --strict --out ../../../results/hazel/story3/full
-      - name: Verify 1080p master
-        run: |
-          test -s results/hazel/story3/full/tanstaafllm-story3-insert-coin-how-we-made-videos.mp4
-          ffprobe -v error -show_entries stream=width,height,r_frame_rate -show_entries format=duration -of default=noprint_wrappers=1 results/hazel/story3/full/tanstaafllm-story3-insert-coin-how-we-made-videos.mp4
-          tail -n 12 results/hazel/story3/full/lint.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: hazel-story3-complete
+          name: hazel-story3-preview
           path: |
             results/hazel/story3/preview/*.mp4
             results/hazel/story3/preview/contact.png
             results/hazel/story3/preview/audit.md
             results/hazel/story3/preview/lint.txt
-            results/hazel/story3/full/*.mp4
-            results/hazel/story3/full/contact.png
-            results/hazel/story3/full/audit.md
-            results/hazel/story3/full/lint.txt
-            results/hazel/story3/full/NOTES.md
           if-no-files-found: warn
