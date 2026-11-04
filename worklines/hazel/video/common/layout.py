@@ -322,8 +322,43 @@ def t_compare_table(b):
     return {}
 
 
+def t_template_wall(b):
+    """Story 3's new T24: a growing wall of reusable sequence cards; the new card is amber.
+
+    High-level slots: key, secondary, optional count (default 23). The pattern cards are geometry,
+    not extra messages competing with the large phone-readable key.
+    """
+    sc = b.sc
+    b.add('template_wall', x=130, y=495, count=sc.get('count', 23), at=0.5,
+          special_at=4.0)
+    b.mark('enter', 0.5, i=0)
+    b.mark('enter', 2.0, i=1)
+    b.mark('reveal', 4.0, i=2)
+    b.key(sc['key'], b.at('key', 0.8), 130, 350, 'cyan', maxW=1600)
+    b.second(sc['secondary'], b.at('secondary', b.z - 2.0), 130, 915, 'amber')
+    return {}
+
+
+def t_payback_meter(b):
+    """Story 3's new T25: the video depicts its own amortization; the final reveal is the second build.
+
+    Values are the documented indicative 408k pipeline investment and 236k saving per reuse.
+    The 54k was a revision, not a fully measured new-episode cost.
+    """
+    sc = b.sc
+    b.add('payback_meter', x=145, y=470, investment=sc.get('investment', 408),
+          saving=sc.get('saving', 236), at=0.8, reveal_at=4.5)
+    b.mark('enter', 0.8, i=0)
+    b.mark('enter', 2.0, i=1)
+    b.mark('victory', 4.5)
+    b.key(sc['key'], b.at('key', 5.0), 145, 350, 'green', maxW=1620)
+    b.second(sc['secondary'], b.at('secondary', b.z - 1.7), 145, 905, 'amber')
+    return {}
+
+
 STAGE_FN = {'guess': t_guess, 'two_boxes': t_two_boxes, 'metrics': t_metrics, 'flow': t_flow, 'boss': t_boss,
-            'handheld': t_handheld, 'checklist': t_checklist, 'compare_table': t_compare_table}
+            'handheld': t_handheld, 'checklist': t_checklist, 'compare_table': t_compare_table,
+            'template_wall': t_template_wall, 'payback_meter': t_payback_meter}
 
 
 # ====================================================================== frame templates (their own full-screen layouts)
