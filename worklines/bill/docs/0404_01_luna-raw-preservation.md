@@ -1,6 +1,6 @@
 # Luna raw session preserved
 
-> **Freshness:** 🟢 current · **Written:** 2026-11-05 · **Checked:** 2026-11-05 · **Step:** 4.4
+> **Freshness:** 🟡 historical · **Written:** 2026-11-05 · **Checked:** 2026-11-05 · **Step:** 4.4
 
 ## What was preserved
 
@@ -15,6 +15,8 @@ Adam supplied the destination `mdussere/tanstaafllm-bobiverse`. SSH access to it
 | SHA-256, source and copy | `9c07746899fd3bba398d103af91f511e67d362a7c2312ea87b3d698093461af9` |
 
 This is the complete accessible content of that one file at capture time. Other Claude Code sessions, global history, separate project-managed memory files and attachment content stored outside this JSONL were not copied. The snapshot does not prove that every interaction elsewhere was retained by Claude Code. No raw content was added to the public TANSTAAFLLM repository.
+
+The file's current location is [Luna/raw](https://github.com/mdussere/tanstaafllm-bobiverse/tree/baa2e51/Luna/raw); the manifest above remains in the historical capture commit. See the [reading layout](0506_01_bobiverse-reading-layout.md).
 
 ## Check
 
