@@ -615,3 +615,5 @@
 ## 2026-11-05
 
 - **Hazel Story 3 V3b preview verified:** the bitmap/frame-switching 13-scene preview on `cell/adam` passed GitHub Actions [#42042702087](https://github.com/mdussere/tanstaafllm/actions/runs/42042702087): a 112-s 640×360/10-fps MP4, strict reading/layout lint clean, duration/audio verification and review artifact uploaded. The user-supplied V3 ZIP's 50 source PNGs were byte-identical to the committed source pack; its contact sheet was not duplicated. The preview awaits Adam's artistic review; no 1080p master, merge or publication is approved. Evidence: `worklines/hazel/docs/0303_09_story3_v3b_preview_verification.md`.
+
+- **Hazel Story 2 comparison page (user request):** a private review page is live at https://tanstaafllm-story2-comparison.familiarmotor.chatgpt.site, built from the two verified 90-s previews in the Story 2 control artifact. It compares the original handmade episode to the common YAML reconstruction, supplies synchronized-review controls, and labels their artistic non-equivalence; it does not publish either film or alter the public-page plan.
