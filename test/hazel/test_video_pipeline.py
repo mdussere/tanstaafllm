@@ -37,6 +37,7 @@ Not covered: the picture's look (only text boxes are measured), the score's cont
 the MP4 encoding, and the hand-written stories (`story1-hello-luna/`, `story2-ask-the-desktop/`, `trailer/`).
 """
 import datetime
+import json
 import pathlib
 import subprocess
 import sys
@@ -48,6 +49,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 VIDEO = ROOT / 'worklines' / 'hazel' / 'video'
 COMMON = VIDEO / 'common'
 STORY2 = VIDEO / 'episodes' / 'story2-ask-the-desktop.yaml'
+STORY3 = VIDEO / 'episodes' / 'story3-insert-coin-how-we-made-videos.yaml'
+CINEMATIC = COMMON / 'cinematic.js'
+SPRITES_V3 = COMMON / 'art' / 'sprites-v3'
 sys.path.insert(0, str(COMMON))
 
 import audit as AU      # noqa: E402
@@ -67,6 +71,28 @@ def ep():
 def scene_of(ep, template):
     """The first scene of the script that uses `template` (Story 2 uses each stage template once)."""
     return next(s for s in ep['scenes'] if s['template'] == template)
+
+
+def test_story3_v3b_uses_only_the_committed_bitmap_pack():
+    """Hazel 3.3i: Story 3's compositor has no fallback to the artistically rejected SVG cut.
+
+    The complete source pack is versioned under ``art/sprites-v3``; every file named by its manifest exists, and
+    the 13-scene script makes its deliberately varied framing explicit. This is a fast guard before the rendered
+    preview test below proves that Chromium can load the bytes.
+    """
+    manifest = json.loads((SPRITES_V3 / 'manifest.json').read_text())
+    for spec in manifest['sprites'].values():
+        assert (SPRITES_V3 / spec['file']).is_file(), spec['file']
+    for spec in manifest['animations'].values():
+        assert all((SPRITES_V3 / frame).is_file() for frame in spec['frames'])
+    for spec in manifest['backgrounds'].values():
+        assert (SPRITES_V3 / spec['file']).is_file(), spec['file']
+    compositor = CINEMATIC.read_text()
+    assert 'art/cinema/' not in compositor and '.svg' not in compositor
+    assert "art/sprites-v3/" in compositor and 'imageSmoothingEnabled = false' in compositor
+    scenes = yaml.safe_load(STORY3.read_text())['scenes']
+    assert len(scenes) == 13
+    assert {s['shot'] for s in scenes} >= {'title', 'wide', 'prop', 'close', 'vignette', 'reveal'}
 
 
 # ================================================================ R3: two clocks, source and output
@@ -293,3 +319,24 @@ def test_page_and_generator_agree_on_stamps_and_holds(ep):
     finally:
         httpd.shutdown()
     assert not errors, errors
+
+
+@pytest.mark.integration
+@pytest.mark.timeout(600)
+def test_story3_bitmap_preview_builds_clean_under_strict():
+    """Scenario "Story 3 V3b bitmap preview builds clean under --strict".
+
+    This is the preflight for the GitHub workflow: it builds the exact 13-scene V3b page using Chromium, checks
+    the lint and reading audit, and preserves its contact sheet and stills. The workflow performs the same build
+    with MP4 encoding after the branch is pushed; this test intentionally stops before a video file.
+    """
+    out = results_dir('story3-bitmap-strict')
+    run = subprocess.run([sys.executable, str(COMMON / 'build.py'), str(STORY3), '--preview', '--no-video', '--strict',
+                          '--out', str(out)], cwd=VIDEO, capture_output=True, text=True)
+    (out / 'build.log').write_text(run.stdout + run.stderr)
+    assert run.returncode == 0, run.stdout + run.stderr
+    assert (out / 'contact.png').is_file()
+    assert len(list((out / 'stills').glob('*.png'))) == 13
+    summary = (out / 'lint.txt').read_text().strip().splitlines()[-1]
+    for key in ('overflow 0', 'margin 0', 'overlap 0', 'clear-zone 0', 'frames with 2+ secondaries 0'):
+        assert key in summary, summary

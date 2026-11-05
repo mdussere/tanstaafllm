@@ -1,5 +1,5 @@
-# Story 3 v2 — modular SVG assets, shared composition engine, genuinely cinematic shot language.
-# This edition replaces the previous generic HUD/table cut. All source art is original and kept as layers.
+# Story 3 V3b — committed PNG sprite frames, anchored poses and varied vignette/prop/wide shots.
+# This edition replaces the rejected SVG layer cut; image substitution, never runtime rotation, drives motion.
 # The 1.73-use amortization is explicitly an estimate: original full film vs revision are not like-for-like.
 episode: story3-insert-coin-how-we-made-videos
 title: "INSERT COIN — THE MAKING OF THE MAKING"
@@ -8,6 +8,7 @@ motif: [[0, 69, 1], [1, 72, 0.5], [1.5, 76, 0.5], [2, 81, 1], [3, 76, 1]]
 scenes:
 - id: title
   template: cinema
+  shot: title
   bars: 3
   mood: opener
   backdrop: arcade
@@ -22,6 +23,7 @@ scenes:
     - {"asset":"coin","x":940,"y":20,"w":190,"h":190,"at":0.8,"motion":"drop","distance":500}
 - id: doctrine
   template: cinema
+  shot: prop
   bars: 4
   mood: tense
   backdrop: workshop
@@ -36,6 +38,7 @@ scenes:
     - {"asset":"projector","x":640,"y":345,"w":400,"h":245,"at":1,"motion":"slide-right","opacity":0.85}
 - id: first_trailer
   template: cinema
+  shot: wide
   bars: 4
   mood: bright
   backdrop: workshop
@@ -51,6 +54,7 @@ scenes:
     - {"asset":"beam","x":1330,"y":240,"w":520,"h":215,"at":2,"opacity":0.24}
 - id: a_video_as_code
   template: cinema
+  shot: prop
   bars: 4
   mood: driving
   backdrop: factory
@@ -65,6 +69,7 @@ scenes:
     - {"asset":"yaml","x":1520,"y":255,"w":200,"h":270,"at":3,"motion":"pop"}
 - id: phone
   template: cinema
+  shot: close
   bars: 5
   mood: wary
   backdrop: screening
@@ -79,6 +84,7 @@ scenes:
     - {"asset":"filmstrip","x":680,"y":220,"w":600,"h":155,"at":2,"motion":"float","opacity":0.85}
 - id: token_bill
   template: cinema
+  shot: vignette
   bars: 5
   mood: uneasy
   backdrop: workshop
@@ -93,6 +99,7 @@ scenes:
     - {"asset":"desk","x":610,"y":530,"w":960,"h":180,"at":1}
 - id: copying
   template: cinema
+  shot: wide
   bars: 5
   mood: tense
   backdrop: arcade
@@ -106,6 +113,7 @@ scenes:
     - {"asset":"paper","x":1250,"y":175,"w":230,"h":285,"at":1,"motion":"wobble"}
 - id: library
   template: cinema
+  shot: vignette
   bars: 5
   mood: climb
   backdrop: workshop
@@ -118,6 +126,7 @@ scenes:
     - {"asset":"hazel-point","x":95,"y":150,"w":400,"h":425,"at":0.3,"motion":"slide"}
 - id: compiler
   template: cinema
+  shot: prop
   bars: 4
   mood: bright
   backdrop: factory
@@ -132,6 +141,7 @@ scenes:
     - {"asset":"reel","x":1450,"y":190,"w":285,"h":285,"at":2,"motion":"spin","speed":2}
 - id: comparison
   template: cinema
+  shot: close
   bars: 4
   mood: calm
   backdrop: workshop
@@ -145,6 +155,7 @@ scenes:
     - {"asset":"magnifier","x":800,"y":220,"w":205,"h":210,"at":2,"motion":"float","opacity":0.8}
 - id: result
   template: cinema
+  shot: wide
   bars: 4
   mood: resolve
   backdrop: workshop
@@ -159,6 +170,7 @@ scenes:
     - {"asset":"projector","x":1450,"y":340,"w":310,"h":210,"at":2.7,"motion":"pop"}
 - id: amortization
   template: cinema
+  shot: reveal
   bars: 6
   mood: victory
   backdrop: screening
@@ -173,6 +185,7 @@ scenes:
     - {"asset":"reel","x":1440,"y":185,"w":235,"h":235,"at":2,"motion":"spin","speed":1.8}
 - id: end
   template: cinema
+  shot: title
   bars: 3
   mood: calm
   backdrop: arcade
