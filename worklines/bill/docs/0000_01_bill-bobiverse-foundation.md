@@ -3,10 +3,10 @@ status: foundation-draft
 date: 2026-11-05
 workline: bill
 branch: cell/bill
-proposed_private_repository_name: "TANSTAAFLLM Bobiverse"
+private_repository_name: "Tinkstaff LLM Biverse"
 ---
 
-# Bill foundation — TANSTAAFLLM Bobiverse
+# Bill foundation — Tinkstaff LLM Biverse
 
 > **Freshness:** ⚪ draft · **Written:** 2026-11-05 · **Checked:** 2026-11-05 · **Step:** bill pre-plan foundation
 
@@ -19,7 +19,7 @@ This is a foundation for discussion and review, **not** an implementation mandat
 ## Decisions and explicit preferences already expressed by Adam
 
 1. A **separate, private GitHub repository** is needed for agent memory; raw personal conversations and Mike's memories **must not be placed in the public** `mdussere/tanstaafllm` repository.
-2. The name has been changed from the earlier **“TANSTAAFLLM Memories”** to **“TANSTAAFLLM Bobiverse”** (5 November 2026). This is the intended repository *name*; its eventual GitHub slug and URL have not yet been created or verified.
+2. Adam created the private repository **“Tinkstaff LLM Biverse”** (5 November 2026). Its exact GitHub URL, connected access and default branch still need to be observed before the first write.
 3. **Git remains the preferred foundation** for persistence, history, traceability and exchange.
 4. Each agent should be able to maintain its **own memory** and **selectively publish or share** relevant knowledge with others. The publication mechanism and its authorization rules are not yet selected.
 5. Conversation in French is fine; project deliverables should be written in **English**.
@@ -30,7 +30,7 @@ This is a foundation for discussion and review, **not** an implementation mandat
 - **31 October 2026 — Mike / clone discussion:** Mike on Luna and a possible Pike clone on luna-pi motivate separate notions of model, agent identity/persona and memory. Clones could share an initial baseline then diverge, selectively exchanging lessons rather than automatically merging every experience.
 - **31 October 2026 — persistence and knowledge:** conversation memory with dates, a RAG corpus for project documentation, and possible semantic or graph retrieval were discussed. Raw conversations were considered a source of evidence rather than an already curated knowledge base.
 - **31 October–4 November 2026 — private/public boundary:** an independent private repository with per-agent history and a deliberately selective path to public project knowledge was proposed. The architecture of consolidation and sharing remained exploratory.
-- **5 November 2026 — Bill workline:** Adam requested `cell/bill`, a Bill workline, and this foundation note. The name **TANSTAAFLLM Bobiverse** supersedes “TANSTAAFLLM Memories.”
+- **5 November 2026 — Bill workline:** Adam requested `cell/bill`, a Bill workline, and this foundation note. Adam then created the private repository **Tinkstaff LLM Biverse** and asked Bill to proceed through one evidence-led Luna export pilot at a time.
 
 These are recovered discussion notes, not verbatim archival transcripts. Original conversations and any subsequent decisions must be linked with verifiable provenance before treating a detail as authoritative.
 
@@ -65,7 +65,7 @@ The division among these layers, their formats and retention policies are open q
 
 ## Next steps — planning only
 
-- [ ] Adam creates the independent **private** GitHub repository named **TANSTAAFLLM Bobiverse**; record its verified slug and access policy afterward.
+- [ ] Observe the independent private repository **Tinkstaff LLM Biverse**; record its verified slug, connected access and default branch before writing raw material.
 - [ ] Review primary transcripts and existing workline documents to compile a sourced decision ledger, marking unknowns explicitly.
 - [ ] Draft a private-repository layout with separate agent histories, consolidated memory and exchange mechanisms.
 - [ ] Define record provenance, privacy classification, promotion/review and deletion semantics before ingesting data.
@@ -78,7 +78,7 @@ The division among these layers, their formats and retention policies are open q
 - Bill planning document: `worklines/bill/plan_bill.md` on `cell/bill`
 - Professor: programme coordination and architectural arbitration
 - Adam: human owner and strategic workline
-- Future private memory repository: **TANSTAAFLLM Bobiverse** (not yet created at the time of this note)
+- Private memory repository: **Tinkstaff LLM Biverse** (created by Adam; connection details not yet observed)
 
 **Principle:** preserve the full record privately, develop trustworthy memory from it, and share only what is appropriate and explicitly authorized.
 
