@@ -96,7 +96,7 @@ scenes:
   title: "BOSS: THE BLACK PANEL"
   panel: "LUNA'S REAL 720 × 720 PANEL"
   phases:
-  - {key: ["REAL SCREEN:", "BLACK."], secondary: ["Screenshots looked right.", "The physical panel did not."], glance: "MALI GPU DRIVER: NOT LOADED"}
+  - {key: ["REAL SCREEN:", "BLACK."], secondary: ["Screenshots looked fine.", "The screen stayed black."], glance: "MALI GPU DRIVER: NOT LOADED"}
   - {key: ["GPU DRIVER", "LOADED."], secondary: "DISPLAY TEST PASSED"}
   machine: Luna
   sources: ["Note beat 5; 0407_01_luna-real-display-session.md, plan_wyoh.md 4.8.3", "0407_01_luna-real-display-session.md l.123; confirmed by Wyoh 2026-11-01"]
