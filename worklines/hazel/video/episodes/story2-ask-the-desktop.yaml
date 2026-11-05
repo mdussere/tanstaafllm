@@ -64,9 +64,9 @@ scenes:
   template: metrics
   bars: 4
   mood: bright
-  title: "ASK THE ONE THAT EXISTS"
-  key: ["Don't build a compositor.", "Ask the one that exists."]
-  subject: {label: SWAY, tags: [UNMODIFIED, NO FORK], link: IPC}
+  title: "SWAY: THE EXISTING COMPOSITOR"
+  key: ["Don't build a compositor.", "Ask unmodified Sway. No fork."]
+  subject: {label: SWAY, tags: [EXISTING, UNMODIFIED, NO FORK], link: IPC}
   glance: "MEASURED ON luna-pi, A RASPBERRY PI"
   machine: luna-pi
   tiles:
