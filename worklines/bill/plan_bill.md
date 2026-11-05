@@ -35,8 +35,26 @@ Adam is the human project owner. Professor coordinates programme direction and w
 
 - [ ] Map current memory and knowledge flows across ChatGPT conversations, GitHub and TANSTAAFLLM agents.
 - [ ] Identify what is lost on session turnover and which information must remain recoverable.
-- [ ] Discuss an individual-versus-shared memory model with Adam.
+- [x] Discuss an individual-versus-shared memory model with Adam (architecture direction recorded; implementation details remain open).
 - [ ] Define ownership, update rules, provenance and conflict resolution before choosing storage or tooling.
+
+## Latest checkpoint (2026-11-05)
+
+- Defined distinct persistent **roles** and potentially concurrent provider-specific agent instances; one timestamp/provider/UUID-scoped raw directory per agent instance inside a role namespace.
+- Raw memory **dump** should be an incremental, immutable export. Prefer deterministic harness extraction where possible; ChatGPT/cloud exceptions need a separate adapter or skill.
+- Proposed private **TANSTAAFLLM Bobiverse** memory repository and role branches; selective promotion into shared knowledge must exclude raw files.
+- Proposed **GitHub Actions** incremental atomization, embedding, SECNA-style clustering and evidence-backed graph relations. Free private-CI allowances, quality and concurrency remain unverified.
+- Retain the science-fiction framing: **Bobiverse/Bill** as names, **Altered Carbon** for stack/dump/sleeve, and **Pluribus** for hive knowledge without loss of identities.
+- Potential separate **Bobiverse tooling spin-off** for harness extractors and CI distillation if justified; not authorized or created yet.
+- Detailed decisions and open questions: [foundation document](docs/0100_bill_bobiverse_foundation.md).
+
+### Next design tasks (no implementation green light)
+
+- [ ] Confirm the private repository's verified name, access and creation when Adam creates it.
+- [ ] Design raw export contracts, per-instance metadata and deterministic Claude Code extraction, plus ChatGPT limitations.
+- [ ] Design safe role-branch-to-common promotion through PRs without including raw material.
+- [ ] Benchmark atomization fidelity and Github Actions private CI resources before enabling workflows.
+- [ ] Decide whether reusable tooling warrants a Bobiverse spin-off.
 
 ## Status
 
