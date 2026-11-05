@@ -191,6 +191,7 @@ scenes:
   backdrop: arcade
   caption: "TANSTAAFLLM"
   key: ["THERE AIN'T NO SUCH THING","AS A FREE LLM."]
+  key_size: 64
   effect: "coin-return"
   sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
   layers:

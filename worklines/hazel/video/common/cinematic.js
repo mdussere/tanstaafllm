@@ -107,9 +107,10 @@ function cinematicText(t, p) {
   const ka = p.key_at === undefined ? 1 : p.key_at;
   if (local >= ka) {
     const lines = Array.isArray(p.key) ? p.key : [p.key], a = Math.min(1, (local - ka) / .2), y = lines.length > 1 ? 820 : 875;
+    const keySize = p.key_size || 90;
     lines.forEach((s, i) => {
-      if (title) stampTxt(s, W / 2, y + i * 92, 90, C.chrome, t, p.t0 + ka, { align: 'center', maxW: 1640, from: 1.6 });
-      else V(s, W / 2, y + i * 92, 90, C.chrome, a, { align: 'center', maxW: 1640 });
+      if (title) stampTxt(s, W / 2, y + i * 92, keySize, C.chrome, t, p.t0 + ka, { align: 'center', maxW: 1640, from: 1.6 });
+      else V(s, W / 2, y + i * 92, keySize, C.chrome, a, { align: 'center', maxW: 1640 });
     });
   }
   if (p.secondary && local >= p.secondary_at) V(Array.isArray(p.secondary) ? p.secondary.join(' ') : p.secondary, W / 2, 996, 62, C.cyan, Math.min(1, (local - p.secondary_at) / .2), { align: 'center', maxW: 1650 });
