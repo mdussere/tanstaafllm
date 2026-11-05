@@ -1,10 +1,10 @@
 # A layered atom: essence and verbatim
 
-> **Freshness:** ⚪ draft · **Written:** 2026-11-05 · **Checked:** 2026-11-05 · **Step:** 5.1
+> **Freshness:** ⚪ draft · **Written:** 2026-11-05 · **Checked:** 2026-11-05 · **Step:** 6.1
 
 ## Why this draft exists
 
-Adam compared atoms to verbatim clips: a short, concentrated account should be readable immediately, while the passage from which it came remains available in full. The first Luna/Terra trial produced short accounts with line ranges but did not preserve readable clips or enumerate which events actually belonged to each atom. This is a small format to try on **one** episode, not a storage architecture for every agent.
+Adam compared atoms to verbatim clips: a short, concentrated account should be readable immediately, while the passage from which it came remains available in full. The first Luna/Terra trial produced short accounts with line ranges but did not preserve readable clips or enumerate which events actually belonged to each atom. The next pass first cuts and summarizes the complete session; this is the later format to try on **one** episode, not a storage architecture for every agent.
 
 ## The reading bundle
 

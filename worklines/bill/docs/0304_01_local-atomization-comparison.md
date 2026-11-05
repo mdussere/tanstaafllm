@@ -40,4 +40,4 @@ Not established:
 
 ## Next smallest decision
 
-Step 4 (private snapshot) remains pending. Adam's subsequent direction is to pair each short account with its readable verbatim clip while preserving the immutable full source. The [draft Step 5 format](0501_01_layered-atom-format.md) records that distinction. No automatic atomization, embedding store or model selection follows from this trial.
+Adam's subsequent direction is to preserve the complete source and run a full-session Terra segmentation before pairing each short account with its readable verbatim clip. The [draft later format](0501_01_layered-atom-format.md) records that distinction. No automatic atomization, embedding store or model selection follows from the initial two-day trial.
