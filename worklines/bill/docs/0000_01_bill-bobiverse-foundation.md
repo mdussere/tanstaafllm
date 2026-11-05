@@ -8,6 +8,8 @@ proposed_private_repository_name: "TANSTAAFLLM Bobiverse"
 
 # Bill foundation — TANSTAAFLLM Bobiverse
 
+> **Freshness:** ⚪ draft · **Written:** 2026-11-05 · **Checked:** 2026-11-05 · **Step:** bill pre-plan foundation
+
 ## Purpose
 
 This document carries forward Adam's discussions about durable memory for TANSTAAFLLM. **Bill** takes inspiration from Bill in Dennis E. Taylor's *Bobiverse*: the steward of shared infrastructure, communication and accumulated knowledge between independently evolving agents. Bill is **not** the boss of the other agents. Professor remains responsible for programme-level coordination and decisions; Adam is the human owner.
