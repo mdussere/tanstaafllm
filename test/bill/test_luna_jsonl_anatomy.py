@@ -53,7 +53,10 @@ def test_structural_report_redacts_message_content(tmp_path):
     assert report["source"]["bytes"] == source.stat().st_size
     assert report["lines"]["total"] == 2
     assert report["structure"]["message_role_counts"] == {"assistant": 1, "user": 1}
+    assert report["structure"]["top_level_keys_by_record_type"]["assistant"]["parentUuid"] == 1
+    assert report["structure"]["message_keys_by_role"]["user"]["content"] == 1
     assert report["structure"]["content_item_type_counts"] == {"tool_use": 1}
+    assert report["structure"]["content_item_keys_by_type"]["tool_use"]["input"] == 1
     assert report["structure"]["explicit_marker_counts"] == {"isCompactSummary": 1}
     assert report["time"]["records_by_iso_day"] == {"2026-11-01": 2}
     assert "SECRET" not in rendered

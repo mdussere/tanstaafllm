@@ -10,6 +10,54 @@ The selected local raw file was read in place by [`inspect_luna_jsonl.py`](../sc
 
 The deterministic redaction test is [`test/bill/test_luna_jsonl_anatomy.py`](../../../test/bill/test_luna_jsonl_anatomy.py). It proves a sentinel in fake user and tool content cannot appear in the report; it does not prove the completeness or semantic accuracy of the Luna source.
 
+## First correction: JSONL, not JSON-LD
+
+This is **JSONL**: one independent JSON object per physical line. A reader processes the file line by line; there is no enclosing JSON array. It is **not JSON-LD**: no `@context`, `@id` or linked-data vocabulary was observed in the 3,714 objects.
+
+Every observed row has a top-level `type`, but that is the only universal structural rule. A `user` row is not shaped like an `attachment` row, which is not shaped like an API cache blob or a title update. The file is a typed event journal.
+
+## What one object looks like
+
+The examples below are structural templates, with all real values and content omitted.
+
+```json
+{"type":"user","uuid":"…","parentUuid":"…","sessionId":"…","timestamp":"…",
+ "cwd":"…","gitBranch":"…","message":{"role":"user","content":"…"}}
+
+{"type":"assistant","uuid":"…","parentUuid":"…","sessionId":"…","timestamp":"…",
+ "cwd":"…","requestId":"…","message":{"role":"assistant","model":"…",
+ "usage":{},"content":[{"type":"text","text":"…"},{"type":"tool_use","id":"…","name":"…","input":{}}]}}
+```
+
+The first row represents an incoming human-side turn or a tool-result/permission-related user event. The second represents a model response and can contain text, hidden thinking, tool calls and metadata about model use and stopping. The `uuid` / `parentUuid` pair links these event rows into a causal chain; physical line order alone is not the whole conversation structure.
+
+## Actual object families in the Luna file
+
+| Family | `type` values observed | What it carries |
+|---|---|---|
+| Conversation | `user` 490; `assistant` 948; `system` 6 | Messages, session and parent IDs, timestamps where present, project/cwd/branch context, permissions and model/request metadata. |
+| Assistant content blocks | nested in assistant `message.content` | 298 text, 445 thinking, 435 tool-use, 387 tool-result, 11 image and 1 tool-addition blocks. Tool blocks carry their call ID/name/input or result linkage; they belong to the enclosing assistant/request sequence. |
+| Attachments | `attachment` 650 | Attachment payload/reference plus session, UUID-parent linkage, timestamp and optional rendered-role metadata. |
+| API/request trace | `api-request` 46; `api-request-blob` 135; `api-request-shape` 1 | Request shape, parameter/cache/digest information, and message blobs. These are operational evidence, not duplicate clean chat turns. |
+| Session/lifecycle UI state | `agent-name` 167; `ai-title` 199; `custom-title` 168; `mode` 163; `atis-latch` 200; `last-prompt` 205; `bridge-session` 47 | Names, titles, mode, queue/bridge state and the current leaf/prompt references that let the Claude Code UI resume or render the session. |
+| Queue and execution control | `queue-operation` 194 | Queued command/event operation, delivery/reason/timestamp fields where applicable. |
+| File history | `file-history-snapshot` 64; `file-history-delta` 25 | Snapshot/delta references tied to message IDs, including tracking and backup information. |
+| Accounting | `cost-state` 6 | Aggregate API/model, duration, cost and line-change counters. |
+
+Only the `type` field occurs on all 3,714 rows. `sessionId` occurs on 3,625 rows, `timestamp` on 2,360, and `uuid` plus `parentUuid` on 2,094. A derived parser must therefore tolerate optional fields and dispatch by `type`; it must not assume every row has a timestamp, message, UUID or text.
+
+Nested `message` objects also vary by role:
+
+| `message.role` | Always observed fields in this file | Meaning |
+|---|---|---|
+| `user` | `role`, `content` | Incoming user-side content; surrounding top-level fields distinguish ordinary prompts, permissions and tool-result events. |
+| `assistant` | `role`, `content`, `model`, `usage`, `stop_reason`, `stop_details`, `container`, `context_management`, `diagnostics` | Model response and model/runtime metadata. Its `content` can be a list of typed blocks. |
+| `system` | `role`, `content` | System-side messages, with one optional output configuration observed. |
+
+## Consequence for cuts and storage
+
+There are 433 direct user→assistant role transitions, but 506 assistant→assistant transitions and 50 user→user transitions as well. This proves that naïvely pairing alternating rows would invent false questions and answers. A proper request unit starts at a user event and follows its UUID-parent chain through assistant and tool events until the next independent user request. Day boundaries and the two explicit compaction markers are useful outer navigation cuts, not replacements for that causal grouping.
+
 ## The raw session is an event journal
 
 | Measure | Observed value |

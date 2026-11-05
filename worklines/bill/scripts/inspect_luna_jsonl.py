@@ -43,8 +43,11 @@ def inspect_jsonl(source: Path) -> dict[str, Any]:
     """Return a content-redacted structural summary of a JSONL file."""
     top_level_keys: collections.Counter[str] = collections.Counter()
     record_types: collections.Counter[str] = collections.Counter()
+    keys_by_record_type: dict[str, collections.Counter[str]] = collections.defaultdict(collections.Counter)
     message_roles: collections.Counter[str] = collections.Counter()
+    keys_by_message_role: dict[str, collections.Counter[str]] = collections.defaultdict(collections.Counter)
     content_item_types: collections.Counter[str] = collections.Counter()
+    keys_by_content_item_type: dict[str, collections.Counter[str]] = collections.defaultdict(collections.Counter)
     id_presence: collections.Counter[str] = collections.Counter()
     marker_counts: collections.Counter[str] = collections.Counter()
     day_counts: collections.Counter[str] = collections.Counter()
@@ -75,7 +78,9 @@ def inspect_jsonl(source: Path) -> dict[str, Any]:
 
             root_kinds["object"] += 1
             top_level_keys.update(record.keys())
-            increment(record_types, record.get("type"))
+            record_type = label(record.get("type"))
+            record_types[record_type] += 1
+            keys_by_record_type[record_type].update(record.keys())
             for field in ID_FIELDS:
                 if field in record:
                     id_presence[field] += 1
@@ -96,6 +101,7 @@ def inspect_jsonl(source: Path) -> dict[str, Any]:
             if isinstance(message, dict):
                 role = label(message.get("role"))
                 message_roles[role] += 1
+                keys_by_message_role[role].update(message.keys())
                 if previous_role is not None:
                     role_transitions[f"{previous_role}→{role}"] += 1
                 previous_role = role
@@ -104,7 +110,9 @@ def inspect_jsonl(source: Path) -> dict[str, Any]:
                 if isinstance(content, list):
                     for item in content:
                         if isinstance(item, dict):
-                            increment(content_item_types, item.get("type"))
+                            item_type = label(item.get("type"))
+                            content_item_types[item_type] += 1
+                            keys_by_content_item_type[item_type].update(item.keys())
 
     natural_boundaries: list[str] = ["The JSONL file itself is an immutable session boundary."]
     if day_counts:
@@ -139,8 +147,19 @@ def inspect_jsonl(source: Path) -> dict[str, Any]:
         "structure": {
             "top_level_key_counts": dict(sorted(top_level_keys.items())),
             "record_type_counts": dict(sorted(record_types.items())),
+            "top_level_keys_by_record_type": {
+                record_type: dict(sorted(keys.items()))
+                for record_type, keys in sorted(keys_by_record_type.items())
+            },
             "message_role_counts": dict(sorted(message_roles.items())),
+            "message_keys_by_role": {
+                role: dict(sorted(keys.items())) for role, keys in sorted(keys_by_message_role.items())
+            },
             "content_item_type_counts": dict(sorted(content_item_types.items())),
+            "content_item_keys_by_type": {
+                item_type: dict(sorted(keys.items()))
+                for item_type, keys in sorted(keys_by_content_item_type.items())
+            },
             "identifier_field_presence": dict(sorted(id_presence.items())),
             "explicit_marker_counts": dict(sorted(marker_counts.items())),
         },
