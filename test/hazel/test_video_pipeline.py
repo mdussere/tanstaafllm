@@ -38,12 +38,14 @@ the MP4 encoding, and the hand-written stories (`story1-hello-luna/`, `story2-as
 """
 import datetime
 import json
+import os
 import pathlib
 import subprocess
 import sys
 
 import pytest
 import yaml
+from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 VIDEO = ROOT / 'worklines' / 'hazel' / 'video'
@@ -255,6 +257,40 @@ def results_dir(name):
     d = ROOT / 'results' / 'hazel' / 'video-pipeline' / (datetime.datetime.now().strftime('%Y%m%dT%H%M%S') + '-' + name)
     d.mkdir(parents=True, exist_ok=True)
     return d
+
+
+@pytest.mark.integration
+def test_story2_blind_storyboard_extracts_one_still_per_second():
+    """Create an inspectable, context-free 1 fps storyboard for a blind narrative review.
+
+    The current scripted Story 2 MP4 is deliberately supplied by environment rather than committed as a test
+    fixture: rendered videos are evidence, not repository source.  This test leaves 90 individual frames,
+    ten 3×3 contact sheets, a time manifest and the complete ffmpeg output under ``results/``.  A reviewer must
+    receive only those images, not this repository, episode brief or other project material.
+    """
+    raw = os.environ.get('HAZEL_STORY2_BLIND_VIDEO')
+    if not raw:
+        pytest.skip('set HAZEL_STORY2_BLIND_VIDEO to the scripted Story 2 preview MP4')
+    source = pathlib.Path(raw)
+    assert source.is_file(), source
+    out = results_dir('story2-blind-storyboard')
+    frames = out / 'frames'
+    frames.mkdir()
+    command = ['ffmpeg', '-hide_banner', '-i', str(source), '-vf', 'fps=1', '-frames:v', '90', str(frames / 'frame-%03d.png')]
+    run = subprocess.run(command, cwd=ROOT, text=True, capture_output=True)
+    (out / 'ffmpeg.log').write_text('COMMAND: ' + ' '.join(command) + '\n\nSTDOUT:\n' + run.stdout + '\n\nSTDERR:\n' + run.stderr)
+    assert run.returncode == 0, run.stderr
+    stills = sorted(frames.glob('frame-*.png'))
+    assert len(stills) == 90
+    assert Image.open(stills[0]).size == (640, 360)
+    manifest = [{'frame': still.name, 'second': index} for index, still in enumerate(stills)]
+    (out / 'frames.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    for start in range(0, len(stills), 9):
+        sheet = Image.new('RGB', (1920, 1080), '#000000')
+        for offset, still in enumerate(stills[start:start + 9]):
+            image = Image.open(still).convert('RGB')
+            sheet.paste(image, ((offset % 3) * 640, (offset // 3) * 360))
+        sheet.save(out / f'contact-{start:03d}-{min(start + 8, 89):03d}.png')
 
 
 @pytest.mark.integration
