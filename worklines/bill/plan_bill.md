@@ -74,6 +74,8 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 - [x] 2.3 Read Claude Code's project `memory/` files for the same project; distinguish the maintained memory layer from raw history, and classify what it retains without publishing raw text.
 - [x] 2.4 Write [the Luna JSONL anatomy](docs/0201_01_luna-jsonl-anatomy.md): a non-sensitive structural analysis, candidate segmentation rule, and storage/exploitation recommendation.
 - [x] 2.5 Acceptance: the observed structure supports retaining one immutable JSONL, a separate derived turn index, and a first atomization unit bounded by a user request and its causally linked assistant/tool sequence.
+- [x] 2.6 Map the actual JSONL object families and their top-level/nested field shapes by `type`, and explain what is and is not shared between rows. Update the anatomy record with no message content.
+- [x] 2.7 Acceptance: Adam can distinguish JSONL from JSON-LD and understand the data carried by conversation, tool, attachment, title, request, queue, file-history and summary rows.
 
 ### Step 3 — Save one Luna snapshot
 **Status**: ⏳ Pending
@@ -102,7 +104,7 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 ## Progress tracking ✅
 
 - ✅ Step 1 — Claude Code local-memory inventory; the Luna raw-session candidate is identified, with private-destination access still required before export.
-- ✅ Step 2 — inspect the Luna JSONL and Claude memory layers in place; storage and segmentation recommendation recorded.
+- ✅ Step 2 — inspect the Luna JSONL and Claude memory layers in place; structure, schema families, storage and segmentation recommendation recorded.
 - ⏳ Step 3 — export and preserve one Luna snapshot privately.
 - ⏳ Step 4 — manually atomize a bounded Luna excerpt.
 - ⏳ Step 5 — choose one evidence-led continuation.
@@ -127,6 +129,8 @@ date
 | 2026-11-05 | Step 1 completed after the correction: identified Claude Code's raw project JSONL sessions, curated project memory, global history and small session metadata. The `luna` workline maps to the `tanstfaafllm-e0` raw JSONL candidate. No source body was opened or copied. |
 | 2026-11-05 | Adam asked for source anatomy before preservation: a read-only analysis of the Luna JSONL's size, record structure and natural cut points, plus Claude Code's curated memory layer. Added as the new Step 2; private export and atomization move to Steps 3–4. |
 | 2026-11-05 | Step 2 completed: the Luna source is a 13,451,993-byte, 3,714-record event journal over 13 days, not a simple alternating chat log. Preserve one immutable JSONL; derive request/response/tool units from UUID-parent links and use day/compaction boundaries for navigation. Claude's small managed-memory layer is useful but needs provenance and freshness checks. |
+| 2026-11-05 | Adam asked for the concrete JSONL schema explanation rather than aggregate counts. Step 2 reopened to map record families and field shapes without emitting message content. |
+| 2026-11-05 | Step 2 schema clarification completed: every row has `type`, but there is no uniform row schema or JSON-LD vocabulary. Added the actual conversation, tool, attachment, API, lifecycle, queue, file-history and cost object families plus nested message/content shapes to the anatomy record. |
 
 ---
 
