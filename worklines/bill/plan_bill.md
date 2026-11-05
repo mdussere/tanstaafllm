@@ -97,13 +97,14 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 - [x] 4.4 Acceptance: the private commit can be checked out, hashes match, and the manifest accurately states coverage without public raw content; see [the preservation record](docs/0404_01_luna-raw-preservation.md).
 
 ### Step 5 — Segment and summarize the whole Luna session with Terra
-**Status**: ✅ Done (2026-11-05)
+**Status**: ✅ Done (2026-11-05; storage layout revised)
 
 - [x] 5.1 Assess the complete source against this Terra agent runtime's context and use bounded source slices with a final cross-slice boundary and coverage pass. A single-call fit was not experimentally established; this pass used three slices.
 - [x] 5.2 Have GPT-6.1 Terra mark attempted-action sequences throughout the complete session, each with a start, end, short summary, observed outcome or open state, uncertainty, and source line references. UUIDs were not uniformly present in the compact reading views and remain in the raw source. This pass does not create polished layered atoms or verbatim clips.
 - [x] 5.3 Validate source references, chronological boundaries, gaps, overlaps and cross-slice handoffs; retain the complete first-pass index and run evidence privately.
 - [x] 5.4 Report observed local model token usage and a clearly labelled API-price equivalent with its assumptions and limits.
 - [x] 5.5 Acceptance: every part of the 3,714-row session is accounted for by a segment or labelled context-only span, and the private index is retrievable alongside the raw artifact; see [the full-session record](docs/0505_01_full-luna-session-pass.md).
+- [x] 5.6 Make the private repository human-browsable: `Luna/raw/` contains only the unchanged original JSONL; `Luna/refined/` contains only one Markdown file per current sequence candidate, sorted by date and sequence number with meaningful names. Mark these files as first-pass summaries until verbatim clips are added. Keep the prior manifests, machine index, cost and review in Git history, with compact provenance in the root README and a [layout record](docs/0506_01_bobiverse-reading-layout.md). Verify the new tree and source hash.
 
 ### Step 6 — Try and review one layered atom
 **Status**: ⏳ Pending
@@ -127,7 +128,7 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 - ✅ Step 2 — inspect the Luna JSONL and Claude memory layers in place; structure, schema families, storage and segmentation recommendation recorded.
 - ✅ Step 3 — two local atomizations of the first two Luna days validated; no export.
 - ✅ Step 4 — byte-for-byte raw Luna session and provenance manifest committed to the verified private repository.
-- ✅ Step 5 — 79 Terra sequence candidates and four context-only spans cover all 3,714 lines; usage and provisional semantic review recorded privately.
+- ✅ Step 5 — the raw JSONL is under `Luna/raw/`; 79 ordered Markdown atom drafts are under `Luna/refined/`. Four context-only spans are documented in the root README; the machine audit remains in Git history.
 - ⏳ Step 6 — try one atom with both a short account and verbatim, then review it with Adam.
 - ⏳ Step 7 — choose one evidence-led continuation.
 
@@ -159,6 +160,8 @@ date
 | 2026-11-05 | Adam directed Bill to preserve the complete Luna JSONL and use GPT-6.1 Terra to cut and summarize the entire session before making individual layered atoms. Steps 4–5 are in progress. The connected GitHub installation does not currently list the named private repository, so Bill is resolving its exact destination while local extraction proceeds. |
 | 2026-11-05 | Steps 4–5 completed. Adam supplied the exact private repository URL; SSH access and anonymous API visibility were checked. The 13,451,993-byte raw JSONL was hash-matched and committed privately as `b2f4ad7`. Four Terra passes (three reading slices and one review) produced a private first-pass index committed as `425d015`: 79 sequence candidates and four context-only spans partition all 3,714 lines. Local usage was 1,696,060 input tokens including 1,508,352 cached, plus 14,791 output tokens; standard API-price equivalent $0.337081, not an account bill. One-shot context fit and polished verbatim-backed atoms remain untested. |
 | 2026-11-05 | Adam reported that renaming existing TANSTAAFLLM checkout paths hid cloud session history. The main checkout and the Adam and Story 2 worktrees/checkouts are restored to their original paths and Git links verified. Existing paths are now explicitly stable until memory-based session continuity works well enough for Adam to choose a migration. |
+| 2026-11-05 | Adam found the Bobiverse tree too technical to browse. Step 5 reopens for a simple `Luna/raw/` plus `Luna/refined/` layout: one original JSONL and Markdown candidate atoms only. The existing machine index and run metadata remain in Git history; no verbatim-backed atoms are claimed yet. |
+| 2026-11-05 | Step 5.6 completed in private commit `baa2e51`: `Luna/raw/` has the byte-identical JSONL and `Luna/refined/` has 79 dated, numbered Markdown drafts only. The former technical files are retained in previous commits, and the root README records provenance and four context-only spans. The private-checkout integration test passed; Step 6's verbatim work remains pending. |
 
 ---
 
@@ -170,7 +173,8 @@ date
 - [Luna JSONL anatomy](docs/0201_01_luna-jsonl-anatomy.md) — completed Step 2 structure, cut-point, storage and Claude-memory analysis; 🟢 current.
 - [Atomization-trial contract](../../../test/bill/luna_atomization_trial.feature) — the local-only, two-model Step 3 observable contract; raw and derived trial material remains ignored.
 - [Local atomization comparison](docs/0304_01_local-atomization-comparison.md) — Step 3's non-sensitive comparison and limits; 🟢 current.
-- [Raw Luna preservation](docs/0404_01_luna-raw-preservation.md) — Step 4 checksum, scope and private commit; 🟢 current.
-- [Complete Luna segmentation](docs/0505_01_full-luna-session-pass.md) — Step 5 coverage, Terra method, measured usage and limits; 🟢 current.
+- [Raw Luna preservation](docs/0404_01_luna-raw-preservation.md) — Step 4 checksum, scope and private capture commit; 🟡 historical path.
+- [Complete Luna segmentation](docs/0505_01_full-luna-session-pass.md) — Step 5 coverage, Terra method, measured usage and limits; 🟡 historical machine-index layout.
+- [Bobiverse reading layout](docs/0506_01_bobiverse-reading-layout.md) — Step 5.6's simple private tree and validation; 🟢 current.
 - [Full-session segmentation contract](../../../test/bill/full_luna_segmentation.feature) — readable coverage and usage checks for the first pass.
 - [Layered atom format](docs/0501_01_layered-atom-format.md) — Adam's later Step 6 design direction for essence plus verbatim; ⚪ draft, not yet applied to source content.

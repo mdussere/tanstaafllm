@@ -1,10 +1,12 @@
 # Complete Luna session: first Terra cut
 
-> **Freshness:** 🟢 current · **Written:** 2026-11-05 · **Checked:** 2026-11-05 · **Step:** 5.5
+> **Freshness:** 🟡 historical · **Written:** 2026-11-05 · **Checked:** 2026-11-05 · **Step:** 5.5
 
 ## Result
 
 The preserved 3,714-line [Luna raw session](0404_01_luna-raw-preservation.md) has a complete first-pass navigation index in [private derived commit `425d015`](https://github.com/mdussere/tanstaafllm-bobiverse/commit/425d015). Its [readable index](https://github.com/mdussere/tanstaafllm-bobiverse/blob/425d015/derived/claude-code/luna/08421a9a-b5dc-435e-a293-8497430d722a/index.md) contains **79 attempted-action sequence candidates** with a beginning and end line, short account, observed state, uncertainty and anchor lines. Four further spans are labelled context-only. The [machine-readable index](https://github.com/mdussere/tanstaafllm-bobiverse/blob/425d015/derived/claude-code/luna/08421a9a-b5dc-435e-a293-8497430d722a/segments.json) has **83 contiguous, non-overlapping spans covering source lines 1–3714 exactly once**. The original JSONL remains the lossless source; these are provisional cuts and summaries, not verbatim-backed atoms.
+
+The current private tree presents those candidates as individual Markdown files in the [Luna reading layout](0506_01_bobiverse-reading-layout.md); this record describes the earlier machine-index pass preserved in Git history.
 
 ## Method and context
 

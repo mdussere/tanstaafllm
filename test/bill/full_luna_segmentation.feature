@@ -13,3 +13,12 @@ Feature: Complete first-pass segmentation of the Luna Claude session
     And cross-view continuations are reconciled before the complete index is accepted
     And model usage or a clearly labelled cost estimate is recorded
     And the raw source and derived index are stored in the private repository
+
+  Scenario: Adam browses Luna's source and provisional atoms
+    Given the first-pass index was preserved in Git history
+    When the current private tree is opened
+    Then Luna has only raw and refined directories
+    And raw contains exactly the byte-verified original JSONL
+    And refined contains 79 date-and-sequence-sorted Markdown atom drafts
+    And each draft links its source lines and says its verbatim is pending
+    And the four context-only spans plus the drafts account for all 3,714 rows
