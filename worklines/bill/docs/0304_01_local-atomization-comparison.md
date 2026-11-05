@@ -23,6 +23,8 @@ The two lists demonstrate that both can make inspectable sequence descriptions f
 
 The lightweight validator checked the required observable Markdown fields. During review, one Terra endpoint was corrected so its declared end included its later cited correction. That manual catch is also evidence of the validator's limit: it checks document shape, not source fidelity, causality, chronology, privacy safety or whether every atom is a good human unit.
 
+A subsequent boundary review found concrete failures despite both passing that validator: one Luna atom ends on a tool call; one Terra atom ends on a new user message; another Terra atom stretches across unrelated episodes to include a later correction. Source references also mix sparse anchor lines and broad ranges, so they do not count an atom's actual constituent events. These are draft summaries, not accepted atoms.
+
 ## What this establishes—and does not
 
 Established:
@@ -38,4 +40,4 @@ Not established:
 
 ## Next smallest decision
 
-Step 4 (private snapshot) remains pending. Before it is green-lit, Adam can either choose a preferred granularity for a short human review of this trial or decide that the observed value already justifies preserving the immutable source. No automatic atomization, embedding store or model selection follows from this trial.
+Step 4 (private snapshot) remains pending. Adam's subsequent direction is to pair each short account with its readable verbatim clip while preserving the immutable full source. The [draft Step 5 format](0501_01_layered-atom-format.md) records that distinction. No automatic atomization, embedding store or model selection follows from this trial.
