@@ -1,0 +1,47 @@
+name: Hazel Story 2 full render
+# Full-resolution render of the visually reviewed Story 2 revision.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [cell/adam]
+    paths:
+      - '.github/workflows/hazel-story2-full-render.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - name: Install video dependencies
+        run: |
+          uv sync --group video
+          uv run playwright install --with-deps chromium
+          sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Render complete Story 2 with strict checks
+        run: |
+          cd worklines/hazel/video
+          uv run --project ../../.. python common/build.py episodes/story2-ask-the-desktop.yaml --full --strict --out ../../../results/hazel/story2/full
+      - name: Verify video streams
+        run: |
+          test -s results/hazel/story2/full/tanstaafllm-story2-ask-the-desktop.mp4
+          ffprobe -v error -show_entries format=duration:stream=codec_type,codec_name,width,height,r_frame_rate -of default=noprint_wrappers=1 results/hazel/story2/full/tanstaafllm-story2-ask-the-desktop.mp4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hazel-story2-full-render
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            results/hazel/story2/full/*.mp4
+            results/hazel/story2/full/contact.png
+            results/hazel/story2/full/audit.md
+            results/hazel/story2/full/lint.txt
+            results/hazel/story2/full/NOTES.md

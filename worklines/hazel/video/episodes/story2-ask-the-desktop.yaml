@@ -47,15 +47,15 @@ scenes:
   title: "LIKE PLAYWRIGHT, FOR A DESKTOP"
   key: ["Playwright reads the page.", "Wyoh reads the desktop."]
   columns: [BROWSER, DESKTOP]
-  rows: [[PLAYWRIGHT, WYOH], [THE DOM, "SWAY'S WINDOW TREE"], ["CLICK, TYPE", "NAMED ACTIONS, BUTTONS"], ["WAIT FOR…", "WAIT FOR AN EVENT"]]
+  rows: [[PLAYWRIGHT, WYOH], ["PAGE TREE", "WINDOW TREE"], ["CLICK, TYPE", "NAMED ACTIONS"], ["WAIT FOR…", "WAIT FOR EVENT"]]
   sources: ["worklines/wyoh/docs/0000_04_desktop-automation-model.md (Playwright | Wyoh table)"]
 
 - id: stage2
   template: two_boxes
   bars: 4
   mood: tense
-  title: "ONE SCENE IS NOT A DESKTOP"
-  fail: {label: HIOM, glance: ["FIRST IDEA: ONE SCENE", "A DESKTOP DID NOT FIT."], stamp: REOPENED}
+  title: "A DESKTOP HAS MANY WINDOWS"
+  fail: {label: HIOM, glance: ["FIRST IDEA: ONE SCREEN", "TOO SMALL FOR A DESKTOP"], stamp: REOPENED}
   works: "KEPT FROM IT:"
   key: ["WAIT FOR A NAMED CONDITION,", "NEVER A FIXED DELAY."]
   sources: ["Note beat 2; 0101_01_hiom_v0_contract.md (status note 2026-09-25)", "Note beat 2 (\"waits for a named predicate ... never a fixed delay\")"]
@@ -64,8 +64,8 @@ scenes:
   template: metrics
   bars: 4
   mood: bright
-  title: "ASK THE ONE THAT EXISTS"
-  key: ["Don't build a compositor.", "Ask the one that exists."]
+  title: "ARCH RUNS SWAY"
+  key: ["Sway runs Luna's desktop.", "Use it as-is. No fork."]
   subject: {label: SWAY, tags: [UNMODIFIED, NO FORK], link: IPC}
   glance: "MEASURED ON luna-pi, A RASPBERRY PI"
   machine: luna-pi
@@ -96,8 +96,8 @@ scenes:
   title: "BOSS: THE BLACK PANEL"
   panel: "LUNA'S REAL 720 × 720 PANEL"
   phases:
-  - {key: BLACK., secondary: ["Sway's own screenshots", "looked right."], glance: "MALI GPU DRIVER: NOT LOADED"}
-  - {key: ["GPU DRIVER", "LOADED."], secondary: "1 passed"}
+  - {key: ["REAL SCREEN:", "BLACK."], secondary: ["Screenshots looked fine.", "The screen stayed black."], glance: "MALI GPU DRIVER: NOT LOADED"}
+  - {key: ["GPU DRIVER", "LOADED."], secondary: "DISPLAY TEST PASSED"}
   machine: Luna
   sources: ["Note beat 5; 0407_01_luna-real-display-session.md, plan_wyoh.md 4.8.3", "0407_01_luna-real-display-session.md l.123; confirmed by Wyoh 2026-11-01"]
 

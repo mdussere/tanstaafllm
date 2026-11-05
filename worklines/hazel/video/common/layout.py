@@ -14,7 +14,7 @@ Phone rule: `key` is the one key message (VT323 90, or Press Start 2P 56 with `k
 import math
 
 BEAT = 0.5
-INTERNAL = {'title_card': 'T01', 'player_card': 'T04', 'tree': 'T21', 'result': 'T22', 'end_card': 'T23'}
+INTERNAL = {'title_card': 'T01', 'player_card': 'T04', 'tree': 'T21', 'result': 'T22', 'end_card': 'T23', 'cinema': 'T24'}
 
 
 def _l(v):
@@ -143,12 +143,12 @@ def t_two_boxes(b):
     b.mark('enter', first, i=0)
     for i in range(5):
         b.mark('enter', spill + 0.15 * i, i=i + 1)
-    b.glance(g[0], first + 0.1, 980, 330)
-    b.stamp(f['stamp'], 980, 500, fail_t, 48, 'red', rot=-0.05)
+    b.second(g[0], first + 0.1, 980, 330, 'cyan', font='V', maxW=800, group='first-idea')
+    b.stamp(f['stamp'], 980, 500, fail_t, 48, 'red', rot=-0.05, group='first-idea')
     b.slot(fail_t + 0.15, f['stamp'], 'P')
     b.texts['secondary'].append(f['stamp'])
     b.mark('fail', fail_t)
-    b.glance(g[1], fail_t + 0.3, 980, 380)
+    b.second(g[1], fail_t + 0.3, 980, 410, 'chrome', font='V', maxW=800, group='first-idea')
     b.add('box', x=140, y=650, w=1640, h=230, edge='green', alpha=0.95, at=works - 0.3, fade=0.2)
     b.glance(sc['works'], works - 0.3, 190, 705, 'amber')
     b.mark('turn', works)
@@ -162,12 +162,13 @@ def t_metrics(b):
     tags = _l(s.get('tags'))
     b.key(sc['key'], b.at('key', 0.5), 120, 300, 'cyan')
     sub = b.at('subject', 1.0)
+    t0 = b.at('tiles', b.z - 3.5)
     b.add('box', x=120, y=430, w=560, h=440, edge='green', since=sub)
     b.add('minidesk', x=150, y=460, w=500, h=240, focus='cycle', since=sub)
     b.mark('enter', sub, i=0)
-    b.text(s['label'], 150, 760, sub, 32, 'chrome', fade=0, role='glance')
+    b.text(s['label'], 150, 755, sub, 48, 'chrome', fade=0, role='glance', until=t0)
     for i, tg in enumerate(tags):
-        b.glance(tg, sub + BEAT * (i + 1), 150, 805 + 40 * i, ['green', 'amber', 'cyan'][i % 3])
+        b.text(tg, 150, 805 + 50 * i, sub + BEAT * (i + 1), 48, ['green', 'amber', 'cyan'][i % 3], role='glance', until=t0)
         b.mark('enter', sub + BEAT * (i + 1), i=i + 1)
     link = sub + BEAT * (len(tags) + 1)
     if s.get('link'):
@@ -177,7 +178,7 @@ def t_metrics(b):
     if sc.get('glance'):
         b.glance(sc['glance'], link, 800, 460)
     tiles = [t if isinstance(t, dict) else dict(zip(('label', 'value', 'machine'), t)) for t in sc['tiles']]
-    t0, rows = b.at('tiles', b.z - 3.5), []
+    rows = []
     for i, t in enumerate(tiles):
         ti = t0 + BEAT * i
         rows.append([ti, t['label'], t['value'], t.get('machine', sc.get('machine', ''))])
@@ -237,7 +238,7 @@ def t_boss(b):
         b.glance(p1['glance'], 3.0, 760, 740, until=v)
     b.key(p2['key'], v, 760, 440, 'green', font='P', stamp=False, fade=0, read_at=v + 0.1)
     b.mark('victory', v)
-    b.add('box', x=760, y=600, w=460, h=130, edge='green', fill='#05060f', alpha=0.95, since=v + 0.3)
+    b.add('box', x=760, y=600, w=850, h=130, edge='green', fill='#05060f', alpha=0.95, since=v + 0.3)
     b.second(p2['secondary'], v + 0.3, 760 + 40, 690, 'green', font='V', fade=0, shadow=0)
     return dict(screens=[dict(name='boss: ' + ' '.join(_l(p1['key'])), cut=v), dict(name='boss: ' + ' '.join(_l(p2['key'])))],
                 flashes=[[v, 0, 0.25], [0, 0, 0.4, 'red']])
@@ -322,8 +323,43 @@ def t_compare_table(b):
     return {}
 
 
+def t_template_wall(b):
+    """Story 3's new T24: a growing wall of reusable sequence cards; the new card is amber.
+
+    High-level slots: key, secondary, optional count (default 23). The pattern cards are geometry,
+    not extra messages competing with the large phone-readable key.
+    """
+    sc = b.sc
+    b.add('template_wall', x=130, y=495, count=sc.get('count', 23), at=0.5,
+          special_at=4.0)
+    b.mark('enter', 0.5, i=0)
+    b.mark('enter', 2.0, i=1)
+    b.mark('reveal', 4.0, i=2)
+    b.key(sc['key'], b.at('key', 0.8), 130, 350, 'cyan', maxW=1600)
+    b.second(sc['secondary'], b.at('secondary', b.z - 2.0), 130, 915, 'amber')
+    return {}
+
+
+def t_payback_meter(b):
+    """Story 3's new T25: the video depicts its own amortization; the final reveal is the second build.
+
+    Values are the documented indicative 408k pipeline investment and 236k saving per reuse.
+    The 54k was a revision, not a fully measured new-episode cost.
+    """
+    sc = b.sc
+    b.add('payback_meter', x=145, y=470, investment=sc.get('investment', 408),
+          saving=sc.get('saving', 236), at=0.8, reveal_at=4.5)
+    b.mark('enter', 0.8, i=0)
+    b.mark('enter', 2.0, i=1)
+    b.mark('victory', 4.5)
+    b.key(sc['key'], b.at('key', 5.0), 145, 350, 'green', maxW=1620)
+    b.second(sc['secondary'], b.at('secondary', b.z - 1.7), 145, 905, 'amber')
+    return {}
+
+
 STAGE_FN = {'guess': t_guess, 'two_boxes': t_two_boxes, 'metrics': t_metrics, 'flow': t_flow, 'boss': t_boss,
-            'handheld': t_handheld, 'checklist': t_checklist, 'compare_table': t_compare_table}
+            'handheld': t_handheld, 'checklist': t_checklist, 'compare_table': t_compare_table,
+            'template_wall': t_template_wall, 'payback_meter': t_payback_meter}
 
 
 # ====================================================================== frame templates (their own full-screen layouts)
@@ -392,7 +428,25 @@ def f_end_card(b):
     return dict(key=_l(sc['key']), glance=_l(sc.get('glance')), key_at=ka, glance_at=ka + 0.5)
 
 
-FRAME_FN = {'title_card': f_title_card, 'player_card': f_player_card, 'tree': f_tree, 'result': f_result, 'end_card': f_end_card}
+
+def f_cinema(b):
+    """Reusable sprite-layer composition. The script names assets, staging and motion; the engine owns the typography."""
+    sc = b.sc
+    length = b.len
+    key_at = b.at('key', min(1.3, max(0.6, length * .15)))
+    secondary_at = b.at('secondary', max(key_at + 1.5, length - 2.5))
+    lines = _l(sc['key'])
+    b.texts['key'].append(' '.join(lines))
+    b.slot(key_at + .3, ' '.join(lines), 'V')
+    if sc.get('secondary'):
+        ss = ' '.join(_l(sc['secondary']))
+        b.texts['secondary'].append(ss)
+        b.slot(secondary_at + .3, ss, 'V')
+    if sc.get('caption'):
+        b.texts['glance'].append(sc['caption'])
+    return dict(key_at=key_at, secondary_at=secondary_at)
+
+FRAME_FN = {'title_card': f_title_card, 'player_card': f_player_card, 'tree': f_tree, 'result': f_result, 'end_card': f_end_card, 'cinema': f_cinema}
 
 
 def check_times(sc, end):

@@ -1,0 +1,50 @@
+name: Hazel two-sequence render smoke test
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/hazel-two-sequences-smoke.yml'
+      - 'worklines/hazel/video/**'
+
+concurrency:
+  group: hazel-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - name: Install pipeline dependencies
+        run: uv sync --group video --group scrape
+      - name: Install browser and codecs
+        run: |
+          uv run playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Compile two-sequence video with Hazel
+        run: |
+          cd worklines/hazel/video
+          uv run --project ../../.. python common/build.py episodes/adam-two-sequences-smoke.yaml --preview --out ../../../results/hazel/adam-two-sequences-smoke/ci-preview
+      - name: Verify output
+        run: |
+          test -s results/hazel/adam-two-sequences-smoke/ci-preview/tanstaafllm-adam-two-sequences-smoke.mp4
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 results/hazel/adam-two-sequences-smoke/ci-preview/tanstaafllm-adam-two-sequences-smoke.mp4
+          cat results/hazel/adam-two-sequences-smoke/ci-preview/lint.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hazel-two-sequences-smoke
+          path: |
+            results/hazel/adam-two-sequences-smoke/ci-preview/*.mp4
+            results/hazel/adam-two-sequences-smoke/ci-preview/contact.png
+            results/hazel/adam-two-sequences-smoke/ci-preview/audit.md
+            results/hazel/adam-two-sequences-smoke/ci-preview/lint.txt
+          if-no-files-found: warn

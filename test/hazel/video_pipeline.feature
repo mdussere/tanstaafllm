@@ -17,3 +17,9 @@ Feature: The script-to-video pipeline builds Story 2 and checks it (Hazel Step 6
     When the page draws each stage's end stamp (CLEAR!, NO GO!, LET'S DO IT!)
     Then each stamp's recorded box lies inside the lint's CLEAR! zone for that label
     And for every sampled output time, runtime.js sourceTime equals timemap.source_time
+
+  Scenario: Story 3 V3b builds from committed bitmap sprites
+    Given the 50-source-file sprites-v3 manifest and the 13-scene Story 3 script
+    When common/build.py builds Story 3 with --preview --no-video --strict
+    Then Chromium loads PNG backdrops, sprites and frame-replacement animation without SVG fallback
+    And the dated results folder contains a contact sheet and one still per scene

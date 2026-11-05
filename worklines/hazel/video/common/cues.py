@@ -595,7 +595,38 @@ def cue_T23(sc, ctx):
         blip(P2, t0 + t, 88, 3, max(2, 9 - 2 * j), 1); blip(P2, t0 + t + 0.05, 93, 4, max(2, 9 - 2 * j), 1)
 
 
-CUES = {'T01': cue_T01, 'T04': cue_T04, 'T05': cue_T05, 'T21': cue_T21, 'T22': cue_T22, 'T23': cue_T23}
+
+def cue_T24(sc, ctx):
+    """V3b bitmap scenes use scene-specific 2A03 events: a title/theme slam, prop/action accents and cut rolls.
+
+    They deliberately do not share one continuous ambient loop: each shot starts and ends on its own readable beat.
+    """
+    t0, t1 = sc['t0'], sc['t1']
+    mood, key_at = sc.get('mood', 'calm'), sc.get('key_at', 1)
+    if sc.get('shot') == 'title':
+        coin(P2, t0 + .12, 10); stamp(t0 + key_at, 57, 64, 33, 15)
+        _theme(t0, t1, key_at - 1.0, 12); hit(t0 + key_at, 'title slam / series theme')
+    else:
+        groove_span(t0 + .35, t1 - .65, mood, style(mood)['drums'], 4)
+        hit_all(t0 + .08, 69, 76, 33, 10, tau=12, dur=.25, cym='crash'); hit(t0 + .08, 'shot cut flash')
+        blip(P1, t0 + key_at, 76, 5, 10, 2); hit(t0 + key_at, 'cinema key')
+    if sc.get('effect') in ('clockwork', 'assembly'):
+        for at in (1.0, 2.0, 3.0): blip(P2, t0 + at, 76 + int(at) * 2, 4, 9, 1); hit(t0 + at, 'compile frame')
+    if sc.get('effect') == 'library':
+        for at in (1.0, 2.0, 3.0, 4.0): blip(P2, t0 + at, 76, 3, 8, 1); hit(t0 + at, 'template card')
+    if sc.get('effect') in ('inspection', 'copy-storm'):
+        nz(t0 + 1.0, (8, 4, 2), 1, 0); hit(t0 + 1.0, 'warning accent')
+    if sc.get('secondary'):
+        ding(t0 + sc['secondary_at'], 88)
+        hit(t0 + sc['secondary_at'], 'cinema secondary')
+    if sc.get('effect') == 'recursion':
+        stamp(t0 + 5.4, 69, 76, 33, 15)
+    if sc.get('effect') == 'coin-return':
+        note(P1, t1 - 2, 1.8, 69, 10, 2, env=E_fade(55, 0), release=0)
+    roll(t1 - .45, t1 - .02, 4, 10, gap0=3, gap1=2)
+    roll(t1 - 0.4, t1 - 0.02, 4, 9)
+
+CUES = {'T01': cue_T01, 'T04': cue_T04, 'T05': cue_T05, 'T21': cue_T21, 'T22': cue_T22, 'T23': cue_T23, 'T24': cue_T24}
 
 
 # ============================================================= the episode score

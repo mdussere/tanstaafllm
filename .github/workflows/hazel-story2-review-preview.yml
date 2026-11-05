@@ -1,0 +1,52 @@
+name: Hazel Story 2 review preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [cell/adam]
+    paths:
+      - '.github/workflows/hazel-story2-review-preview.yml'
+      - 'worklines/hazel/video/episodes/story2-ask-the-desktop.yaml'
+      - 'worklines/hazel/video/common/layout.py'
+      - 'worklines/hazel/video/common/templates.js'
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - name: Install video dependencies
+        run: |
+          uv sync --group video
+          uv run playwright install --with-deps chromium
+          sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Run deterministic Hazel tests
+        run: uv run pytest -m 'not live and not integration' test/hazel --timeout=120 --timeout-method=thread
+      - name: Render complete review preview
+        run: |
+          cd worklines/hazel/video
+          uv run --project ../../.. python common/build.py episodes/story2-ask-the-desktop.yaml --preview --strict --out ../../../results/hazel/story2/preview
+      - name: Capture key moments for review
+        if: always()
+        run: |
+          test -f results/hazel/story2/preview/index.html || exit 0
+          uv run python worklines/hazel/video/common/capture.py results/hazel/story2/preview stills results/hazel/story2/review-stills 8.0 9.0 12.0 25.0 32.0 35.0 40.5 43.0 57.5 59.0 61.0 --size 1920x1080
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hazel-story2-review-preview
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            results/hazel/story2/preview/*.mp4
+            results/hazel/story2/preview/contact.png
+            results/hazel/story2/preview/audit.md
+            results/hazel/story2/preview/lint.txt
+            results/hazel/story2/review-stills/*.png

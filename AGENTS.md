@@ -28,6 +28,18 @@ The second mandatory skill is **`cell-coordination`** (`skills/cell-coordination
 
 No other skill is mandatory solely because of this repository. Use other available skills only when the user request or task clearly requires them.
 
+## Adam / ChatGPT contribution workflow (user decision, 2026-11-04)
+
+Adam remains **the human who decides**, not a new agent persona. When ChatGPT contributes to this repository on Adam's behalf, it works on **`cell/adam`** and proposes changes to `main` through **GitHub pull requests**.
+
+- No more direct commits to `main` from Adam's ChatGPT discussions. This rule applies to documentation, plans, notes and code alike.
+- Before modifying another workline's plan or docs, read its current state and respect its green-light protocol. Coordinate with the owning agent when needed.
+- Commit only intended changes on `cell/adam`; open a PR to `main` with scope, rationale and verification. The user or designated reviewer decides when it is merged.
+- Use successive PRs for distinct topics. Once a PR is merged, synchronize `cell/adam` with `main` before the next change; do not force-push over other agents' work.
+- Never commit private memory transcripts or credentials to this repository. The cell's global memory lives in a separate repository that must remain private.
+
+This is a collaboration and review policy, **not** a production go for any workline.
+
 ## Workline protocol
 
 1. Identify the relevant workline under `worklines/<name>/`.

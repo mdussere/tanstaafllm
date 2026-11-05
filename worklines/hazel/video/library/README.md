@@ -36,6 +36,8 @@ Uses = number of scenes using the template (trailer / Story 1 / Story 2). Family
 | T21 | Payoff reprise | frame | hit | – | 1 | 1 | core (with a payoff) | [T21](T21-payoff-reprise/template.md) |
 | T22 | Result screen | frame | calm | – | 1 | 1 | core | [T22](T22-result-screen/template.md) |
 | T23 | End card | frame | calm | 1 | 1 | 1 | core | [T23](T23-end-card/template.md) |
+| T24 | Growing template wall | stage | build | – | – | – | Story 3 candidate | [T24](T24-template-wall/template.md) |
+| T25 | Self-payback ledger | stage | hit | – | – | – | Story 3 candidate | [T25](T25-self-payback/template.md) |
 
 **Shared by every scene** (not templates): the sound effects (coin, blip, buzz, ding, CLEAR! jingle, level-clear fanfare), the white flash on a cut, the 60-px block dissolve, the scanlines and vignette (`POST`), the hard drop shadow, the `C` palette tokens.
 

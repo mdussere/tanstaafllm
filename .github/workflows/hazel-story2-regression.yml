@@ -1,0 +1,89 @@
+name: Hazel Story 2 source-vs-template regression
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/hazel-story2-regression.yml'
+
+concurrency:
+  group: hazel-story2-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - name: Install video dependencies
+        run: |
+          uv sync --group video --group scrape
+          uv run playwright install --with-deps chromium
+          sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Rebuild original hand-authored Story 2 at preview frame rate
+        shell: bash
+        run: |
+          set -euo pipefail
+          HERE=worklines/hazel/video/story2-ask-the-desktop/src
+          OUT=results/hazel/story2-regression/original
+          mkdir -p "$OUT/stills"
+          uv run python "$HERE/timing.py" --json "$HERE/holds.json" | tee "$OUT/timing.txt"
+          uv run python "$HERE/score.py" "$OUT/music.wav"
+          uv run python "$HERE/capture.py" video "$OUT/original-1080p-10fps.mp4" --fps 10 --audio "$OUT/music.wav"
+          ffmpeg -y -hide_banner -loglevel error -i "$OUT/original-1080p-10fps.mp4" -vf scale=640:360:flags=neighbor -c:v libx264 -preset veryfast -crf 20 -c:a copy "$OUT/story2-original-preview.mp4"
+          uv run python "$HERE/capture.py" stills "$OUT/stills" 3.5 11 15.5 19.5 27.5 35.5 43.5 51.5 61.5 71.5 77 83.5 89
+          uv run python "$HERE/contact.py" "$OUT/contact" "$OUT"/stills/t*.png
+      - name: Rebuild template/YAML Story 2 with the current common engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd worklines/hazel/video
+          uv run --project ../../.. python common/build.py episodes/story2-ask-the-desktop.yaml --preview --out ../../../results/hazel/story2-regression/scripted
+      - name: Extract repeatable comparison evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          O=results/hazel/story2-regression/original
+          S=results/hazel/story2-regression/scripted
+          {
+            echo '# Story 2 — legacy vs scripted regeneration'
+            echo
+            echo 'Both are rebuilt from their checked-in Git sources on the same runner, at 10 fps; no video generated with AI image tools.'
+            echo 'The original is captured at native 1920x1080 and downscaled for convenient preview; the modern compiler natively previews at 640x360.'
+            echo
+            echo '## Original handmade episode'
+            ffprobe -v error -show_entries format=duration,size:stream=width,height,r_frame_rate -of default=noprint_wrappers=1 "$O/story2-original-preview.mp4"
+            echo
+            echo '## Scripted common engine'
+            ffprobe -v error -show_entries format=duration,size:stream=width,height,r_frame_rate -of default=noprint_wrappers=1 "$S/tanstaafllm-story2-ask-the-desktop.mp4"
+            echo
+            echo '## Build note'
+            echo 'Visual differences are expected, and are the purpose of the comparison; compare scene layouts, beats, title and the original distinct 90s soundtrack against modern cues.'
+          } > results/hazel/story2-regression/compare.md
+          cat results/hazel/story2-regression/compare.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hazel-story2-original-versus-common
+          retention-days: 7
+          path: |
+            results/hazel/story2-regression/original/story2-original-preview.mp4
+            results/hazel/story2-regression/original/contact*.png
+            results/hazel/story2-regression/original/music.wav
+            results/hazel/story2-regression/original/hits.json
+            results/hazel/story2-regression/original/timing.txt
+            results/hazel/story2-regression/scripted/*.mp4
+            results/hazel/story2-regression/scripted/contact.png
+            results/hazel/story2-regression/scripted/music.wav
+            results/hazel/story2-regression/scripted/hits.json
+            results/hazel/story2-regression/scripted/audit.md
+            results/hazel/story2-regression/scripted/lint.txt
+            results/hazel/story2-regression/compare.md
+          if-no-files-found: warn

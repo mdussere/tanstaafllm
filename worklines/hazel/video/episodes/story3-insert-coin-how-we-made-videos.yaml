@@ -1,0 +1,199 @@
+# Story 3 V3b — committed PNG sprite frames, anchored poses and varied vignette/prop/wide shots.
+# This edition replaces the rejected SVG layer cut; image substitution, never runtime rotation, drives motion.
+# The 1.73-use amortization is explicitly an estimate: original full film vs revision are not like-for-like.
+episode: story3-insert-coin-how-we-made-videos
+title: "INSERT COIN — THE MAKING OF THE MAKING"
+bpm: 120
+motif: [[0, 69, 1], [1, 72, 0.5], [1.5, 76, 0.5], [2, 81, 1], [3, 76, 1]]
+scenes:
+- id: title
+  template: cinema
+  shot: title
+  bars: 3
+  mood: opener
+  backdrop: arcade
+  caption: "TANSTAAFLLM  /  STORY 03"
+  key: "INSERT COIN"
+  secondary: "A FILM ABOUT MAKING FILMS"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"projector","x":670,"y":220,"w":640,"h":440,"at":0.2,"motion":"slide","distance":220}
+    - {"asset":"reel","x":830,"y":170,"w":200,"h":200,"at":0.8,"motion":"spin","speed":2.5}
+    - {"asset":"beam","x":1140,"y":255,"w":650,"h":270,"opacity":0.27,"at":1.5}
+    - {"asset":"coin","x":940,"y":20,"w":190,"h":190,"at":0.8,"motion":"drop","distance":500}
+- id: doctrine
+  template: cinema
+  shot: prop
+  bars: 4
+  mood: tense
+  backdrop: workshop
+  caption: "THE WHOLE CELL SHARES ONE PURSE"
+  key: ["ONE CLAUDE PRO.","20 EUR / MONTH."]
+  secondary: "EVEN THE MOVIE COSTS TOKENS"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"hazel-idle","x":170,"y":140,"w":480,"h":500,"at":0.4,"motion":"slide"}
+    - {"asset":"purse","x":1170,"y":300,"w":430,"h":310,"at":0.5,"motion":"pop"}
+    - {"asset":"coin","x":1290,"y":120,"w":155,"h":170,"at":2,"motion":"drop","distance":320}
+    - {"asset":"projector","x":640,"y":345,"w":400,"h":245,"at":1,"motion":"slide-right","opacity":0.85}
+- id: first_trailer
+  template: cinema
+  shot: wide
+  bars: 4
+  mood: bright
+  backdrop: workshop
+  caption: "AN IMPOSSIBLY SMALL BRIEF"
+  key: ["WE ASKED FOR A TRAILER.","IT BUILT A GAME."]
+  secondary: "NO STORYBOARD. AN ARCADE WORLD."
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"hazel-work","x":100,"y":125,"w":490,"h":470,"motion":"slide"}
+    - {"asset":"paper","x":585,"y":140,"w":280,"h":330,"at":0.5,"motion":"float"}
+    - {"asset":"projector","x":1040,"y":235,"w":550,"h":350,"at":1.3,"motion":"pop"}
+    - {"asset":"reel","x":1130,"y":192,"w":165,"h":165,"at":1.9,"motion":"spin","speed":3}
+    - {"asset":"beam","x":1330,"y":240,"w":520,"h":215,"at":2,"opacity":0.24}
+- id: a_video_as_code
+  template: cinema
+  shot: prop
+  bars: 4
+  mood: driving
+  backdrop: factory
+  caption: "THE FIRST TOOLCHAIN"
+  key: ["ONE CLOCK.","PICTURE AND SOUND."]
+  secondary: "CANVAS + NES 2A03 + FFMPEG"
+  effect: "clockwork"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"reel","x":560,"y":130,"w":245,"h":245,"at":0.5,"motion":"spin","speed":2.9}
+    - {"asset":"filmstrip","x":80,"y":290,"w":1300,"h":250,"at":1,"motion":"slide-right"}
+    - {"asset":"yaml","x":1520,"y":255,"w":200,"h":270,"at":3,"motion":"pop"}
+- id: phone
+  template: cinema
+  shot: close
+  bars: 5
+  mood: wary
+  backdrop: screening
+  caption: "THE HUMAN WATCHES THE FIRST CUT"
+  key: ["LOOKED GREAT HERE.","NOT ON A PHONE."]
+  secondary: "TINY TEXT. RUSHED CUTS. WRONG SOUND."
+  effect: "inspection"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"phone","x":675,"y":65,"w":620,"h":620,"at":0.5,"motion":"pop"}
+    - {"asset":"hazel-idle","x":140,"y":300,"w":310,"h":330,"at":1,"motion":"slide"}
+    - {"asset":"filmstrip","x":680,"y":220,"w":600,"h":155,"at":2,"motion":"float","opacity":0.85}
+- id: token_bill
+  template: cinema
+  shot: vignette
+  bars: 5
+  mood: uneasy
+  backdrop: workshop
+  caption: "ONE HANDMADE EPISODE"
+  key: "~290,000 TOKENS."
+  secondary: "AND THE NEXT FILM STARTS FROM ZERO"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"hazel-work","x":125,"y":175,"w":390,"h":395,"at":0.4,"motion":"float"}
+    - {"asset":"paper","x":845,"y":135,"w":430,"h":480,"at":0.5,"motion":"pop"}
+    - {"asset":"coin","x":1335,"y":250,"w":185,"h":195,"at":2,"motion":"float"}
+    - {"asset":"desk","x":610,"y":530,"w":960,"h":180,"at":1}
+- id: copying
+  template: cinema
+  shot: wide
+  bars: 5
+  mood: tense
+  backdrop: arcade
+  caption: "COPY-PASTE IS NOT A MEMORY SYSTEM"
+  key: ["SAME CODE.","SAME MISTAKES."]
+  secondary: "EVERY FILM REPRODUCES THE DEFECTS"
+  effect: "copy-storm"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"hazel-idle","x":165,"y":195,"w":365,"h":380,"at":0.5,"motion":"slide"}
+    - {"asset":"paper","x":1250,"y":175,"w":230,"h":285,"at":1,"motion":"wobble"}
+- id: library
+  template: cinema
+  shot: vignette
+  bars: 5
+  mood: climb
+  backdrop: workshop
+  caption: "FIRST: RATIONALIZE THE HANDMADE WORK"
+  key: "REUSE THE PATTERN."
+  secondary: "EVERY NEW FILM ADDS A NEW TEMPLATE"
+  effect: "library"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"hazel-point","x":95,"y":150,"w":400,"h":425,"at":0.3,"motion":"slide"}
+- id: compiler
+  template: cinema
+  shot: prop
+  bars: 4
+  mood: bright
+  backdrop: factory
+  caption: "THEN: MAKE THE RULES EXECUTABLE"
+  key: ["THE MODEL DIRECTS.","THE MACHINE BUILDS."]
+  secondary: "YAML  >  SCENES  >  NES  >  MP4"
+  effect: "assembly"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"hazel-work","x":75,"y":160,"w":380,"h":410,"at":0.5,"motion":"slide"}
+    - {"asset":"yaml","x":820,"y":155,"w":300,"h":370,"at":1,"motion":"float"}
+    - {"asset":"reel","x":1450,"y":190,"w":285,"h":285,"at":2,"motion":"spin","speed":2}
+- id: comparison
+  template: cinema
+  shot: close
+  bars: 4
+  mood: calm
+  backdrop: workshop
+  caption: "A PROMISING SIGNAL, NOT A MATCHED TEST"
+  key: "LESS REPETITION."
+  secondary: "FULL FILM VS REVISION: NOT LIKE-FOR-LIKE"
+  effect: "receipts"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"hazel-hold","x":55,"y":260,"w":310,"h":350,"at":1,"motion":"slide"}
+    - {"asset":"magnifier","x":800,"y":220,"w":205,"h":210,"at":2,"motion":"float","opacity":0.8}
+- id: result
+  template: cinema
+  shot: wide
+  bars: 4
+  mood: resolve
+  backdrop: workshop
+  caption: "THE STUDIO HAS LEARNED A METHOD"
+  key: ["AUTOMATE THE REPEATED.","KEEP THE CHOICE."]
+  secondary: "HAZEL CAN MAKE SOMETHING NEW"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"hazel-work","x":190,"y":145,"w":560,"h":515,"at":0.2,"motion":"slide"}
+    - {"asset":"cartridge","x":850,"y":185,"w":280,"h":225,"at":1,"motion":"pop"}
+    - {"asset":"yaml","x":1190,"y":160,"w":230,"h":305,"at":2,"motion":"float"}
+    - {"asset":"projector","x":1450,"y":340,"w":310,"h":210,"at":2.7,"motion":"pop"}
+- id: amortization
+  template: cinema
+  shot: reveal
+  bars: 6
+  mood: victory
+  backdrop: screening
+  caption: "WHO MADE THE FILM YOU ARE WATCHING?"
+  key: ["THIS IS STORY 3.", "YOU JUST WATCHED IT HAPPEN."]
+  secondary: "~1.73 USES: A PROJECTED PAYBACK, NOT YET MEASURED"
+  effect: "recursion"
+  at: {"key":6.5,"secondary":9}
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"hazel-hold","x":120,"y":205,"w":320,"h":385,"at":0.2,"motion":"slide"}
+    - {"asset":"reel","x":1440,"y":185,"w":235,"h":235,"at":2,"motion":"spin","speed":1.8}
+- id: end
+  template: cinema
+  shot: title
+  bars: 3
+  mood: calm
+  backdrop: arcade
+  caption: "TANSTAAFLLM"
+  key: ["THERE AIN'T NO SUCH THING","AS A FREE LLM."]
+  key_size: 64
+  effect: "coin-return"
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md","worklines/hazel/docs/0303_02_story3-two-concepts-per-sequence.md"]
+  layers:
+    - {"asset":"projector","x":610,"y":245,"w":670,"h":410,"at":0.2,"motion":"float"}
+    - {"asset":"reel","x":795,"y":198,"w":190,"h":190,"at":0.5,"motion":"spin","speed":0.7}

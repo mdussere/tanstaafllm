@@ -1,0 +1,57 @@
+name: Hazel Story 3 preview only
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/hazel-story3-render.yml'
+      - 'worklines/hazel/video/common/**'
+      - 'worklines/hazel/video/episodes/story3-insert-coin-how-we-made-videos.yaml'
+  push:
+    branches: [cell/adam]
+    paths:
+      - '.github/workflows/hazel-story3-render.yml'
+      - 'worklines/hazel/video/common/**'
+      - 'worklines/hazel/video/episodes/story3-insert-coin-how-we-made-videos.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: hazel-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - name: Install Hazel pipeline
+        run: uv sync --group video --group scrape
+      - name: Install headless Chromium and ffmpeg
+        run: |
+          uv run playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Render preview with strict checks
+        run: |
+          cd worklines/hazel/video
+          uv run --project ../../.. python common/build.py episodes/story3-insert-coin-how-we-made-videos.yaml --preview --strict --out ../../../results/hazel/story3/preview
+      - name: Verify preview
+        run: |
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 results/hazel/story3/preview/tanstaafllm-story3-insert-coin-how-we-made-videos.mp4
+          tail -n 12 results/hazel/story3/preview/lint.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hazel-story3-preview
+          path: |
+            results/hazel/story3/preview/*.mp4
+            results/hazel/story3/preview/contact.png
+            results/hazel/story3/preview/audit.md
+            results/hazel/story3/preview/lint.txt
+          if-no-files-found: warn
