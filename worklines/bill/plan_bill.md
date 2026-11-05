@@ -39,6 +39,7 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 - Adam owns approvals and disclosure decisions. Bill records and preserves; it does not silently collect, interpret, or publish another agent's history.
 - The private repository exists according to Adam. Its exact URL, connected access and default branch must be observed before the first write.
 - “Raw” means the original accessible session artifact, not an LLM-made summary. Every export states source, target agent, time, extraction method, coverage and known omissions.
+- An atom is a reading bundle: a concentrated account plus a human-readable verbatim clip, both linked to the immutable raw source. The clip retains the selected original words and events in order; any omitted interval is explicit. The [draft format](docs/0501_01_layered-atom-format.md) will be tested before adoption.
 - The first target is the **Luna** agent/workline. We choose no general directory layout or automation until the pilot shows what the source actually provides.
 - The previous [foundation record](docs/0000_01_bill-bobiverse-foundation.md) remains background evidence; this pilot plan is the current operational source of truth.
 
@@ -94,12 +95,13 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 - [ ] 4.3 Inspect the export for destination and privacy safety, then commit it to **Tinkstaff LLM Biverse**. The public workline record contains only non-sensitive metadata and the private commit identifier.
 - [ ] 4.4 Acceptance: the private commit can be checked out and its manifest reproduces the claimed scope without exposing raw content publicly.
 
-### Step 5 — Review a first atom set
+### Step 5 — Try and review a layered atom
 **Status**: ⏳ Pending
 
-- [ ] 5.1 Select a bounded, representative list from the private snapshot or a follow-up trial; keep the raw source unchanged.
-- [ ] 5.2 Review it with Adam: what is useful, misleading, missing or too costly to retain?
-- [ ] 5.3 Acceptance: the review can trace every retained atom to the raw snapshot and decides the next smallest experiment. No embedding, model or CI workflow is assumed.
+- [ ] 5.1 Select one bounded episode from the private snapshot or a follow-up local trial; keep the raw source unchanged.
+- [ ] 5.2 Try the [layered atom format](docs/0501_01_layered-atom-format.md): short essence and sequence, actual included-event count, exact source references, and a readable verbatim clip with explicit gaps and non-text references.
+- [ ] 5.3 Review both layers with Adam: does the essence preserve the attempted action, correction, result and uncertainty visible in the verbatim? Are its start and end honest?
+- [ ] 5.4 Acceptance: Adam can read the short account, inspect the full selected verbatim, count its constituent events, and trace them to the unchanged raw snapshot. No embedding, model or CI workflow is assumed.
 
 ### Step 6 — Continue only from evidence
 **Status**: ⏳ Pending
@@ -115,7 +117,7 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 - ✅ Step 2 — inspect the Luna JSONL and Claude memory layers in place; structure, schema families, storage and segmentation recommendation recorded.
 - ✅ Step 3 — two local atomizations of the first two Luna days validated; no export.
 - ⏳ Step 4 — export and preserve one Luna snapshot privately, only if useful after the trial.
-- ⏳ Step 5 — review a bounded first atom set with Adam.
+- ⏳ Step 5 — try one atom with both a short account and verbatim, then review it with Adam.
 - ⏳ Step 6 — choose one evidence-led continuation.
 
 ---
@@ -142,6 +144,7 @@ date
 | 2026-11-05 | Step 2 schema clarification completed: every row has `type`, but there is no uniform row schema or JSON-LD vocabulary. Added the actual conversation, tool, attachment, API, lifecycle, queue, file-history and cost object families plus nested message/content shapes to the anatomy record. |
 | 2026-11-05 | Adam green-lit a bounded local comparison before any private export: GPT-6 Luna and GPT-6.1 Terra receive the same first two Luna timestamp days (`2026-10-03`–`2026-10-04`) and produce compact, traceable Markdown sequence atoms. Step 3 is in progress; results stay under ignored `results/` and neither raw nor derived content will be committed. |
 | 2026-11-05 | Step 3 completed: both models produced locally retained atom lists for the same 1,137-row scope. GPT-6 Luna made 4 broader atoms in 54 seconds; GPT-6.1 Terra made 12 finer-grained atoms in 46 seconds. The shape validator accepted both; the comparison record notes that this does not validate source fidelity or establish a general model-quality ranking. No private-repository write or public memory-content commit occurred. |
+| 2026-11-05 | Adam clarified the atom concept using verbatim clips: the concentrated account and original passage belong together. Added a draft Step 5 format with an exact, readable clip, an event list/count and raw-source provenance. Step 5 remains pending; no new extraction or model run occurred. |
 
 ---
 
@@ -153,3 +156,4 @@ date
 - [Luna JSONL anatomy](docs/0201_01_luna-jsonl-anatomy.md) — completed Step 2 structure, cut-point, storage and Claude-memory analysis; 🟢 current.
 - [Atomization-trial contract](../../../test/bill/luna_atomization_trial.feature) — the local-only, two-model Step 3 observable contract; raw and derived trial material remains ignored.
 - [Local atomization comparison](docs/0304_01_local-atomization-comparison.md) — Step 3's non-sensitive comparison and limits; 🟢 current.
+- [Layered atom format](docs/0501_01_layered-atom-format.md) — Adam's Step 5 design direction for essence plus verbatim; ⚪ draft, not yet applied to source content.
