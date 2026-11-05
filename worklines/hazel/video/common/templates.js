@@ -132,8 +132,8 @@ KINDS.table = (t, p, it) => {
     if (t < t0) return;
     const a = seg(t, t0, t0 + 0.1), y = it.y + i * it.rh, head = i === 0;
     box(it.x, y, it.w, it.rh - 8, { edge: head ? C.amber : C.cyan, alpha: 0.92 * a });
-    txt(l, it.x + 30, y + 51, 40, head ? C.amber : C.dim, { alpha: a, maxW: half - 50, group: 'table-row-' + i });
-    txt(r, it.x + half + 30, y + 51, 40, head ? C.amber : C.chrome, { alpha: a, maxW: half - 50, group: 'table-row-' + i });
+    txt(l, it.x + 30, y + 51, 40, head ? C.amber : C.dim, { alpha: a, maxW: half - 50, group: 'comparison-table' });
+    txt(r, it.x + half + 30, y + 51, 40, head ? C.amber : C.chrome, { alpha: a, maxW: half - 50, group: 'comparison-table' });
   });
 };
 

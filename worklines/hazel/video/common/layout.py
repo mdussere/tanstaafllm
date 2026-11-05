@@ -144,7 +144,7 @@ def t_two_boxes(b):
     for i in range(5):
         b.mark('enter', spill + 0.15 * i, i=i + 1)
     b.second(g[0], first + 0.1, 980, 330, 'cyan', font='V', maxW=800, group='first-idea')
-    b.stamp(f['stamp'], 980, 500, fail_t, 48, 'red', rot=-0.05)
+    b.stamp(f['stamp'], 980, 500, fail_t, 48, 'red', rot=-0.05, group='first-idea')
     b.slot(fail_t + 0.15, f['stamp'], 'P')
     b.texts['secondary'].append(f['stamp'])
     b.mark('fail', fail_t)
@@ -162,12 +162,13 @@ def t_metrics(b):
     tags = _l(s.get('tags'))
     b.key(sc['key'], b.at('key', 0.5), 120, 300, 'cyan')
     sub = b.at('subject', 1.0)
+    t0 = b.at('tiles', b.z - 3.5)
     b.add('box', x=120, y=430, w=560, h=440, edge='green', since=sub)
     b.add('minidesk', x=150, y=460, w=500, h=240, focus='cycle', since=sub)
     b.mark('enter', sub, i=0)
-    b.text(s['label'], 150, 755, sub, 40, 'chrome', fade=0, role='glance')
+    b.text(s['label'], 150, 755, sub, 48, 'chrome', fade=0, role='glance', until=t0)
     for i, tg in enumerate(tags):
-        b.text(tg, 150, 805 + 50 * i, sub + BEAT * (i + 1), 40, ['green', 'amber', 'cyan'][i % 3], role='glance')
+        b.text(tg, 150, 805 + 50 * i, sub + BEAT * (i + 1), 48, ['green', 'amber', 'cyan'][i % 3], role='glance', until=t0)
         b.mark('enter', sub + BEAT * (i + 1), i=i + 1)
     link = sub + BEAT * (len(tags) + 1)
     if s.get('link'):
@@ -177,7 +178,7 @@ def t_metrics(b):
     if sc.get('glance'):
         b.glance(sc['glance'], link, 800, 460)
     tiles = [t if isinstance(t, dict) else dict(zip(('label', 'value', 'machine'), t)) for t in sc['tiles']]
-    t0, rows = b.at('tiles', b.z - 3.5), []
+    rows = []
     for i, t in enumerate(tiles):
         ti = t0 + BEAT * i
         rows.append([ti, t['label'], t['value'], t.get('machine', sc.get('machine', ''))])
