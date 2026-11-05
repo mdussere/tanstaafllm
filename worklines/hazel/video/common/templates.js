@@ -30,7 +30,7 @@ function steps(t, p, v, def = 0) {
 // lines: strings, or { s, at } when a line has its own time. at/fade: fade-in; fade 0 = no fade. blink: Hz.
 KINDS.text = (t, p, it) => {
   const font = dflt(it.font, 'P'), fade = dflt(it.fade, 0.2);
-  const o = pick(it, ['align', 'maxW', 'shadow', 'rot', 'scale']);
+  const o = pick(it, ['align', 'maxW', 'shadow', 'rot', 'scale', 'group']);
   if (font === 'V') { o.font = 'V'; if (o.shadow === undefined) o.shadow = 3; }
   (it.lines || [it.s]).forEach((ln, i) => {
     const s = typeof ln === 'string' ? ln : ln.s, at = p.t0 + (typeof ln === 'string' ? it.at : ln.at);
@@ -49,7 +49,7 @@ KINDS.runs = (t, p, it) => {
 };
 // stamp: lines that slam in (scale-in with shake) at `at`
 KINDS.stamp = (t, p, it) => {
-  const o = pick(it, ['align', 'from', 'rot', 'maxW', 'font']);
+  const o = pick(it, ['align', 'from', 'rot', 'maxW', 'font', 'group']);
   (it.lines || [it.s]).forEach((s, i) => stampTxt(s, it.x, it.y + i * (it.dy || 0), it.size || 48, col(it.color || 'chrome'), t, p.t0 + it.at, o));
 };
 KINDS.box = (t, p, it) => {
