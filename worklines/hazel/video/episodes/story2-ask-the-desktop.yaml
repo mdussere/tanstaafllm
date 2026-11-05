@@ -64,8 +64,8 @@ scenes:
   template: metrics
   bars: 4
   mood: bright
-  title: "SWAY RUNS LUNA'S DESKTOP"
-  key: ["Don't rebuild the desktop.", "Ask its window manager."]
+  title: "ARCH RUNS SWAY"
+  key: ["Sway runs Luna's desktop.", "Don't rebuild it. Ask it."]
   subject: {label: SWAY, tags: [ALREADY RUNNING, UNMODIFIED, NO FORK], link: IPC}
   glance: "MEASURED ON luna-pi, A RASPBERRY PI"
   machine: luna-pi
