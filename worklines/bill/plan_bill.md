@@ -67,13 +67,13 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 - [x] 1.5 Acceptance: Adam can see precisely what Claude Code retains on this disk, what is safe to export, and which identified record is the Luna candidate; the private-destination blocker remains explicit.
 
 ### Step 2 — Read the shape of one Luna memory
-**Status**: ⏳ Pending
+**Status**: ✅ Done (2026-11-05)
 
- - [ ] 2.1 Read the identified Luna JSONL in place and measure bytes, record count, record/event types, field shape, timestamps, roles and tool/subagent/compaction markers. Do not modify or copy it.
- - [ ] 2.2 Identify natural boundaries: session start/end, calendar day, user request → assistant response/tool-result cycle, explicit summary/compaction and any other actual stable identifier.
- - [ ] 2.3 Read Claude Code's project `memory/` files for the same project; distinguish the maintained memory layer from raw history, and classify what it retains without publishing private text.
- - [ ] 2.4 Write `docs/0201_01_luna-jsonl-anatomy.md`: a non-sensitive structural analysis, candidate segmentation rule, and storage/exploitation recommendation. It must not quote raw content or include credentials.
- - [ ] 2.5 Acceptance: Adam can decide whether to retain one immutable JSONL, split it, compress it, derive an index, and what first atomization unit to use—based on observed structure, not guesswork.
+- [x] 2.1 Read the identified Luna JSONL in place and measure bytes, record count, record/event types, field shape, timestamps, roles and tool/subagent/compaction markers. The source was not modified or copied.
+- [x] 2.2 Identify natural boundaries: session start/end, calendar day, user request → assistant response/tool-result cycle, explicit summary/compaction and UUID-parent causal links.
+- [x] 2.3 Read Claude Code's project `memory/` files for the same project; distinguish the maintained memory layer from raw history, and classify what it retains without publishing raw text.
+- [x] 2.4 Write [the Luna JSONL anatomy](docs/0201_01_luna-jsonl-anatomy.md): a non-sensitive structural analysis, candidate segmentation rule, and storage/exploitation recommendation.
+- [x] 2.5 Acceptance: the observed structure supports retaining one immutable JSONL, a separate derived turn index, and a first atomization unit bounded by a user request and its causally linked assistant/tool sequence.
 
 ### Step 3 — Save one Luna snapshot
 **Status**: ⏳ Pending
@@ -102,7 +102,7 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 ## Progress tracking ✅
 
 - ✅ Step 1 — Claude Code local-memory inventory; the Luna raw-session candidate is identified, with private-destination access still required before export.
-- ⏳ Step 2 — inspect the Luna JSONL and Claude memory layers in place.
+- ✅ Step 2 — inspect the Luna JSONL and Claude memory layers in place; storage and segmentation recommendation recorded.
 - ⏳ Step 3 — export and preserve one Luna snapshot privately.
 - ⏳ Step 4 — manually atomize a bounded Luna excerpt.
 - ⏳ Step 5 — choose one evidence-led continuation.
@@ -126,6 +126,7 @@ date
 | 2026-11-05 | Adam corrected the target: inspect what **Claude Code** leaves on disk, not Codex. Step 1 reopened for a Claude Code metadata-only inventory; no transcript export is authorised. |
 | 2026-11-05 | Step 1 completed after the correction: identified Claude Code's raw project JSONL sessions, curated project memory, global history and small session metadata. The `luna` workline maps to the `tanstfaafllm-e0` raw JSONL candidate. No source body was opened or copied. |
 | 2026-11-05 | Adam asked for source anatomy before preservation: a read-only analysis of the Luna JSONL's size, record structure and natural cut points, plus Claude Code's curated memory layer. Added as the new Step 2; private export and atomization move to Steps 3–4. |
+| 2026-11-05 | Step 2 completed: the Luna source is a 13,451,993-byte, 3,714-record event journal over 13 days, not a simple alternating chat log. Preserve one immutable JSONL; derive request/response/tool units from UUID-parent links and use day/compaction boundaries for navigation. Claude's small managed-memory layer is useful but needs provenance and freshness checks. |
 
 ---
 
@@ -134,4 +135,4 @@ date
 - [Pre-plan foundation](docs/0000_01_bill-bobiverse-foundation.md) — earlier direction and safeguards; ⚪ draft background evidence, not the pilot plan.
 - [Codex surface inventory](docs/0102_01_memory-surface-inventory.md) — historical background observation, retained for a later Codex-memory export.
 - [Claude Code memory-surface record](docs/0102_02_claude-code-memory-surface.md) — Step 1's current source map and selected Luna raw-session candidate; 🟢 current.
-- `docs/0201_01_luna-jsonl-anatomy.md` — planned Step 2 structural and memory-layer analysis; no raw text in the public record.
+- [Luna JSONL anatomy](docs/0201_01_luna-jsonl-anatomy.md) — completed Step 2 structure, cut-point, storage and Claude-memory analysis; 🟢 current.
