@@ -56,13 +56,14 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 
 ## Plan steps (no implementation until green light)
 
-### Step 1 — See what is accessible
+### Step 1 — See what Claude Code leaves locally
 **Status**: ✅ Done (2026-11-05)
 
 - [x] 1.1 Probe connected access to **Tinkstaff LLM Biverse** without writing to it. Result: it is not visible through the currently connected GitHub account; its exact URL, owner or connector permission is still needed before a private write.
-- [x] 1.2 List locally accessible agent-session locations and the Cloud surfaces that can list or export agent history. Metadata only; no raw conversation was copied.
-- [x] 1.3 Write [the memory-surface inventory](docs/0102_01_memory-surface-inventory.md).
-- [x] 1.4 Acceptance: the inventory identifies one viable local raw source (`~/.codex/sessions`), the Cloud-listing limit for the current account, and the private-repository access blocker.
+- [x] 1.2 Record the non-target Codex surface and access result in [the first inventory](docs/0102_01_memory-surface-inventory.md). This did not inspect Claude Code.
+- [x] 1.3 Locate Claude Code's on-disk session, project and archive artifacts; record paths, file types, timestamps, sizes and identity metadata only. Do not read transcript bodies or copy raw material.
+- [x] 1.4 Write [the Claude Code memory-surface record](docs/0102_02_claude-code-memory-surface.md) with the observed surface, coverage limits and the exact Luna candidate.
+- [x] 1.5 Acceptance: Adam can see precisely what Claude Code retains on this disk, what is safe to export, and which identified record is the Luna candidate; the private-destination blocker remains explicit.
 
 ### Step 2 — Save one Luna snapshot
 **Status**: ⏳ Pending
@@ -90,7 +91,7 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 
 ## Progress tracking ✅
 
-- ✅ Step 1 — inventory the actual memory surfaces; Luna can be sourced locally once its session is selected, but the private destination is not yet connected.
+- ✅ Step 1 — Claude Code local-memory inventory; the Luna raw-session candidate is identified, with private-destination access still required before export.
 - ⏳ Step 2 — export and preserve one Luna snapshot.
 - ⏳ Step 3 — manually atomize a bounded Luna excerpt.
 - ⏳ Step 4 — choose one evidence-led continuation.
@@ -111,10 +112,13 @@ date
 | 2026-11-05 | Reworked this plan to the repository workline template: scope, non-goals, risks, step-level acceptance criteria, green-light boundary, progress tracking and linked pre-plan evidence. No implementation or tests were run. |
 | 2026-11-05 | Adam created **Tinkstaff LLM Biverse** and redirected Bill from a broad architecture plan to an incremental pilot: inventory accessible local/Cloud memory, save one Luna snapshot privately, then inspect a first atomization. |
 | 2026-11-05 | Step 1 completed: recorded local Codex JSONL session surfaces, empty Codex Cloud task listing for the current account, and the absence of the new private repository from the connected GitHub account. No transcript was read, copied or exported. |
+| 2026-11-05 | Adam corrected the target: inspect what **Claude Code** leaves on disk, not Codex. Step 1 reopened for a Claude Code metadata-only inventory; no transcript export is authorised. |
+| 2026-11-05 | Step 1 completed after the correction: identified Claude Code's raw project JSONL sessions, curated project memory, global history and small session metadata. The `luna` workline maps to the `tanstfaafllm-e0` raw JSONL candidate. No source body was opened or copied. |
 
 ---
 
 ## Workline artifacts
 
 - [Pre-plan foundation](docs/0000_01_bill-bobiverse-foundation.md) — earlier direction and safeguards; ⚪ draft background evidence, not the pilot plan.
-- [Memory-surface inventory](docs/0102_01_memory-surface-inventory.md) — Step 1 metadata-only observations, limits and the Step 2 unblock condition; 🟢 current.
+- [Codex surface inventory](docs/0102_01_memory-surface-inventory.md) — historical background observation, retained for a later Codex-memory export.
+- [Claude Code memory-surface record](docs/0102_02_claude-code-memory-surface.md) — Step 1's current source map and selected Luna raw-session candidate; 🟢 current.

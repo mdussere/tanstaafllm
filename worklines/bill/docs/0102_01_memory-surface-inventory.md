@@ -1,6 +1,6 @@
 # Step 1.2 — Memory-surface inventory
 
-> **Freshness:** 🟢 current · **Written:** 2026-11-05 · **Checked:** 2026-11-05 · **Step:** bill 1.2 ✅
+> **Freshness:** 🟡 historical · **Written:** 2026-11-05 · **Checked:** 2026-11-05 · **Step:** bill 1.2 ✅
 
 **Question answered:** what agent-memory sources are actually visible from this Bill session, and which of them can be used for the first Luna pilot without copying a transcript?
 
