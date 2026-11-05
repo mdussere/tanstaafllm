@@ -629,3 +629,5 @@
 - **Hazel Story 2 Arch-to-Sway chain (user review):** the message now makes the preceding platform decision explicit: Arch runs Sway; Sway runs Luna's desktop; ask it rather than rebuild it. The strict no-video preview passed (90.0 s, +0.0 s holds, no strict lint failures); `t042.90.png` was inspected.
 
 - **Hazel Story 2 revision green-lit (user, 2026-11-05):** enlarge Wyoh's name, clarify the original single-screen design and its limits, strengthen Sway's unmodified/no-fork message, improve the Playwright comparison and make the black-panel/driver outcome understandable. Generate previews and the complete video on GitHub runners and retrieve their results locally.
+
+- **Hazel Story 2 revised preview:** GitHub [run #42111091231](https://github.com/mdussere/tanstaafllm/actions/runs/42111091231) passed the deterministic Hazel suite and strict 90-second preview; the player card, Playwright comparison, HIOM sequence, Sway labels and both black-panel phases were inspected. Preview and evidence were retrieved to `results/hazel/story2/20261105-github-review-42111091231/`. Full runner render pending.
