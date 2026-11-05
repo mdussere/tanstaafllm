@@ -41,6 +41,7 @@ The destination is Adam's new private repository, **Tinkstaff LLM Biverse** (nam
 - “Raw” means the original accessible session artifact, not an LLM-made summary. Every export states source, target agent, time, extraction method, coverage and known omissions.
 - An atom is a reading bundle: a concentrated account plus a human-readable verbatim clip, both linked to the immutable raw source. The clip retains the selected original words and events in order; any omitted interval is explicit. The [draft format](docs/0501_01_layered-atom-format.md) will be tested before adoption.
 - The first target is the **Luna** agent/workline. We choose no general directory layout or automation until the pilot shows what the source actually provides.
+- Keep existing TANSTAAFLLM checkout and worktree paths unchanged, including their historical spelling. Adam observed that renaming them hid cloud session history. A path migration waits until an agent can reliably resume from preserved memory and Adam chooses to make that switch; the already separate Bobiverse clone does not change this rule.
 - The previous [foundation record](docs/0000_01_bill-bobiverse-foundation.md) remains background evidence; this pilot plan is the current operational source of truth.
 
 ## Risks / constraints
@@ -157,6 +158,7 @@ date
 | 2026-11-05 | Adam clarified the atom concept using verbatim clips: the concentrated account and original passage belong together. Added a draft Step 5 format with an exact, readable clip, an event list/count and raw-source provenance. Step 5 remains pending; no new extraction or model run occurred. |
 | 2026-11-05 | Adam directed Bill to preserve the complete Luna JSONL and use GPT-6.1 Terra to cut and summarize the entire session before making individual layered atoms. Steps 4–5 are in progress. The connected GitHub installation does not currently list the named private repository, so Bill is resolving its exact destination while local extraction proceeds. |
 | 2026-11-05 | Steps 4–5 completed. Adam supplied the exact private repository URL; SSH access and anonymous API visibility were checked. The 13,451,993-byte raw JSONL was hash-matched and committed privately as `b2f4ad7`. Four Terra passes (three reading slices and one review) produced a private first-pass index committed as `425d015`: 79 sequence candidates and four context-only spans partition all 3,714 lines. Local usage was 1,696,060 input tokens including 1,508,352 cached, plus 14,791 output tokens; standard API-price equivalent $0.337081, not an account bill. One-shot context fit and polished verbatim-backed atoms remain untested. |
+| 2026-11-05 | Adam reported that renaming existing TANSTAAFLLM checkout paths hid cloud session history. The main checkout and the Adam and Story 2 worktrees/checkouts are restored to their original paths and Git links verified. Existing paths are now explicitly stable until memory-based session continuity works well enough for Adam to choose a migration. |
 
 ---
 
