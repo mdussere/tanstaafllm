@@ -132,8 +132,8 @@ KINDS.table = (t, p, it) => {
     if (t < t0) return;
     const a = seg(t, t0, t0 + 0.1), y = it.y + i * it.rh, head = i === 0;
     box(it.x, y, it.w, it.rh - 8, { edge: head ? C.amber : C.cyan, alpha: 0.92 * a });
-    tag(l, it.x + 30, y + 46, head ? C.amber : C.dim, a, { maxW: half - 50 });
-    tag(r, it.x + half + 30, y + 46, head ? C.amber : C.chrome, a, { maxW: half - 50 });
+    txt(l, it.x + 30, y + 51, 40, head ? C.amber : C.dim, { alpha: a, maxW: half - 50, group: 'table-row-' + i });
+    txt(r, it.x + half + 30, y + 51, 40, head ? C.amber : C.chrome, { alpha: a, maxW: half - 50, group: 'table-row-' + i });
   });
 };
 
@@ -299,9 +299,9 @@ TPL.T04 = (t, p) => {
   face(p.face, M + 24, by + 24, 512);
   const X = 780, hp = easeOut(seg(t, A(0.1), A(0.45)));
   txt(p.glance[0], X + (1 - hp) * 300, 250, 32, C.amber, { alpha: hp });
-  txt(p.name, X + (1 - hp) * 500, 350, 40, C.chrome, { alpha: hp });
+  txt(p.name, X + (1 - hp) * 500, 365, 112, C.chrome, { alpha: hp * (1 - seg(t, A(p.key_at), A(p.key_at + 0.15))), maxW: 1020 });
   const ra = seg(t, A(p.secondary_at), A(p.secondary_at + 0.15));
-  p.secondary.forEach((s, i) => txt(s, X, 410 + i * 56, 40, C.cyan, { alpha: ra }));
+  p.secondary.forEach((s, i) => txt(s, X, 445 + i * 56, 40, C.cyan, { alpha: ra }));
   txt(p.glance[1], X, 600, 32, C.amber, { alpha: seg(t, A(p.key_at - 0.05), A(p.key_at + 0.05)) });
   const qa = seg(t, A(p.key_at), A(p.key_at + 0.15));
   p.key.forEach((s, i) => V(s, X, 700 + i * 90, 90, C.chrome, qa, { maxW: 1020 }));

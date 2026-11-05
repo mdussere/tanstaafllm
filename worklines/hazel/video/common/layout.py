@@ -143,12 +143,12 @@ def t_two_boxes(b):
     b.mark('enter', first, i=0)
     for i in range(5):
         b.mark('enter', spill + 0.15 * i, i=i + 1)
-    b.glance(g[0], first + 0.1, 980, 330)
+    b.second(g[0], first + 0.1, 980, 330, 'cyan', font='V', maxW=800, group='first-idea')
     b.stamp(f['stamp'], 980, 500, fail_t, 48, 'red', rot=-0.05)
     b.slot(fail_t + 0.15, f['stamp'], 'P')
     b.texts['secondary'].append(f['stamp'])
     b.mark('fail', fail_t)
-    b.glance(g[1], fail_t + 0.3, 980, 380)
+    b.second(g[1], fail_t + 0.3, 980, 410, 'chrome', font='V', maxW=800, group='first-idea')
     b.add('box', x=140, y=650, w=1640, h=230, edge='green', alpha=0.95, at=works - 0.3, fade=0.2)
     b.glance(sc['works'], works - 0.3, 190, 705, 'amber')
     b.mark('turn', works)
@@ -165,9 +165,9 @@ def t_metrics(b):
     b.add('box', x=120, y=430, w=560, h=440, edge='green', since=sub)
     b.add('minidesk', x=150, y=460, w=500, h=240, focus='cycle', since=sub)
     b.mark('enter', sub, i=0)
-    b.text(s['label'], 150, 760, sub, 32, 'chrome', fade=0, role='glance')
+    b.text(s['label'], 150, 755, sub, 40, 'chrome', fade=0, role='glance')
     for i, tg in enumerate(tags):
-        b.glance(tg, sub + BEAT * (i + 1), 150, 805 + 40 * i, ['green', 'amber', 'cyan'][i % 3])
+        b.text(tg, 150, 805 + 50 * i, sub + BEAT * (i + 1), 40, ['green', 'amber', 'cyan'][i % 3], role='glance')
         b.mark('enter', sub + BEAT * (i + 1), i=i + 1)
     link = sub + BEAT * (len(tags) + 1)
     if s.get('link'):
@@ -237,7 +237,7 @@ def t_boss(b):
         b.glance(p1['glance'], 3.0, 760, 740, until=v)
     b.key(p2['key'], v, 760, 440, 'green', font='P', stamp=False, fade=0, read_at=v + 0.1)
     b.mark('victory', v)
-    b.add('box', x=760, y=600, w=460, h=130, edge='green', fill='#05060f', alpha=0.95, since=v + 0.3)
+    b.add('box', x=760, y=600, w=850, h=130, edge='green', fill='#05060f', alpha=0.95, since=v + 0.3)
     b.second(p2['secondary'], v + 0.3, 760 + 40, 690, 'green', font='V', fade=0, shadow=0)
     return dict(screens=[dict(name='boss: ' + ' '.join(_l(p1['key'])), cut=v), dict(name='boss: ' + ' '.join(_l(p2['key'])))],
                 flashes=[[v, 0, 0.25], [0, 0, 0.4, 'red']])

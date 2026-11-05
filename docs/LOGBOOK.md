@@ -627,3 +627,5 @@
 - **Hazel Story 2 Sway explanation (user review):** “Sway” was recognised as unexplained jargon. Stage 3 now names its role in plain language: it runs Luna's desktop and is the window manager to ask, rather than something to rebuild. The no-fork evidence remains visible but secondary. The revised no-video strict preview passed (90.0 s, +0.0 s holds, no strict lint failures); `t042.90.png` was inspected.
 
 - **Hazel Story 2 Arch-to-Sway chain (user review):** the message now makes the preceding platform decision explicit: Arch runs Sway; Sway runs Luna's desktop; ask it rather than rebuild it. The strict no-video preview passed (90.0 s, +0.0 s holds, no strict lint failures); `t042.90.png` was inspected.
+
+- **Hazel Story 2 revision green-lit (user, 2026-11-05):** enlarge Wyoh's name, clarify the original single-screen design and its limits, strengthen Sway's unmodified/no-fork message, improve the Playwright comparison and make the black-panel/driver outcome understandable. Generate previews and the complete video on GitHub runners and retrieve their results locally.
