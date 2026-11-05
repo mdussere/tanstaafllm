@@ -107,3 +107,38 @@ The division among these layers, their formats and retention policies are open q
 - **Persistence design:** decide whether embeddings/indexes are stored in Git, cached/generated, or maintained as derived build artifacts; avoid committing unnecessarily large regenerable binaries.
 
 **No GitHub workflow has been implemented or enabled by this note.**
+
+
+## Design checkpoint — agent extraction, role structure and science-fiction analogies (2026-11-05)
+
+### Confirmed direction from Adam
+
+- **Roles are persistent; agent instances are ephemeral and concurrent.** Multiple agents, including agents running on different LLM providers, may incarnate the *same role at the same time*. A role has its own namespace and proposed Git branch in the private Bobiverse repository.
+- **Raw is per instance, inside each role.** Proposed path: `<role>/raw/<session-start-or-first-dump-UTC>_<provider>_<uuid>/0001.md`, `0002.md`, etc. A timestamp and UUID distinguish concurrent incarnations; preserve start and ingestion timestamps separately. Each successive file contains **only newly exported material** and is immutable once recorded.
+- **A memory dump is an extraction, not a summary.** For locally accessible harnesses such as Claude Code, favor a deterministic exporter of accessible session artifacts (e.g. JSONL). Do not require or charge the agent LLM to select what is worth remembering. For cloud-only harnesses such as ChatGPT, a different connector/skill/export method may be necessary; completeness must never be falsely claimed.
+- **Atomization is downstream of the raw archive.** It extracts traceable, individual knowledge claims; subsequent SECNA-like embeddings/clustering and exact evidence-backed graph relationships organize them. Importance filtering and cross-role promotion follow later. Preserve raw even when consolidation is revised.
+- **GitHub Actions is the preferred compute budget** for this support function: use available CI minutes rather than Luna or additional commercial LLM API tokens, subject to actual free-tier private-repository limits and CPU feasibility.
+- **Private Bobiverse remains the planned memory repository**, separate from the public TANSTAAFLLM code/workline repository. Role-scoped branches plus selective PR promotion are the intended model, subject to designing PRs that exclude raw history.
+
+### Distinct tooling categories and possible spin-off
+
+1. **Harness-side raw extractors**: per-provider/harness adapters (deterministic where possible), session/instance registration, incremental export and upload to Git. A ChatGPT-specific skill is a fallback for limited harness access, not the universal design.
+2. **CI memory pipeline**: atomization, provenance capture, embeddings, SECNA-like grouping, supported graph-edge extraction, and reviewable distilled-memory promotion.
+3. **Possible future independent software project**: if these tools/skills become substantial, spin them off as a reusable **Bobiverse** project. This is a direction under consideration, not a repository that has already been created.
+
+### Science-fiction vocabulary retained intentionally
+
+- **Bobiverse** (Dennis E. Taylor): Bill as knowledge/infrastructure steward; independently evolving copies and selective sharing. The project and proposed private memory repository retain the **Bobiverse** name; the responsible role remains **Bill**.
+- **Altered Carbon**: the *cortical stack* and saving/downloading experience as an analogy for persistent memory and a *memory dump*; a model/provider/harness instance loosely resembles an interchangeable *sleeve*. Unlike a fictional consciousness transfer, our accessible raw session archive does not capture a model's complete internal state.
+- **Pluribus** (TV series): hive-like shared awareness as an analogy for **collective knowledge**, while TANSTAAFLLM deliberately preserves distinct roles and agent identities instead of merging them.
+- These references complement each other rather than dictate engineering constraints. Adam explicitly chose to **keep Bobiverse and Bill as the names**, while retaining the other science-fiction analogies.
+
+### Carry-forward questions
+
+- Define exporter coverage, origin metadata, incremental cursors, missing turns and replay checks per harness.
+- Confirm the exact branch and shared-memory directory conventions, promotion workflow and Git safety boundaries.
+- Benchmark small English-oriented atomizers (e.g. Qwen3-0.6B) for faithful claims and corrections; no model is approved.
+- Test runner feasibility and costs, then decide where to persist structured atoms, embeddings and graph representations.
+- Decide when to split a distinct Bobiverse tools project; **do not initiate the spin-off without direction**.
+
+**Checkpoint status:** documented design only. No private memory repository, CI pipeline, harness extractor or cross-role memory-sharing automation has been deployed as part of this workline.
