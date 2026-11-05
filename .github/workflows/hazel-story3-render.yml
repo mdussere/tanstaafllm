@@ -6,6 +6,12 @@ on:
       - '.github/workflows/hazel-story3-render.yml'
       - 'worklines/hazel/video/common/**'
       - 'worklines/hazel/video/episodes/story3-insert-coin-how-we-made-videos.yaml'
+  push:
+    branches: [cell/adam]
+    paths:
+      - '.github/workflows/hazel-story3-render.yml'
+      - 'worklines/hazel/video/common/**'
+      - 'worklines/hazel/video/episodes/story3-insert-coin-how-we-made-videos.yaml'
   workflow_dispatch:
 
 concurrency:
