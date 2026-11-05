@@ -64,9 +64,9 @@ scenes:
   template: metrics
   bars: 4
   mood: bright
-  title: "SWAY: THE EXISTING COMPOSITOR"
-  key: ["Don't build a compositor.", "Ask unmodified Sway. No fork."]
-  subject: {label: SWAY, tags: [EXISTING, UNMODIFIED, NO FORK], link: IPC}
+  title: "SWAY RUNS LUNA'S DESKTOP"
+  key: ["Don't rebuild the desktop.", "Ask its window manager."]
+  subject: {label: SWAY, tags: [ALREADY RUNNING, UNMODIFIED, NO FORK], link: IPC}
   glance: "MEASURED ON luna-pi, A RASPBERRY PI"
   machine: luna-pi
   tiles:
