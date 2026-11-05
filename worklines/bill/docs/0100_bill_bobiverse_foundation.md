@@ -79,3 +79,31 @@ The division among these layers, their formats and retention policies are open q
 - Future private memory repository: **TANSTAAFLLM Bobiverse** (not yet created at the time of this note)
 
 **Principle:** preserve the full record privately, develop trustworthy memory from it, and share only what is appropriate and explicitly authorized.
+
+
+## Proposed CI-based memory distillation (Adam discussion, 2026-11-05)
+
+**Architecture direction, not implementation approval.** Adam wants to use the **free GitHub Actions CI capacity**, rather than provision local hardware, allocate Luna resources, or consume paid LLM API tokens for background memory processing. The private Bobiverse repository is the proposed processing environment; its actual GitHub Actions entitlement, minutes, storage limits and runner model feasibility remain to be checked.
+
+### Agent-to-memory workflow
+
+1. An agent instance embodies a persistent **role** (several instances and model providers may embody the same role concurrently).
+2. Each instance deposits **raw memory** into its role's branch and a uniquely identifiable session directory. A possible convention is `<role>/raw/<start-timestamp>_<provider>_<uuid>/0001.md`, then `0002.md` and so on, with **one immutable file per incremental memory dump**. Preserve the original conversation start time separately from the time of the first dump when known.
+3. A GitHub Actions workflow triggers on newly pushed raw records, discovers **only the unprocessed additions**, and preserves the original inputs unchanged.
+4. **Atomization** turns conversation excerpts into traceable, independent **Knowledge Atoms** (facts, decisions, corrections, questions, preferences, hypotheses), retaining source references and negations. A small locally executed model such as **Qwen3-0.6B** is a *candidate to benchmark*, not a selected model.
+5. **Embedding + SECNA-style clustering** organizes atoms by semantic proximity, highlights novelty and potential duplication, and supports cross-session retrieval.
+6. An **explicit relation graph** builds typed edges where justified by evidence (e.g. `supports`, `contradicts`, `supersedes`, `depends_on`), distinguishing exact/source-backed relations from approximate vector similarity.
+7. The pipeline writes derived atoms, embeddings, clusters and graph artifacts **back to the private Bobiverse**. Any promotion into shared/common curated knowledge proceeds through **reviewable pull requests**, never by publishing raw transcripts.
+
+### Technical risks / unresolved decisions
+
+- **Branch isolation:** ordinary Git PRs from a role branch may include private raw files. Design a safe staging or cherry-pick mechanism for atom-only PRs, rather than merging role branches wholesale.
+- **Workflow triggers:** avoid self-triggering loops when the workflow commits generated artifacts; identify work by immutable input hashes and/or manifest, and make jobs idempotent.
+- **Concurrency:** multiple agents may push on the same role branch; prevent lost updates and collisions, and serialize or safely retry generated-state writes.
+- **Runner constraints:** confirm *actual* available free CI minutes for a **private** repository, CPU/RAM/disk, execution time, model downloads and cache limits before assuming the proposed pipeline is free or fits.
+- **Security:** treat raw memories as untrusted private data; limit runner permissions, action dependencies, artifact/log exposure, and access to any promotion paths.
+- **Quality gates:** benchmark small atomization models on real chat corrections, implied decisions, source fidelity, omission/hallucination and multilingual inputs; the target is **minimal incremental LLM cost** rather than a blanket promise of zero compute.
+- **Clustering and graph:** distinguish semantic grouping from verified factual edges; clustering alone cannot establish an exact relationship.
+- **Persistence design:** decide whether embeddings/indexes are stored in Git, cached/generated, or maintained as derived build artifacts; avoid committing unnecessarily large regenerable binaries.
+
+**No GitHub workflow has been implemented or enabled by this note.**
