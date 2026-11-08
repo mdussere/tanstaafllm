@@ -159,6 +159,7 @@ Done means: the trailer and the first story videos are published, they read as o
 | lun. 02 nov 2026 02:06:34 CET | User's edits to Story 2, made by Hazel in the script, no sub-agent: screenshot trap first, then the Playwright analogy, which ends on "LET'S DO IT!" (new generic `clear_text`). Pipeline fixes: two-pass loudness normalisation (−15.0 LUFS, −1.5 dBTP), render folders suffixed `-full`/`-preview`, lint reads each stage's stamp text. Full render `20261102T015755-full`, delivered to ~/Videos and the private page. |
 | lun. 02 nov 2026 02:24:58 CET | User: the screenshot-trap stage ends on a refusal, "NO GO!" in red with a failure buzz (new generic `clear_color`). Full render `20261102T021609-full`: 90.0 s, −15.0 LUFS, −1.2 dBTP, lint clean; delivered to ~/Videos and the private page. |
 | lun. 02 nov 2026 08:08:43 CET | User: code review of the pipeline (Step 6), then `go` for its fixes, on branch `hazel/video-review-fixes` (pull request): PyYAML declared in the `video` group; the lint's CLEAR! zone follows the label and the stamp's rotation; contact stills mapped to output time through the holds (`common/timemap.py`); `bpm` other than 120 refused; scenes too short for their template and missing slots refused with the scene's name; squeezed texts reported; metric tiles one message, every tile an audit slot; `build.py --strict`; `test/hazel/` (25 deterministic, 2 integration). Story 2 rebuilt: stills, score and hits identical, `--strict` clean. |
+| dim. 08 nov 2026 21:35:43 CET | Story 2 ready to publish: video and thumbnail (title card, 1280 × 720) in ~/Videos/TANSTAAFLLM/; YouTube title, description with chapters and LinkedIn post in `docs/0302_03`. Upload by the user. |
 
 | 2026-11-04 | Adam selects Story 3, *Insert coin — the video production story*, as Hazel's next episode. Editorial direction: highly introspective, reflecting on how the cell learned from its own video production and turned lessons into reusable procedures. Brief `docs/0303_01`; planning only, production requires separate go. |
 
@@ -171,6 +172,7 @@ Done means: the trailer and the first story videos are published, they read as o
 - `worklines/hazel/video/trailer/` — the trailer's sources (moved from Professor, 2026-10-31).
 - `docs/0103_01_series-template.md` — the series template (draft).
 - `video/common/` (runtime, templates, cues, generator, lint, README) and `video/episodes/` (episode scripts) — the script-to-video pipeline.
+- `docs/0302_03_story2-publishing-copy.md` — Story 2's YouTube title, description with chapters, and LinkedIn post.
 - `docs/0606_01_how-the-video-generator-works.md` — how a script becomes a video, and the measured token balance.
 - `docs/0601_01_token-lean-video-pipeline.md` — where the tokens go; the script-to-video generator proposal.
 - `video/library/` — the sequence template library (index, uses, 23 cards).
