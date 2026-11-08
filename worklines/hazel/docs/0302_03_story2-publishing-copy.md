@@ -20,32 +20,14 @@ TANSTAAFLLM · Story 2: Ask the desktop 🪟
 **Description:**
 
 ```
-How do you let an AI agent work a desktop without looking at it?
+Our AI agent wanted to use a desktop. Its plan: take a screenshot, squint at the pixels, guess where the button is, and pay for every image. NO GO.
 
-Wyoh is the desktop layer of Luna, a ~30-euro game handheld turned into a small Linux computer. Screenshots make an agent guess from pixels, and every image costs. Playwright lets an LLM drive a browser by reading the page's DOM. Wyoh does the same for a desktop: it asks the compositor.
+Playwright doesn't look at web pages, it reads them. So Wyoh does the same for the desktop of Luna, our 30-euro handheld: don't look at it, ask it. LET'S DO IT.
 
-00:00 Ask the desktop
-00:06 Player 2: Wyoh
-00:14 The screenshot trap: NO GO
-00:20 Like Playwright, for a desktop: LET'S DO IT
-00:30 One scene is not a desktop
-00:38 Ask the one that exists: Sway, unmodified
-00:46 Hand it to agents: MCP over SSH (development only)
-00:54 Boss: the black panel
-01:02 17 buttons, no keyboard
-01:12 Ask the desktop
-01:18 Story 2 clear
-
-Don't look at the desktop, ask it: the compositor already knows what a screenshot can only guess.
-
-Figures on screen carry the machine they were measured on. Screenshots stay, as evidence for humans.
-Pixel-art video and NES-chip soundtrack, generated from a script and rendered on a CPU.
+90 seconds of pixel art, a black-screen boss, 17 buttons and no keyboard. 🕹️
 
 TANSTAAFLLM: There Ain't No Such Thing As A Free LLM.
 https://github.com/mdussere/tanstaafllm
-A personal engineering project by Michael Dussere.
-
-#AI #LLM #Linux #Playwright #Wayland #PixelArt
 ```
 
 ## LinkedIn
@@ -53,18 +35,13 @@ A personal engineering project by Michael Dussere.
 ```
 🪟 Story 2: Ask the desktop
 
-How do you let an AI agent work a desktop without looking at it?
+Our AI agent wanted to use a desktop. Its plan: take a screenshot, squint at the pixels, guess where the button is, and pay for every image. NO GO.
 
-Screenshots make an agent guess from pixels, and every image costs tokens. On a ~30-euro handheld, that is a bad deal.
+Playwright doesn't look at web pages, it reads them. So on Luna, our 30-euro handheld, Wyoh does the same for the desktop: don't look at it, ask it. The compositor already knows what a screenshot can only guess.
 
-The idea came from the browser: Playwright lets an LLM drive a page by reading its DOM. On our handheld, Luna, Wyoh does the same for the desktop. It doesn't render anything for the agent; it asks the compositor (Sway, unmodified), which already knows every window, the focus and the events. A development agent reads that window tree, acts through named actions or the same buttons a human presses, and waits for the event that confirms it.
+90 seconds of pixel art, NES-chip music included 🕹️
+https://youtu.be/<link once uploaded>
 
-Don't look at the desktop, ask it: the compositor already knows what a screenshot can only guess.
-
-The video itself follows the same rule. It is generated from a 144-line script and rendered on a CPU, with an emulated NES chip for the music. Spend CPU, not tokens.
-
-90 seconds, pixel art: https://youtu.be/<link once uploaded>
-Code and notes: https://github.com/mdussere/tanstaafllm
-
-#AI #LLM #AgenticAI #Linux #OpenSource
+The trailer and Story 1 are on the channel too.
+#AI #LLM #Linux #OpenSource
 ```
