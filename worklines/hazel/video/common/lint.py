@@ -95,10 +95,10 @@ def analyse(rec, scenes, holds):
                 if hit(a, b):
                     found[('overlap', sc['id'], f"{a['s']!r} x {b['s']!r}", box_s(a))].append(T)
         sec = sorted((r for r in vis if r['alpha'] >= 0.9 and SECOND_PX <= r['glyph'] < KEY_PX
-                      and not (r['s'].startswith('STAGE ') or r['s'] == sc.get('title'))), key=lambda r: r['y0'])
+                      and not (r['s'].startswith('STAGE ') or r['s'] in (sc.get('title'), sc.get('name')))), key=lambda r: r['y0'])
         groups = messages(sec)
         keys = messages(sorted((r for r in vis if r['alpha'] >= 0.9 and r['glyph'] >= KEY_PX
-                                and not (r['s'].startswith('STAGE ') or r['s'] == sc.get('clear_text', 'CLEAR!') or r['s'] == sc.get('title'))), key=lambda r: r['y0']))
+                                and not (r['s'].startswith('STAGE ') or r['s'] == sc.get('clear_text', 'CLEAR!') or r['s'] in (sc.get('title'), sc.get('name')))), key=lambda r: r['y0']))
         nkey[sc['id']] = max(nkey[sc['id']], len(keys))
         if len(groups) > 1:
             nsec[sc['id']].append((T, [' / '.join(r['s'] for r in g) for g in groups]))
@@ -121,7 +121,7 @@ def analyse(rec, scenes, holds):
     nokey, multi, glance_total = [], [], 0
     for s in scenes:
         g = glyphs.get(s['id'], {})
-        hud_t = {s.get('title', '')}
+        hud_t = {s.get('title', ''), s.get('name', '')}   # stage titles and a hero's name are titles, not messages
         body = {k: v for k, v in g.items() if not (k.startswith('STAGE ') or k == s.get('clear_text', 'CLEAR!') or k in hud_t)}
         key = sorted(k for k, v in body.items() if v[0] >= KEY_PX)
         sec = sorted(k for k, v in body.items() if SECOND_PX <= v[0] < KEY_PX)

@@ -4,7 +4,7 @@
 
 **Files to upload** (in `~/Videos/TANSTAAFLLM/`):
 
-- `tanstaafllm-story2-ask-the-desktop.mp4`: 90 s, 1920 × 1080, render `results/hazel/story2-ask-the-desktop/20261102T021609-full/`;
+- `tanstaafllm-story2-ask-the-desktop.mp4`: 90 s, 1920 × 1080, render `results/hazel/story2-ask-the-desktop/20261108T215357-full/ (rendered 2026-11-08: current pipeline, big hero name)`;
 - `tanstaafllm-story2-ask-the-desktop-thumbnail.jpg`: 1280 × 720, the episode's title card, rendered by its own code.
 
 Every claim below comes from the episode's fact table (`results/…/NOTES.md`) and Wyoh's note `0302_02`. These limits are kept: the MCP bridge is for development only, Mike answers but does not act on the desktop, and the IPC figures were measured on `luna-pi`.

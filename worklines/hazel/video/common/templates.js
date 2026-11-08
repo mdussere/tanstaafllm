@@ -247,9 +247,9 @@ TPL.T04 = (t, p) => {
   face(p.face, M + 24, by + 24, 512);
   const X = 780, hp = easeOut(seg(t, A(0.1), A(0.45)));
   txt(p.glance[0], X + (1 - hp) * 300, 250, 32, C.amber, { alpha: hp });
-  txt(p.name, X + (1 - hp) * 500, 350, 40, C.chrome, { alpha: hp });
+  txt(p.name, X + (1 - hp) * 500, 345, 80, C.chrome, { alpha: hp });   // the hero's name, big: a title, not a message
   const ra = seg(t, A(p.secondary_at), A(p.secondary_at + 0.15));
-  p.secondary.forEach((s, i) => txt(s, X, 410 + i * 56, 40, C.cyan, { alpha: ra }));
+  p.secondary.forEach((s, i) => txt(s, X, 430 + i * 56, 40, C.cyan, { alpha: ra }));
   txt(p.glance[1], X, 600, 32, C.amber, { alpha: seg(t, A(p.key_at - 0.05), A(p.key_at + 0.05)) });
   const qa = seg(t, A(p.key_at), A(p.key_at + 0.15));
   p.key.forEach((s, i) => V(s, X, 700 + i * 90, 90, C.chrome, qa, { maxW: 1020 }));
