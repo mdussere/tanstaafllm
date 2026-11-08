@@ -318,7 +318,7 @@ class View:
             for i in range(3):
                 on = int(now * 3) % 3 == i
                 pg.draw.rect(surf, AMBER if on else BORDER, (330 + i * 24, 412 + bob, 14, 14))
-        status = {"ready": "READY", "thinking": "THINKING", "starting": "STARTING", "asks": "ASKS YOU",
+        status = {"ready": "READY", "thinking": "THINKING", "speaking": "SPEAKING", "starting": "STARTING", "asks": "ASKS YOU",
                   "waiting": "WAITING FOR MANNIE", "busy": "BUSY"}.get(phase, phase.upper())
         # the dialogue box: the answer, typed; or Mike's notices
         box = pg.Rect(16, 444, 688, 228)
@@ -441,12 +441,17 @@ def main(argv: list[str]) -> int:
                 dictate_key = (space or (event.type == pygame.KEYDOWN and event.key in (pygame.K_F1, pygame.K_F2))
                                or (event.type == pygame.JOYBUTTONDOWN and event.button in (4, 6)))  # L1, L2 on common pads
                 if dictate_key:
+                    if t.phase == "speaking":  # 6.16: cut Mike's voice (Ctrl+C cuts answer and voice), then listen
+                        client.key(b"\x03")
                     if dictation is not None:
                         dictation.toggle()
                     skip_space = space
                     continue
                 if event.type == pygame.KEYDOWN and event.key in SCROLL_KEYS:
                     view.scrolled(*SCROLL_KEYS[event.key])  # sticks on Luna (Wyoh sends F5-F8), keys on the desk
+                    continue
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_c and event.mod & pygame.KMOD_CTRL:
+                    client.key(b"\x03")  # Ctrl+C: Mike stops its answer and its voice (Wyoh's L1 sends it on Luna)
                     continue
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_F11 and t.phase == "ready":
                     client.send("/new")  # X on Luna: a new conversation

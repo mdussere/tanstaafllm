@@ -32,7 +32,7 @@ WYOH_LUNA_UNIT ?= /storage/.config/system.d/wyoh-sway.service
 WYOH_LUNA_GAMEPAD_UNIT ?= /storage/.config/system.d/wyoh-gamepad.service
 WYOH_LUNA_LAYOUT_UNIT ?= /storage/.config/system.d/wyoh-layout.service
 
-.PHONY: install install-wyoh luna-stop-all install-preview status wyoh-luna-app wyoh-luna-apps wyoh-luna-deploy-preview wyoh-luna-deploy wyoh-luna-start wyoh-luna-stop wyoh-luna-status wyoh-luna-enable wyoh-luna-disable
+.PHONY: install install-wyoh install-mike luna-stop-all install-preview status wyoh-luna-app wyoh-luna-apps wyoh-luna-deploy-preview wyoh-luna-deploy wyoh-luna-start wyoh-luna-stop wyoh-luna-status wyoh-luna-enable wyoh-luna-disable
 
 wyoh-luna-deploy-preview:
 	rsync -e "$(WYOH_LUNA_SSH)" --archive --no-owner --no-group --checksum --dry-run --itemize-changes --mkpath --exclude '__pycache__/' src/wyoh/ $(WYOH_LUNA_HOST):$(WYOH_LUNA_ROOT)/
@@ -66,7 +66,7 @@ wyoh-luna-apps: wyoh-luna-deploy
 # `make status` prints it next to the desk's HEAD.
 LUNA_STAMP ?= /storage/.local/state/tanstfaafllm/deployed.txt
 
-install: install-wyoh
+install: install-wyoh install-mike
 	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) 'mkdir -p $(dir $(LUNA_STAMP)) && echo "$(shell git describe --always --dirty) $(shell date -Iseconds) from $(shell hostname)" > $(LUNA_STAMP)'
 
 # Adam, 2026-11-03: "when we reinstall, kill everyone, Mannie included, whatever its
@@ -83,6 +83,12 @@ luna-stop-all:
 
 install-wyoh: luna-stop-all wyoh-luna-apps
 	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) "systemctl restart wyoh-layout.service wyoh-gamepad.service; swaymsg -s \$$($(SWAY_SOCK_CMD)) reload >/dev/null; echo 'Wyoh and Mycroft restarted'"
+
+# Mike's client (mike.py, prestac.py) to michael's MIKE_HOME on Luna; smalltalk.py stays a
+# link to mike.py. The model and llama-server are already there and are not copied.
+install-mike:
+	rsync -e "$(WYOH_LUNA_SSH)" --archive --no-owner --no-group --checksum --chmod=F755 src/mike/mike.py src/mike/prestac.py $(WYOH_LUNA_HOST):/home/michael/.local/opt/mike/
+	$(WYOH_LUNA_SSH) $(WYOH_LUNA_HOST) 'cd /home/michael/.local/opt/mike && chown michael:michael mike.py prestac.py && ln -sfn mike.py smalltalk.py && echo "mike.py installed"'
 
 install-preview: wyoh-luna-deploy-preview
 
@@ -115,6 +121,8 @@ MIKE_LANG ?= en
 # Dictation in Mike's RPG window (F1/F2, or L1/L2 on a pad): Mycroft's resident English model, desk microphone.
 MYCROFT_ASSETS ?= /data/michael/tanstaafllm/mycroft-assets
 MIKE_MIC ?= /dev/snd/pcmC0D0c
+# Mike's voice (Wyoh 6.16): Mycroft's resident Piper speaker; mike.py reads MIKE_SPEAK.
+MIKE_SPEAK ?= python3 $(CURDIR)/worklines/mycroft/scripts/mycroft_speak.py --assets $(MYCROFT_ASSETS) --threads 2
 MIKE_RPG_DICTATE ?= python3 $(CURDIR)/worklines/mycroft/scripts/mycroft_dictate.py --resident --model kroko-en-2025 --assets $(MYCROFT_ASSETS) --input $(MIKE_MIC)
 
 .PHONY: help run-mike run-mike-rpg run-mike-rpg-fake run-camp-currie run-mannie
@@ -133,7 +141,7 @@ run-mike:
 	MIKE_HOME=$(MIKE_HOME) MIKE_LANG=$(MIKE_LANG) python3 $(MIKE_HOME)/mike.py
 
 run-mike-rpg:
-	MIKE_HOME=$(MIKE_HOME) MIKE_LANG=$(MIKE_LANG) MIKE_RPG_DICTATE="$(MIKE_RPG_DICTATE)" uv run --group camp-currie python src/wyoh/apps/mike/mike_rpg.py
+	MIKE_HOME=$(MIKE_HOME) MIKE_LANG=$(MIKE_LANG) MIKE_RPG_DICTATE="$(MIKE_RPG_DICTATE)" MIKE_SPEAK="$(MIKE_SPEAK)" uv run --group camp-currie python src/wyoh/apps/mike/mike_rpg.py
 
 run-mike-rpg-fake:
 	MIKE_RPG_DICTATE="$(MIKE_RPG_DICTATE)" uv run --group camp-currie python src/wyoh/apps/mike/mike_rpg.py -- python3 test/wyoh/fixtures/fake_mike.py

@@ -919,7 +919,7 @@ def mike_step(window: tuple[int, str] | None) -> str:
     if window is None:
         return "start"
     title = window[1]
-    if title in ("Mike — ready", "Mike — thinking"):
+    if title in ("Mike — ready", "Mike — thinking", "Mike — speaking"):
         return "deliver"
     if title.startswith("Mike — busy"):
         return "busy"
@@ -1510,8 +1510,21 @@ class Daemon:
                 self.state["direct"] = "stopping"
                 self.write_status()
             return
+        self.cut_mikes_voice()
         self.direct = True
         self.resident_do(self.resident.toggle())
+
+    def cut_mikes_voice(self) -> None:
+        """6.16: L1 while Mike speaks cuts its voice first (Ctrl+C in Mike's window), so Mike never hears itself."""
+        try:
+            window = find_app_title(self.sway.request(4), "mike")
+        except (OSError, ConnectionError):
+            return
+        if window is not None and window[1].startswith("Mike — speaking"):
+            ctrl, c = KEYS["KEY_LEFTCTRL"], PHYSICAL["c"]
+            self.keyboard.emit([(EV_KEY, ctrl, 1)]); self.keyboard.emit([(EV_KEY, c, 1)])
+            self.keyboard.emit([(EV_KEY, c, 0)]); self.keyboard.emit([(EV_KEY, ctrl, 0)])
+            time.sleep(0.2)
 
     def direct_catch_up(self, now: float) -> None:
         """Called from the loop: send the real stop once Mycroft's text has settled."""
