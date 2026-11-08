@@ -45,6 +45,9 @@ import argparse
 import ctypes
 import json
 import os
+import re
+import shlex
+import threading
 import signal
 import subprocess
 import sys
@@ -85,6 +88,13 @@ SWITCH = {"fr": {"ask": "Mannie travaille sur Luna. L'arrêter pour démarrer Mi
                          "Open it from the menu.",
                  "no_mannie": "Mannie's launcher not found ({}); Mike goes on."}}
 LINGER_S = 3.0  # time to read the last line before the window closes
+# Plain ANSI only; Wyoh's look maps these to the series' palette (Wyoh 6.13, Mike 13.10).
+PROMPT, RESET = "\033[36m> ", "\033[0m"
+SPEAKING_TITLE = "Mike — speaking"
+
+
+def dim(text: str) -> str:
+    return f"\033[90m{text}\033[0m"
 SAMPLING = {"temperature": 0.1, "top_k": 50, "repeat_penalty": 1.05}  # LFM2.5 model card
 CTX = 2048
 MAX_TOKENS = 120
@@ -397,7 +407,8 @@ def plain(text: str) -> str:
     return text.replace("**", "").replace("__", "")
 
 
-def answer(server: Server, conv: Conversation, question: str, out=sys.stdout, lang: str = "fr") -> dict[str, Any]:
+def answer(server: Server, conv: Conversation, question: str, out=sys.stdout, lang: str = "fr",
+           on_text: Callable[[str], None] | None = None) -> dict[str, Any]:
     """Stream one answer to `out`; Ctrl+C stops it and keeps what was written. Returns the turn's record."""
     prompt = conv.prompt_for(question)
     started = time.monotonic()
@@ -417,9 +428,11 @@ def answer(server: Server, conv: Conversation, question: str, out=sys.stdout, la
             ids += event.get("tokens", [])
             text.append(event.get("content", ""))
             print(plain(event.get("content", "")), end="", flush=True, file=out)
+            if on_text:
+                on_text(event.get("content", ""))
     except KeyboardInterrupt:  # F7: the answer stops, the conversation goes on
         stopped = True
-        print(NOTICE[lang]["stopped"], end="", file=out)
+        print(dim(NOTICE[lang]["stopped"]), end="", file=out)
     finally:
         events.close()  # closes the connection: the server stops writing
     print(file=out, flush=True)
@@ -430,6 +443,109 @@ def answer(server: Server, conv: Conversation, question: str, out=sys.stdout, la
             "first_s": round(first or 0.0, 2), "total_s": round(time.monotonic() - started, 2),
             "prompt_ms": tm.get("prompt_ms"), "predicted_ms": tm.get("predicted_ms"),
             "stop": "user" if stopped else final.get("stop_type"), "rolled_over": rolled}
+
+
+# --- the voice (Step 18: Mycroft speaks Mike's replies) ---------------------------------
+
+EMOJI = re.compile("[\U0001F000-\U0001FFFF\u2600-\u27BF\uFE0F]")
+SENTENCE = re.compile(r"[.!?;:](?=\s)")
+
+
+def spoken_text(text: str) -> str:
+    """What a voice can say: no Markdown markers, code ticks or emoji (Mycroft asks for plain text)."""
+    text = EMOJI.sub("", plain(text)).replace("`", "").replace("#", "")
+    return re.sub(r"\s+", " ", text).strip()
+
+
+class SentenceFeeder:
+    """Collects the streamed answer and hands over each finished sentence, so the voice starts early."""
+
+    def __init__(self, say: Callable[[str], None]):
+        self.say, self.buffer = say, ""
+
+    def __call__(self, chunk: str) -> None:
+        self.buffer += chunk
+        while (m := SENTENCE.search(self.buffer)):
+            self._send(self.buffer[:m.end()])
+            self.buffer = self.buffer[m.end():]
+
+    def flush(self) -> None:
+        self._send(self.buffer)
+        self.buffer = ""
+
+    def _send(self, text: str) -> None:
+        if (text := spoken_text(text)):
+            self.say(text)
+
+
+class Speaker:
+    """Mycroft's speech provider as a child process (`mycroft_speak.py`, JSON lines both ways).
+
+    `say` queues a sentence, `stop` cuts it; the title is "Mike — speaking" until every
+    queued sentence has been played, so that Wyoh can keep the microphone closed.
+    """
+
+    def __init__(self, argv: list[str], ready_s: float = 60):
+        self.process = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1,
+                                        start_new_session=True, preexec_fn=_die_with_parent)
+        self.ready, self.said, self.spoken = threading.Event(), 0, 0
+        self.lock = threading.Lock()
+        self.errors: list[str] = []
+        threading.Thread(target=self._read, daemon=True).start()
+        if not self.ready.wait(ready_s):
+            self.close()
+            raise RuntimeError(f"the speech provider was not ready after {ready_s:.0f} s")
+
+    def _read(self) -> None:
+        for line in self.process.stdout:
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue
+            op = event.get("op")
+            if op == "ready":
+                self.ready.set()
+            elif op in ("spoken", "stopped"):
+                with self.lock:
+                    self.spoken = self.said if op == "stopped" else self.spoken + 1
+                    idle = self.spoken >= self.said
+                if idle:
+                    set_title(READY_TITLE)
+            elif op == "error":
+                self.errors.append(event.get("message", ""))
+
+    def _send(self, message: dict[str, Any]) -> None:
+        try:
+            self.process.stdin.write(json.dumps(message) + "\n")
+            self.process.stdin.flush()
+        except (BrokenPipeError, ValueError):
+            pass
+
+    def say(self, text: str) -> None:
+        with self.lock:
+            self.said += 1
+        set_title(SPEAKING_TITLE)
+        self._send({"op": "say", "text": text})
+
+    def stop(self) -> None:
+        self._send({"op": "stop"})
+
+    @property
+    def busy(self) -> bool:
+        with self.lock:
+            return self.spoken < self.said
+
+    def close(self) -> None:
+        if self.process.poll() is None:
+            self.stop()
+            try:
+                self.process.stdin.close()
+            except (BrokenPipeError, ValueError):
+                pass
+            try:
+                self.process.wait(5)
+            except subprocess.TimeoutExpired:
+                stop_pid(self.process.pid)
 
 
 class Journal:
@@ -470,7 +586,7 @@ class Journal:
 def ask_yes(prompt: str, stdin=None) -> bool:
     """One key in a terminal: Return (or o/y) is yes, Escape (or n/q) is no. Without a terminal, one line."""
     stdin = stdin or sys.stdin
-    print(prompt, flush=True)
+    print(dim(prompt), flush=True)
     if not stdin.isatty():
         line = stdin.readline()
         return line != "" and line.strip().lower() in ("", "o", "oui", "y", "yes")
@@ -518,6 +634,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--repack", action="store_true", default=os.environ.get("MIKE_REPACK") == "1")
     p.add_argument("--threads", type=int, default=int(os.environ.get("MIKE_THREADS", "4")))
     p.add_argument("--mannie", default=os.environ.get("MIKE_MANNIE", str(home / ".local/bin/mannie")))
+    p.add_argument("--speak", default=os.environ.get("MIKE_SPEAK", ""),
+                   help="command of Mycroft's speech provider (mycroft_speak.py …): Mike says its replies")
     args = p.parse_args(argv)
     say = SWITCH[args.lang]
     reason = "end of input"
@@ -530,10 +648,11 @@ def main(argv: list[str] | None = None) -> int:
         signal.signal(sig, leave)
 
     set_title("Mike — starting")
-    print("Mike démarre…" if args.lang == "fr" else "Mike is starting…", flush=True)
+    print(dim("Mike démarre…" if args.lang == "fr" else "Mike is starting…"), flush=True)
     t0 = time.monotonic()
     journal = Journal(state, args.lang)
     lock = Path(args.lock)
+    speaker: Speaker | None = None
     server = Server(args.port, args.server, args.model, state / "slots", args.threads, state / "llama-server.log",
                     args.repack)
     try:
@@ -546,17 +665,17 @@ def main(argv: list[str] | None = None) -> int:
                 set_title("Mike — asks: stop Mannie?")
                 journal.note("asks", f"Luna held by {busy}; asked to stop Mannie.")
                 if not ask_yes(say["ask"]):
-                    print(say["kept"], flush=True)
+                    print(dim(say["kept"]), flush=True)
                     reason = "Mannie kept, Mike not started"
                     time.sleep(LINGER_S)
                     return 1
                 set_title("Mike — waiting for Mannie")
-                print(say["wait"], flush=True)
+                print(dim(say["wait"]), flush=True)
                 stopped = stop_mannie(args.mannie)
                 journal.note("mannie-stopped" if stopped else "mannie-not-stopped",
                              "Mannie stopped." if stopped else "`mannie stop --save` failed.")
                 if not stopped:
-                    print(say["failed"], flush=True)
+                    print(dim(say["failed"]), flush=True)
                     reason = "Mannie did not stop"
                     time.sleep(LINGER_S)
                     return 1
@@ -567,7 +686,7 @@ def main(argv: list[str] | None = None) -> int:
             set_title("Mike — busy")
             journal.note("busy", f"Luna held by {busy}; Mike not started.")
             reason = "busy"
-            print(say["busy"].format(busy), flush=True)
+            print(dim(say["busy"].format(busy)), flush=True)
             try:
                 input()
             except EOFError:
@@ -578,13 +697,17 @@ def main(argv: list[str] | None = None) -> int:
         how = frame.put_back()
         start = {"event": "start", "lang": args.lang, "ready_s": round(time.monotonic() - t0, 2), "l0": how,
                  "l0_tokens": len(conv.l0), "repack": args.repack, "threads": args.threads, **server.rss_kib()}
+        speaker = Speaker(shlex.split(args.speak)) if args.speak else None  # Step 18
+        if speaker:
+            journal.note("voice", f"Speaking through: {args.speak}")
         journal.started(start)
-        print(f"Prêt ({start['ready_s']} s). Pose ta question." if args.lang == "fr"
-              else f"Ready ({start['ready_s']} s). Ask away.", flush=True)
+        print(dim(f"Prêt ({start['ready_s']} s). Pose ta question." if args.lang == "fr"
+                  else f"Ready ({start['ready_s']} s). Ask away."), flush=True)
         set_title(READY_TITLE)
         while True:
             try:
-                line = input("> ").strip()
+                line = input(PROMPT).strip()
+                print(RESET, end="", flush=True)
             except EOFError:
                 break
             if not line:
@@ -595,25 +718,30 @@ def main(argv: list[str] | None = None) -> int:
             if line == "/new":
                 conv.reset()
                 frame.put_back()
-                print(NOTICE[args.lang]["new"], flush=True)
+                print(dim(NOTICE[args.lang]["new"]), flush=True)
                 journal.note("new", "New conversation (/new).")
                 continue
             if line == "/mannie":
                 if not Path(args.mannie).exists():
-                    print(say["no_mannie"].format(args.mannie), flush=True)
+                    print(dim(say["no_mannie"].format(args.mannie)), flush=True)
                     continue
                 reason = "/mannie: Luna handed back to Mannie"
                 server.stop()  # frees the lock before Mannie looks at it
                 start_mannie(args.mannie, state / "mannie-start.log")
-                print(say["hand"], flush=True)
+                print(dim(say["hand"]), flush=True)
                 time.sleep(LINGER_S)
                 break
             set_title("Mike — thinking")
-            record = answer(server, conv, line, lang=args.lang) | server.rss_kib()
+            feeder = SentenceFeeder(speaker.say) if speaker else None
+            record = answer(server, conv, line, lang=args.lang, on_text=feeder) | server.rss_kib()
+            if speaker and record["stop"] == "user":
+                speaker.stop()  # Ctrl+C cuts the voice too
+            elif feeder:
+                feeder.flush()
             if record["rolled_over"]:  # the slot must hold L0 alone before the kept exchange is read
                 frame.put_back()
-                print(NOTICE[args.lang]["roll"], flush=True)
-            set_title(READY_TITLE)
+                print(dim(NOTICE[args.lang]["roll"]), flush=True)
+            set_title(SPEAKING_TITLE if speaker and speaker.busy else READY_TITLE)
             journal.turn(record)
             if record["rolled_over"]:
                 journal.note("rollover", "Long conversation: only the last exchange is kept.")
@@ -623,6 +751,10 @@ def main(argv: list[str] | None = None) -> int:
         reason = f"error: {error}"
         raise
     finally:
+        if speaker:
+            speaker.close()
+            for message in speaker.errors:
+                journal.note("voice-error", message)
         server.stop()
         journal.note("end", f"Session ended ({reason}).")
     return 0

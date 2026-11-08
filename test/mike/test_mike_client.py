@@ -151,7 +151,7 @@ def test_ctrl_c_stops_the_answer_and_keeps_the_conversation():
     out = io.StringIO()
     r = st.answer(FakeServer(stream), conv, "hi", out, lang="en")
     assert r["stop"] == "user" and r["answer"] == "Bonjour" and stream.closed
-    assert out.getvalue() == "Bonjour [stopped]\n"
+    assert out.getvalue() == "Bonjour" + st.dim(" [stopped]") + "\n"
     assert conv.ids[-3:] == [501, T.end, *T.newline]
 
 
@@ -391,3 +391,78 @@ def test_switch_from_mannie_and_back_on_the_desk(tmp_path):
     assert _events(state) == ["asks", "mannie-stopped", "start", "turn", "end"]
     assert "**You:** What is the capital of France?" in md.read_text()
     assert "/mannie" in md.read_text()
+
+
+# --- Step 18: Mycroft speaks Mike's replies -------------------------------------------
+
+def test_sentences_go_to_the_voice_as_they_finish():
+    said = []
+    feed = st.SentenceFeeder(said.append)
+    for chunk in ["Hello", " **Paul**! I am", " Mike. How", " are you 😊"]:
+        feed(chunk)
+    assert said == ["Hello Paul!", "I am Mike."]
+    feed.flush()
+    assert said[-1] == "How are you"
+
+
+def test_spoken_text_is_plain():
+    assert st.spoken_text("**Bold** `code` # title 🚀 end") == "Bold code title end"
+
+
+FAKE_SPEAK = """import json, sys
+print(json.dumps({"op": "ready", "sample_rate": 22050}), flush=True)
+n = 0
+for line in sys.stdin:
+    m = json.loads(line)
+    if m["op"] == "say":
+        n += 1
+        print(json.dumps({"op": "speaking", "id": n, "sentence": 0, "text": m["text"]}), flush=True)
+        print(json.dumps({"op": "spoken", "id": n}), flush=True)
+        with open(sys.argv[1], "a") as f:
+            f.write(m["text"] + "\\n")
+    elif m["op"] == "stop":
+        print(json.dumps({"op": "stopped"}), flush=True)
+"""
+
+
+def test_speaker_says_and_goes_idle(tmp_path):
+    script, said = tmp_path / "speak.py", tmp_path / "said.txt"
+    script.write_text(FAKE_SPEAK)
+    speaker = st.Speaker([sys.executable, str(script), str(said)], ready_s=10)
+    try:
+        speaker.say("Hello Paul.")
+        speaker.say("I am Mike.")
+        deadline = __import__("time").monotonic() + 5
+        while speaker.busy and __import__("time").monotonic() < deadline:
+            __import__("time").sleep(0.05)
+        assert not speaker.busy
+    finally:
+        speaker.close()
+    assert said.read_text() == "Hello Paul.\nI am Mike.\n"
+    assert speaker.process.poll() is not None
+
+
+SPEAK = ev.REPO / "worklines/mycroft/scripts/mycroft_speak.py"
+VOICE_ASSETS = Path(os.environ.get("MYCROFT_ASSET_ROOT", "/data/michael/tanstaafllm/mycroft-assets"))
+
+
+@pytest.mark.integration
+@pytest.mark.timeout(300)
+def test_full_voice_reply_on_the_desk(tmp_path):
+    """Step 18 on Termidor: Mike's reply is spoken sentence by sentence through Mycroft's provider (it plays aloud)."""
+    if not MODEL.is_file() or not VOICE_ASSETS.is_dir():
+        pytest.skip("model or voice assets missing")
+    speak = f"{sys.executable} {SPEAK} --assets {VOICE_ASSETS} --threads 2"
+    env = {**os.environ, "XDG_STATE_HOME": str(tmp_path / "state"), "MIKE_LOCK": str(tmp_path / "brain.lock"),
+           "MIKE_PORT": str(_port()), "MIKE_SERVER": str(ms.SERVER), "MIKE_MODEL": str(MODEL), "MIKE_SPEAK": speak}
+    client = subprocess.run([sys.executable, str(Path(st.__file__))], env=env, text=True, timeout=240,
+                            input="Hello Mike, my name is Paul. How are you today?\n/quit\n", capture_output=True)
+    out_dir = RUN_DIR / "voice"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    log = (tmp_path / "state/mike/chat.jsonl").read_text()
+    (out_dir / "chat.jsonl").write_text(log)
+    (out_dir / "client.out").write_text(client.stdout + client.stderr)
+    events = [json.loads(line)["event"] for line in log.splitlines()]
+    assert client.returncode == 0, client.stdout + client.stderr
+    assert events[:2] == ["voice", "start"] and "turn" in events and "voice-error" not in events
+    assert not (tmp_path / "brain.lock").exists()
