@@ -245,3 +245,54 @@ def test_resident_setup_error_ends_before_ready(tmp_path: Path) -> None:
     message = provider.next_message(5)
     assert message["op"] == "error"  # no model under tmp_path: the setup fails before "ready"
     assert provider.wait(5) == 2
+
+
+def test_resident_stop_decodes_the_audio_still_waiting(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Plan step 10.7: on "stop", the chunks captured but not yet polled reach the final text."""
+    monkeypatch.syspath_prepend(str(DICTATE.parent))
+    import mycroft_dictate as dictate_module
+
+    class BacklogSource:
+        sample_rate = 16000
+
+        def __init__(self) -> None:
+            self.waiting = [b"\x00\x00"] * 5  # five chunks behind the decoder
+            self.closed = False
+
+        def start(self) -> None:
+            pass
+
+        def poll(self, now: float):
+            return self.waiting.pop(0) if self.waiting else None
+
+        def close(self) -> None:
+            self.closed = True
+
+    class CountingRecognizer:
+        def __init__(self) -> None:
+            self.chunks = 0
+
+        def reset(self) -> None:
+            self.chunks = 0
+
+        def accept_pcm(self, pcm: bytes, sample_rate: int) -> str:
+            self.chunks += 1
+            return ""  # no partial: the main loop has no reason to read on
+
+        def finish(self) -> str:
+            return f"{self.chunks} chunks"
+
+        def close(self) -> None:
+            pass
+
+    source = BacklogSource()
+    events: list[dict] = []
+    read_fd, write_fd = os.pipe()
+    # "start" and "stop" arrive together, so the main loop polls no audio in between.
+    os.write(write_fd, b'{"op": "start"}\n{"op": "stop"}\n')
+    os.close(write_fd)
+    status = dictate_module.resident(lambda: source, CountingRecognizer(), lambda op, **f: events.append({"op": op, **f}),
+                                     read_fd, lambda: False)
+    os.close(read_fd)
+    assert status == 0 and source.closed
+    assert {"op": "final", "text": "5 chunks"} in events

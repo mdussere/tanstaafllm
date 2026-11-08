@@ -50,6 +50,10 @@ from mycroft_console import DEFAULT_MODEL, DEFAULT_THREADS, MODEL_PROFILES, Cons
 
 EXIT_SETUP_ERROR = 2
 EXIT_RUNTIME_ERROR = 3
+# On "stop", audio already captured but not yet read is decoded before the final
+# text (plan step 10.7): on Luna it piles up when decoding lags. Bounded so a stop
+# always answers.
+DRAIN_SECONDS = 3.0
 
 
 class FakeSource:
@@ -129,9 +133,23 @@ def resident(make_source_: Callable[[], object], recognizer, emit: Callable[...,
     text = ""
     pending = b""
 
-    def end_utterance() -> None:
+    def drain() -> None:
+        """Feed the audio still waiting in the source, until it has none or time is up."""
+        deadline = time.monotonic() + DRAIN_SECONDS
+        while time.monotonic() < deadline:
+            try:
+                pcm = source.poll(time.monotonic())
+            except ConsoleError:
+                return  # capture ended: finish with what was heard
+            if not pcm:
+                return  # nothing waiting (None), or a replayed file ended (b"")
+            recognizer.accept_pcm(pcm, source.sample_rate)
+
+    def end_utterance(drain_first: bool = False) -> None:
         nonlocal source, text
         try:
+            if drain_first:
+                drain()
             emit("final", text=recognizer.finish())
         finally:
             source.close()
@@ -163,7 +181,7 @@ def resident(make_source_: Callable[[], object], recognizer, emit: Callable[...,
                             continue
                         emit("listening")
                     elif op == "stop" and source is not None:
-                        end_utterance()
+                        end_utterance(drain_first=True)
             if source is None:
                 continue
             try:
