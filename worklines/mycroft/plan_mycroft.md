@@ -237,6 +237,15 @@ User direction: voice input in Wyoh's Slate (dictate, correct, send). The Slate 
 - [x] 11.4 **Survey of speech-assessment tools** (go 2026-11-01, for the TTS choice, the user's spoken English, and later Camp Currie L-CAT) — **Result ([`1104_01`](docs/1104_01_speech-assessment-survey.md)):** on Luna now, intelligibility by Kroko round-trip and rhythm from Kroko timestamps or Silero VAD; intonation by pYIN (needs numpy); UTMOS on the desk to rank TTS voices; pronunciation scoring needs a ~300 M phoneme recogniser, so desk or Mannie, not Luna. Nothing deployed.
 - [x] 11.5 **ZIPA-T small (INT8) phones against eSpeak** (user's go via Professor, 2026-11-01: offline scoring, no real-time need; it must fit Luna's memory with Mannie and Mike stopped, and answer within seconds for a short sentence). **Desk: done ([`1105_01`](docs/1105_01_zipa-phones-desk-result.md))**. Sherpa-ONNX's offline binary loads it as is. Phone error rate 5.6–9.7 % on native clips (the notation floor), 12.7 % on the user's reading (ʌ→ə, æ→ə, ɪ→i). ~280 MiB for a short sentence, but memory grows with length (3.2 GB for 94 s in one piece), so sentence by sentence. Load ~3.5 s of CPU on the desk host. **Luna: done** (2026-11-01, `1105_01`): load 34.5 s, 4.0 s to score a 6.6 s sentence, peak 306 MiB; load once per session.
 
+### Step 12 — Mike full voice on the desk host (🟩 the user, 2026-11-08)
+
+The user: "communicate with Wyoh and Mike to do the assembly, so that we have a version of Mike that answers… test on Termidor the full-voice Mike". Mycroft hears (Kroko English, `mycroft_dictate.py`), Mike answers, Mycroft speaks (Piper Lessac). Mycroft owns the two providers; Mike and Wyoh wire them into Mike's window and the controls, each in its own plan.
+
+- [x] 12.1 **Speech provider** `scripts/mycroft_speak.py`: Piper Lessac loaded once through Sherpa's C library (ctypes, standard library only, as on Luna); JSON lines: `say` / `stop` in, `ready` / `speaking` / `spoken` / `stopped` / `error` out; sentence by sentence, the next one synthesised while one plays; `aplay` playback, `--wav-dir` for tests, `--fake` for protocol tests, `--length-scale` to speak slowly. On x86_64 it needs Sherpa's full build (`sherpa-onnx-v1.13.8-linux-x64-shared`, SHA-256 `c0bdb790…015c4`), the speech-to-text one being "no-tts". Tests: `test/mycroft/test_speak.py` (7 deterministic, 1 integration). Desk: load 4.6 s, first sound 1.1 s after the text, ~117 MiB.
+- [ ] 12.2 **Assembly with Mike and Wyoh** on Termidor: Mike's reply text goes to the speech provider; dictation stops (or is ignored) while Mike speaks, so Luna does not hear itself. Contract sent to Mike and Wyoh, 2026-11-08.
+- [ ] 12.3 **The user's test** on Termidor: a few spoken exchanges with Mike, timed from end of speech to first sound.
+- [ ] 12.4 **Luna**, later and through a slot: Piper resident beside Kroko and Mike (11.3 says it fits); first sound ≈ 3× the first sentence's length.
+
 ### Recorded for later (not authorised)
 
 - **Re-format action:** one press finishes sentences and adds punctuation and capitals. Candidates are rules, a French punctuation model (existence unverified), or Mike.
@@ -340,6 +349,7 @@ date
 | 2026-11-02 | 10.6 closed: the Slate's Kroko switched to English on the user's order (Wyoh's `gamepad.toml` and its test changed by Mycroft, Wyoh paused); wyoh-gamepad restarted, resident English provider running. |
 | 2026-11-03 | 10.7 proposed on Wyoh's request: drain the capture on "stop" so the end of the utterance is not lost. 11.2 ticked (the user chose Piper Lessac). |
 | 2026-11-08 | 10.7 on the desk (the user's go): on "stop", the resident provider decodes the audio still waiting (≤ 3 s) before the final text. Luna deploy open. |
+| 2026-11-08 | Step 12 opened on the user's go (full-voice Mike on Termidor). 12.1 done: `mycroft_speak.py`, resident Piper Lessac over JSON lines; desk load 4.6 s, first sound 1.1 s. Contract sent to Mike and Wyoh. |
 ---
 
 ## Workline artifacts
