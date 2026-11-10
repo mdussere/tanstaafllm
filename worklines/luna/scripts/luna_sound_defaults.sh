@@ -22,7 +22,8 @@ write_switch() {
 #!/bin/sh
 # Follow the headphone jack on card 0 (RK817): HP when plugged, SPK otherwise.
 set_mux() {
-  if amixer -c0 cget name='Headphones Jack' | grep -q ': values=on'; then
+  # The jack is a CARD control, not a MIXER one, so iface= is required.
+  if amixer -c0 cget iface=CARD,name='Headphones Jack' | grep -q ': values=on'; then
     mux=HP
   else
     mux=SPK
@@ -68,7 +69,8 @@ apply() {
     || echo "warning: USB headset not present; its volume was not set"
   "$SWITCH" --once
   systemctl daemon-reload
-  systemctl enable --now luna-jack-switch.service
+  systemctl enable luna-jack-switch.service
+  systemctl restart luna-jack-switch.service
   alsactl store
   echo "applied"
 }

@@ -14,7 +14,8 @@ SCRIPT = Path(__file__).parents[2] / "worklines/luna/scripts/luna_sound_defaults
 
 FAKE_AMIXER = """#!/bin/sh
 case "$*" in
-  *cget*) echo "  : values=$JACK" ;;
+  *"cget iface=CARD,name=Headphones Jack"*) echo "  : values=$JACK" ;;
+  *cget*) echo "amixer: Cannot find the given element" >&2; exit 1 ;;
   *cset*) echo "$*" >> "$LOG" ;;
 esac
 """
