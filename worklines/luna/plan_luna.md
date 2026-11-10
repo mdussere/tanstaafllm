@@ -188,10 +188,11 @@ The factory device tree describes headphone detection and a headset play/pause b
 ---
 
 ### Step 9 — Characterise Luna's sound output
-**Status**: ✅ Done 2026-11-10: the speaker and the USB headset both work; card 0 routes to the headphone output (`Playback Mux = HP`) with a low volume (201/255), so the speaker is silent. Fixes handed to Mannie (`docs/0901_01_sound-output-result.md`). Requested 2026-11-10 by Wyoh at Adam's request (assigned to this line): no audible sound at all on physical Luna, neither Mike's voice (Mycroft's Piper speaker, `mycroft_speak.py`) nor Wolfenstein 3D (ecwolf, SDL). Sound may never have been tested on Luna. Luna now runs the Arch Linux ARM root operated by Mannie.
+**Status**: 🔄 9.1–9.2 done 2026-11-10, 9.3 blocked: the speaker and the USB headset both work; card 0 routes to the headphone output (`Playback Mux = HP`) with a low volume (201/255), so the speaker is silent. Fixes handed to Mannie (`docs/0901_01_sound-output-result.md`). Requested 2026-11-10 by Wyoh at Adam's request (assigned to this line): no audible sound at all on physical Luna, neither Mike's voice (Mycroft's Piper speaker, `mycroft_speak.py`) nor Wolfenstein 3D (ecwolf, SDL). Sound may never have been tested on Luna. Luna now runs the Arch Linux ARM root operated by Mannie.
 
 - [x] 9.1 With Mannie's agreement before any SSH: list the sound cards and outputs (built-in speaker on the RK817, USB-C headset), the default device (ALSA, and PipeWire if present), the mixer, volume and mute state, and whether a `speaker-test` is audible on each output (Adam listens). Read-only apart from playing test sounds; any PipeWire/ALSA configuration change is Mannie's. Mannie (desk, 2026-11-10): no objection to the plan, but the SSH go is Mannie on Luna's, which is offline, so it falls to Adam. Run as `michael` with `XDG_RUNTIME_DIR=/run/user/1000` (Piper and ecwolf run in michael's session), sudo only for root-only reads, leave `mannie` start/stop alone. Adam gave the go ("Luna est tout à toi").
 - [x] 9.2 Record the result in `docs/0901_01_sound-output-result.md` and tell Wyoh and Mannie what fixes it.
+- [ ] 9.3 Adam (2026-11-10): apply the fix here rather than wait for Mannie's 7.7. Wrote `scripts/luna_sound_defaults.sh` (`--apply`: speaker volume 255, USB headset 90/120, `luna-jack-switch.service` makes `Playback Mux` follow the jack, `alsactl store`; `--undo` restores the saved state) and `test/luna/test_luna_sound_defaults_script.py` (5 passed). **Blocked:** Claude Code's auto mode refused to install the service on Luna ("unauthorized persistence"), so nothing was changed on Luna; Adam decides (permission rule, or running the command himself). Adam also asked Wyoh to plan a sound configuration UI (message sent 2026-11-10).
 
 ## Progress tracking ✅
 
@@ -205,7 +206,7 @@ The factory device tree describes headphone detection and a headset play/pause b
 - ✅ Step 6 — Card reshaped: 24 GiB `/`, 8 GiB `/home`, 26 GiB `/storage` (2026-10-05).
 - ✅ Step 7 — Base system decided by the user (Arch Linux ARM root), carried out in Mannie's line; 7.0 `michael` account done (2026-10-15).
 - ✅ Step 8 — Microphone: USB-C headset works (`hw:CARD=Earphones`); the jack gives none under ArchR (2026-11-01).
-- ✅ Step 9 — Sound output: speaker and USB headset work; card 0 left on `HP` at 201/255, fixes handed to Mannie (2026-11-10).
+- 🔄 Step 9 — Sound output: speaker and USB headset work; card 0 left on `HP` at 201/255; 9.3 fix script ready, install blocked (2026-11-10).
 
 ---
 
