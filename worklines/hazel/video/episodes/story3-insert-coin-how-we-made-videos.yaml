@@ -1,0 +1,148 @@
+# Story 3, "Insert coin" (Hazel), as a script. Same series frame as Stories 1 and 2 (title card, player card, stages
+# with their stamp, a boss, result, end card); two new sequences: one `cinema` shot (Hazel's workshop, sprites from
+# common/art/sprites-v3/) and the `payback_meter` stage. Rework asked by the user, 2026-11-10.
+# Token figures are the measured sub-agent counts of docs/0606_01; the payback is an estimate (a revision is not a film).
+# Build: uv run python common/build.py <this file> --preview
+episode: story3-insert-coin-how-we-made-videos
+title: INSERT COIN
+bpm: 120
+motif: [[0, 69, 1], [1, 72, 0.5], [1.5, 76, 0.5], [2, 81, 1], [3, 76, 1]]   # Hazel: A C E A, a coin dropping in
+
+scenes:
+- id: title
+  template: title_card
+  bars: 3
+  mood: opener
+  series: "TANSTAAFLLM · STORY 3"
+  key: INSERT COIN
+  secondary: ["How the cell learned", "to make its own videos."]
+  sources: ["worklines/hazel/docs/0303_01_insert-coin-video-production-story-brief.md"]
+
+- id: player
+  template: player_card
+  bars: 4
+  mood: driving
+  portrait: hazel_excited
+  backdrop: workshop
+  glance: ["NEW PLAYER", "QUEST:"]
+  name: HAZEL
+  secondary: ["CREATIVE DIRECTOR", "OF THE CELL"]
+  key: ["Make the films", "on a 20 € budget."]
+  sources: ["AGENTS.md (Hazel); plan_hazel.md 3.3 (Adam, 2026-11-04: one 20 €/month Claude Pro subscription)"]
+
+- id: trailer
+  template: cinema
+  shot: wide
+  bars: 4
+  mood: bright
+  backdrop: workshop
+  caption: "THE FIRST TRAILER"
+  key: ["WE ASKED FOR A TRAILER.", "IT BUILT A GAME."]
+  secondary: "NO STORYBOARD. AN ARCADE WORLD."
+  sources: ["worklines/hazel/video/trailer/ (sub-agent's trailer, 2026-10-31); 0303_01 brief"]
+  layers:
+    - {"asset": "hazel-work", "x": 100, "y": 125, "w": 490, "h": 470, "motion": "slide"}
+    - {"asset": "paper", "x": 585, "y": 140, "w": 280, "h": 330, "at": 0.5, "motion": "float"}
+    - {"asset": "projector", "x": 1040, "y": 235, "w": 550, "h": 350, "at": 1.3, "motion": "pop"}
+    - {"asset": "reel", "x": 1130, "y": 192, "w": 165, "h": 165, "at": 1.9, "motion": "spin", "speed": 3}
+    - {"asset": "beam", "x": 1330, "y": 240, "w": 520, "h": 215, "at": 2, "opacity": 0.24}
+    - {"asset": "coin", "x": 1500, "y": 40, "w": 150, "h": 150, "at": 1.0, "motion": "drop", "distance": 400}
+
+- id: stage1
+  template: flow
+  bars: 4
+  mood: driving
+  title: "THE VIDEO IS CODE"
+  via: ["renderFrame(t)", "NES SOUND CHIP"]
+  target: MP4
+  key: ["One clock for", "picture and sound."]
+  secondary: "FFMPEG!"
+  glance: "CHROMIUM DRAWS IT"
+  sources: ["worklines/hazel/docs/0606_01_how-the-video-generator-works.md §1; video/common/README.md"]
+
+- id: stage2
+  template: two_boxes
+  bars: 4
+  mood: tense
+  title: "THE PHONE TEST"
+  fail: {label: "THE FIRST CUTS", glance: ["LOOKED GREAT ON THE DESK", "TOO SMALL ON A PHONE."], stamp: "TOO SMALL!"}
+  works: "THE RULE:"
+  key: ["ONE BIG MESSAGE", "PER SCREEN."]
+  sources: ["plan_hazel.md 3.2d (the user's phone review, 2026-11-01); docs/0103_01_series-template.md §6b"]
+
+- id: stage3
+  template: metrics
+  clear_text: OUCH!
+  clear_color: red
+  bars: 4
+  mood: uneasy
+  title: "WHAT DID IT COST?"
+  key: ["Every new film", "starts from zero."]
+  subject: {label: STORY 2 BY HAND, tags: [CANVAS BY HAND, MUSIC BY HAND], link: REDO}
+  glance: "CLAUDE CODE TOKENS, MEASURED"
+  tiles:
+  - {label: FIRST CUT, value: 160 K}
+  - {label: PHONE REWORK, value: 129 K}
+  - {label: ONE FILM, value: "~290 K"}
+  - {label: OUR BUDGET, value: "20 €/MONTH"}
+  sources: ["docs/0606_01 §5 (sub-agent counts, 2026-11-01 and 2026-11-02)"]
+
+- id: stage4
+  template: compare_table
+  bars: 5
+  mood: climb
+  title: "FIRST, A LIBRARY"
+  key: ["Reuse the pattern,", "not the last film."]
+  columns: [COPY THE LAST FILM, USE THE LIBRARY]
+  rows: [[SAME CODE, 23 TEMPLATES], [SAME MISTAKES, THE PHONE RULE BUILT IN], [EVERY FILM ALIKE, ONE NEW TEMPLATE PER FILM]]
+  sources: ["video/library/README.md (23 templates); docs/0103_01 §6c (one new template per episode)"]
+
+- id: compiler
+  template: tree
+  bars: 3
+  mood: theme
+  glance: "build.py story3.yaml"
+  nodes: [[0, story3.yaml], [1, layout], [1, reading audit], [1, NES score], [1, lint], [2, MP4]]
+  key: "THE CPU BUILDS IT."
+  secondary: "The model only writes the script."
+  sources: ["docs/0606_01 §3 (the chain)"]
+
+- id: boss
+  template: boss
+  bars: 4
+  mood: boss
+  title: "BOSS: THE TOKEN BILL"
+  panel: "THE NEXT FILM, MADE BY HAND?"
+  states: [BY HAND, SCRIPTED]
+  phases:
+  - {key: "290 K.", secondary: ["Tokens for one", "handmade film."], glance: "AND IT STARTS AGAIN EACH TIME"}
+  - {key: ["54 K", "SCRIPTED."], secondary: "2.4 × less"}
+  sources: ["docs/0606_01 §5: 290 k by hand; 54 k for Story 2's revision through the script (129 k for the hand-made rework)"]
+
+- id: stage5
+  template: payback_meter
+  clear_text: PAID BACK!
+  bars: 6
+  mood: victory
+  title: "AND THE SECOND FILM?"
+  investment: 408
+  saving: 236
+  key: ["YOU ARE WATCHING", "FILM NUMBER TWO."]
+  secondary: "IT PAYS FOR ITSELF."
+  glance: "*AN ESTIMATE: TO BE MEASURED ON THIS FILM"
+  sources: ["docs/0606_01 §5: 408 k to build the pipeline once; ~236 k saved per use (290 k − 54 k), indicative; Story 3 is the second film through the script"]
+
+- id: result
+  template: result
+  bars: 3
+  mood: calm
+  title: "STORY 3 CLEAR"
+  key: ["AUTOMATE THE REPEATED,", "KEEP THE CHOICE."]
+  secondary: ["A film about saving tokens,", "made by the system it shows."]
+  sources: ["docs/0303_01 brief (the system learned; the agent focuses on what changes)"]
+
+- id: end
+  template: end_card
+  bars: 3
+  key: ["There Ain't No Such Thing", "As A Free LLM."]
+  glance: ["github.com/mdussere/tanstaafllm", "A personal engineering project by Michael Dussere"]

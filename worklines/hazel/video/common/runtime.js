@@ -421,7 +421,8 @@ HOLDS = EPISODE.holds.slice().sort((a, b) => a[0] - b[0]);
 DURATION = EPISODE.base + HOLDS.reduce((a, h) => a + h[1], 0);
 window.ready = Promise.all([
   document.fonts.load('32px PS2P'), document.fonts.load('32px VT'),
-  new Promise(r => { if (ART.complete) r(); else ART.onload = r; })
+  new Promise(r => { if (ART.complete) r(); else ART.onload = r; }),
+  window.CINE_READY || Promise.resolve()
 ]).then(() => document.fonts.ready).then(() => { window.DURATION = DURATION; });
 
 window.ready.then(() => {

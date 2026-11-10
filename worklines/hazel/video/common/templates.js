@@ -205,6 +205,28 @@ KINDS.boss_hud = (t, p, it) => {
   tag(fixed ? it.labels[1] : it.labels[0], W - M - 140, 110, fixed ? C.green : C.red, 1, { align: 'right' });
 };
 
+// payback_meter (Story 3): one bar for the pipeline's one-time cost; each film made through the script adds its saving;
+// the second film crosses the line. Figures are the script's (indicative until the film's own cost is measured).
+KINDS.payback_meter = (t, p, it) => {
+  const A = s => p.t0 + s, x = it.x, y = it.y, a = seg(t, A(it.at), A(it.at + 0.25));
+  if (a <= 0) return;
+  const inv = it.investment, sav = it.saving, W0 = 1500, bx = x + 35, by = y + 140, bh = 56;
+  const scale = W0 / Math.max(inv, 2 * sav), goal = bx + inv * scale;
+  rect(x + 9, y + 9, 1600, 320, C.shadow, a); rect(x, y, 1600, 320, C.navy2, a); rect(x, y, 10, 320, C.amber, a);
+  tag('BUILT ONCE: ' + inv + ' K', bx, y + 55, C.chrome, a);
+  tag('EACH FILM SAVES ~' + sav + ' K*', bx + W0, y + 55, C.amber, a, { align: 'right' });
+  rect(bx, by, W0, bh, C.ink, a);
+  const q1 = seg(t, A(1.0), A(2.0)), q2 = seg(t, A(it.reveal_at), A(it.reveal_at + 0.8));
+  rect(bx, by, sav * scale * q1, bh, C.cyan, a);
+  rect(bx + sav * scale, by, sav * scale * q2, bh, C.green, a);
+  for (let z = 1; z < 10; z++) rect(bx + z * W0 / 10, by, 3, bh, C.ink, a * 0.6);
+  const paid = bx + sav * scale * (1 + q2) >= goal;
+  rect(goal - 3, by - 22, 6, bh + 44, paid ? C.green : C.amber, a);
+  tag(paid ? 'PAID BACK' : 'TO PAY BACK', goal, by - 32, paid ? C.green : C.amber, a, { align: 'center' });
+  tag('FILM 1: STORY 2', bx, by + bh + 45, C.cyan, a * q1);
+  tag('FILM 2: THIS ONE', bx + sav * scale + 20, by + bh + 45, C.green, a * seg(t, A(it.reveal_at), A(it.reveal_at + 0.25)));
+};
+
 function drawItems(t, p) {
   for (const it of p.content || []) {
     if (it.from !== undefined && !(t >= p.t0 + it.from)) continue;
@@ -222,6 +244,8 @@ TPL.T05 = (t, p) => {
   if (p.clear !== undefined) clearStamp(t, p.t0 + p.clear, p.clear_text, C[p.clear_color] || C.green);
   (p.flashes || [[0, 0, 0.3]]).forEach(([at, up, down, c]) => flash(t, p.t0 + at, up, down, c ? col(c) : '#fff'));
 };
+
+TPL.T24 = (t, p) => cinemaFrame(t, p);   // Story 3: a bitmap-sprite shot (common/cinematic.js)
 
 // T01 title card: `series` (glance), the stamped `key` title, a two-line `secondary` subtitle, PRESS START
 TPL.T01 = (t, p) => {
@@ -244,7 +268,13 @@ TPL.T04 = (t, p) => {
   const bob = Math.round(Math.sin(t * Math.PI) * 2) * 4;
   const by = lerp(1200, 230, easeBack(seg(t, A(0), A(0.5)))) + bob;
   box(M, by, 560, 560, { edge: C.cyan });
-  face(p.face, M + 24, by + 24, 512);
+  if (p.portrait) {                       // a character outside the key art: a sprite from cinematic.js, feet on the box floor
+    const bg = BITMAP_ART['bg_' + (p.backdrop || 'workshop')];
+    ctx.save(); ctx.beginPath(); ctx.rect(M + 24, by + 24, 512, 512); ctx.clip(); ctx.imageSmoothingEnabled = false;
+    if (bg && bg.complete) ctx.drawImage(bg, M + 24 - 256, by + 24, 1024, 512);
+    ctx.restore();
+    drawBitmap(p.portrait, M + 280, by + 530, 480, 470, 1, t - p.t0, { anchor: 'bottom-center' });
+  } else face(p.face, M + 24, by + 24, 512);
   const X = 780, hp = easeOut(seg(t, A(0.1), A(0.45)));
   txt(p.glance[0], X + (1 - hp) * 300, 250, 32, C.amber, { alpha: hp });
   txt(p.name, X + (1 - hp) * 500, 345, 80, C.chrome, { alpha: hp });   // the hero's name, big: a title, not a message

@@ -1,0 +1,334 @@
+{
+  "version": 3,
+  "technique": "bitmap sprite-frame replacement; no runtime rotation",
+  "source": "Generated TANSTAAFLLM Story 3 art sheets",
+  "sprites": {
+    "hazel_idle": {
+      "file": "sprites/hazel_idle.png",
+      "size": [
+        155,
+        350
+      ],
+      "pivot": [
+        77,
+        350
+      ],
+      "rgba": true
+    },
+    "hazel_work": {
+      "file": "sprites/hazel_work.png",
+      "size": [
+        326,
+        350
+      ],
+      "pivot": [
+        163,
+        350
+      ],
+      "rgba": true
+    },
+    "hazel_reel": {
+      "file": "sprites/hazel_reel.png",
+      "size": [
+        198,
+        350
+      ],
+      "pivot": [
+        99,
+        350
+      ],
+      "rgba": true
+    },
+    "hazel_point": {
+      "file": "sprites/hazel_point.png",
+      "size": [
+        248,
+        350
+      ],
+      "pivot": [
+        124,
+        350
+      ],
+      "rgba": true
+    },
+    "hazel_excited": {
+      "file": "sprites/hazel_excited.png",
+      "size": [
+        214,
+        350
+      ],
+      "pivot": [
+        107,
+        350
+      ],
+      "rgba": true
+    },
+    "hazel_walk": {
+      "file": "sprites/hazel_walk.png",
+      "size": [
+        213,
+        350
+      ],
+      "pivot": [
+        106,
+        350
+      ],
+      "rgba": true
+    },
+    "projector": {
+      "file": "sprites/projector.png",
+      "size": [
+        316,
+        328
+      ],
+      "pivot": [
+        158,
+        328
+      ],
+      "rgba": true
+    },
+    "reel": {
+      "file": "sprites/reel.png",
+      "size": [
+        164,
+        164
+      ],
+      "pivot": [
+        82,
+        82
+      ],
+      "rgba": true
+    },
+    "coin": {
+      "file": "sprites/coin.png",
+      "size": [
+        212,
+        212
+      ],
+      "pivot": [
+        106,
+        212
+      ],
+      "rgba": true
+    },
+    "purse": {
+      "file": "sprites/purse.png",
+      "size": [
+        249,
+        229
+      ],
+      "pivot": [
+        124,
+        229
+      ],
+      "rgba": true
+    },
+    "terminal": {
+      "file": "sprites/terminal.png",
+      "size": [
+        298,
+        277
+      ],
+      "pivot": [
+        149,
+        277
+      ],
+      "rgba": true
+    },
+    "cartridge": {
+      "file": "sprites/cartridge.png",
+      "size": [
+        264,
+        208
+      ],
+      "pivot": [
+        132,
+        208
+      ],
+      "rgba": true
+    },
+    "yaml": {
+      "file": "sprites/yaml.png",
+      "size": [
+        212,
+        238
+      ],
+      "pivot": [
+        106,
+        238
+      ],
+      "rgba": true
+    },
+    "phone": {
+      "file": "sprites/phone.png",
+      "size": [
+        206,
+        293
+      ],
+      "pivot": [
+        103,
+        293
+      ],
+      "rgba": true
+    },
+    "paper_stack": {
+      "file": "sprites/paper_stack.png",
+      "size": [
+        330,
+        269
+      ],
+      "pivot": [
+        165,
+        269
+      ],
+      "rgba": true
+    },
+    "magnifier": {
+      "file": "sprites/magnifier.png",
+      "size": [
+        275,
+        308
+      ],
+      "pivot": [
+        137,
+        308
+      ],
+      "rgba": true
+    },
+    "workbench": {
+      "file": "sprites/workbench.png",
+      "size": [
+        330,
+        243
+      ],
+      "pivot": [
+        165,
+        243
+      ],
+      "rgba": true
+    },
+    "beam": {
+      "file": "sprites/beam.png",
+      "size": [
+        297,
+        259
+      ],
+      "pivot": [
+        148,
+        259
+      ],
+      "rgba": true
+    }
+  },
+  "animations": {
+    "reel_spin": {
+      "frames": [
+        "animations/reel_spin/00.png",
+        "animations/reel_spin/01.png",
+        "animations/reel_spin/02.png",
+        "animations/reel_spin/03.png",
+        "animations/reel_spin/04.png",
+        "animations/reel_spin/05.png",
+        "animations/reel_spin/06.png",
+        "animations/reel_spin/07.png"
+      ],
+      "fps": 8,
+      "loop": true,
+      "size": [
+        200,
+        200
+      ]
+    },
+    "coin_insert": {
+      "frames": [
+        "animations/coin_insert/00.png",
+        "animations/coin_insert/01.png",
+        "animations/coin_insert/02.png",
+        "animations/coin_insert/03.png",
+        "animations/coin_insert/04.png",
+        "animations/coin_insert/05.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "size": [
+        175,
+        205
+      ]
+    },
+    "hazel_reaction": {
+      "frames": [
+        "animations/hazel_reaction/00.png",
+        "animations/hazel_reaction/01.png",
+        "animations/hazel_reaction/02.png",
+        "animations/hazel_reaction/03.png"
+      ],
+      "fps": 3,
+      "loop": true,
+      "size": [
+        380,
+        390
+      ],
+      "note": "pose-swaps; poses vary in silhouette as drawn"
+    },
+    "hazel_working": {
+      "frames": [
+        "animations/hazel_working/00.png",
+        "animations/hazel_working/01.png",
+        "animations/hazel_working/02.png",
+        "animations/hazel_working/03.png"
+      ],
+      "fps": 4,
+      "loop": true,
+      "size": [
+        380,
+        390
+      ],
+      "note": "pose-swaps; poses vary in silhouette as drawn"
+    },
+    "hazel_walking": {
+      "frames": [
+        "animations/hazel_walking/00.png",
+        "animations/hazel_walking/01.png",
+        "animations/hazel_walking/02.png",
+        "animations/hazel_walking/03.png"
+      ],
+      "fps": 5,
+      "loop": true,
+      "size": [
+        380,
+        390
+      ],
+      "note": "pose-swaps; poses vary in silhouette as drawn"
+    }
+  },
+  "backgrounds": {
+    "workshop": {
+      "file": "backgrounds/workshop.png",
+      "size": [
+        320,
+        180
+      ]
+    },
+    "screening": {
+      "file": "backgrounds/screening.png",
+      "size": [
+        320,
+        180
+      ]
+    },
+    "factory": {
+      "file": "backgrounds/factory.png",
+      "size": [
+        320,
+        180
+      ]
+    },
+    "arcade": {
+      "file": "backgrounds/arcade.png",
+      "size": [
+        320,
+        180
+      ]
+    }
+  }
+}
